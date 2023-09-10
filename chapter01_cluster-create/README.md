@@ -22,6 +22,12 @@
   kind create cluster --config=kind-config.yaml 
   ```
 
+- Place kubeconfig
+  ```bash
+  mkdir ~/.kube
+  kind get kubeconfig > ~/.kube/config
+  ```
+
 - Install cilium
   ```bash
   cilium install --version 1.14.1
