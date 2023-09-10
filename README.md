@@ -12,7 +12,7 @@ VM の hostPort > kind の cotainerPort > NodePort Service > ingress-nginx Pod �
 
 * Ingress リソースの作成
 
-<details><summary>詳細</summary>
+<details><summary>詳細（sample.example.com を追加する例）</summary>
 
 ```yaml
 apiVersion: networking.k8s.io/v1
@@ -129,7 +129,7 @@ spec:
 
 * ローカルマシンの /etc/hosts にエントリを追加
 
-<details><summary>詳細</summary>
+<details><summary>詳細（sample.example.com を追加する例）</summary>
 
 `153.125.137.49 sample.example.com` を /etc/hosts に追記
 
