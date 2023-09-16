@@ -1,0 +1,5 @@
+## Argo Configs
+configs:
+  params:    
+  # -- Run server without TLS
+    server.insecure: true
