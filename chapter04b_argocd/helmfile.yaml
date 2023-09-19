@@ -8,11 +8,5 @@ releases:
     chart: argo/argo-cd
     version: 5.35.0
     values:
-      - argo-cd-values.yaml # 空のvalue.yaml
-  - name: argo-rollouts
-    namespace: argo-rollouts
-    chart: argo/argo-rollouts
-    version: 2.0.0
-    values:
-      - argo-rollouts-values.yaml # 空のvalue.yaml
+      - values.yaml
   
