@@ -1,8 +1,16 @@
 repositories:
+  - name: cilium
+    url: https://helm.cilium.io
   - name: ingress-nginx
     url: https://kubernetes.github.io/ingress-nginx
 
 releases:
+  - name: cilium
+    namespace: kube-system
+    chart: cilium/cilium
+    version: 1.14.2
+    values:
+      - values/cilium.yaml
   - name: ingress-nginx
     namespace: ingress-nginx
     chart: ingress-nginx/ingress-nginx
