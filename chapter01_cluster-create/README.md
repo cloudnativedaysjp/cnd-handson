@@ -28,9 +28,9 @@
   kind get kubeconfig > ~/.kube/config
   ```
 
-- Install cilium
+- Install helm chart
   ```bash
-  cilium install --version 1.14.1
+  helmfile sync -f helmfile
   ```
 
 - Validate the installation

@@ -1,0 +1,18 @@
+controller:
+  nodeSelector:
+    kubernetes.io/hostname: kind-control-plane
+  tolerations:
+  - effect: NoSchedule
+    key: node-role.kubernetes.io/control-plane
+    operator: Exists
+  service:
+    type: NodePort
+    ports:
+      http: 80
+      https: 443
+    nodePorts:
+      http: 30080
+      https: 30443
+    targetPorts:
+      http: http
+      https: https
