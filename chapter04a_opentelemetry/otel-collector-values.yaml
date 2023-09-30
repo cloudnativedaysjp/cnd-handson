@@ -1,0 +1,30 @@
+mode: daemonset
+
+presets:
+  # enables the k8sattributesprocessor and adds it to the traces, metrics, and logs pipelines
+  kubernetesAttributes:
+    enabled: true
+  # enables the kubeletstatsreceiver and adds it to the metrics pipelines
+  kubeletMetrics:
+    enabled: true
+  # Enables the filelogreceiver and adds it to the logs pipelines
+  logsCollection:
+    enabled: true
+  # Enables the hostmetricsreceiver and adds it to the metrics pipelines
+  hostMetrics:
+    enabled: true
+## The chart only includes the loggingexporter by default
+## If you want to send your data somewhere you need to
+## configure an exporter, such as the otlpexporter
+# config:
+# exporters:
+#   otlp:
+#     endpoint: "<SOME BACKEND>"
+# service:
+#   pipelines:
+#     traces:
+#       exporters: [ otlp ]
+#     metrics:
+#       exporters: [ otlp ]
+#     logs:
+#       exporters: [ otlp ]

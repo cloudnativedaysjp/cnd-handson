@@ -1,0 +1,27 @@
+mode: deployment
+
+# We only want one of these collectors - any more and we'd produce duplicate data
+replicaCount: 1
+
+presets:
+  # enables the k8sclusterreceiver and adds it to the metrics pipelines
+  clusterMetrics:
+    enabled: true
+  # enables the k8sobjectsreceiver to collect events only and adds it to the logs pipelines
+  kubernetesEvents:
+    enabled: true
+## The chart only includes the loggingexporter by default
+## If you want to send your data somewhere you need to
+## configure an exporter, such as the otlpexporter
+# config:
+# exporters:
+#   otlp:
+#     endpoint: "<SOME BACKEND>"
+# service:
+#   pipelines:
+#     traces:
+#       exporters: [ otlp ]
+#     metrics:
+#       exporters: [ otlp ]
+#     logs:
+#       exporters: [ otlp ]
