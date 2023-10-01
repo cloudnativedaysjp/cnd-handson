@@ -72,7 +72,7 @@ Hubble Relay経由で取得したHubble Serverのフロー情報は、下記コ�
 hubble observe flows
 ```
 
-コマンドを実行すると下記のような情報が出力されます。
+コマンドを実行すると下記のような情報が出力されます。(TODO：参照元表示が図の入れ替え)
 
 ![](./image/ch04_hubble-observe-flows_01.png)
 
@@ -91,7 +91,14 @@ kubectl apply -f ingress.yaml
 
 ![](./image/ch04_hubble-ui_01.png)
 
+## Grafanaを利用した可視化について
+
+CiliumとHubbleから取得したメトリクスをもとに、Grafanaのダッシュボードの設定を行います。
+Ciliumからはcilium-agentやcilium-envoy、cilium-operatorに関するCilium自身のメトリクスを取得することができ、
+HubbleからはCiliumが管理するPodのネットワーク動作に関するメトリクスを取得することができます。
+
 
 ## 参考文献
 
 - https://isovalent.com/blog/post/hubble-series-re-introducing-hubble/
+- https://docs.cilium.io/en/stable/observability/metrics/
