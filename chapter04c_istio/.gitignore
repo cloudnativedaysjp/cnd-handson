@@ -1,0 +1,3 @@
+/helm/charts/*/*
+!/helm/charts/*/values.yaml
+!/helm/charts/*/Chart.yaml
