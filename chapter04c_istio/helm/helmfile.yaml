@@ -1,0 +1,11 @@
+releases:
+  - name: istio
+    namespace: istio-system
+    createNamespace: true
+    chart: ./charts/istio
+    wait: true
+  - name: istio-ingressgateway
+    namespace: istio-system
+    chart: ./charts/istio-ingressgateway
+    needs:
+      - istio-system/istio
