@@ -3,13 +3,14 @@ k8sServiceHost: kind-control-plane
 k8sServicePort: 6443
 ingressController:
   enabled: true
-  default: true
+  # default is ingress-nginx
+  default: false
   enforceHttps: false
   loadbalancerMode: shared
   service:
     type: NodePort
-    insecureNodePort: 30080
-    secureNodePort: 30443
+    insecureNodePort: 31080
+    secureNodePort: 31443
 operator:
   prometheus:
     enabled: true
