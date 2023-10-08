@@ -1,6 +1,15 @@
 kubeProxyReplacement: true
 k8sServiceHost: kind-control-plane
 k8sServicePort: 6443
+ingressController:
+  enabled: true
+  default: true
+  enforceHttps: false
+  loadbalancerMode: shared
+  service:
+    type: NodePort
+    insecureNodePort: 30080
+    secureNodePort: 30443
 operator:
   prometheus:
     enabled: true
@@ -22,4 +31,3 @@ hubble:
       - port-distribution
       - icmp
       - httpV2:exemplars=true;labelsContext=source_ip,source_namespace,source_workload,destination_ip,destination_namespace,destination_workload,traffic_direction
-
