@@ -21,3 +21,4 @@ nodes:
 - role: worker
 networking:
   disableDefaultCNI: true
+  kubeProxyMode: none
