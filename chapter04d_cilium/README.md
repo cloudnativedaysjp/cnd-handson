@@ -94,8 +94,8 @@ kubectl apply -f ingress.yaml
 ## Grafanaを利用した可視化について
 
 CiliumとHubbleから取得したメトリクスをもとに、Grafanaのダッシュボードの設定を行います。
-Ciliumからはcilium-agentやcilium-envoy、cilium-operatorに関するCilium自身のメトリクスを取得することができ、
-HubbleからはCiliumが管理するPodのネットワーク動作に関するメトリクスを取得することができます。
+Ciliumからはcilium-agentやcilium-envoy、cilium-operatorに関するCilium自身のメトリクスを取得でき、
+HubbleからはCiliumが管理するPodのネットワーク動作に関するメトリクスを取得できます。
 
 
 ## 参考文献
