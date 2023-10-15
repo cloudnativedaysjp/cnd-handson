@@ -1,0 +1,20 @@
+global:
+  imagePullPolicy: IfNotPresent
+  logAsJson: true
+  defaultPodDisruptionBudget:
+    enabled: false
+pilot:
+  deploymentLables:
+    app.kubernetes.io/managed-by: Helm
+  autoscaleEnabled: false
+  resources:
+    limits:
+      cpu: 500m
+      memory: 2048Mi
+meshConfig:
+  defaultConfig:
+    holdApplicationUntilProxyStarts: true
+  accessLogFile: /dev/stdout
+  accessLogEncoding: JSON
+  outboundTrafficPolicy:
+    mode: REGISTRY_ONLY
