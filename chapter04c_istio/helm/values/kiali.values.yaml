@@ -1,0 +1,22 @@
+istio_namespace: istio-system
+auth:
+  strategy: anonymous
+deployment:
+  image_pull_policy: IfNotPresent
+  ingress_enabled: false
+  logger:
+    log_format: json
+  pod_labels:
+    sidecar.istio.io/inject: "false"
+external_services:
+  custom_dashboards:
+    enabled: false
+  grafana:
+    enabled: false
+  prometheus:
+    url: http://kube-prometheus-stack-prometheus.prometheus:9090
+  istio:
+    root_namespace: istio-system
+    url_service_version: http://istiod:15014/version
+  tracing:
+    enabled: false

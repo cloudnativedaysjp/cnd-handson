@@ -1,0 +1,24 @@
+servicemonitors:
+  - name: envoy-stats
+    labels:
+      release: kube-prometheus-stack
+    jobLabel: envoy-stats
+    selector:
+      matchExpressions:
+        - { key: istio-prometheus-ignore, operator: DoesNotExist }
+      namespaceSelector:
+        - default
+    endpoints:
+      - path: /stats/prometheus
+        targetPort: 15090
+        interval: 15s
+        # Thin metrics to free up Prometheus storage for metrics.
+        # Cf.)
+        # - https://kiali.io/docs/configuration/p8s-jaeger-grafana/prometheus/#metric-thinning
+        # - https://kiali.io/docs/faq/general/#requiredmetrics
+        metricRelabelings:
+          - action: drop
+            source_labels: [__name__]
+            regex: istio_agent_.*|istiod_.*|istio_build|citadel_.*|galley_.*|pilot_[^p].*|envoy_cluster_[^u].*|envoy_cluster_update.*|envoy_listener_[^dh].*|envoy_server_[^mu].*
+          - action: labeldrop
+            regex: chart|destination_app|destination_version|heritage|.*operator.*|istio.*|release|security_istio_io_.*|service_istio_io_.*|sidecar_istio_io_inject|source_app|source_version

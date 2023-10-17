@@ -29,4 +29,21 @@ peerauthentication.security.istio.io/mtls-strict-all   STRICT   12m
 - istio-ingressgateway: Istio mesh内アプリケーションのIngressトラフィックを管理
 - peerauthentication: Istioのcustom resourceでenvoy proxy間の通信方法を設定。本設定では、mTLS通信を必須としています。
 
+## サービスメッシュの可視化
+Istioサービスメッシュ内のトラフィックを可視化するために、[Kiali](https://kiali.io/)をインストールします。KialiはIstioサービスメッシュ用のコンソールであり、Kialiが提供するダッシュボードから、サービスメッシュの構造の確認、トラフィックフローの監視、および、サービスメッシュ設定の確認、変更をすることが可能です。
+
+helmfileを使ってKialiをインストールします。
+```sh
+helmfile apply -f helm/helmfiles.d/kiali.yaml
+```
+
+外部からKialiにアクセスできるようにするためにIngressを設定します。
+```sh
+kubectl apply -f ingress/kiali-ingress.yaml
+```
+
+ブラウザから`http://kiali.example.com`にアクセスをしてください。
+
+![image](./imgs/kiali-overview.png)
+
 ## クリーンアップ
