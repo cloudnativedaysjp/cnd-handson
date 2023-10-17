@@ -2,7 +2,6 @@ apiVersion: networking.k8s.io/v1
 kind: Ingress
 metadata:
   name: app-ingress-by-nginx
-  namespace: argo-cd
   annotations:
     nginx.ingress.kubernetes.io/ssl-redirect: "false"
 spec:
@@ -17,4 +16,4 @@ spec:
           service:
             name: handson
             port:
-              number: 8080
+              number: http
