@@ -17,4 +17,4 @@ spec:
           service:
             name: handson
             port:
-              name: http
+              number: 8080
