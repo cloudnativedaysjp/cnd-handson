@@ -9,6 +9,7 @@ spec:
   ports:
   - port: 80
     protocol: TCP
-    targetPort: 8080
+    targetPort: http
+    name: http
   selector:
     app: handson
