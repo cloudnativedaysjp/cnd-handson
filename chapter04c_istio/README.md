@@ -32,6 +32,13 @@ peerauthentication.security.istio.io/mtls-strict-all   STRICT   12m
 ## サービスメッシュの可視化
 Istioサービスメッシュ内のトラフィックを可視化するために、[Kiali](https://kiali.io/)をインストールします。KialiはIstioサービスメッシュ用のコンソールであり、Kialiが提供するダッシュボードから、サービスメッシュの構造の確認、トラフィックフローの監視、および、サービスメッシュ設定の確認、変更をすることが可能です。
 
+Kialiはトポロジーグラフ、メトリクス等の表示のためにPrometheusを必要とします。Prometheusがまだインストールされていない場合は、下記コマンドを実行してインストールしてください。
+
+Prometheusインストール(インストール済みの場合はスキップ)
+```sh
+helmfile sync -f ../chapter02_prometheus/helmfile.yaml
+```
+
 helmfileを使ってKialiをインストールします。
 ```sh
 helmfile apply -f helm/helmfiles.d/kiali.yaml
