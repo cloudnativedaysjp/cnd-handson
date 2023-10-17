@@ -16,4 +16,4 @@ spec:
           service:
             name: handson
             port:
-              number: http
+              name: http
