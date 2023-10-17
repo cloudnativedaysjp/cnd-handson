@@ -20,7 +20,6 @@ spec:
       labels:
         app: handson
     spec:
-      serviceAccountName: handson
       containers:
       - image: argoproj/rollouts-demo:blue
         imagePullPolicy: IfNotPresent
