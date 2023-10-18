@@ -1,0 +1,15 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: handson
+  name: handson
+spec:
+  replicas: 2
+  template:
+    spec:
+      containers:
+      - image: argoproj/rollouts-demo:green
+        imagePullPolicy: IfNotPresent
+        name: handson
+  

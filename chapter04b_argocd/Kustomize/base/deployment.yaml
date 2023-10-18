@@ -1,0 +1,42 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: handson
+  name: handson
+spec:
+  replicas: 1
+  revisionHistoryLimit: 1
+  selector:
+    matchLabels:
+      app: handson
+  strategy:
+    rollingUpdate:
+      maxSurge: 2
+      maxUnavailable: 1
+    type: RollingUpdate
+  template:
+    metadata:
+      labels:
+        app: handson
+    spec:
+      containers:
+      - image: argoproj/rollouts-demo:blue
+        imagePullPolicy: IfNotPresent
+        name: handson
+        ports:
+        - name: http
+          containerPort: 8080
+          protocol: TCP
+        resources:
+          requests:
+            memory: 32Mi
+            cpu: 5m
+          limits:
+            memory: 84Mi
+            cpu: 100m
+        securityContext:
+          runAsUser: 1000
+          runAsGroup: 2000
+          allowPrivilegeEscalation: false
+      terminationGracePeriodSeconds: 15
