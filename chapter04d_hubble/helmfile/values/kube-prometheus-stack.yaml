@@ -24,7 +24,7 @@ grafana:
         gnetId: 15514
         revision: 1
       cilium-hubble:
-        datasourcd: Prometheus
+        datasource: Prometheus
         gnetId: 16613
         revision: 1
 

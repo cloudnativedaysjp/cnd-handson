@@ -1,11 +1,13 @@
+# Chapter 4d Hubble
+
 ## はじめに
 
 この節ではHubbleを利用したフロー情報の可視化を説明します。
 
 ## Hubbleの概要
 
-HubbleはCiliumのために開発されたネットワークとセキュリティのObservabilityプラットフォームです。
-Hubbleは下記のコンポーネントで構成されます。
+HubbleはCiliumのために開発されたネットワークとセキュリティのObservabilityプラットフォームであり、
+[Cilium Hubble Series (Part 1): Re-introducing Hubble](https://isovalent.com/blog/post/hubble-series-re-introducing-hubble/)で説明されるように下記のコンポーネントで構成されます。
 
 ![](image/ch04_hubble-components_01.png)
 
@@ -21,15 +23,21 @@ Hubbleは下記のコンポーネントで構成されます。
 
 ## 構築
 
-Hubble RelayとHubble UIを構築します。
+まず、現時点でHubble Relayが無効化されていることを確認します。
 
+```bash
+cilium status
 ```
+
+次に、Hubble UIにアクセスするために、Hubble RelayとHubble UIをデプロイします。
+
+```bash
 helmfile apply -f helmfile
 ```
 
-下記コマンドでHubbleのステータスがOKになっていることを確認します
+下記コマンドでHubble RelayのステータスがOKになっていることを確認します。
 
-```
+```bash
 cilium status
 ```
 
@@ -37,10 +45,12 @@ cilium status
 
 ### Hubble Relayへのアクセス
 
-Hubble Relayへアクセスする方法として、下記の2種類の方法があります。
+概要で説明した通り、Hubble Relayへアクセスする方法として、下記の2種類の方法があります。
 
 - Hubble CLIを利用する方法
 - Hubble UIを利用する方法
+
+それぞれについて説明していきます。
 
 #### Hubble CLIの利用
 
@@ -72,7 +82,7 @@ Hubble Relay経由で取得したHubble Serverのフロー情報は、下記コ�
 hubble observe flows
 ```
 
-コマンドを実行すると下記のような情報が出力されます。(TODO：参照元表示が図の入れ替え)
+コマンドを実行すると下記のような情報が出力されます。
 
 ![](./image/ch04_hubble-observe-flows_01.png)
 
@@ -80,25 +90,24 @@ hubble observe flows
 
 Hubble UIからHubble Relayにアクセスし、Hubble Serverの情報を取得します。
 
-Hubble UIにアクセスするために、Ingressリソースを作成します。
+Hubble UIへアクセスするために、Ingressリソースを作成します。
 
 ```
 kubectl apply -f ingress.yaml
 ```
 
-ブラウザで`hubble.example.com`にアクセスすると、ingress-nginxのnamespaceを確認すると下記のような画面が出力されます。
+ブラウザで`hubble.example.com`にアクセスしingress-nginxのnamespaceを確認すると、下記のような画面が出力されます。
 これより、インターネット側からingress-nginxの80ポートにアクセスがあり、その後hubble-uiの8081ポートにアクセスがあったことが分かります。
 
 ![](./image/ch04_hubble-ui_01.png)
 
 ## Grafanaを利用した可視化について
 
-CiliumとHubbleから取得したメトリクスをもとに、Grafanaのダッシュボードの設定を行います。
+CiliumとHubbleから取得したメトリクスはGrafanaのダッシュボードから確認可能です。
+(Monitoring & Metrics)[https://docs.cilium.io/en/stable/observability/metrics/]に記載があるように、
 Ciliumからはcilium-agentやcilium-envoy、cilium-operatorに関するCilium自身のメトリクスを取得でき、
 HubbleからはCiliumが管理するPodのネットワーク動作に関するメトリクスを取得できます。
 
+Grafanaのダッシュボードにアクセスすると以下のようなダッシュボードが確認できます。
 
-## 参考文献
-
-- https://isovalent.com/blog/post/hubble-series-re-introducing-hubble/
-- https://docs.cilium.io/en/stable/observability/metrics/
+![](./image/ch04_hubble-grafana_01.png)
