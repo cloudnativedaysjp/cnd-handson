@@ -1,19 +1,19 @@
 apiVersion: networking.k8s.io/v1
 kind: Ingress
 metadata:
-  name: app-ingress-by-nginx
+  name: {{.Values.ingress.name}}
   annotations:
-    nginx.ingress.kubernetes.io/ssl-redirect: "false"
+    nginx.ingress.kubernetes.io/ssl-redirect: {{.Values.ingress.ssl-redirect}}
 spec:
-  ingressClassName: nginx
+  ingressClassName: {{.Values.ingress.className}}
   rules:
-  - host: normal.app.example.com
+  - host: {{.Values.ingress.hosts.host}}
     http:
       paths:
-      - path: /
-        pathType: Prefix
+      - path: {{.Values.ingress.hosts.paths.path}}
+        pathType: {{.Values.ingress.hosts.paths.pathType}}
         backend:
           service:
-            name: handson
+            name: {{.Values.nameOverrideß}}
             port:
-              name: http
+              name: {{.Values.ingress.hosts.paths.backend.service.port.name}}

@@ -5,7 +5,7 @@ metadata:
     app: handson
   name: handson
 spec:
-  type: ClusterIP
+  type: {{.Values.service.type}}
   ports:
   - port: 80
     protocol: TCP
