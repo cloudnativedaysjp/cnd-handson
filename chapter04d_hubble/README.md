@@ -52,7 +52,7 @@ cilium status
 
 それぞれについて説明していきます。
 
-#### Hubble CLIの利用
+### Hubble CLIの利用
 
 Hubble CLIを利用してHubble Relayにアクセスします。
 
@@ -101,10 +101,34 @@ kubectl apply -f ingress.yaml
 
 ![](./image/ch04_hubble-ui_01.png)
 
+### Layer 7プロトコルの可視化
+
+[Layer 7 Protocol Visibility](https://docs.cilium.io/en/latest/observability/visibility/#layer-7-protocol-visibility)に記載があるように、L7プロトコルの可視化を行うことも可能です。L7プロトコルの可視化はannotationで設定します。
+
+たとえば、Hubble-UIの8081ポートへのIngress方向のHTTP通信の可視化を行う場合、下記のannotationをHubble-UIのPodに設定します。
+
+```yaml
+policy.cilium.io/proxy-visibility: "<Ingress/8081/TCP/HTTP>"
+```
+
+また、CiliumEndpointsを確認することで、Visibility Policyのステータスを確認することが可能です。
+
+```bash
+kubectl get cep -n kube-system
+```
+
+> **Info**  
+> 下記コマンドでannotationを削除することで、Visibility Policyを無効化できます。
+> ```
+> kubectl annotate -n kube-system pod -l app.kubernetes.io/name=hubble-ui policy.cilium.io/proxy-visibility-
+> ```
+
+annotationで可視化の設定を行うことで、Hubble-UIからL7プロトコルの情報を確認できます。
+
 ## Grafanaを利用した可視化について
 
 CiliumとHubbleから取得したメトリクスはGrafanaのダッシュボードから確認可能です。
-(Monitoring & Metrics)[https://docs.cilium.io/en/stable/observability/metrics/]に記載があるように、
+[Monitoring & Metrics](https://docs.cilium.io/en/stable/observability/metrics/)に記載があるように、
 Ciliumからはcilium-agentやcilium-envoy、cilium-operatorに関するCilium自身のメトリクスを取得でき、
 HubbleからはCiliumが管理するPodのネットワーク動作に関するメトリクスを取得できます。
 
