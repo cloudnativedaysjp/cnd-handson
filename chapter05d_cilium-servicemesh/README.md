@@ -1,13 +1,11 @@
 # Chapter 05d Service Mesh
 
 Service Meshの機能と聞くと、以下の機能を期待されるかと思います。
+それぞれの機能について説明します。
 
-- Observability
 - Ingress
 - L7-Aware Traffic Management
 - Identity-based Security
-
-この機能の中から、まずはIngressについて説明します。
 
 ## Ingress
 
