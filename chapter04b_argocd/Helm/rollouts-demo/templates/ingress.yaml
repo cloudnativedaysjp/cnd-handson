@@ -10,10 +10,10 @@ spec:
   - host: {{.Values.ingress.hosts.host}}
     http:
       paths:
-      - path: {{.Values.ingress.hosts.paths.path}}
-        pathType: {{.Values.ingress.hosts.paths.pathType}}
+      - path: {{.Values.ingress.paths.path}}
+        pathType: {{.Values.ingress.paths.pathType}}
         backend:
           service:
-            name: {{.Values.nameOverrideß}}
+            name: {{.Values.nameOverride}}
             port:
-              name: {{.Values.ingress.hosts.paths.backend.service.port.name}}
+              name: {{.Values.ingress.paths.backend.service.port.name}}
