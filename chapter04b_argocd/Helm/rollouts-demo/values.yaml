@@ -57,18 +57,18 @@ ingress:
   name: app-ingress-by-nginx
   enabled: false
   className: nginx
-  ssl-redirect: "false"
+  sslredirect: "false"
     # kubernetes.io/ingress.class: nginx
     # kubernetes.io/tls-acme: "true"
-  hosts:
-    - host: helm.app.example.com
-      paths:
-        - path: /
-          pathType: Prefix
-          backend:
-            service:
-              port:
-                name: http
+  host: "helm.app.example.com"
+    
+  paths:
+    path: /
+      pathType: Prefix
+      backend:
+        service:
+          port:
+            name: http
 
 
 
