@@ -2,14 +2,14 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   labels:
-    app: {{.Values.image.nameOverride}}
-  name: {{.Values.image.nameOverride}}
+    app: {{.Values.nameOverride}}
+  name: {{.Values.nameOverride}}
 spec:
   replicas: 1
   revisionHistoryLimit: 1
   selector:
     matchLabels:
-      app: {{.Values.image.nameOverride}}
+      app: {{.Values.nameOverride}}
   strategy:
     rollingUpdate:
       maxSurge: {{.Values.strategy.rollingUpdate.maxSurge}}
@@ -18,12 +18,12 @@ spec:
   template:
     metadata:
       labels:
-        app: {{.Values.image.nameOverride}}
+        app: {{.Values.nameOverride}}
     spec:
       containers:
       - image: {{.Values.image.repository}}:{{.Values.image.tag}}
         imagePullPolicy: {{.Values.image.pullPolicy}}
-        name: {{.Values.image.nameOverride}}
+        name: {{.Values.nameOverride}}
         ports:
         - name: http
           containerPort: {{.Values.server.containerPorts}}
