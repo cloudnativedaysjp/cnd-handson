@@ -16,7 +16,8 @@ spec:
         app: handson
     spec:
       containers:
-      - image: argoproj/rollouts-demo:blue
+      - name: handson
+        image: argoproj/rollouts-demo:blue
         imagePullPolicy: Always
         ports:
         - name: http
