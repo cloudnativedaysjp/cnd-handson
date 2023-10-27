@@ -61,14 +61,12 @@ ingress:
     # kubernetes.io/ingress.class: nginx
     # kubernetes.io/tls-acme: "true"
   host: "helm.app.example.com"
-    
-  paths:
-    path: /
-      pathType: Prefix
-      backend:
-        service:
-          port:
-            name: http
+  path: /
+  pathType: Prefix
+  backend:
+    service:
+      port:
+        name: http
 
 
 
