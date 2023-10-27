@@ -3,7 +3,7 @@ kind: Ingress
 metadata:
   name: {{.Values.ingress.name}}
   annotations:
-    nginx.ingress.kubernetes.io/ssl-redirect: {{.Values.ingress.sslredirect}}
+    nginx.ingress.kubernetes.io/ssl-redirect: {{.Values.ingress.sslredirect | quote}}
 spec:
   ingressClassName: {{.Values.ingress.className}}
   rules:
