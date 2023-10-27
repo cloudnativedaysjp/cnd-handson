@@ -1,0 +1,5 @@
+apiVersion: v2
+name: rollouts-demo
+description: A Helm chart for the rollouts-demo application
+version: 0.1.0
+appVersion: 1.0.0

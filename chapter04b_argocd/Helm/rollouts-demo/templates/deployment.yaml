@@ -1,0 +1,42 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: {{.Values.nameOverride}}
+  name: {{.Values.nameOverride}}
+spec:
+  replicas: 1
+  revisionHistoryLimit: 1
+  selector:
+    matchLabels:
+      app: {{.Values.nameOverride}}
+  strategy:
+    rollingUpdate:
+      maxSurge: {{.Values.strategy.rollingUpdate.maxSurge}}
+      maxUnavailable: {{.Values.strategy.rollingUpdate.maxUnavailable}}
+    type:  {{.Values.strategy.type}}
+  template:
+    metadata:
+      labels:
+        app: {{.Values.nameOverride}}
+    spec:
+      containers:
+      - image: {{.Values.image.repository}}:{{.Values.image.tag}}
+        imagePullPolicy: {{.Values.image.pullPolicy}}
+        name: {{.Values.nameOverride}}
+        ports:
+        - name: http
+          containerPort: {{.Values.server.containerPorts}}
+          protocol: TCP
+        resources:
+          requests:
+            memory: {{.Values.server.resources.requests.memory}}
+            cpu: {{.Values.server.resources.requests.cpu}}
+          limits:
+            memory: {{.Values.server.resources.limits.memory}}
+            cpu: {{.Values.server.resources.limits.cpu}}
+        securityContext:
+          runAsUser: {{.Values.server.securityContext.runAsUser}}
+          runAsGroup:  {{.Values.server.securityContext.runAsGroup}}
+          allowPrivilegeEscalation: {{.Values.server.securityContext.allowPrivilegeEscalation}}
+      terminationGracePeriodSeconds: 15
