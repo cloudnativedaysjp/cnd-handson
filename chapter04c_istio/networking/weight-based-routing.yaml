@@ -1,0 +1,38 @@
+---
+apiVersion: networking.istio.io/v1beta1
+kind: VirtualService
+metadata:
+  name: weight-based-routing
+spec:
+  hosts:
+  - app.example.com
+  gateways:
+  - sample-app
+  http:
+  - route:
+    - destination:
+        host: sample-app
+        port:
+          number: 8080
+        subset: blue
+      weight: 50
+    - destination:
+        host: sample-app
+        port:
+          number: 8080
+        subset: yellow
+      weight: 50
+---
+apiVersion: networking.istio.io/v1beta1
+kind: DestinationRule
+metadata:
+  name: weight-based-routing
+spec:
+  host: sample-app
+  subsets:
+  - name: blue
+    labels:
+      color: blue
+  - name: yellow
+    labels:
+      color: yellow
