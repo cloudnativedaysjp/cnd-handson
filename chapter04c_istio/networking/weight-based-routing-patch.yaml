@@ -1,0 +1,12 @@
+---
+spec:
+  http:
+  - route:
+    - destination:
+        host: sample-app
+        subset: blue
+      weight: 0
+    - destination:
+        host: sample-app
+        subset: yellow
+      weight: 100

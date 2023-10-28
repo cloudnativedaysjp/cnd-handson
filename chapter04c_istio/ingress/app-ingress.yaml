@@ -5,6 +5,8 @@ metadata:
   namespace: istio-system
   annotations:
     nginx.ingress.kubernetes.io/ssl-redirect: "false"
+  labels:
+    app: sample-app
 spec:
   ingressClassName: nginx
   rules:

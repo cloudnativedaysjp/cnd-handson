@@ -1,16 +1,16 @@
 ---
-apiVersion: networking.istio.io/v1alpha3
+apiVersion: networking.istio.io/v1beta1
 kind: VirtualService
 metadata:
-  name: handson-blue
+  name: simple-routing
 spec:
   hosts:
   - app.example.com
   gateways:
-  - handson
+  - sample-app
   http:
   - route:
     - destination:
-        host: handson
+        host: sample-app
         port:
           number: 8080
