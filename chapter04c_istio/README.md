@@ -148,7 +148,9 @@ kiali-by-nginx   nginx   kiali.example.com   10.96.88.164   80      2m5s
 ![image](./imgs/kiali-overview.png)
 
 ## 加重ルーティング
-Istio virtual service/destination ruleを用いて加重ルーティングを実装します。よくあるユースケースとしては、旧バージョンから新バージョンへのアプリケーションの段階的な移行が挙げられます。本ケースでは、まず追加のアプリケーションをdeployし、トラフィックを50%ずつ振り分けて、最終的に新しいアプリケーションに移行するシナリオを想定します。
+Istio virtual service/destination ruleを用いて加重ルーティングを実装します。旧バージョンから新バージョンへのアプリケーションの段階的な移行がユースケースとして挙げられます。本ケースでは、まず追加のアプリケーションをdeployし、トラフィックを50%ずつ振り分けて、最終的に新しいアプリケーションに移行するシナリオを想定します。
+
+[セットアップ](#セットアップ)が完了していることを前提とします。
 
 ### 追加アプリケーションdeploy
 まずは、[アプリケーションdeploy](#アプリケーションdeploy)でdeployされた不要なresourceを削除します。
@@ -195,7 +197,7 @@ sample-app-yellow-58c8c8d6d6-zkpgd   2/2     Running   0          41s
 kubectl apply -f networking/weight-based-routing.yaml
 ```
 
-実際にリクエストを流して、期待した通り50%ずつトラフィックが流れているかKialiで確認してみましょう。ローカル端末から下記コマンドを実施してください。
+実際にリクエストを流して、期待した通り50%ずつトラフィックが流れているかKialiで確認してみましょう。ローカル端末から下記コマンドを実行してください。
 ```sh
 while :; do curl -s -o /dev/null http://app.example.com -w '%{http_code}\n';sleep 1;done
 ```
@@ -213,11 +215,115 @@ kubectl patch virtualservice weight-based-routing --type merge --patch-file netw
 
 Istio virtual service/destination ruleを使用して、加重ルーティングを実装しました。Istioの機能を利用することで、アプリケーション側にロジックを追加することなく複数アプリケーション間のトラフィック移行を実現することができます。
 
+ローカル端末にて実施しているリクエストは停止してください。
+
 ### クリーンアップ
 追加でdeployしたアプリケーション、およびIstio virtual service/destination ruleを削除し、本項の初期状態に戻します。
 ```sh
 kubectl delete -f networking/weight-based-routing.yaml,app/sample-app-yellow.yaml
 kubectl apply -f networking/simple-routing.yaml
+```
+
+## L4アクセス管理
+Istio authorization policyを用いてL4レベルのアクセス管理を実装します。Istio mesh内において、あるワークロードに対して特定のワークロードからのL4レベル(TCP/UDP)でのアクセスを制御したい時がユースケースとして挙げられます。本ケースでは`sample-app`ワークロードにアクセスをするワークロードを2つ用意し、一つからはアクセスを許可、もう一つからのアクセスは拒否するケースを想定します。
+
+[セットアップ](#セットアップ)が完了していることを前提とします。
+
+### 追加アプリケーションdeploy
+`sample-app`ワークロードにアクセスする追加のワークロードを2つdeployします。
+```sh
+kubectl apply -f app/curl-allow.yaml,app/curl-deny.yaml
+```
+
+Deployされたリソースは下記の通りです。
+```sh
+kubectl get po -l app=curl
+
+# 出力例
+NAME         READY   STATUS    RESTARTS   AGE
+curl-allow   2/2     Running   0          109s
+curl-deny    2/2     Running   0          109s
+```
+
+それでは双方のpodから`sample-app`ワークロードに対してリクエストをします。
+```sh
+while :; do \
+kubectl exec curl-allow -- /bin/sh -c "echo -n 'curl-allow: ';curl -s -o /dev/null sample-app:8080 -w '%{http_code}\n'"; \
+kubectl exec curl-deny -- /bin/sh -c "echo -n 'curl-deny:  ';curl -s -o /dev/null sample-app:8080 -w '%{http_code}\n'"; \
+echo ----------------;sleep 1; \
+done
+```
+
+`curl-allow`, `curl-deny` pod双方からのリクエストは成功していることが分かります。
+```
+# 出力例
+curl-allow: 200
+curl-deny:  200
+----------------
+curl-allow: 200
+curl-deny:  200
+----------------
+curl-allow: 200
+curl-deny:  200
+----------------
+.
+.
+.
+```
+
+Kiali dashboardからも確認してみましょう。リクエストを流した状態でブラウザから`http://kiali.example.com`にアクセスをしてください。`curl-allow`, `curl-deny` podの双方が`sample-app`ワークロードにアクセス出来ていることが確認できます。下記図のようになっていない場合は、ブラウザを数回リロードしてください。
+
+![image](./imgs/kiali-L4-authz-autholizationpolicy-notapplied.png)
+
+ここで`sample-app`ワークロードへのリクエストは一旦停止してください。
+
+### Istio Authorization Policy適用
+それでは、Istio authorization policyを適用して、`curl-deny` podから`sample-app`ワークロードへのアクセスを拒否します。
+```sh
+kubectl apply -f networking/L4-authorization-policy.yaml
+```
+
+`sample-app`ワークロードに対して`curl-allow`, `curl-deny` podから再度リクエストをします。
+```sh
+while :; do \
+kubectl exec curl-allow -- /bin/sh -c "echo -n 'curl-allow: ';curl -s -o /dev/null sample-app:8080 -w '%{http_code}\n'"; \
+kubectl exec curl-deny -- /bin/sh -c "echo -n 'curl-deny:  ';curl -s -o /dev/null sample-app:8080 -w '%{http_code}\n'"; \
+echo ----------------;sleep 1; \
+done
+```
+
+しばらくすると、`curl-deny` podからのリクエストは拒否されるようになります。
+
+```
+# 出力例
+curl-allow: 200
+curl-deny:  200
+----------------
+curl-allow: 200
+curl-deny:  200
+----------------
+curl-allow: 200
+curl-deny:  403
+----------------
+curl-allow: 200
+curl-deny:  403
+----------------
+.
+.
+.
+```
+
+改めてKiali dashboardから確認してみましょう。ブラウザから`http://kiali.example.com`にアクセスをしてください。しばらくすると、`curl-allow` podからのアクセスは許可されている一方で、`curl-deny` podからのアクセスは拒否されていることが確認できます。
+
+![image](./imgs/kiali-L4-authz-autholizationpolicy-applied.png)
+
+Istio authorization policyを使用して、Istio mesh内のL4レベルのアクセス管理を実装しました。Istioの機能を利用することで、アプリケーション側にロジックを追加することなく、L4アクセス管理を実現することができます。
+
+### クリーンアップ
+追加でdeployしたアプリケーション、およびIstio authorization policyを削除し、本項の初期状態に戻します。
+```sh
+kubectl delete -f networking/L4-authorization-policy.yaml
+kubectl delete -f app/curl-allow.yaml,app/curl-deny.yaml
 ```
 
 ## クリーンアップ
