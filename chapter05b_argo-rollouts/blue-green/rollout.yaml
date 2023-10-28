@@ -26,10 +26,8 @@ spec:
         resources:
           requests:
             memory: 32Mi
+            cpu: 5m
   strategy:
     blueGreen:
       autoPromotionEnabled: false
       activeService: handson
-      postPromotionAnalysis:
-        templates:
-        - templateName: handson-analysis
