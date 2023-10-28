@@ -31,6 +31,3 @@ spec:
     blueGreen:
       autoPromotionEnabled: false
       activeService: handson
-      postPromotionAnalysis:
-        templates:
-        - templateName: handson-analysis
