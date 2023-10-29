@@ -5,8 +5,8 @@ metadata:
 spec:
   metrics:
   - name: handson-analysis
-    successCondition: result == "test"
+    successCondition: result == "blue"
     provider:
       web:
-        url: "http://blue.app.example.com/color"
+        url: "http://app-preview.example.com/color"
         insecure: true

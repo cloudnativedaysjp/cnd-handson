@@ -30,6 +30,7 @@ spec:
   strategy:
     blueGreen:
       activeService: handson
+      previewService: handson-preview
       postPromotionAnalysis:
         templates:
         - templateName: handson-analysis
