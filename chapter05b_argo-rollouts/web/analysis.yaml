@@ -6,6 +6,7 @@ spec:
   metrics:
   - name: handson-analysis
     successCondition: result == "blue"
+    failureLimit: 3
     provider:
       web:
         url: "http://app-preview.example.com/color"
