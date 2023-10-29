@@ -9,5 +9,5 @@ spec:
     failureLimit: 3
     provider:
       web:
-        url: "http://app-preview.preview.com/color"
+        url: "http://app-preview.rollout.com/color"
         insecure: true
