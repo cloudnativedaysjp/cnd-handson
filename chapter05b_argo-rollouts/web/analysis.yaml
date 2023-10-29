@@ -1,0 +1,12 @@
+kind: AnalysisTemplate
+apiVersion: argoproj.io/v1alpha1
+metadata:
+  name: handson-analysis
+spec:
+  metrics:
+  - name: handson-analysis
+    successCondition: result == 'green'
+    provider:
+      web:
+        url: "http://blue.app.example.com/color"
+        insecure: true
