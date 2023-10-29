@@ -5,7 +5,7 @@ metadata:
 spec:
   metrics:
   - name: handson-analysis
-    successCondition: result == 'green'
+    successCondition: result == "test"
     provider:
       web:
         url: "http://blue.app.example.com/color"
