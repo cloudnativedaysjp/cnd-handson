@@ -14,6 +14,6 @@ spec:
         pathType: Prefix
         backend:
           service:
-            name: handson
+            name: handson-preview
             port:
               name: http
