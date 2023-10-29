@@ -9,8 +9,9 @@ apiVersion: v1
 kind: Pod
 metadata:
   labels:
-    app: curl
+    app: curl-deny
     version: "1.0.0"
+    content: layer4-authz
   name: curl-deny
 spec:
   serviceAccountName: curl-deny
