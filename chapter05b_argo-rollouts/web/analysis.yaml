@@ -1,0 +1,13 @@
+kind: AnalysisTemplate
+apiVersion: argoproj.io/v1alpha1
+metadata:
+  name: handson-analysis
+spec:
+  metrics:
+  - name: handson-analysis
+    successCondition: result == "hym"
+    failureLimit: 3
+    provider:
+      web:
+        url: "http://app-preview.rollout.com/color"
+        insecure: true
