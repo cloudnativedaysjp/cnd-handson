@@ -60,7 +60,11 @@ mkdir -p ~/.kube
 kind get kubeconfig > ~/.kube/config
 ```
 
-最後に、CiliumとNginx Controllerをインストールします。
+最後に、下記のコンポーネントをデプロイします。
+
+- [Cilium](https://cilium.io/)
+- [Metallb](https://metallb.universe.tf/)
+- [Nginx Controller](https://docs.nginx.com/nginx-ingress-controller/)
 
 ```bash
 helmfile apply -f helmfile
@@ -69,6 +73,16 @@ helmfile apply -f helmfile
 > **Info**  
 > CiliumもKubernetes Ingressリソースをサポートしています。
 > こちらに関しては、[Chapter5d Cilium ServiceMesh](./../chapter05d_cilium-servicemesh/)にて説明します。
+
+Metallbに関しては追加で`IPAddressPool`と`L2Advertisement`をデプロイします。
+
+```console
+kubectl apply -f metallb.yaml
+```
+
+> **Info**
+> IPAddressPoolのspec.addressesに設定する値はdocker kindネットワークのアドレス帯から選択する必要があります。
+> 詳細は[Loadbalancer](https://kind.sigs.k8s.io/docs/user/loadbalancer/)を参照してください。
 
 ## Kubernetesクラスターへの接続確認
 
