@@ -77,6 +77,12 @@ kubectl exec -n handson curl-allow -- /bin/sh -c "echo -n 'curl-allow:color: ';c
 kubectl exec -n handson curl-deny  -- /bin/sh -c "echo -n 'curl-deny:color:  ';curl -s -o /dev/null handson:80/color -w '%{http_code}\n'"
 ```
 
+次の節に行く前に、作成したCiliumNetworkPolicyを削除しておきます。
+
+```sh
+kubectl -n handson delete cnp ch4d-1 
+```
+
 ## Ingress
 
 [Kubernetes Ingress Support](https://docs.cilium.io/en/stable/network/servicemesh/ingress/)に記載があるように、CiliumはIngressのサポートをしています。
@@ -99,6 +105,48 @@ kubectl apply -f ingress.yaml
 curl hubble.cilium.example.com
 ```
 
+## Gateway API
+
+CiliumはGatweay APIをサポートしており、Gatway APIを利用することで、トラフィックの分割、ヘッダー変更、URLの書き換えなどのより高度なルーティング機能を利用することができるます。
+Gateway APIの詳細は[Kubernetes Gateway API](https://gateway-api.sigs.k8s.io/)を参照ください。
+この節ではGateway APIを利用したトラフックの分割を行います。
+
+まず、Gateway APIのCRDをデプロイします。
+
+```console
+kubectl apply -f https://raw.githubusercontent.com/kubernetes-sigs/gateway-api/v0.7.0/config/crd/standard/gateway.networking.k8s.io_gatewayclasses.yaml
+kubectl apply -f https://raw.githubusercontent.com/kubernetes-sigs/gateway-api/v0.7.0/config/crd/standard/gateway.networking.k8s.io_gateways.yaml
+kubectl apply -f https://raw.githubusercontent.com/kubernetes-sigs/gateway-api/v0.7.0/config/crd/standard/gateway.networking.k8s.io_httproutes.yaml
+kubectl apply -f https://raw.githubusercontent.com/kubernetes-sigs/gateway-api/v0.7.0/config/crd/standard/gateway.networking.k8s.io_referencegrants.yaml
+kubectl apply -f https://raw.githubusercontent.com/kubernetes-sigs/gateway-api/v0.7.0/config/crd/experimental/gateway.networking.k8s.io_tlsroutes.yaml
+```
+
+今回は下記のようにトラフィックを50:50に分割します。
+
+- TODO: Image
+
+```console
+kubectl apply -n handson -f manifestgatewayt_ch4d-2.yaml
+```
+
+LBのIPアドレスを取得します。
+
+```sh
+LB_IP=$(kubectl get -n handson svc -l io.cilium.gateway/owning-gateway=cilium-gw -o=jsonpath='{.items[0].status.loadBalancer.ingress[0].ip}')
+```
+
+10回ほど確認しおおよそ50:50に分散していることを確認します
+
+```sh
+for in in {1..10}; do \
+curl ${LB_IP}/color;echo
+done
+```
+
+> **Info**
+> 今回のようなルーティング機能はCilium Service Meshの機能を利用しても提供することができます。
+> Cilium Service Meshを利用したトラフィック分割のデモを後述します。
+
 ## L7-Aware Traffic Management
 
 次にL7-Aware Traffic Managementについて説明します。
@@ -107,8 +155,7 @@ Ciliumでは、CRDとして定義された`CiliumEnvoyConfig`と`CiliumCllusterw
 この機能を利用するためには、`type:NodePort`の有効化またはkube-proxyの置き換えが必要になります。
 詳細は[L7-Aware Traffic Management#Prerequisites](https://docs.cilium.io/en/latest/network/servicemesh/l7-traffic-management/)を参照してください。
 
-
-Ciliumでは、Envoy API v3のみサポートされており、Envoy Extension Resource Typeへの対応状況は[Envoy extensions configuration file](https://github.com/cilium/proxy/blob/main/envoy_build_config/extensions_build_config.bzl)から確認可能です。
+Ciliumでは、Envoy API v3をサポートしており、Envoy Extension Resource Typeへの対応状況は[Envoy extensions configuration file](https://github.com/cilium/proxy/blob/main/envoy_build_config/extensions_build_config.bzl)から確認可能です。
 
 今回は、[L7 Traffic Shifting](https://docs.cilium.io/en/latest/network/servicemesh/envoy-traffic-shifting/)で説明される`envoy.filters.http.router`を利用したトラフィックシフトを行います。
 
