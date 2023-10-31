@@ -8,14 +8,14 @@ spec:
   metrics:
   - name: handson-analysis
     interval: 10s
-    successCondition: result[0] > 0.90
+    successCondition: result[0] == NaN || result[0] > 0.90
     failureLimit: 3
     provider:
       prometheus:
         address: http://prometheus.example.com/
         query: >+
           sum(
-            rate(nginx_ingress_controller_requests{ingress="{{args.ingress}}",status!~"[4-5].*"}[1m])> 0)
+            rate(nginx_ingress_controller_requests{ingress="{{args.ingress}}",status!~"[4-5].*"}[1m]))
             /
-            sum(rate(nginx_ingress_controller_requests{ingress="{{args.ingress}}"}[1m]> 0)> 0
+            sum(rate(nginx_ingress_controller_requests{ingress="{{args.ingress}}"}[1m])
           )
