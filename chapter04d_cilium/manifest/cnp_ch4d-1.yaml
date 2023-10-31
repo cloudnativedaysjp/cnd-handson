@@ -1,0 +1,35 @@
+---
+apiVersion: "cilium.io/v2"
+kind: CiliumNetworkPolicy
+metadata:
+  name: ch4d-1
+  namespace: handson
+spec:
+  endpointSelector:
+    matchLabels:
+      app: handson
+  ingress:
+  # `/`へは`curl-allow`からのみアクセス可能
+  - fromEndpoints:
+    - matchLabels:
+        app: curl-allow
+    toPorts:
+    - ports:
+      - port: "8080"
+        protocol: TCP
+      rules:
+        http:
+        - path: /
+  # `/color`へは`curl-allow`と`curl-deny`の両方からアクセスが可能
+  - fromEndpoints:
+    - matchLabels:
+        app: curl-allow
+    - matchLabels:
+        app: curl-deny
+    toPorts:
+    - ports:
+      - port: "8080"
+        protocol: TCP
+      rules:
+        http:
+        - path: /color
