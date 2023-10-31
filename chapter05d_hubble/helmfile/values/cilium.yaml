@@ -8,6 +8,16 @@ rollOutCiliumPods: true
 endpointStatus:
   enabled: true
   status: policy
+ingressController:
+  enabled: true
+  # default is ingress-nginx
+  default: false
+  enforceHttps: false
+  loadbalancerMode: shared
+  service:
+    type: NodePort
+    insecureNodePort: 31080
+    secureNodePort: 31443
 operator:
   prometheus:
     enabled: true
