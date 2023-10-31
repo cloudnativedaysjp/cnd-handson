@@ -1,0 +1,46 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Rollout
+metadata:
+  name: handson
+  labels:
+    app: handson
+spec:
+  replicas: 3
+  revisionHistoryLimit: 1
+  selector:
+    matchLabels:
+      app: handson
+  template:
+    metadata:
+      labels:
+        app: handson
+    spec:
+      containers:
+      - name: handson
+        image: argoproj/rollouts-demo:green
+        imagePullPolicy: Always
+        ports:
+        - name: http
+          containerPort: 8080
+          protocol: TCP
+        resources:
+          requests:
+            memory: 32Mi
+            cpu: 5m
+  strategy:
+    canary:
+      canaryService: handson-preview
+      analysis:
+        templateName: handson-analysis
+        args:
+        - name: ingress
+          value: app-ingress-by-nginx
+      steps:
+      - setWeight: 40
+      - pause: {}
+      - setWeight: 60
+      - pause:
+          duration: 10
+      - setWeight: 80
+      - pause:
+          duration: 10
