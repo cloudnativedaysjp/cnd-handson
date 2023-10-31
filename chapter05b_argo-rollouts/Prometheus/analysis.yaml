@@ -8,7 +8,7 @@ spec:
   metrics:
   - name: handson-analysis
     interval: 10s
-    successCondition: result[0] == NaN || result[0] > 0.90
+    successCondition: result[0] == NaN,result[0] > 0.90
     failureLimit: 3
     provider:
       prometheus:
