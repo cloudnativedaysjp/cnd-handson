@@ -29,12 +29,13 @@ spec:
             cpu: 5m
   strategy:
     canary:
-      canaryService: handson-preview
       analysis:
-        templateName: handson-analysis
+        templates:
+        - templateName: handson-analysis
         args:
         - name: ingress
           value: app-ingress-by-nginx
+      canaryService: handson-preview
       steps:
       - setWeight: 40
       - pause: {}
