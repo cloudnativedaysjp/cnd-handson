@@ -3,11 +3,11 @@ apiVersion: "cilium.io/v2"
 kind: CiliumNetworkPolicy
 metadata:
   name: ch4d-1
-  namespace: handson
+  namespace: handson-cilium
 spec:
   endpointSelector:
     matchLabels:
-      app: handson
+      app: handson-cilium
   ingress:
   # `/`へは`curl-allow`からのみアクセス可能
   - fromEndpoints:
