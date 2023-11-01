@@ -1,9 +1,10 @@
 # Chapter 04d Cilium
 
 [What is Cilium](https://cilium.io/get-started/)で説明されるように、CiliumはKubernetesクラスターやその他のクラウドネイティブ環境にネットワーキング、セキュリティ、可観測性を提供するオープンソースプロジェクトです。
-Ciliumの基盤となっているのは、eBPFと呼ばれるLinuxカーネルの技術であり、セキュリティや可視性、ネットワーク制御ロジックをLinuxカーネルに動的に挿入することを可能としています。
+Ciliumの基盤となっているのは、eBPFと呼ばれるLinuxカーネルの技術であり、セキュリティや可視性、ネットワーク制御ロジックをLinuxカーネルに動的に挿入することが可能です。
 
-また、[Component Overview](https://docs.cilium.io/en/stable/overview/component-overview/#component-overview)で説明されるように、Ciliumは下記の主要コンポーネントで構成されています。
+Ciliumは下記の主要コンポーネントで構成されています。
+詳細については[Component Overview](https://docs.cilium.io/en/stable/overview/component-overview/#component-overview)をご参照ください。
 
 - Agent
   - Kubernetesクラスターの各ノードで実行され、Kubernetes APIサーバーとの接続を確立し、ネットワーク及びセキュリティポリシーを維持する役割を果たします。
@@ -20,76 +21,103 @@ Ciliumの基盤となっているのは、eBPFと呼ばれるLinuxカーネル�
   - Cilium APIと対話し、Networking、ロードバランシング、ネットワークポリシーを提供するために必要な設定を起動します。
 
 ```console
-kubectl get po
+$ # AgentはDaemonsetリソース、OperatorはDeploymentリソースとしてデプロイされます
+$ kubectl get -n kube-system -l app.kubernetes.io/part-of=cilium ds,deploy
+NAME                    DESIRED   CURRENT   READY   UP-TO-DATE   AVAILABLE   NODE SELECTOR            AGE
+daemonset.apps/cilium   3         3         3       3            3           kubernetes.io/os=linux   11m
+
+NAME                              READY   UP-TO-DATE   AVAILABLE   AGE
+deployment.apps/cilium-operator   2/2     2            2           11m
 ```
 
 この章ではCiliumの機能として下記について説明します
 
 - NetworkPolicy
-- Ingress
-- Gateway API
+- トラフィック制御
+  - Ingress
+  - Gateway API
 - Service Mesh
+
+> **Info**  
+> Observabilityも主要な機能の1つですが、こちらについては[Chapter5d Hubble](./../chapter05d_hubble/)にて説明します。
 
 ## Network Policy
 
-[Network Policy](https://docs.cilium.io/en/stable/network/kubernetes/policy/#network-policy)にもある通り、Ciliumでは3種類のリソースでトラフィックを制御できます。
+Ciliumでは3種類のリソースでネットワークポリシーを定義できます。
+詳細は[Network Policy](https://docs.cilium.io/en/stable/network/kubernetes/policy/#network-policy)を参照してください。
 
 - NetworkPolicy
-  - PodのIngress/EgressでL3/L4ぽレイシーをサポートするリソースです。
+  - PodのIngress/Egressに対しL3/L4のポリシーを定義することが可能です。
   - 詳細は[Network Policies](https://kubernetes.io/docs/concepts/services-networking/network-policies/)を参照してください。
 - CiliumNetworkPolicy
-  - NetworkPolicyリソースとよく似ており、サポートされていない機能を提供することを目的としています。
-  - L3-L7のポリシーをポリシーを設定可能です。
+  - NetworkPolicyリソースとよく似ていますが、NetworkPolicyと異なりL7のポリシーを定義することが可能です
 - CiliumClusterwideNetworkPolicy
   - クラスター全体のポリシーを設定するためのリソースです
-  - CiliumNetworkPolicyと同じ設定が可能ですが、名前空間の指定はありません
+  - CiliumNetworkPolicyと同じ設定が可能ですが、CiliumNetworkPolicyと異なり名前空間の指定はありません
 
-この節ではCiliumNetworkPolicyの動作確認を行います。
+この節では`CiliumNetworkPolicy`の動作確認を行います。
 
-```console
-kubectl run curl-allow -n handson --image=curlimages/curl --labels="app=curl-allow" --command -- sleep infinity
-kubectl run curl-deny  -n handson --image=curlimages/curl --labels="app=curl-deny"  --command -- sleep infinity
+まず動作確認用のアプリケーションをデプロイします。
+
+```sh
+kubectl apply -Rf manifest/app
 ```
 
-現状は`curl-allow`/`curl-deny`の両方から`/`と`/color`にアクセスできることを確認します。
+次にアプリケーションに接続するためのクライアントを2種類デプロイします。
 
-```console
-kubectl exec -n handson curl-allow -- /bin/sh -c "echo -n 'curl-allow: ';curl -s -o /dev/null handson:80 -w '%{http_code}\n'"
-kubectl exec -n handson curl-deny  -- /bin/sh -c "echo -n 'curl-deny:  ';curl -s -o /dev/null handson:80 -w '%{http_code}\n'"
-kubectl exec -n handson curl-allow -- /bin/sh -c "echo -n 'curl-allow:color: ';curl -s -o /dev/null handson:80/color -w '%{http_code}\n'"
-kubectl exec -n handson curl-deny  -- /bin/sh -c "echo -n 'curl-deny:color:  ';curl -s -o /dev/null handson:80/color -w '%{http_code}\n'"
+```sh
+kubectl run curl-allow -n handson-cilium --image=curlimages/curl --labels="app=curl-allow" --command -- sleep infinity
+kubectl run curl-deny  -n handson-cilium --image=curlimages/curl --labels="app=curl-deny"  --command -- sleep infinity
+```
+
+現状は`curl-allow`/`curl-deny`の両方から`/`と`/color`にアクセスするとすべてHTTPステータスコードが200となっていることを確認します。
+
+```sh
+kubectl exec -n handson-cilium curl-allow -- /bin/sh -c "echo -n 'curl-allow: ';curl -s -o /dev/null handson:80 -w '%{http_code}\n'"
+kubectl exec -n handson-cilium curl-deny  -- /bin/sh -c "echo -n 'curl-deny:  ';curl -s -o /dev/null handson:80 -w '%{http_code}\n'"
+kubectl exec -n handson-cilium curl-allow -- /bin/sh -c "echo -n 'curl-allow:color: ';curl -s -o /dev/null handson:80/color -w '%{http_code}\n'"
+kubectl exec -n handson-cilium curl-deny  -- /bin/sh -c "echo -n 'curl-deny:color:  ';curl -s -o /dev/null handson:80/color -w '%{http_code}\n'"
 ```
 
 動作確認として下記のような設定の`CiliumNetworkPolicy`をデプロイしてみます。
 - `/`へは`curl-allow`からのみアクセス可能
 - `/color`へは`curl-allow`と`curl-deny`の両方からアクセスが可能
 
-```console
+```sh
 kubectl apply -f manifest/cnp_ch4d-1.yaml
 ```
 
 実際にアクセスし確認すると、想定通りの動作になっていることが分かります。
 
-```console
+```sh
 kubectl exec -n handson curl-allow -- /bin/sh -c "echo -n 'curl-allow: ';curl -s -o /dev/null handson:80 -w '%{http_code}\n'"
 kubectl exec -n handson curl-deny  -- /bin/sh -c "echo -n 'curl-deny:  ';curl -s -o /dev/null handson:80 -w '%{http_code}\n'"
 kubectl exec -n handson curl-allow -- /bin/sh -c "echo -n 'curl-allow:color: ';curl -s -o /dev/null handson:80/color -w '%{http_code}\n'"
 kubectl exec -n handson curl-deny  -- /bin/sh -c "echo -n 'curl-deny:color:  ';curl -s -o /dev/null handson:80/color -w '%{http_code}\n'"
 ```
 
-次の節に行く前に、作成したCiliumNetworkPolicyを削除しておきます。
+下記のように、`/`にアクセスしたcurl-denyのみHTTPステータスコード403が返ってくることを確認します。
+
+```console
+curl-allow: 200
+curl-deny:  403
+curl-allow:color: 200
+curl-deny:color:  200
+```
+
+次節へ行く前に、作成したCiliumNetworkPolicyを削除しておきます。
 
 ```sh
-kubectl -n handson delete cnp ch4d-1 
+kubectl delete -f manifest/cnp_ch4d-1.yaml
 ```
 
 ## Ingress
 
 [Kubernetes Ingress Support](https://docs.cilium.io/en/stable/network/servicemesh/ingress/)に記載があるように、CiliumはIngressのサポートをしています。
-そのため、Ciliumの機能でトラフィックのルーティングが可能です。
+第1章でNginx Controllerをデプロイしましたが、Nginx Controllerを使わずともCilium単体でIngressリソースを利用できます。
 この節では、IngressClassとしてCiliumを利用したトラフィックルーティングを行います。
 
-まずingressControllerを有効にしたCiliumをアプライします。
+まずingressControllerを有効にします。
 
 ```bash
 helmfile apply -f helmfile
@@ -113,7 +141,7 @@ Gateway APIの詳細は[Kubernetes Gateway API](https://gateway-api.sigs.k8s.io/
 
 まず、Gateway APIのCRDをデプロイします。
 
-```console
+```sh
 kubectl apply -f https://raw.githubusercontent.com/kubernetes-sigs/gateway-api/v0.7.0/config/crd/standard/gateway.networking.k8s.io_gatewayclasses.yaml
 kubectl apply -f https://raw.githubusercontent.com/kubernetes-sigs/gateway-api/v0.7.0/config/crd/standard/gateway.networking.k8s.io_gateways.yaml
 kubectl apply -f https://raw.githubusercontent.com/kubernetes-sigs/gateway-api/v0.7.0/config/crd/standard/gateway.networking.k8s.io_httproutes.yaml
@@ -125,7 +153,7 @@ kubectl apply -f https://raw.githubusercontent.com/kubernetes-sigs/gateway-api/v
 
 - TODO: Image
 
-```console
+```sh
 kubectl apply -n handson -f manifestgatewayt_ch4d-2.yaml
 ```
 
