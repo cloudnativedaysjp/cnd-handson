@@ -11,13 +11,13 @@
 まず、Kubernetesクラスターの構築に必要な下記ツールをインストールします。
 
 - [kind](https://kind.sigs.k8s.io/)
-  - Dockerを使用してローカル環境にKubernetesクラスターを構築するためのツールです
 - [kubectl](https://kubernetes.io/ja/docs/reference/kubectl/)
-  - Kubernetes APIを使用してKubernetesクラスターのコントロールプレーンと通信をするためのコマンドラインツールです
 - [Cilium CLI](https://github.com/cilium/cilium-cli)
-  - Ciliumが動作しているKubernetesクラスターの管理やトラブルシュート等を行うためのコマンドラインツールです
 
-`install-tools.sh`を実行すると上記のツールがインストールされます。
+kindはDockerを使用してローカル環境にKubernetesクラスターを構築するためのツールになります。
+そして、kubectlはKubernetes APIを使用してKubernetesクラスターのコントロールプレーンと通信をするためのコマンドラインツールです。
+Cilium CLIはCiliumが動作しているKubernetesクラスターの管理やトラブルシュート等を行うためのコマンドラインツールになります。
+これらのツールは`install-tools.sh`を実行することでインストールされます。
 
 ```bash
 ./install-tools.sh
@@ -26,16 +26,25 @@
 ## Kubernetesクラスターの作成
 
 Kubernetesクラスターを作成する方法はいくつかありますが、今回のハンズオンでは、kindを利用してKubernetesクラスターを作成します。
+構成としてはControl Plane 1台とWorker Node 2台の構成で作成します。
+また、CNIとしてCiliumをデプロイします。
+
+![](image/ch1-1.png)
+
+
 
 > **Warning**  
 > [Known Issue#Pod errors due to "too many open files"](https://kind.sigs.k8s.io/docs/user/known-issues/#pod-errors-due-to-too-many-open-files)に記載があるように、kindではinotifyリソースが不足しているとエラーが発生します。
 > ハンズオン環境ではinotifyリソースが不足しているため、下記のような設定変更を行う必要があります。
-> ```bash
-> sudo sysctl fs.inotify.max_user_watches=524288
-> sudo sysctl fs.inotify.max_user_instances=512
->
-> # To make the changes persistent
-> cat <<EOF >> /etc/sysctl.conf
+> ```console
+> $ # 設定変更
+> $ sudo sysctl fs.inotify.max_user_watches=524288
+> fs.inotify.max_user_watches = 524288
+> $ sudo sysctl fs.inotify.max_user_instances=512
+> $ fs.inotify.max_user_instances = 512
+> $
+> $ # 設定の永続化
+> $ cat <<EOF >> /etc/sysctl.conf
 > fs.inotify.max_user_watches = 524288
 > fs.inotify.max_user_instances = 512
 > ```

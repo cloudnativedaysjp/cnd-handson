@@ -39,7 +39,7 @@ deployment.apps/cilium-operator   2/2     2            2           11m
 - Service Mesh
 
 > **Info**  
-> Observabilityも主要な機能の1つですが、こちらについては[Chapter5d Hubble](./../chapter05d_hubble/)にて説明します。
+> 他の主要な機能としてObservabilityがありますが、こちらについては[Chapter5d Hubble](./../chapter05d_hubble/)にて説明します。
 
 ## Network Policy
 
@@ -69,6 +69,11 @@ kubectl apply -Rf manifest/app
 kubectl run curl-allow -n handson-cilium --image=curlimages/curl --labels="app=curl-allow" --command -- sleep infinity
 kubectl run curl-deny  -n handson-cilium --image=curlimages/curl --labels="app=curl-deny"  --command -- sleep infinity
 ```
+
+下記図のような構成になります。
+
+![](image/ch4-1.png)
+
 
 現状は`curl-allow`/`curl-deny`の両方から`/`と`/color`にアクセスするとすべてHTTPステータスコードが200となっていることを確認します。
 
@@ -151,7 +156,7 @@ kubectl apply -f https://raw.githubusercontent.com/kubernetes-sigs/gateway-api/v
 
 今回は下記のようにトラフィックを50:50に分割します。
 
-- TODO: Image
+![](image/ch4-2.png)
 
 ```sh
 kubectl apply -n handson -f manifestgatewayt_ch4d-2.yaml
@@ -199,6 +204,9 @@ kubectl apply -f https://raw.githubusercontent.com/cilium/cilium/HEAD/examples/k
 ```bash
 kubectl apply -f https://raw.githubusercontent.com/cilium/cilium/HEAD/examples/kubernetes/servicemesh/envoy/helloworld-service-v1-v2.yaml
 ```
+
+![](image/ch4-3.png)
+
 
 下記コマンドを実行すると、`helloworld-v1`に90%、`helloworld-v2`に10%のトラフィックが流れることが確認できます。
 
