@@ -22,6 +22,7 @@ releases:
       - values/metallb.yaml
   - name: ingress-nginx
     namespace: ingress-nginx
+    createNamespace: true
     chart: ingress-nginx/ingress-nginx
     version: 4.8.0
     values:
