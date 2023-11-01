@@ -17,7 +17,7 @@ spec:
     spec:
       containers:
       - name: handson
-        image: argoproj/rollouts-demo:green
+        image: argoproj/rollouts-demo:blue
         imagePullPolicy: Always
         ports:
         - name: http
@@ -30,3 +30,12 @@ spec:
   strategy:
     canary:
       canaryService: handson-preview
+      steps:
+      - setWeight: 20
+      - pause: {duration: 10}
+      - setWeight: 40
+      - pause: {duration: 10}
+      - setWeight: 60
+      - pause: {duration: 10}
+      - setWeight: 80
+      - pause: {duration: 10}
