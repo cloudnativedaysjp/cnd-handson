@@ -11,6 +11,8 @@ operator:
 endpointStatus:
   enabled: true
   status: policy
+gatewayAPI:
+  enabled: true
 ingressController:
   enabled: true
   # default is ingress-nginx

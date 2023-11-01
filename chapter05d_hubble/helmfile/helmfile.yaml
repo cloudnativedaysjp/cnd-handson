@@ -13,6 +13,7 @@ releases:
       - values/cilium.yaml
   - name: kube-prometheus-stack
     namespace: prometheus
+    createNamespace: true
     chart: prometheus-community/kube-prometheus-stack
     version: 50.3.1
     values:

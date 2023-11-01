@@ -15,7 +15,7 @@
 - [Cilium CLI](https://github.com/cilium/cilium-cli)
 
 kindはDockerを使用してローカル環境にKubernetesクラスターを構築するためのツールになります。
-そして、kubectlはKubernetes APIを使用してKubernetesクラスターのコントロールプレーンと通信をするためのコマンドラインツールです。
+また、kubectlはKubernetes APIを使用してKubernetesクラスターのコントロールプレーンと通信をするためのコマンドラインツールです。
 Cilium CLIはCiliumが動作しているKubernetesクラスターの管理やトラブルシュート等を行うためのコマンドラインツールになります。
 これらのツールは`install-tools.sh`を実行することでインストールされます。
 
@@ -28,20 +28,19 @@ Cilium CLIはCiliumが動作しているKubernetesクラスターの管理やト
 Kubernetesクラスターを作成する方法はいくつかありますが、今回のハンズオンでは、kindを利用してKubernetesクラスターを作成します。
 構成としてはControl Plane 1台とWorker Node 2台の構成で作成します。
 また、CNIとしてCiliumをデプロイします。
+Ciliumの詳細は[Chapter4d Cilium](./../chapter04d_cilium/)にて説明します。
 
 ![](image/ch1-1.png)
 
-
-
 > **Warning**  
-> [Known Issue#Pod errors due to "too many open files"](https://kind.sigs.k8s.io/docs/user/known-issues/#pod-errors-due-to-too-many-open-files)に記載があるように、kindではinotifyリソースが不足しているとエラーが発生します。
+> [Known Issue#Pod errors due to "too many open files"](https://kind.sigs.k8s.io/docs/user/known-issues/#pod-errors-due-to-too-many-open-files)に記載があるように、kindではホストのinotifyリソースが不足しているとエラーが発生します。
 > ハンズオン環境ではinotifyリソースが不足しているため、下記のような設定変更を行う必要があります。
 > ```console
 > $ # 設定変更
 > $ sudo sysctl fs.inotify.max_user_watches=524288
 > fs.inotify.max_user_watches = 524288
 > $ sudo sysctl fs.inotify.max_user_instances=512
-> $ fs.inotify.max_user_instances = 512
+> fs.inotify.max_user_instances = 512
 > $
 > $ # 設定の永続化
 > $ cat <<EOF >> /etc/sysctl.conf
@@ -60,7 +59,7 @@ Kubernetesクラスターを作成する方法はいくつかありますが、�
 - Ciliumをkube-proxyの代替として利用するため、kube-proxyの無効化
 
 
-kind-configを使用してKubernetesクラスターを作成します。
+configオプションで`kind-config.yaml`を指定してKubernetesクラスターを作成します。
 
 ```console
 $ kind create cluster --config=kind-config.yaml
@@ -108,8 +107,9 @@ Metallbに関しては、追加で`IPAddressPool`と`L2Advertisement`をデプ�
 kubectl apply -f manifest/metallb.yaml
 ```
 
-> **Info**
+> **Info**  
 > manifest/metallb.yamlでデプロイしたIPAddressPoolリソースの`spec.addresses`に設定する値は、docker kindネットワークのアドレス帯から選択する必要があります。
+> 今回は`manifest/metallb.yaml`既に設定済みのため意識する必要はありせんが、別環境でMetallbを設定するときには注意してください。
 > 詳細は[Loadbalancer](https://kind.sigs.k8s.io/docs/user/loadbalancer/)を参照してください。
 
 ## Kubernetesクラスターへの接続確認
@@ -124,12 +124,10 @@ CoreDNS is running at https://127.0.0.1:44707/api/v1/namespaces/kube-system/serv
 To further debug and diagnose cluster problems, use 'kubectl cluster-info dump'.
 ```
 
-次に、Podを作成しアクセスできることを確認します。
-
-下記のコマンドで、NginxのPodを起動します。
+次に、動作確認用のNginxのPodを作成し、ポートフォワードします。
 
 ```console
-$ kubectl run --restart=Never nginx --image=nginx:alpine
+$ kubectl run --restart=Never nginx --image=nginx:alpine --wait
 pod/nginx created
 $ kubectl port-forward nginx 8081:80
 Forwarding from 127.0.0.1:8081 -> 80
