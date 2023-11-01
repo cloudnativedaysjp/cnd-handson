@@ -1,19 +1,19 @@
 apiVersion: networking.k8s.io/v1
 kind: Ingress
 metadata:
-  name: app-ingress-by-nginx
+  name: app-preview-ingress-by-nginx
   annotations:
     nginx.ingress.kubernetes.io/ssl-redirect: "false"
 spec:
   ingressClassName: nginx
   rules:
-  - host: app.rollout.com
+  - host: app-preview.rollout.com
     http:
       paths:
       - path: /
         pathType: Prefix
         backend:
           service:
-            name: handson
+            name: handson-preview
             port:
               name: http

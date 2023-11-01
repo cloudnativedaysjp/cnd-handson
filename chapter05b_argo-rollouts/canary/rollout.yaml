@@ -28,6 +28,5 @@ spec:
             memory: 32Mi
             cpu: 5m
   strategy:
-    blueGreen:
-      activeService: handson
-      previewService: handson-preview
+    canary:
+      canaryService: handson-preview
