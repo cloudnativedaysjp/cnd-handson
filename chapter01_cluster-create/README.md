@@ -93,6 +93,15 @@ Not sure what to do next? 😅  Check out https://kind.sigs.k8s.io/docs/user/qui
 - [Metallb](https://metallb.universe.tf/)
 - [Nginx Controller](https://docs.nginx.com/nginx-ingress-controller/)
 
+デプロイにはHelmおよびhelmfileを利用します。
+これらのツールは `install-helm.sh` を実行することでインストールされます。
+
+```bash
+./install-helm.sh
+```
+
+`install-helm.sh` の実行が完了したら、以下のコマンドで上記コンポーネントをデプロイします。
+
 ```sh
 helmfile apply -f helmfile
 ```
