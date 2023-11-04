@@ -15,25 +15,85 @@ Prometheusターゲット設定：Prometheus固有の言語を学ぶ必要なく
 
 ## ハンズオン
 
-### ServiceMonitorの設定
+ここでは、repricaが3つでport`8080`で公開されているアプリケーションを参考に説明していきます。
 
-メトリクスを収集するために、Prometheus Operator は ServiceMonitor オブジェクトを使用して、監視対象のサービスを発見します。
-ServiceMonitor は、収集するメトリクスのエンドポイント情報を指定します。
+```yaml
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: example-app
+spec:
+  replicas: 3
+  selector:
+    matchLabels:
+      app: example-app
+  template:
+    metadata:
+      labels:
+        app: example-app
+    spec:
+      containers:
+      - name: example-app
+        image: fabxc/instrumented_app
+        ports:
+        - name: web
+          containerPort: 8080
+---
+kind: Service
+apiVersion: v1
+metadata:
+  name: example-app
+  labels:
+    app: example-app
+spec:
+  selector:
+    app: example-app
+  ports:
+  - name: web
+    port: 8080
+```
+
+### メトリクスの収集
+
+メトリクスを収集するために、Prometheus Operator は `ServiceMonitor`や`PodMonitor`を使用して、監視対象のサービスを指定します。
 
 これにより、CPUやメモリ使用率、HTTPリクエスト数、レイテンシーなどのメトリクスを追跡できます。
+
+#### ServiceMonitorの設定
+
+`ServiceMonitor`は、サービスのエンドポイントからメトリクスを収集することができます。
 
 ```yaml
 apiVersion: monitoring.coreos.com/v1
 kind: ServiceMonitor
 metadata:
-  name: example-service
+  name: example-app
   labels:
-    release: [RELEASE_NAME]
+    team: frontend
 spec:
   selector:
     matchLabels:
       app: example-app
   endpoints:
+  - port: web
+```
+
+#### PodMonitorの設定
+
+`PodMonitor`は、個々のポッドから直接メトリクスを収集することができます。
+
+```yaml
+apiVersion: monitoring.coreos.com/v1
+kind: PodMonitor
+metadata:
+  name: example-app
+  labels:
+    team: frontend
+spec:
+  selector:
+    matchLabels:
+      app: example-app
+  podMetricsEndpoints:
   - port: web
 ```
 
