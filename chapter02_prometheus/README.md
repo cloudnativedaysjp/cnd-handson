@@ -97,7 +97,9 @@ spec:
   - port: web
 ```
 
-### Alertmanagerの設定
+**TODO Service Monitor設定後にサンプル画像を載せる**
+
+### Alerting機能
 
 Prometheus Operator では、PrometheusRule オブジェクトを使用してアラートルールを設定します。
 
