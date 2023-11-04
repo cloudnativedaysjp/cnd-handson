@@ -8,13 +8,16 @@
 
 ## 準備
 
-この節では、Kubernetesクラスターの構築に必要な下記のツールをインストールします。
+まず、Kubernetesクラスターの構築に必要な下記ツールをインストールします。
 
-- [kind](https://kind.sigs.k8s.io/docs/user/quick-start/#installation)
-- [kubectl](https://kubernetes.io/ja/docs/tasks/tools/install-kubectl/#install-kubectl-on-linux)
-- [Cilium CLI](https://docs.cilium.io/en/stable/gettingstarted/k8s-install-default/#cilium-quick-installation)
+- [kind](https://kind.sigs.k8s.io/)
+- [kubectl](https://kubernetes.io/ja/docs/reference/kubectl/)
+- [Cilium CLI](https://github.com/cilium/cilium-cli)
 
-`install-tools.sh`を実行すると上記のツールがインストールされます。
+kindはDockerを使用してローカル環境にKubernetesクラスターを構築するためのツールになります。
+また、kubectlはKubernetes APIを使用してKubernetesクラスターのコントロールプレーンと通信をするためのコマンドラインツールです。
+Cilium CLIはCiliumが動作しているKubernetesクラスターの管理やトラブルシュート等を行うためのコマンドラインツールになります。
+これらのツールは`install-tools.sh`を実行することでインストールされます。
 
 ```bash
 ./install-tools.sh
@@ -22,22 +25,31 @@
 
 ## Kubernetesクラスターの作成
 
-今回のハンズオンではkindを利用し、Kubernetesクラスターを作成します。
+Kubernetesクラスターを作成する方法はいくつかありますが、今回のハンズオンでは、kindを利用してKubernetesクラスターを作成します。
+構成としてはControl Plane 1台とWorker Node 2台の構成で作成します。
+また、CNIとしてCiliumをデプロイします。
+Ciliumの詳細は[Chapter4d Cilium](./../chapter04d_cilium/)にて説明します。
+
+![](image/ch1-1.png)
 
 > **Warning**  
-> [Known Issue#Pod errors due to "too many open files"](https://kind.sigs.k8s.io/docs/user/known-issues/#pod-errors-due-to-too-many-open-files)に記載があるように、kindではinotifyリソースが不足しているとエラーが発生します。
-> 今回のハンズオン環境ではinotifyリソースが不足しているため、下記のような設定変更を行う必要があります。
-> ```bash
-> sudo sysctl fs.inotify.max_user_watches=524288
-> sudo sysctl fs.inotify.max_user_instances=512
->
-> # To make the changes persistent
-> cat <<EOF >> /etc/sysctl.conf
+> [Known Issue#Pod errors due to "too many open files"](https://kind.sigs.k8s.io/docs/user/known-issues/#pod-errors-due-to-too-many-open-files)に記載があるように、kindではホストのinotifyリソースが不足しているとエラーが発生します。
+> ハンズオン環境ではinotifyリソースが不足しているため、下記のような設定変更を行う必要があります。
+> ```console
+> $ # 設定変更
+> $ sudo sysctl fs.inotify.max_user_watches=524288
+> fs.inotify.max_user_watches = 524288
+> $ sudo sysctl fs.inotify.max_user_instances=512
+> fs.inotify.max_user_instances = 512
+> $
+> $ # 設定の永続化
+> $ cat <<EOF >> /etc/sysctl.conf
 > fs.inotify.max_user_watches = 524288
 > fs.inotify.max_user_instances = 512
 > ```
 
-kindは下記の設定でKubernetesクラスターの構築を行います。
+構築するKubernetesクラスターの設定は`kind-config.yaml`で行います。
+今回は下記のような設定でKubernetesクラスターを構築します。
 - ホスト上のポートを下記のようにkind上のControl Planeのポートにマッピング
   -   80 -> 30080
   -  443 -> 30443
@@ -47,7 +59,7 @@ kindは下記の設定でKubernetesクラスターの構築を行います。
 - Ciliumをkube-proxyの代替として利用するため、kube-proxyの無効化
 
 
-下記のコマンドでKubernetesクラスターを作成します。
+configオプションで`kind-config.yaml`を指定してKubernetesクラスターを作成します。
 
 ```console
 $ kind create cluster --config=kind-config.yaml
@@ -66,14 +78,13 @@ kubectl cluster-info --context kind-kind
 Not sure what to do next? 😅  Check out https://kind.sigs.k8s.io/docs/user/quick-start/
 ```
 
-
-> **Info**
-> kubectlコマンドの実行時にはKubernetesクラスターに接続するための認証情報などが必要になります。
-> kindでクラスターを作成した際には、接続に必要な情報は`~/.kube/config`に格納されます。
-> このファイルに格納される情報はkindコマンドを利用しても取得することが可能です
+> **Info**  
+> kubectlコマンドの実行時には、Kubernetesクラスターに接続するための認証情報などが必要になります。
+> それらの情報は、kindでクラスターを作成した際にデフォルトで`~/.kube/config`に格納されます。
+> このファイルに格納される情報は、kindコマンドを利用しても取得することが可能です
 >
-> ```console
-> $ kind get kubeconfig
+> ```sh
+> kind get kubeconfig
 > ```
 
 最後に、下記のコンポーネントをデプロイします。
@@ -82,22 +93,32 @@ Not sure what to do next? 😅  Check out https://kind.sigs.k8s.io/docs/user/qui
 - [Metallb](https://metallb.universe.tf/)
 - [Nginx Controller](https://docs.nginx.com/nginx-ingress-controller/)
 
-```console
-$ helmfile apply -f helmfile
+デプロイにはHelmおよびhelmfileを利用します。
+これらのツールは `install-helm.sh` を実行することでインストールされます。
+
+```bash
+./install-helm.sh
+```
+
+`install-helm.sh` の実行が完了したら、以下のコマンドで上記コンポーネントをデプロイします。
+
+```sh
+helmfile apply -f helmfile
 ```
 
 > **Info**  
 > Kubernetesのイングレスコントローラーとして、Nginx Controllerをインストールしていますが、Cilium自体もKubernetes Ingressリソースをサポートしています。
-> こちらに関しては、[Chapter5d Cilium ServiceMesh](./../chapter05d_cilium-servicemesh/)にて説明します。
+> こちらに関しては、[Chapter4d Cilium](./../chapter04d_cilium/)にて説明します。
 
-Metallbに関しては追加で`IPAddressPool`と`L2Advertisement`をデプロイします。
+Metallbに関しては、追加で`IPAddressPool`と`L2Advertisement`をデプロイする必要があります。
 
-```console
-kubectl apply -f metallb.yaml
+```sh
+kubectl apply -f manifest/metallb.yaml
 ```
 
-> **Info**
-> IPAddressPoolのspec.addressesに設定する値はdocker kindネットワークのアドレス帯から選択する必要があります。
+> **Info**  
+> manifest/metallb.yamlでデプロイしたIPAddressPoolリソースの`spec.addresses`に設定する値は、docker kindネットワークのアドレス帯から選択する必要があります。
+> 今回は`manifest/metallb.yaml`既に設定済みのため意識する必要はありせんが、別環境でMetallbを設定するときには注意してください。
 > 詳細は[Loadbalancer](https://kind.sigs.k8s.io/docs/user/loadbalancer/)を参照してください。
 
 ## Kubernetesクラスターへの接続確認
@@ -112,12 +133,10 @@ CoreDNS is running at https://127.0.0.1:44707/api/v1/namespaces/kube-system/serv
 To further debug and diagnose cluster problems, use 'kubectl cluster-info dump'.
 ```
 
-次に、Podを作成しアクセスできることを確認します。
-
-下記のコマンドで、NginxのPodを起動します。
+次に、動作確認用のNginxのPodを作成し、ポートフォワードします。
 
 ```console
-$ kubectl run --restart=Never nginx --image=nginx:alpine
+$ kubectl run --restart=Never nginx --image=nginx:alpine --wait
 pod/nginx created
 $ kubectl port-forward nginx 8081:80
 Forwarding from 127.0.0.1:8081 -> 80
@@ -154,8 +173,8 @@ Commercial support is available at
 ```
 
 > **Info**  
-> [End-To-End Connectivity Testing](https://docs.cilium.io/en/stable/contributing/testing/e2e/#end-to-end-connectivity-testing)に記載があるように、Cilium CLIを利用することでEnd-To-Endのテストも行うことができます。
-> ```bash
+> [End-To-End Connectivity Testing](https://docs.cilium.io/en/stable/contributing/testing/e2e/#end-to-end-connectivity-testing)に記載があるように、Cilium CLIを利用することでEnd-To-Endのテストを行うこともできます。
+> ```sh
 > cilium connectivity test
 > ```
 

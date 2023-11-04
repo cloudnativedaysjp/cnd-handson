@@ -4,10 +4,15 @@ k8sServiceHost: kind-control-plane
 k8sServicePort: 6443
 # ensure pods roll when configmap updates
 rollOutCiliumPods: true
+operator:
+  # ensure pods roll when configmap updates
+  rollOutPods: true
 # see: https://docs.cilium.io/en/latest/observability/visibility/#layer-7-protocol-visibility
 endpointStatus:
   enabled: true
   status: policy
+gatewayAPI:
+  enabled: true
 ingressController:
   enabled: true
   # default is ingress-nginx
