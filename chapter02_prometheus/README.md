@@ -144,6 +144,18 @@ kubectl get secrets -n prometheus kube-prometheus-stack-grafana -o json | jq -r 
 
 ### クリーンアップ方法
 
+Ingressを削除する
+
+```zsh
+$ kubectl delete -f ingress.yaml
+```
+
+kube-prometheus-stackのアンインストール
+
+```zsh
+$ helmfile destroy
+```
+
 ## ユースケース別Prometheus Operatorの使い方
 
 TODO

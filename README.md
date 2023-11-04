@@ -131,9 +131,9 @@ spec:
 
 <details><summary>詳細（sample.example.com を追加する例）</summary>
 
-`153.125.137.49 sample.example.com` を /etc/hosts に追記
+`133.242.235.81 sample.example.com` を /etc/hosts に追記
 
-`153.125.137.49` は VM の IP Address です。
+`133.242.235.81` は VM の IP Address です。
 
 </details>
 
