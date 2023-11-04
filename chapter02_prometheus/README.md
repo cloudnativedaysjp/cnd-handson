@@ -13,6 +13,8 @@ Kubernetesカスタムリソース：Kubernetesのカスタムリソースを使
 
 Prometheusターゲット設定：Prometheus固有の言語を学ぶ必要なく、Kubernetesラベルクエリに基づいて監視ターゲット設定を自動的に生成します。
 
+![image](https://prometheus-operator.dev/img/architecture.png)
+
 ## ハンズオン
 
 ここでは、repricaが3つでport`8080`で公開されているアプリケーションを参考に説明していきます。
@@ -61,7 +63,7 @@ spec:
 
 #### ServiceMonitorの設定
 
-`ServiceMonitor`は、サービスのエンドポイントからメトリクスを収集することができます。
+`ServiceMonitor`オブジェクトは、サービスのエンドポイントからメトリクスを収集することができます。
 
 ```yaml
 apiVersion: monitoring.coreos.com/v1
@@ -80,7 +82,7 @@ spec:
 
 #### PodMonitorの設定
 
-`PodMonitor`は、個々のポッドから直接メトリクスを収集することができます。
+`PodMonitor`オブジェクトは、個々のポッドから直接メトリクスを収集することができます。
 
 ```yaml
 apiVersion: monitoring.coreos.com/v1
@@ -101,7 +103,78 @@ spec:
 
 ### Alerting機能
 
-Prometheus Operator では、PrometheusRule オブジェクトを使用してアラートルールを設定します。
+Prometheus Operatorは`Alertmanager`リソースを導入しており、これによりユーザーはAlertmanagerクラスターを宣言的に記述することができます。
+
+Alertmangerには下記の役割があります。
+
+- Prometheusから受け取ったアラートの重複削除
+- アラートの無視
+- まとめた通知を様々な統合システム（PagerDuty、OpsGenie、メール、チャットなど）にルーティングして送信する
+
+#### Alertmanagerのデプロイ
+
+```yaml
+apiVersion: monitoring.coreos.com/v1
+kind: Alertmanager
+metadata:
+  name: example
+spec:
+  replicas: 3
+```
+
+#### Alertmanagerの設定
+
+デフォルトでAlertmanagerのインスタンスでは、アラートが発生しても通知されない最低限の設定されています。
+
+以下の方法でAlertmanagerの設定をすることができます。
+
+1. Kubernetes Secretに保存されたネイティブのAlertmanager設定ファイルを使用することができます。
+2. `AlertmanagerConfig`オブジェクトの`spec.alertmanagerConfiguration`を使用して、同じネームスペース内にあるAlertmanagerの主要な設定を定義するAlertmanagerConfigオブジェクトを参照できます。
+3. `AlertmanagerConfig`オブジェクトの`spec.alertmanagerConfigSelector`と`spec.alertmanagerConfigNamespaceSelector`を定義することで、どのAlertmanagerConfigsオブジェクトを選択し、主要なAlertmanager設定とマージするかをオペレーターに指示できます。
+
+#### AlertmanagerConfigを使う方法
+
+今回は、`AlertmanagerConfig`を使った方法で説明していきます。
+
+Webhookサービスに通知を送信するAlertmanagerConfigリソースを作成します。
+
+```yaml
+apiVersion: monitoring.coreos.com/v1alpha1
+kind: AlertmanagerConfig
+metadata:
+  name: config-example
+  labels:
+    alertmanagerConfig: example
+spec:
+  route:
+    groupBy: ['job']
+    groupWait: 30s
+    groupInterval: 5m
+    repeatInterval: 12h
+    receiver: 'webhook'
+  receivers:
+  - name: 'webhook'
+    webhookConfigs:
+    - url: 'http://example.com/'
+```
+
+Alaertmanagerの`spec.alertmanagerConfigSelector`にAlertmanagerConfigの`metadata.labels.alertmanagerConfig`を指定します。
+
+```yaml
+apiVersion: monitoring.coreos.com/v1
+kind: Alertmanager
+metadata:
+  name: example
+spec:
+  replicas: 3
+  alertmanagerConfigSelector:
+    matchLabels:
+      alertmanagerConfig: example
+```
+
+### Alerting Rule
+
+Prometheus Operatorでは、`PrometheusRule`オブジェクトを使用してアラートルールを設定します。
 
 アラートルールを定義することで、特定の条件が満たされた場合（例えば、メモリ使用率が閾値を超えた場合）に通知を受け取ることができます。
 
@@ -124,3 +197,7 @@ spec:
       annotations:
         summary: High request latency
 ```
+
+## 参考文献
+
+https://prometheus-operator.dev/
