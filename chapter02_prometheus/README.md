@@ -155,7 +155,7 @@ kube-prometheus-stackでデフォルトで導入されているアラートル�
 現在稼働しているPrometheusの状態確認がおこなえます。
 以下のスクリーンショットでは、scrape_configに設定されたexporterに対するスクレイプが正しくおこなえているかどうか等の情報が表示されています。
 
-![image](./images/alerts.png)
+![image](./images/targets.png)
 
 ### PromQL
 
