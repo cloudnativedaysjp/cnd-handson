@@ -15,13 +15,13 @@ Prometheusターゲット設定：Prometheus固有の言語を学ぶ必要なく
 
 ![image](https://prometheus-operator.dev/img/architecture.png)
 
-### メトリクスの収集
+## メトリクスの収集
 
 メトリクスを収集するために、Prometheus Operator は `ServiceMonitor`や`PodMonitor`を使用して、監視対象のサービスを指定します。
 
 これにより、CPUやメモリ使用率、HTTPリクエスト数、レイテンシーなどのメトリクスを追跡できます。
 
-#### 前提
+## ユースケース1: PODからメトリクスを収集する
 
 ここでは、repricaが3つでport`8080`で公開されているアプリケーションを参考に説明していきます。
 
@@ -99,8 +99,33 @@ spec:
   - port: web
 ```
 
+## ユースケース2: Nginx Ingressからメトリクスを収集する
+
+### メトリクスを外部公開する
+
+Ingress-Nginx Controllerのメトリクスを外部公開するために、以下の三つの設定の変更を適用します。
+
+1. `controller.metrics.enabled=true`
+2. `controller.podAnnotations."prometheus.io/scrape"="true"`
+3. `controller.podAnnotations."prometheus.io/port"="10254"`
+
+values.yamlを以下のように変更します。
+
+```values.yaml
+controller:
+  metrics:
+    enabled: true
+  podAnnotations:
+    prometheus.io/port: "10254"
+    prometheus.io/scrape: "true"
+```
+
+## 参考メトリクス
+
 ![image](https://prometheus.io/assets/grafana_prometheus.png)
 
 ## 参考文献
 
-https://prometheus-operator.dev/
+[Prometheus Operatorの公式ドキュメント](https://prometheus-operator.dev/)
+
+[Nginx Ingressのメトリクス収集](https://github.com/kubernetes/ingress-nginx/blob/main/docs/user-guide/monitoring.md)
