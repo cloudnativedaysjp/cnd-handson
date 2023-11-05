@@ -15,13 +15,13 @@ Prometheusターゲット設定：Prometheus固有の言語を学ぶ必要なく
 
 ![image](https://prometheus-operator.dev/img/architecture.png)
 
-### メトリクスの収集
+## メトリクスの収集
 
 メトリクスを収集するために、Prometheus Operator は `ServiceMonitor`や`PodMonitor`を使用して、監視対象のサービスを指定します。
 
 これにより、CPUやメモリ使用率、HTTPリクエスト数、レイテンシーなどのメトリクスを追跡できます。
 
-#### 前提
+## ユースケース1: PODからメトリクスを収集する
 
 ここでは、repricaが3つでport`8080`で公開されているアプリケーションを参考に説明していきます。
 
@@ -99,8 +99,56 @@ spec:
   - port: web
 ```
 
+### 参考メトリクス
+
 ![image](https://prometheus.io/assets/grafana_prometheus.png)
+
+## ユースケース2: Nginx Ingressからメトリクスを収集する
+
+ここでは、`Ingress-Nginx Controller`のメトリクスをPrometheusとGrafanaによる収集方法を説明します。
+
+- `emptyDir`をPrometheusとGrafanaに使っている場合は、データを失う可能性があるので気をつけてください。
+
+### Nginx Ingressのメトリクスを外部公開する
+
+Ingress-Nginx Controllerのメトリクスを外部公開するために、以下の三つの設定の変更を適用します。
+
+1. `controller.metrics.enabled=true`
+2. `controller.podAnnotations."prometheus.io/scrape"="true"`
+3. `controller.podAnnotations."prometheus.io/port"="10254"`
+
+values.yamlを以下のように変更します。
+
+```yaml
+controller:
+  metrics:
+    enabled: true
+  podAnnotations:
+    prometheus.io/port: "10254"
+    prometheus.io/scrape: "true"
+```
+
+### Prometheusの設定変更
+
+デフォルトでPrometheusでは、同じネームスペースの`ServiceMonitors`や`PodMonitor`のみを検知します。
+
+そのため、Prometheusが実行されていない`ingress-nginx`のネームスペースの`ServiceMonitors`や`PodMonitor`を検知することはできません。
+
+他のネームスペースの`ServiceMonitors`や`PodMonitor`を検知するために、以下の設定を反映します。
+
+```yaml
+prometheus:
+  prometheusSpec:
+    podMonitorSelectorNilUsesHelmValues: false
+    serviceMonitorSelectorNilUsesHelmValues: false
+```
+
+### 参考画像
+
+![image](https://github.com/kubernetes/ingress-nginx/blob/main/docs/images/prometheus-dashboard1.png)
 
 ## 参考文献
 
-https://prometheus-operator.dev/
+[Prometheus Operatorの公式ドキュメント](https://prometheus-operator.dev/)
+
+[Nginx Ingressのメトリクス収集](https://github.com/kubernetes/ingress-nginx/blob/main/docs/user-guide/monitoring.md)
