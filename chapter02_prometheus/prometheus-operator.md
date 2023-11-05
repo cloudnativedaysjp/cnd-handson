@@ -99,9 +99,17 @@ spec:
   - port: web
 ```
 
+### 参考メトリクス
+
+![image](https://prometheus.io/assets/grafana_prometheus.png)
+
 ## ユースケース2: Nginx Ingressからメトリクスを収集する
 
-### メトリクスを外部公開する
+ここでは、`Ingress-Nginx Controller`のメトリクスをPrometheusとGrafanaによる収集方法を説明します。
+
+- `emptyDir`をPrometheusとGrafanaに使っている場合は、データを失う可能性があるので気をつけてください。
+
+### Nginx Ingressのメトリクスを外部公開する
 
 Ingress-Nginx Controllerのメトリクスを外部公開するために、以下の三つの設定の変更を適用します。
 
@@ -111,7 +119,7 @@ Ingress-Nginx Controllerのメトリクスを外部公開するために、以�
 
 values.yamlを以下のように変更します。
 
-```values.yaml
+```yaml
 controller:
   metrics:
     enabled: true
@@ -120,9 +128,24 @@ controller:
     prometheus.io/scrape: "true"
 ```
 
-## 参考メトリクス
+### Prometheusの設定変更
 
-![image](https://prometheus.io/assets/grafana_prometheus.png)
+デフォルトでPrometheusでは、同じネームスペースの`ServiceMonitors`や`PodMonitor`のみを検知します。
+
+そのため、Prometheusが実行されていない`ingress-nginx`のネームスペースの`ServiceMonitors`や`PodMonitor`を検知することはできません。
+
+他のネームスペースの`ServiceMonitors`や`PodMonitor`を検知するために、以下の設定を反映します。
+
+```yaml
+prometheus:
+  prometheusSpec:
+    podMonitorSelectorNilUsesHelmValues: false
+    serviceMonitorSelectorNilUsesHelmValues: false
+```
+
+### 参考画像
+
+![image](https://github.com/kubernetes/ingress-nginx/blob/main/docs/images/prometheus-dashboard1.png)
 
 ## 参考文献
 
