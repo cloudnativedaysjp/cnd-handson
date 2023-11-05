@@ -142,6 +142,38 @@ Grafanaの管理者がvalues.yamlに記載した認証情報でログインで�
 kubectl get secrets -n prometheus kube-prometheus-stack-grafana -o json | jq -r .data[\"admin-password\"] | base64 -d
 ```
 
+## 実践: Prometheus Web UIを触ってみよう
+
+### Alerts
+
+kube-prometheus-stackでデフォルトで導入されているアラートルールを確認することができます。
+
+![image](./images/alerts.png)
+
+### Status
+
+現在稼働しているPrometheusの状態確認がおこなえます。
+以下のスクリーンショットでは、scrape_configに設定されたexporterに対するスクレイプが正しくおこなえているかどうか等の情報が表示されています。
+
+![image](./images/alerts.png)
+
+### PromQL
+
+Prometheus Web UIでは、PromQLを利用してインタラクティブに簡単なモニタリングをおこなうことができます。
+ここではkube-prometheus-stackがデフォルトでインストールするExporterの様子を掴むために、
+実際にPromQLを使ってメトリクスを見てみましょう。
+PromQLの詳細な仕様についてはこちらを御覧ください。
+
+> https://prometheus.io/docs/prometheus/latest/querying/basics/
+
+`prometheus.example.com` にアクセスして、PromQL入力欄に `go_goroutines` と入力してみます。
+
+![image](./images/go_goroutines.png)
+
+これは、Go言語で実装されたExporterでよく公開されている、現在のgoroutineの発行数となるメトリックです。
+これはGaugeとなっているので、単調増加ではなく微妙に増減しているのが確認できます。
+後ほど、いくつかのPromQL実践例を紹介します。
+
 ### クリーンアップ方法
 
 Ingressを削除する
