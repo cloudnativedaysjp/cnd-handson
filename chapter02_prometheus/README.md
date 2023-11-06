@@ -4,11 +4,19 @@
 
 ## Prometheusについて
 
-TODO
+Prometheusはモニタリング/アラートに関する基盤として利用することができるOSSです(元はSoundCloud)。
+2016年にCloud Native Computing Foundation Projectに加わり、現在はGraduatedとなっています。
+
+メトリクス収集についてはプル型アーキテクチャ(PushGatewayという仕組みによってサービスからプッシュも可能)によって実現されています。
 
 ## PromQLについて
 
-TODO
+Prometheusが提供するメトリクスのクエリ言語で、多次元的にラベルがつけられた時系列データに対して様々な計算を適用可能になっています。
+例えば、以下の式では特定の環境で、GET以外のHTTPリクエストメソッドを持つリクエスト数のデータを取得することができます。
+
+```text
+http_requests_total{environment=~"staging|testing|development",method!="GET"}
+```
 
 ## Prometheus Operatorについて
 
@@ -324,5 +332,6 @@ TODO
 
 ## 参考文献
 
+- [Prometheusの公式ドキュメント](https://prometheus.io/docs/introduction/overview/)
 - [Prometheus Operatorの公式ドキュメント](https://prometheus-operator.dev/)
 - [Nginx Ingressのメトリクス収集](https://github.com/kubernetes/ingress-nginx/blob/main/docs/user-guide/monitoring.md)
