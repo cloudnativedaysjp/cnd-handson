@@ -292,11 +292,13 @@ PromQLの詳細な仕様についてはこちらを御覧ください。
 
 ### Nginx Ingressのメトリクスを外部公開する
 
-Ingress-Nginx Controllerのメトリクスを外部公開するために、以下の三つの設定の変更を適用します。
+Ingress NGINX controllerのメトリクスを外部公開するために、以下の3つの設定を反映します。
 
-1. `controller.metrics.enabled=true`
-2. `controller.podAnnotations."prometheus.io/scrape"="true"`
-3. `controller.podAnnotations."prometheus.io/port"="10254"`
+```zsh
+controller.metrics.enabled=true
+controller.metrics.serviceMonitor.enabled=true
+controller.metrics.serviceMonitor.additionalLabels.release="prometheus"
+```
 
 values.yamlを以下のように変更します。
 
@@ -304,9 +306,10 @@ values.yamlを以下のように変更します。
 controller:
   metrics:
     enabled: true
-  podAnnotations:
-    prometheus.io/port: "10254"
-    prometheus.io/scrape: "true"
+    serviceMonitor:
+      additionalLabels:
+        release: prometheus
+      enabled: true
 ```
 
 ### Prometheusの設定変更
