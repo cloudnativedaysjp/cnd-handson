@@ -4,15 +4,118 @@
 
 ## Prometheusについて
 
-TODO
+Prometheusはモニタリング/アラートに関する基盤として利用することができるOSSです(元はSoundCloud)。
+2016年にCloud Native Computing Foundation Projectに加わり、現在はGraduatedとなっています。
+
+メトリクス収集についてはプル型アーキテクチャ(PushGatewayという仕組みによってサービスからプッシュも可能)によって実現されています。
 
 ## PromQLについて
 
-TODO
+Prometheusが提供するメトリクスのクエリ言語で、多次元的にラベルがつけられた時系列データに対して様々な計算を適用可能になっています。
+例えば、以下の式では特定の環境で、GET以外のHTTPリクエストメソッドを持つリクエスト数のデータを取得することができます。
+
+```text
+http_requests_total{environment=~"staging|testing|development",method!="GET"}
+```
 
 ## Prometheus Operatorについて
 
-TODO
+Prometheus Operatorは、Prometheusや関連する監視コンポーネントを管理やKubernetesネイティブなデプロイメントを提供します。
+このプロジェクトの目的は、KubernetesクラスターのPrometheusベースの監視スタックの設定を簡素化し、自動化することにあります。
+
+Prometheus Operatorには以下の特徴があります。
+
+Kubernetesカスタムリソース：Kubernetesのカスタムリソースを使用して、PrometheusやAlertmanager、関連するコンポーネントをデプロイし、管理します。
+
+簡素化されたデプロイメント設定：Prometheusの基本設定であるバージョン、永続性、保持ポリシー、KubernetesリソースのReplicaなどを設定することができます。
+
+Prometheusターゲット設定：Prometheus固有の言語を学ぶ必要なく、Kubernetesラベルクエリに基づいて監視ターゲット設定を自動的に生成します。
+
+![image](https://prometheus-operator.dev/img/architecture.png)
+
+### メトリクスの収集
+
+メトリクスを収集するために、Prometheus Operator は `ServiceMonitor`や`PodMonitor`を使用して、監視対象のサービスを指定します。
+
+これにより、CPUやメモリ使用率、HTTPリクエスト数、レイテンシーなどのメトリクスを追跡できます。
+
+例として、repricaが3つでport`8080`で以下のようなアプリケーションが公開されていることに前提に説明していきます。
+
+```yaml
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: example-app
+spec:
+  replicas: 3
+  selector:
+    matchLabels:
+      app: example-app
+  template:
+    metadata:
+      labels:
+        app: example-app
+    spec:
+      containers:
+        - name: example-app
+          image: fabxc/instrumented_app
+          ports:
+            - name: web
+              containerPort: 8080
+---
+kind: Service
+apiVersion: v1
+metadata:
+  name: example-app
+  labels:
+    app: example-app
+spec:
+  selector:
+    app: example-app
+  ports:
+    - name: web
+      port: 8080
+```
+
+### ServiceMonitorの設定
+
+`ServiceMonitor`オブジェクトは、サービスのエンドポイントからメトリクスを収集することができます。
+
+```yaml
+apiVersion: monitoring.coreos.com/v1
+kind: ServiceMonitor
+metadata:
+  name: example-app
+  labels:
+    team: frontend
+spec:
+  selector:
+    matchLabels:
+      app: example-app
+  endpoints:
+    - port: web
+```
+
+### PodMonitorの設定
+
+`PodMonitor`オブジェクトは、個々のポッドから直接メトリクスを収集することができます。
+
+```yaml
+apiVersion: monitoring.coreos.com/v1
+kind: PodMonitor
+metadata:
+  name: example-app
+  labels:
+    team: frontend
+spec:
+  selector:
+    matchLabels:
+      app: example-app
+  podMetricsEndpoints:
+    - port: web
+```
+
+![image](https://prometheus.io/assets/grafana_prometheus.png)
 
 ## 実践: kube-prometheus-stackのインストール
 
@@ -73,6 +176,13 @@ kube-prometheus-stack-prometheus-node-exporter-dbkqx        1/1     Running   0 
 kube-prometheus-stack-prometheus-node-exporter-jqk58        1/1     Running   0          100s
 kube-prometheus-stack-prometheus-node-exporter-tm89f        1/1     Running   0          100s
 prometheus-kube-prometheus-stack-prometheus-0               2/2     Running   0          92s
+```
+
+kube-prometheus-stack をアンインストールする場合は、以下のコマンドを実行してください。
+
+```zsh
+$ kubectl delete -f ingress.yaml
+$ helmfile destroy
 ```
 
 ### Ingressによるサービスの公開
@@ -174,24 +284,54 @@ PromQLの詳細な仕様についてはこちらを御覧ください。
 これはGaugeとなっているので、単調増加ではなく微妙に増減しているのが確認できます。
 後ほど、いくつかのPromQL実践例を紹介します。
 
-### クリーンアップ方法
+## 実践: Nginx Ingressからメトリクスを収集する
 
-Ingressを削除する
+ここでは、`Ingress-Nginx Controller`のメトリクスをPrometheusとGrafanaによる収集方法を説明します。
 
-```zsh
-$ kubectl delete -f ingress.yaml
+- `emptyDir`をPrometheusとGrafanaに使っている場合は、データを失う可能性があるので気をつけてください。
+
+### Nginx Ingressのメトリクスを外部公開する
+
+Ingress-Nginx Controllerのメトリクスを外部公開するために、以下の三つの設定の変更を適用します。
+
+1. `controller.metrics.enabled=true`
+2. `controller.podAnnotations."prometheus.io/scrape"="true"`
+3. `controller.podAnnotations."prometheus.io/port"="10254"`
+
+values.yamlを以下のように変更します。
+
+```yaml
+controller:
+  metrics:
+    enabled: true
+  podAnnotations:
+    prometheus.io/port: "10254"
+    prometheus.io/scrape: "true"
 ```
 
-kube-prometheus-stackのアンインストール
+### Prometheusの設定変更
 
-```zsh
-$ helmfile destroy
+デフォルトでPrometheusでは、同じネームスペースの`ServiceMonitors`や`PodMonitor`のみを検知します。
+
+そのため、Prometheusが実行されていない`ingress-nginx`のネームスペースの`ServiceMonitors`や`PodMonitor`を検知することはできません。
+
+他のネームスペースの`ServiceMonitors`や`PodMonitor`を検知するために、以下の設定を反映します。
+
+```yaml
+prometheus:
+  prometheusSpec:
+    podMonitorSelectorNilUsesHelmValues: false
+    serviceMonitorSelectorNilUsesHelmValues: false
 ```
 
-## ユースケース別Prometheus Operatorの使い方
-
-TODO
+![image](https://github.com/kubernetes/ingress-nginx/blob/main/docs/images/prometheus-dashboard1.png)
 
 ## PromQLチートシート
 
 TODO
+
+## 参考文献
+
+- [Prometheusの公式ドキュメント](https://prometheus.io/docs/introduction/overview/)
+- [Prometheus Operatorの公式ドキュメント](https://prometheus-operator.dev/)
+- [Nginx Ingressのメトリクス収集](https://github.com/kubernetes/ingress-nginx/blob/main/docs/user-guide/monitoring.md)
