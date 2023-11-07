@@ -1,0 +1,17 @@
+global:
+  imagePullPolicy: IfNotPresent
+  logAsJson: true
+cni:
+  logLevel: info
+  resources:
+    requests:
+      cpu: 200m
+      memory: 256Mi
+    limits:
+      cpu: 200m
+    memory: 256Mi
+  privileged: true
+  ambient:
+    enabled: true
+  excludeNamespaces:
+  - kube-system

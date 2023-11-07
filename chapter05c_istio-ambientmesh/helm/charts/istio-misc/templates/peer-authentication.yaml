@@ -1,0 +1,8 @@
+apiVersion: security.istio.io/v1beta1
+kind: PeerAuthentication
+metadata:
+  name: {{ .Values.peerAuthentication.name }}
+  namespace: {{ .Values.peerAuthentication.namespace | default "istio-system" }}
+spec:
+  mtls:
+    mode: {{ .Values.peerAuthentication.mtlsMode | default "strict" | upper }}
