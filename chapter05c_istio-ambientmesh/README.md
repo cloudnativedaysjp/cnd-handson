@@ -304,3 +304,158 @@ ztunnelが管理するIstio ambient mesh内のL4レベルのトラフィック�
 kubectl delete -f networking/L4-authorization-policy.yaml
 kubectl delete -f app/curl-allow.yaml,app/curl-deny.yaml
 ```
+
+## L7アクセス管理
+waypoint proxyによって管理されるL7レベルのトラフィックに対し、Istio Authorization Policyを作成してアクセス管理を実装します。Istio ambient mesh内において、あるワークロードに対して、特定のワークロードからのL7レベルでのアクセス制御をしたい時がユースケースとして挙げられます。本ケースでは`sample-app`ワークロードにアクセスをするワークロードを1つ用意し、`GET`メソッドのみ許可し、それ以外は拒否をするケースを想定します。
+
+[セットアップ](#セットアップ)が完了していることを前提とします。
+
+### Kialiグラフ設定
+HTTPトラフィックの状態を確認するために、TOP画面左のサイドメニューのGraphをクリックし、下記のとおり設定してください。
+- `Namespace`の`default`にチェック
+
+![image](./imgs/kiali-graph-namespace.png)
+
+- `Traffic`の`Http`のみにチェック
+
+![image](./imgs/kiali-graph-traffic-http.png)
+
+- `Versioned app graph`から`Workload graph`に変更
+
+![image](./imgs/kiali-graph-workload.png)
+
+### waypoint proxyのdeploy
+waypoint proxyを有効にするには[Kubernetes Gateway API](https://github.com/kubernetes-sigs/gateway-api)(本項では説明は省略)の`gateway`リソースが必要になるため、まずはKubernetes Gateway CRDをインストールします。
+```sh
+kubectl apply -f https://github.com/kubernetes-sigs/gateway-api/releases/download/v1.0.0/standard-install.yaml
+```
+
+Kubernetes Gateway APIの`gateway`リソースを作成して、waypoint proxyを有効にします。
+```sh
+kubectl apply -f networking/k8s-gateway.yaml
+```
+
+作成されるリソースは下記の通りです。
+```sh
+kubectl get pod,gateway -l app.kubernetes.io/part-of=sample-app
+
+# 出力結果例
+NAME                                             READY   STATUS    RESTARTS   AGE
+pod/sample-app-istio-waypoint-75c59c6666-75t9t   1/1     Running   0          103s
+
+NAME                                           CLASS            ADDRESS                                               PROGRAMMED   AGE
+gateway.gateway.networking.k8s.io/sample-app   istio-waypoint   sample-app-istio-waypoint.default.svc.cluster.local   True         103s
+```
+
+### 追加アプリケーションdeploy
+`sample-app`ワークロードにアクセスするpodをdeployします。
+```sh
+kubectl apply -f app/curl.yaml
+```
+
+作成されるリソースは下記の通りです。
+```sh
+kubectl get po -l content=layer7-authz
+
+# 出力結果例
+NAME   READY   STATUS    RESTARTS   AGE
+curl   1/1     Running   0          15s
+```
+
+それでは、`curl` podから`sample-app`ワークロードに対してリクエストをします。
+```sh
+while :; do kubectl exec curl -- curl -s -o /dev/null sample-app:8080 -w '%{http_code}\n';sleep 1;done
+```
+
+リクエストは成功していることを確認してください。
+```
+# 出力結果
+200
+200
+200
+.
+.
+.
+```
+
+Kiali dashboardからも確認してみましょう。リクエストを流した状態でブラウザから`http://kiali.example.com`にアクセスをしてください。`curl` podから`sample-app`ワークロードにアクセス出来ていることが確認できます。下記図のようになっていない場合は、ブラウザを数回リロードしてください。
+
+![image](./imgs/kiali-L7-authz-autholizationpolicy-notapplied.png)
+
+ここで`sample-app`ワークロードへのリクエストは一旦停止してください。
+
+### Istio Authorization Policy適用
+それでは、Istio Authorization Policyを適用して、`curl` podから`sample-app`ワークロードへの`GET`のみを許可し、それ以外は拒否します。
+```sh
+kubectl apply -f networking/L7-authorization-policy.yaml
+```
+
+作成されたリソースは下記の通りです。
+```sh
+kubectl get authorizationpolicy -l content=layer7-authz
+
+# 出力結果例
+NAME           AGE
+layer7-authz   2m24s
+```
+
+`sample-app`ワークロードに対して`curl` podからまずは`GET`リクエストをします。
+```sh
+while :; do kubectl exec curl -- curl -s -o /dev/null sample-app:8080 -w '%{http_code}\n';sleep 1;done
+```
+
+先ほどと同じくリクエストは成功していることを確認してください。
+```
+# 出力結果
+200
+200
+200
+.
+.
+.
+```
+
+`sample-app`ワークロードへのリクエストは一旦停止してください。
+
+それでは、`POST`メソッドでリクエストをしてみましょう。`sample-app`アプリケーションに`POST`メソッドは実装されていないので、空データを使用します。
+```sh
+while :; do kubectl exec curl -- curl -X POST -s -o /dev/null sample-app:8080 -d '{}' -w '%{http_code}\n';sleep 1;done
+```
+
+しばらくすると、`curl` podからのリクエストは403にて拒否されるようになります。
+```
+# 出力結果例
+200
+200
+403
+403
+403
+.
+.
+.
+```
+
+改めてKiali dashboardから確認してみましょう。ブラウザから`http://kiali.example.com`にアクセスをしてください。しばらくすると、`curl` podからの`POST`リクエストは拒否されていることが確認できます。
+
+![image](./imgs/kiali-L7-authz-autholizationpolicy-applied.png)
+
+waypoint proxyが管理するIstio ambient mesh内のL7レベルのトラフィックにおいて、Istio Authorization Policyを使用してアクセス管理を実装しました。Istioの機能を使うことで、アプリケーション側にロジックを追加することなくL7レベルのアクセス管理を実現することができます。
+
+`sample-app`ワークロードへのリクエストは忘れずに停止してください。
+
+### クリーンアップ
+```sh
+kubectl delete -f networking/L7-authorization-policy.yaml,networking/k8s-gateway.yaml
+kubectl delete -f app/curl.yaml
+```
+
+## クリーンアップ
+Istio ambient, Kialiの削除
+```sh
+helmfile delete -f helm/helmfile.d/
+```
+
+Kubernetes clusterの削除
+```sh
+kind delete cluster --name istio-ambient
+```

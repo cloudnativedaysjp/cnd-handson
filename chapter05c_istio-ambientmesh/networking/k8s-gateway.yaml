@@ -1,0 +1,14 @@
+apiVersion: gateway.networking.k8s.io/v1beta1
+kind: Gateway
+metadata:
+  annotations:
+    istio.io/for-service-account: sample-app-blue
+  labels:
+    app.kubernetes.io/part-of: sample-app
+  name: sample-app
+spec:
+  gatewayClassName: istio-waypoint
+  listeners:
+  - name: mesh
+    port: 15008
+    protocol: HBONE
