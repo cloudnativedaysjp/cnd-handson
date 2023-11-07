@@ -1,0 +1,35 @@
+{{- range .Values.podmonitors }}
+apiVersion: monitoring.coreos.com/v1
+kind: PodMonitor
+metadata:
+  name: {{ .name }}
+  namespace: {{ .namespace | default "prometheus" }}
+  labels:
+{{ toYaml .labels | indent 4 }}
+spec:
+  jobLabel: {{ .jobLabel }}
+{{- if or (.selector.matchExpressions) (.selector.matchLabels) }}
+  selector:
+{{- if .selector.matchExpressions }}
+    matchExpressions:
+{{ toYaml .selector.matchExpressions | indent 6 }}
+{{- else }}
+    matchLabels:
+{{ toYaml .selector.matchLabels | indent 6 }}
+{{- end }}
+{{- else }}
+  selector: {}
+{{- end }}
+  namespaceSelector:
+{{- with .namespaceSelector }}
+{{- if kindIs "slice" . }}
+    matchNames:
+{{ toYaml . | indent 6}}
+{{- else }}
+{{ toYaml . | indent 4 }}
+{{- end }}
+{{- end }}
+  podMetricsEndpoints:
+{{ toYaml .podMetricsEndpoints | indent 4 }}
+---
+{{- end }}

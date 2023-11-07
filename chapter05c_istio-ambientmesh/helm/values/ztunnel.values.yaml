@@ -1,0 +1,14 @@
+labels:
+  app.kubernetes.io/managed-by: Helm
+  app.kubernetes.io/part-of: istio-ambient
+podLabels:
+  app.kubernetes.io/managed-by: Helm
+  app.kubernetes.io/part-of: istio-ambient
+resources:
+  requests:
+    cpu: 100m
+    memory: 84Mi
+  limits:
+    cpu: 100m
+    memory: 84Mi
+imagePullPolicy: IfNotPresent
