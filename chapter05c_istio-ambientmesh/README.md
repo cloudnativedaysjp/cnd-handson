@@ -126,3 +126,181 @@ kiali-by-nginx   nginx   kiali.example.com   10.96.88.164   80      2m5s
 ブラウザから`http://kiali.example.com`にアクセスをしてKialiダッシュボードが表示されることを確認してください。
 
 ![image](./imgs/kiali-overview.png)
+
+## L4アクセス管理
+ztunnelによって管理されるL4レベルのトラフィックに対し、Istio Authorization Policyを作成してアクセス管理を実装します。Istio ambient mesh内において、あるワークロードに対して、特定のワークロードからのL4レベルでのアクセス制御をしたい時がユースケースとして挙げられます。本ケースでは、`sample-app`ワークロードが待ち構えているport 8080へアクセスするワークロードを2つ用意し、ひとつからは許可を、もうひとつからは拒否をするケースを想定します。
+
+[セットアップ](#セットアップ)が完了していることを前提とします。
+
+### Kialiグラフ設定
+TCPトラフィックの状態を確認するために、TOP画面左のサイドメニューのGraphをクリックし、下記のとおり設定をしてください。
+- `Namespace`の`default`にチェック
+
+![image](./imgs/kiali-graph-namespace.png)
+
+- `Traffic`の`Tcp`のみにチェック
+
+![image](./imgs/kiali-graph-traffic-tcp.png)
+
+- `Versioned app graph`から`Workload graph`に変更
+
+![image](./imgs/kiali-graph-workload.png)
+
+
+### 追加アプリケーションdeploy
+`sample-app`ワークロードにアクセスする追加のワークロードを2つdeployします。
+```sh
+kubectl apply -f app/curl-allow.yaml,app/curl-deny.yaml
+```
+
+作成されるリソースは下記の通りです。
+```sh
+kubectl get po -l content=layer4-authz
+
+# 出力結果例
+NAME         READY   STATUS    RESTARTS   AGE
+curl-allow   1/1     Running   0          46s
+curl-deny    1/1     Running   0          46s
+```
+
+それでは双方のpodから`sample-app` ワークロードに対してリクエストをします。
+```sh
+while :; do
+kubectl exec curl-allow -- /bin/sh -c "echo -n 'curl-allow: ';curl -s -o /dev/null sample-app:8080 -w '%{http_code}\n'";
+kubectl exec curl-deny -- /bin/sh -c "echo -n 'curl-deny:  ';curl -s -o /dev/null sample-app:8080 -w '%{http_code}\n'";
+echo ----------------;sleep 1;
+done
+```
+
+`curl-allow`, `curl-deny` pod双方からのリクエストは成功していることが分かります。
+```
+# 出力結果
+curl-allow: 200
+curl-deny:  200
+----------------
+curl-allow: 200
+curl-deny:  200
+----------------
+curl-allow: 200
+curl-deny:  200
+----------------
+.
+.
+.
+```
+
+Kiali dashboardからも確認してみましょう。リクエストを流した状態でブラウザから`http://kiali.example.com`にアクセスをしてください。`curl-allow`, `curl-deny` podの双方が`sample-app`ワークロードにアクセス出来ていることが確認できます(矢印が紺色なのはTCP通信を表しています)。下記図のようになっていない場合は、ブラウザを数回リロードしてください。
+
+![image](./imgs/kiali-L4-authz-autholizationpolicy-notapplied.png)
+
+ここで`sample-app`ワークロードへのリクエストは一旦停止してください。
+
+### Istio Authorization Policy適用
+それでは、Istio Authorization Policyを作成して、`curl-deny` podから`sample-app` serviceへのport 8080宛のリクエストを拒否する設定を追加します。
+```sh
+kubectl apply -f networking/L4-authorization-policy.yaml
+```
+
+作成されるリソースは下記の通りです。
+```sh
+kubectl get authorizationpolicy -l content=layer4-authz
+
+# 出力結果例
+NAME           AGE
+layer4-authz   20s
+```
+
+`sample-app` ワークロードに対して, `curl-allow`, `curl-deny` podから再度リクエストをします。
+```sh
+while :; do
+kubectl exec curl-allow -- /bin/sh -c "echo -n 'curl-allow: ';curl -s -o /dev/null sample-app:8080 -w '%{http_code}\n'";
+kubectl exec curl-deny -- /bin/sh -c "echo -n 'curl-deny:  ';curl -s -o /dev/null sample-app:8080 -w '%{http_code}\n'";
+echo ----------------;sleep 1;
+done
+```
+
+しばらくすると、`curl-deny` podからのリクエストは拒否されるようになります。
+```plain
+# 出力結果例
+curl-allow: 200
+curl-deny:  200
+----------------
+curl-allow: 200
+curl-deny:  200
+----------------
+curl-allow: 200
+curl-deny:  200
+----------------
+curl-allow: 200
+curl-deny:  000
+command terminated with exit code 56
+----------------
+curl-allow: 200
+curl-deny:  000
+command terminated with exit code 56
+----------------
+curl-allow: 200
+curl-deny:  000
+command terminated with exit code 56
+----------------
+.
+.
+.
+```
+Http code`000`はレスポンスが何もなかったという意味で、`command terminated with exit code 56`はcurlがデータを何も受け取らなかった(コネクションがリセットされた)ということを意味しています。(参考: [curl man page/"Exit Codes"の56](https://curl.se/docs/manpage.html))。
+
+改めてKiali dashboardから確認してみましょう。ブラウザから`http://kiali.example.com`にアクセスをしてください。しばらくすると、`curl-allow` podからのリクエストのみグラフに表示されるようになります。これは`curl-deny` podからのport 8080のリクエストをztunnelがAuthorization Poliyの設定に基づいて`sample-app`ワークロードへのproxyを拒否しているためです。
+
+![image](./imgs/kiali-L4-authz-autholizationpolicy-applied.png)
+
+`sample-worload`へのリクエストを停止し、次は`curl-deny` podのみからリクエストをしてztunnelのログを見てみましょう。
+```sh
+while :; do
+kubectl exec curl-deny -- /bin/sh -c "echo -n 'curl-deny:  ';curl -s -o /dev/null sample-app:8080 -w '%{http_code}\n'";
+echo ----------------;sleep 1;
+done
+```
+
+```plain
+# 出力結果例
+curl-deny:  000
+command terminated with exit code 56
+----------------
+curl-deny:  000
+command terminated with exit code 56
+----------------
+curl-deny:  000
+command terminated with exit code 56
+----------------
+.
+.
+.
+```
+
+10秒ほど経過したらリクエストを停止して、ztunnelのcontainer logを確認します。
+```sh
+ZTUNNEL_POD=$(kubectl get pod -n istio-system -l app=ztunnel --field-selector=spec.nodeName=istio-ambient-worker -o=jsonpath={.items..metadata.name})
+
+kubectl logs -n istio-system "$ZTUNNEL_POD"
+```
+```plain
+# 出力結果例(1行が長いためtimestampは表示は省略しています)
+(前略)
+INFO outbound{id=592141ddcfee48d3532f5a1d18716a8a}: ztunnel::proxy::outbound: proxying to 10.244.1.18:8080 using node local fast path
+INFO outbound{id=592141ddcfee48d3532f5a1d18716a8a}: ztunnel::proxy::outbound: RBAC rejected conn=10.244.1.20(spiffe://cluster.local/ns/default/sa/curl-deny)->10.244.1.18:8080
+WARN outbound{id=592141ddcfee48d3532f5a1d18716a8a}: ztunnel::proxy::outbound: failed dur=169.208¬µs err=http status: 401 Unauthorized
+INFO outbound{id=7f77e5fb4e26f7bd07d6a36a57a8e3cf}: ztunnel::proxy::outbound: proxying to 10.244.1.18:8080 using node local fast path
+INFO outbound{id=7f77e5fb4e26f7bd07d6a36a57a8e3cf}: ztunnel::proxy::outbound: RBAC rejected conn=10.244.1.20(spiffe://cluster.local/ns/default/sa/curl-deny)->10.244.1.18:8080
+WARN outbound{id=7f77e5fb4e26f7bd07d6a36a57a8e3cf}: ztunnel::proxy::outbound: failed dur=165.5¬µs err=http status: 401 Unauthorized
+(後略)
+```
+
+`curl-deny` pod(IP: 10.244.1.20)から`sample-app` pod(IP: 10.244.1.18)のport 8080へのアクセスはztunnelによって拒否されて、TCPセグメントは`sample-app`に到達していないことが分かります。
+
+ztunnelが管理するIstio ambient mesh内のL4レベルのトラフィックにおいて、Istio Authorization Policyを使用してアクセス管理を実装しました。Istioの機能を使うことで、アプリケーション側にロジックを追加することなくL4レベルのアクセス管理を実現することができます。
+
+### クリーンアップ
+```sh
+kubectl delete -f networking/L4-authorization-policy.yaml
+kubectl delete -f app/curl-allow.yaml,app/curl-deny.yaml
+```

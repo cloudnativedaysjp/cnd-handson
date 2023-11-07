@@ -1,0 +1,21 @@
+---
+apiVersion: security.istio.io/v1beta1
+kind: AuthorizationPolicy
+metadata:
+  name: layer4-authz
+  labels:
+    content: layer4-authz
+spec:
+  selector:
+    matchLabels:
+      app: sample-app
+  action: ALLOW
+  rules:
+  - from:
+    - source:
+        principals:
+        - cluster.local/ns/default/sa/curl-allow
+    to:
+    - operation:
+        ports:
+        - "8080"
