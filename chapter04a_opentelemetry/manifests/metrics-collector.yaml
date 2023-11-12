@@ -1,0 +1,29 @@
+apiVersion: opentelemetry.io/v1alpha1
+kind: OpenTelemetryCollector
+metadata:
+  name: metrics-collector
+spec:
+  mode: "daemonset"
+  config: |
+    receivers:
+      hostmetrics:
+        collection_interval: 30s
+        scrapers:
+          cpu: {}
+          memory: {}
+
+    processors: {}
+
+    exporters:
+      debug: {}
+      prometheusremotewrite:
+        endpoint: http://kube-prometheus-stack-prometheus.prometheus:9090/api/v1/write
+        external_labels:
+          oteltest: cndt2023
+
+    service:
+      pipelines:
+        metrics:
+          receivers: [hostmetrics]
+          processors: []
+          exporters: [debug, prometheusremotewrite]

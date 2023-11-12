@@ -1,16 +1,38 @@
 repositories:
   - name: open-telemetry
     url: https://open-telemetry.github.io/opentelemetry-helm-charts
+  - name: jetstack
+    url: https://charts.jetstack.io
+  - name: jaegertracing
+    url: https://jaegertracing.github.io/helm-charts
+
 releases:
-  - name: otel-collector
-    namespace: opentelemetry
-    chart: open-telemetry/opentelemetry-collector
-    version: 0.69.2
+  - name: cert-manager
+    namespace: cert-manager
+    chart: jetstack/cert-manager
+    version: 1.13.2
+    set:
+    - name: installCRDs
+      value: true
     values:
-      - otel-collector-values.yaml
-  - name: otel-collector-cluster
-    namespace: opentelemetry
-    chart: open-telemetry/opentelemetry-collector
-    version: 0.69.2
+      - cert-manager-values.yaml
+  - name: opentelemetry-operator
+    namespace: monitoring
+    chart: open-telemetry/opentelemetry-operator
+    version: 0.41.0
+    set:
+    - name: installCRDs
+      value: true
+    disableValidation: true
     values:
-      - otel-collector-cluster-values.yaml
+      - opentelemetry-operator-values.yaml
+  - name: jaeger-operator
+    namespace: jaeger
+    chart: jaegertracing/jaeger-operator
+    version: 2.49.0
+    set:
+    - name: installCRDs
+      value: true
+    disableValidation: true
+    values:
+      - jaeger-operator-values.yaml

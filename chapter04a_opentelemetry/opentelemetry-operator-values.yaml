@@ -1,0 +1,3 @@
+manager:
+  featureGates:
+    operator.autoinstrumentation.go

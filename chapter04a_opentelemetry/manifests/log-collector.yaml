@@ -1,0 +1,37 @@
+# https://github.com/open-telemetry/opentelemetry-collector-contrib/tree/main/receiver/filelogreceiver
+# https://github.com/open-telemetry/opentelemetry-collector/tree/main/exporter/debugexporter
+# https://github.com/open-telemetry/opentelemetry-collector-contrib/tree/main/exporter/fileexporter
+apiVersion: opentelemetry.io/v1alpha1
+kind: OpenTelemetryCollector
+metadata:
+  name: log-collector
+spec:
+  mode: "daemonset"
+  volumeMounts:
+    - name:  host-log-volumes
+      mountPath: /var/log
+  volumes:
+    - name: host-log-volumes
+      hostPath:
+        path:  /data
+  config: |
+    receivers:
+      filelog:
+        include: [ /var/log/cndt-*.json ]
+        operators:
+        - type: json_parser
+
+    exporters:
+      debug:
+        verbosity: detailed
+      file:
+        path: /var/log/all.json
+        rotation:
+          max_megabytes: 1
+
+    service:
+      pipelines:
+        logs:
+          receivers: [filelog]
+          processors: []
+          exporters: [file, debug]
