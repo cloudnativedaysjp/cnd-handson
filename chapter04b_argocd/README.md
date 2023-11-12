@@ -53,3 +53,88 @@ HelmやKustomizeなどのコードから生成されたマニフェストをキ�
 デフォルトで24時間ごとに、マニフェストキャッシュの有効期限が切れたときに行われる。
 #### Sync
 Kubernetes clusterに変更を反映する事で、アプリケーションをGitリポジトリの状態に同期させる処理です。
+
+## セットアップ
+### ローカル環境での準備
+今回デプロイするWEBサービスのドメインは登録していないため、WEBサービスを利用する際にはハンズオンで利用する端末のhostsファイルを書き込む必要があります。
+
+hostsファイルのpathはOSによって様々なので環境によって変わりますが主要なpathは以下の通りです
+MacやLinuxの場合
+```/etc/hosts```
+Windowsの場合
+```C:\Windows\System32\drivers\etc\hosts```
+
+この章で利用するドメインは
+
+* app.argocd.com
+* app.argocd.com
+* dev.kustomize.argocd.com
+* prd.kustomize.argocd.com
+* helm.argocd.com
+
+### Argo CDのインストール
+helmファイルを利用してArgo CDをインストールします。
+```
+helmfile apply -f helmfile.yaml
+```
+ingressをdeployして、Argo CDのWEB UIにアクセス出来るようにします。
+```
+kubectl apply -f ingress.yaml
+```
+http://argocd.example.com/
+へアクセスします。
+* ユーザ名: admin
+* パスワード: 以下のコマンドをサーバ上で実行した値
+
+```kubectl -n argo-cd get secret argocd-initial-admin-secret -o jsonpath="{.data.password}" | base64 -d```
+
+以下のページにアクセス出来るか確認して下さい。
+![とりあえず]()
+### レポジトリの登録
+* Settings - > Repositories と進み CONEECT REPOをクリック　![とりあえず]()
+*  上の画面上で各項目を次のように設定
+```
+Choose you connection method: VIA HTTPS
+Type: git
+Project: default
+Repository URL: https://github.com/cloudnativedaysjp/cndt2023-handson
+Username (optional):username
+password (optional):pass
+```
+* CONNECTをクリック　（以下のスクショのようになったら成功）![とりあえず]()
+
+
+## Demo appのデプロイ
+* Applicationsの画面において + NEW APPを押下
+    
+    ![スクリーンショット 2023-09-30 23.07.28.png](https://prod-files-secure.s3.us-west-2.amazonaws.com/6f42360d-ca2e-4040-8123-63d144c7a54f/e7b0c560-715f-4169-aad8-c417668dd070/%E3%82%B9%E3%82%AF%E3%83%AA%E3%83%BC%E3%83%B3%E3%82%B7%E3%83%A7%E3%83%83%E3%83%88_2023-09-30_23.07.28.png)
+
+* 上の画面上で各項目を次のように設定します．
+```
+GENERAL
+  Application Name: test
+  Project Name: default
+  SYNC POLICY: Manual
+  SYNC OPTIONS: AUTO CREATE NAMESPACE [v]
+  SOURCE
+    Repository URL: https://github.com/cloudnativedaysjp/cndt2023-handson
+    Revision: main
+    Path: chapter04b_argocd/default
+  DESTINATION
+    Cluster URL: https://kubernetes.default.svc
+    Namespace: test
+```
+* 設定できたら、CREATEをクリック　（うまくいくと以下のようになる）
+
+![Untitled](https://prod-files-secure.s3.us-west-2.amazonaws.com/6f42360d-ca2e-4040-8123-63d144c7a54f/d4d7967f-64b8-4619-8d91-d329a5689c9e/Untitled.png)
+
+![Untitled](https://prod-files-secure.s3.us-west-2.amazonaws.com/6f42360d-ca2e-4040-8123-63d144c7a54f/d28f2ca5-03d7-48fc-bb07-397a93b5c5b9/Untitled.png)
+
+* ページ上部にある SYNCをクリック
+* 無事デプロイされると以下のようになります．
+
+![Untitled](https://prod-files-secure.s3.us-west-2.amazonaws.com/6f42360d-ca2e-4040-8123-63d144c7a54f/09874bf9-6aa8-4588-ae47-fc503b24aafe/Untitled.png)
+
+* http://app.argocd.com/へアクセスして確認
+
+![Untitled](https://prod-files-secure.s3.us-west-2.amazonaws.com/6f42360d-ca2e-4040-8123-63d144c7a54f/e820fda1-b17a-4746-a1d4-47b494dffe03/Untitled.png)
