@@ -1,6 +1,7 @@
 # chapter05b_argo-rollouts
-## 概要説明
-### プログレッシブデリバリーについて
+この章では、Kubernetes上でプログレッシブデリバリーを可能とするデプロイツールであるArgo Rolloutsについて紹介し、導入します。
+
+## プログレッシブデリバリーについて
 プログレッシブデリバリー（Progressive Delivery）はアプリケーションの新機能や変更をユーザーに段階的に提供し、リスクを最小限に抑えながら品質を確保する方法です。
 
 実現するために、一部のユーザに対してアプリケーションを提供するトラフィック制御（カナリアリリース）、提供したアプリケーションの新機能に対する分析、分析をもとに自動化されたロールバックの三つの機能が必要になります
@@ -14,7 +15,7 @@ graph TD;
     成功-->カナリアリリース
 ```
   
-### Argo Rolloutsについて
+## Argo Rolloutsについて
 
 Argo Rolloutsは、Kubernetesコントローラおよび一連のカスタムリソース定義（CRD）で、KubernetesにBlue/Green Deployment、カナリアリリース、分析、およびプログレッシブデリバリーの機能が追加されます。
 
@@ -34,7 +35,43 @@ Argo Rolloutsは、Kubernetesコントローラおよび一連のカスタムリ
  
 
 Argo CDとの連携が可能で、簡単に既存のGit Opsにプログレッシブデリバリーができる
+## セットアップ
+今回のハンズオンでは、Argo CDからArgo Rolloutsを利用します。
+### ローカル環境での準備
+今回デプロイするWEBサービスのドメインは登録していないため、WEBサービスを利用する際にはハンズオンで利用する端末のhostsファイルを書き込む必要があります。
 
+hostsファイルのpathはOSによって様々なので環境によって変わりますが主要なpathは以下の通りです
+MacやLinuxの場合
+```/etc/hosts```
+Windowsの場合
+```C:\Windows\System32\drivers\etc\hosts```
+
+この章で利用するドメインは
+
+* app.argocd.com
+### Argo CDのインストール
+helmファイルを利用してArgo CDをインストールします。
+```
+helmfile apply -f ../chapter04b_argocd/helm/helmfile.yaml
+```
+rollout-extensionをインストールしてArgoCD上でrolloutの操作結果が確認します。
+```
+kubectl apply -n argo-cd \
+    -f https://raw.githubusercontent.com/argoproj-labs/rollout-extension/v0.2.1/manifests/install.yaml
+```
+ingressをdeployして、Argo CDのWEB UIにアクセス出来るようにします。
+```
+kubectl apply -f ingress/ingress.yaml
+```
+### Argo Rolloutsのインストール
+helmファイルを利用してArgo CDをインストールします。
+```
+helmfile apply -f ./helm/helmfile.yaml
+```
+podが作成されていることを確認します。
+```
+kubectl get pod -n argo-rollouts
+```
 ## Analysis Metrics
 ### JOB
 Analysis実行時にjobをデプロイし、jobの実行結果によってPromteするかどうかを判断する
