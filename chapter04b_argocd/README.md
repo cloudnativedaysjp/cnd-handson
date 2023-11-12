@@ -75,11 +75,11 @@ Windowsの場合
 ### Argo CDのインストール
 helmファイルを利用してArgo CDをインストールします。
 ```
-helmfile apply -f helmfile.yaml
+helmfile apply -f helm/helmfile.yaml
 ```
 ingressをdeployして、Argo CDのWEB UIにアクセス出来るようにします。
 ```
-kubectl apply -f ingress.yaml
+kubectl apply -f ingress/ingress.yaml
 ```
 http://argocd.example.com/
 へアクセスします。
@@ -89,9 +89,9 @@ http://argocd.example.com/
 ```kubectl -n argo-cd get secret argocd-initial-admin-secret -o jsonpath="{.data.password}" | base64 -d```
 
 以下のページにアクセス出来るか確認して下さい。
-![とりあえず]()
+![webui](./imgs/setup/access-webui.png)
 ### レポジトリの登録
-* Settings - > Repositories と進み CONEECT REPOをクリック　![とりあえず]()
+* Settings - > Repositories と進み CONEECT REPOをクリック　![CONEECT REPO](./imgs/setup/add-repo-setting.png)
 *  上の画面上で各項目を次のように設定
 ```
 Choose you connection method: VIA HTTPS
@@ -101,14 +101,11 @@ Repository URL: https://github.com/cloudnativedaysjp/cndt2023-handson
 Username (optional):username
 password (optional):pass
 ```
-* CONNECTをクリック　（以下のスクショのようになったら成功）![とりあえず]()
+* CONNECTをクリック　（以下のスクショのようになったら成功）![CONNECT](./imgs/setup/add-repo-complete.png)
 
 
 ## Demo appのデプロイ
-* Applicationsの画面において + NEW APPを押下
-    
-    ![スクリーンショット 2023-09-30 23.07.28.png](https://prod-files-secure.s3.us-west-2.amazonaws.com/6f42360d-ca2e-4040-8123-63d144c7a54f/e7b0c560-715f-4169-aad8-c417668dd070/%E3%82%B9%E3%82%AF%E3%83%AA%E3%83%BC%E3%83%B3%E3%82%B7%E3%83%A7%E3%83%83%E3%83%88_2023-09-30_23.07.28.png)
-
+* Applicationsの画面において + NEW APPを押下![Applications](./imgs/demoapp/new-app.png)
 * 上の画面上で各項目を次のように設定します．
 ```
 GENERAL
@@ -119,22 +116,68 @@ GENERAL
   SOURCE
     Repository URL: https://github.com/cloudnativedaysjp/cndt2023-handson
     Revision: main
-    Path: chapter04b_argocd/default
+    Path: chapter04b_argocd/app/default
   DESTINATION
     Cluster URL: https://kubernetes.default.svc
     Namespace: test
 ```
 * 設定できたら、CREATEをクリック　（うまくいくと以下のようになる）
-
-![Untitled](https://prod-files-secure.s3.us-west-2.amazonaws.com/6f42360d-ca2e-4040-8123-63d144c7a54f/d4d7967f-64b8-4619-8d91-d329a5689c9e/Untitled.png)
-
-![Untitled](https://prod-files-secure.s3.us-west-2.amazonaws.com/6f42360d-ca2e-4040-8123-63d144c7a54f/d28f2ca5-03d7-48fc-bb07-397a93b5c5b9/Untitled.png)
+![create](./imgs/demoapp/create.png)
+![create2](./imgs/demoapp/create2.png)
 
 * ページ上部にある SYNCをクリック
 * 無事デプロイされると以下のようになります．
 
-![Untitled](https://prod-files-secure.s3.us-west-2.amazonaws.com/6f42360d-ca2e-4040-8123-63d144c7a54f/09874bf9-6aa8-4588-ae47-fc503b24aafe/Untitled.png)
+![sync](./imgs/demoapp/sync.png)
 
-* http://app.argocd.com/へアクセスして確認
+* http://app.argocd.com/
+へアクセスして確認
 
-![Untitled](https://prod-files-secure.s3.us-west-2.amazonaws.com/6f42360d-ca2e-4040-8123-63d144c7a54f/e820fda1-b17a-4746-a1d4-47b494dffe03/Untitled.png)
+![demo app](./imgs/demoapp/demo-app.png)
+
+## Kustomizeを使ったデプロイ
+ArgoCD上でマニュフェストの差分管理ツールである「Kustomize」を利用して、複数環境を簡単に用意します。
+* Applicationsの画面において + NEW APPを押下![Applications](./imgs/demoapp/new-app.png)
+* 上の画面上で各項目を次のように設定します．
+```
+GENERAL
+  Application Name: kustomize
+  Project Name: default
+  SYNC POLICY: Manual
+  SYNC OPTIONS: AUTO CREATE NAMESPACE [v]
+  SOURCE
+    Repository URL: https://github.com/cloudnativedaysjp/cndt2023-handson
+    Revision: main
+    Path:
+        開発環境： chapter04b_argocd/app/Kustomize/overlays/dev
+        本番環境： chapter04b_argocd/app/Kustomize/overlays/prd
+  DESTINATION
+    Cluster URL: https://kubernetes.default.svc
+    Namespace: kustomize
+```
+* 設定できたら、CREATEをクリック
+* ページ上部にある SYNCをクリック
+* アクセスして確認します。
+  * 開発環境: dev.kustomize.argocd.com
+  * 本番環境: prd.kustomize.argocd.com
+## Helmを使ったデプロイ
+* Applicationsの画面において + NEW APPを押下![Applications](./imgs/demoapp/new-app.png)
+* 上の画面上で各項目を次のように設定します．
+```
+GENERAL
+  Application Name: helm
+  Project Name: default
+  SYNC POLICY: Manual
+  SYNC OPTIONS: AUTO CREATE NAMESPACE [v]
+  SOURCE
+    Repository URL: https://github.com/cloudnativedaysjp/cndt2023-handson
+    Revision: main
+    Path: chapter04b_argocd/app/Helm/rollouts-demo
+  DESTINATION
+    Cluster URL: https://kubernetes.default.svc
+    Namespace: helm
+```
+* 設定できたら、CREATEをクリック
+* ページ上部にある SYNCをクリック
+* helm.argocd.com
+アクセスして確認します。
