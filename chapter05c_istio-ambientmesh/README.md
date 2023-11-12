@@ -1,30 +1,35 @@
 # Istio Amebient Mesh
 本chapterではIstio ambient meshを使用して、サービスメッシュ内のトラフィック管理、可視化をどのように実現するのか体験します。
 
-> **Important**
-> Istio ambient meshは現在αステータス(2023年11月)のため、本番環境での使用は控えるようにしてください。
-
 ## 概要
 ### Istio ambient meshとは
-Sidecarを使用しない新しいIstioデータプレーンモードです。Google, Solo.ioによって開発が開始され、2023年2月に[main branchにマージ](https://github.com/istio/istio/pull/43422)されました(2023年11月現在はαステータス)。
+2023年2月に[main branchにマージ](https://github.com/istio/istio/pull/43422)された(2023年11月現在はαステータス)、サイドカーを使用しない新しいIstioデータプレーンモードです。従来のサイドカーモードのIstioは多くの本番運用実績がありますが、データプレーンとアプリケーションの分離ができず、結果下記のような課題があげられています。
 
+- データプレーンはサイドカーとしてアプリケーションpodに注入されるため、Istioデータプレーンのインストール、アップグレード時はpodの再起動が必要になり、アプリケーションワークロードを阻害してしまう
+- データプレーンが提供する機能の選択ができないため、一部の機能(mTLS実装のみ等)しか使用しないワークロードにとっては不要なリソースをpodに確保する必要があり、全体のリソースを効率的に使用できなくなる
+- HTTP準拠でないアプリケーション実装をしている場合、解析エラーや、誤ったL7プロトコルの解釈を引き起こす可能性がある
 
-
-
-
-Although sidecars have significant advantages over refactoring applications, they do not provide a perfect separation between applications and the Istio data plane. This results in a few limitations:
-
-Invasiveness - Sidecars must be “injected” into applications by modifying their Kubernetes pod spec and redirecting traffic within the pod. As a result, installing or upgrading sidecars requires restarting the application pod, which can be disruptive for workloads.
-Underutilization of resources - Since the sidecar proxy is dedicated to its associated workload, the CPU and memory resources must be provisioned for worst case usage of each individual pod. This adds up to large reservations that can lead to underutilization of resources across the cluster.
-Traffic breaking - Traffic capture and HTTP processing, as typically done by Istio’s sidecars, is computationally expensive and can break some applications with non-conformant HTTP implementations.
-While sidecars have their place — more on that later — we think there is a need for a less invasive and easier option that will be a better fit for many service mesh users.
-
-
+Istio ambient meshはこれらの問題を解決する目的で、Google, Solo.ioによって開発が始まりました。
 
 ### Istio ambient mesh構成
+L4、L7機能の全てを管理しているサイドカーモードにおけるデータプレーンと異なり、Istio ambientモードではデータプレーンの機能を2つの層に分けて管理をします。
 
+- Secure overlay layer
+![image](./imgs/secure-overlay-layer.png)
 
+(出展元: https://istio.io/v1.16/blog/2022/introducing-ambient-mesh/)
 
+メッシュ内ワークロード内のセキュアな通信の確立をおこなう層で、[ztunnel](https://github.com/istio/ztunnel)というコンポーネントによって管理されます。Ztunnelの主な役割は1)通信暗号のためのmTLS確立、2)L4レベルの認可、3)TCPメトリクス、ログ収集です。
+
+ZtunnelはKubernetesクラスタ上でDaemonSetとしてデプロイされます。サイドカーモードでは、envoyが各pod内で通信のproxyをしますが、ambientモードではztunnelがメッシュ内のワークロードをnode単位でproxyします。また、node間通信(もう少し厳密に言うと、メッシュ内のサービス間通信)は、Istio 1.16リリースで公開されたHTTP/2の`CONNECT`メソッドをベースにした[HBONE](https://istio.io/latest/news/releases/1.16.x/announcing-1.16/#hbone-for-sidecars-and-ingress-experimental)(HTTP-Based Overlay Network Environment)というトンネリングを用いたmTLS接続によって行われます。
+
+- waypoint proxy layer
+![image](./imgs/waypoint-proxy-layer.png)
+
+(出展元: https://istio.io/v1.16/blog/2022/introducing-ambient-mesh/)
+
+1)HTTPプロトコル、2)L7レベルの認可、3)HTTPメトリクス、ログ収集等のL7の管理をする層です。Waypoint proxyの実態はenvoyイメージを使用した[Kubernetes Gateway API](https://gateway-api.sigs.k8s.io/)のGatewayリソースが作成、管理するpodです。Ztunnelによるsecure overlay layer作成後にKubernetes namespaceごとにwaypoint proxyを作成することで、Istioが提供するL7機能を使用することができます。また、waypoint proxyはワークロード、service account単位でも作成することができます。Waypoint proxyが作成されると、ztunnelによって作成されたsecure overlay layerはトラフィックをそのwaypoint proxyにルーティングすることでL7機能が使えるようになります。
+  
 ## セットアップ
 > **Important**
 > Istio ambientではCNIとしてciliumを使用することが現在できません。チャプター1でciliumベースのKubernetes clusterを作成している場合は、clusterを先に削除してから本チャプターを進めてください。
