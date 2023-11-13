@@ -106,7 +106,7 @@ CONNECTをクリック　（以下のスクショのようになったら成功�
 
 ## Demo appのデプロイ
 Applicationsの画面において + NEW APPを押下![Applications](./imgs/demoapp/new-app.png)
-上の画面上で各項目を次のように設定します．
+上の画面上で各項目を次のように設定します。
 ```
 GENERAL
   Application Name: test
@@ -137,7 +137,7 @@ http://app.argocd.example.com
 ## Kustomizeを使ったデプロイ
 ArgoCD上でマニュフェストの差分管理ツールである「Kustomize」を利用して、複数環境を簡単に用意します。
 Applicationsの画面において + NEW APPを押下![Applications](./imgs/demoapp/new-app.png)
-上の画面上で各項目を次のように設定します．
+上の画面上で各項目を次のように設定します。
 ```
 GENERAL
   Application Name: kustomize
@@ -166,7 +166,7 @@ GENERAL
   * 本番環境: prd.kustomize.argocd.example.com
 ## Helmを使ったデプロイ
 Applicationsの画面において + NEW APPを押下![Applications](./imgs/demoapp/new-app.png)
-上の画面上で各項目を次のように設定します．
+上の画面上で各項目を次のように設定します。
 ```
 GENERAL
   Application Name: helm
