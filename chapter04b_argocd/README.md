@@ -66,11 +66,11 @@ Windowsの場合
 
 この章で利用するドメインは
 
-* app.argocd.com
-* app.argocd.com
-* dev.kustomize.argocd.com
-* prd.kustomize.argocd.com
-* helm.argocd.com
+* argocd.example.com
+* app.argocd.example.com
+* dev.kustomize.argocd.example.com
+* prd.kustomize.argocd.example.com
+* helm.argocd.example.com
 
 ### Argo CDのインストール
 helmファイルを利用してArgo CDをインストールします。
@@ -130,7 +130,7 @@ GENERAL
 
 ![sync](./imgs/demoapp/sync.png)
 
-* http://app.argocd.com/
+* http://app.argocd.example.com
 へアクセスして確認
 
 ![demo app](./imgs/demoapp/demo-app.png)
@@ -158,8 +158,8 @@ GENERAL
 * 設定できたら、CREATEをクリック
 * ページ上部にある SYNCをクリック
 * アクセスして確認します。
-  * 開発環境: dev.kustomize.argocd.com
-  * 本番環境: prd.kustomize.argocd.com
+  * 開発環境: dev.kustomize.argocd.example.com
+  * 本番環境: prd.kustomize.argocd.example.com
 ## Helmを使ったデプロイ
 * Applicationsの画面において + NEW APPを押下![Applications](./imgs/demoapp/new-app.png)
 * 上の画面上で各項目を次のように設定します．
@@ -179,5 +179,5 @@ GENERAL
 ```
 * 設定できたら、CREATEをクリック
 * ページ上部にある SYNCをクリック
-* helm.argocd.com
+* helm.argocd.example.com
 アクセスして確認します。
