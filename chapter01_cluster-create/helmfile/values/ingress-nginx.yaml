@@ -16,3 +16,9 @@ controller:
     targetPorts:
       http: http
       https: https
+  metrics:
+    enabled: true
+    serviceMonitor:
+      enabled: true
+      additionalLabels:
+        release: "prometheus"
