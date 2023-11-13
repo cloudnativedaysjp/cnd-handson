@@ -260,17 +260,17 @@ Applicationsの画面において + NEW APPをクリックします
       Namespace: job-analysis
   ```
 設定できたら、CREATEをクリックします　（うまくいくと以下のようになります）
-![create](./imgs/BG/create.png)
-![create2](./imgs/BG/create2.png)
+![create](./imgs/analysis/job-create.png)
+![create2](./imgs/analysis/job-create2.png)
 ページ上部にある SYNC をクリックします
-![create2](./imgs/BG/create2.png)
+![create2](./imgs/analysis/job-sync.png)
 rollout.yamlの編集を行います．imageのtagをblueからgreenに、変更し、差分をremoteのmasterブランチ（argocdのappを作成する際に指定したブランチ）に取り込みます．
 ```yaml
 image: argoproj/rollouts-demo:green
 ```
 ArgoCDはデフォルトでは3分に一回の頻度でブランチを確認し、差分を検出しています．3分待てない場合には、ページ上部にある [REFRESH]をクリックします．以下のようにrolloutにおいて差分が検出されます．（黄色で表示されているOutOfSyncが差分があることを示しています）
 ちなみにAppの設定において、SYNC POLICYをManualでなくAutoにしていた場合には、ここでOutOfSyncを検知すると自動でArgoCDがSyncを実行します．
-![sync](./imgs/analysis/Job-sync.png)
+![sync](./imgs/analysis/Job-refresh.png)
 rolloutを手動でSyncすると、アプリケーションのpodと新たにAnalysisrunが生成され、jobが発行されたのが確認できます。
 ![update](./imgs/analysis/job-update.png)
 jobが成功すると、自動的にBlue/Green Deployが進んでいくのが分かります。
@@ -297,17 +297,17 @@ Applicationsの画面において + NEW APPをクリックします
       Namespace: web-analysis
   ```
 設定できたら、CREATEをクリックします　（うまくいくと以下のようになります）
-![create](./imgs/BG/create.png)
-![create2](./imgs/BG/create2.png)
+![create](./imgs/analysis/web-create.png)
+![create](./imgs/analysis/web-create2.png)
 ページ上部にある SYNC をクリックします
-![create2](./imgs/BG/create2.png)
+![create](./imgs/analysis/web-sync.png)
 rollout.yamlの編集を行います．imageのtagをblueからgreenに、変更し、差分をremoteのmasterブランチ（argocdのappを作成する際に指定したブランチ）に取り込みます．
 ```yaml
 image: argoproj/rollouts-demo:green
 ```
 ArgoCDはデフォルトでは3分に一回の頻度でブランチを確認し、差分を検出しています．3分待てない場合には、ページ上部にある [REFRESH]をクリックします．以下のようにrolloutにおいて差分が検出されます．（黄色で表示されているOutOfSyncが差分があることを示しています）
 ちなみにAppの設定において、SYNC POLICYをManualでなくAutoにしていた場合には、ここでOutOfSyncを検知すると自動でArgoCDがSyncを実行します．
-![sync](./imgs/analysis/web-sync.png)
+![sync](./imgs/analysis/web-refresh.png)
 rolloutを手動でSyncすると、アプリケーションのpodと新たにAnalysisrunが生成されます。
 ![update](./imgs/analysis/web-update.png)
 Analysisrunの詳細をクリックし、Live Manifestを確認するとどういったレスポンスが帰ってきて、成功したのか失敗したのか確認できます。
@@ -334,19 +334,19 @@ Applicationsの画面において + NEW APPをクリックします
       Namespace: prometheus-analysis
   ```
 設定できたら、CREATEをクリックします　（うまくいくと以下のようになります）
-![create](./imgs/BG/create.png)
-![create2](./imgs/BG/create2.png)
+![create](./imgs/analysis/prometheus-create.png)
+![create](./imgs/analysis/prometheus-create2.png)
 ページ上部にある SYNC をクリックします
-![create2](./imgs/BG/create2.png)
+![create](./imgs/analysis/prometheus-sync.png)
 rollout.yamlの編集を行います．imageのtagをblueからgreenに、変更し、差分をremoteのmasterブランチ（argocdのappを作成する際に指定したブランチ）に取り込みます．
 ```yaml
 image: argoproj/rollouts-demo:green
 ```
 ArgoCDはデフォルトでは3分に一回の頻度でブランチを確認し、差分を検出しています．3分待てない場合には、ページ上部にある [REFRESH]をクリックします．以下のようにrolloutにおいて差分が検出されます．（黄色で表示されているOutOfSyncが差分があることを示しています）
 ちなみにAppの設定において、SYNC POLICYをManualでなくAutoにしていた場合には、ここでOutOfSyncを検知すると自動でArgoCDがSyncを実行します．
-![sync](./imgs/analysis/prometheus-sync.png)
+![sync](./imgs/analysis/prometheus-refresh.png)
 rolloutを手動でSyncすると、アプリケーションのpodと新たにAnalysisrunが生成されます。
-![update](./imgs/analysis/prometheus-update.png)
+![update](./imgs/analysis/prometheus-updat1e.png)
 Analysisrunの詳細をクリックし、Live Manifestを確認するとどういったレスポンスが帰ってきて、成功したのか失敗したのか確認できます。
 ![log](imgs/analysis/prometheus-log.png)
 Analysisrunが成功すると、自動的にCanary Releseが進んでいくのが分かります。
