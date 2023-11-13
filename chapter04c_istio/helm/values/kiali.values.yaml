@@ -6,8 +6,13 @@ deployment:
   ingress_enabled: false
   logger:
     log_format: json
-  pod_labels:
-    sidecar.istio.io/inject: "false"
+  resources:
+    requests:
+      cpu: 100m
+      memory: 128Mi
+    limits:
+      cpu: 100m
+      memory: 128Mi
 external_services:
   custom_dashboards:
     enabled: false
@@ -20,3 +25,5 @@ external_services:
     url_service_version: http://istiod:15014/version
   tracing:
     enabled: false
+server:
+  metrics_enabled: false

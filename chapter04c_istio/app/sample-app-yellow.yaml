@@ -11,7 +11,7 @@ metadata:
   labels:
     app: sample-app
     color: yellow
-    version: "1.0.0"
+    version: v1
   name: sample-app-yellow
 spec:
   replicas: 1
@@ -29,7 +29,7 @@ spec:
       labels:
         app: sample-app
         color: yellow
-        version: "1.0.0"
+        version: v1
     spec:
       serviceAccountName: sample-app-yellow
       containers:

@@ -10,7 +10,7 @@ kind: Pod
 metadata:
   labels:
     app: curl-deny
-    version: "1.0.0"
+    version: v1
     content: layer4-authz
   name: curl-deny
 spec:
@@ -21,9 +21,9 @@ spec:
     image: curlimages/curl
     command:
       - "/bin/sleep"
-      - "1h"
+      - "1d"
     imagePullPolicy: IfNotPresent
-    resources: 
+    resources:
       requests:
         cpu: 100m
         memory: 64Mi
