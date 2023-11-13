@@ -6,6 +6,33 @@ eBPFについては[eBPF.io](https://ebpf.io/)をご確認ください。
 
 ![](https://github.com/cilium/cilium/blob/36b7802b2e5c3e5a3f262b53a5d7abe8bbac18c4/Documentation/images/cilium-overview.png)
 
+## CNI (Container Network Interface)
+
+Ciliumは広義的にはCNIの1つとして挙げられます。では、CNIとは一体何なのでしょうか？
+
+- CNIとは、Cloud Native Computing Foundationプロジェクトの1つになります
+- CNIは、LinuxやWindowsコンテナーのネットワーク機能を抽象化し、APIインターフェース仕様として切り出したものです
+- コンテナのネットワーク接続性にのみ関与し、コンテナが削除されると割り当てられたリソースを削除します
+- CNIの仕様など詳細については、[こちら](https://www.cni.dev/)をご参照ください
+
+Cilium以外にもCNIとして提供されているプラグインは数多くあります。その中のいくつかをご紹介します。
+
+- [Flannel](https://github.com/flannel-io/flannel)
+  - シンプルなセットアップで利用可能で、クラスタ内でのネットワーク通信を容易にするために適しています
+  - VXLANやHost-GWモードを使用したオーバーレイネットワークにもサポートしてます
+  - 単一クラスタのシンプルなネットワーキングが必要なときや、シンプルな設定と高い拡張性が求められる場合に適しています
+- [Calico](https://github.com/projectcalico/calico)
+  - BGPを使用したルーティングでスケーラビリティが高いと言われています
+  - セキュリティポリシーやセグメンテーションの管理が可能です
+  - また、ポリシードリブンで柔軟な通信制御も可能です
+  - 大規模かつ複雑なネットワーク環境がある場合や、セキュリティポリシーを重視し、通信の制御が必要な場合に適しています
+- [Weave](https://github.com/weaveworks/weave)
+  - メッシュネットワークを提供し、コンテナの動的な発見が可能です
+  - オーバーレイネットワークをサポートしており、シンプルで軽量な設計です
+  - 動的なワークロードディスカバリが必要な場合や、シンプルで効率的なネットワーキングが求められる場合に適しています
+
+## Components
+
 Ciliumは下記の主要コンポーネントで構成されています。
 詳細については[Component Overview](https://docs.cilium.io/en/stable/overview/component-overview/#component-overview)をご参照ください。
 
@@ -49,8 +76,12 @@ Daemon: 1.14.2 a6748946 2023-09-09T20:59:33+00:00 go version go1.20.8 linux/amd6
   - Gateway API
   - Traffic Management
 
-> **Info**  
+> **Info**
 > Observabilityについては[Chapter5d Hubble](./../chapter05d_hubble/)にて説明します。
+
+## CNI
+
+
 
 ## Networking
 
@@ -261,4 +292,3 @@ kubectl exec -n handson-cilium curl-allow -- /bin/sh -c "echo -n 'curl-allow:col
 sleep 0.1
 done
 ```
-
