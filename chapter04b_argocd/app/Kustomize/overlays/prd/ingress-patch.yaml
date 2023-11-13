@@ -6,7 +6,7 @@ metadata:
     nginx.ingress.kubernetes.io/ssl-redirect: "false"
 spec:
   rules:
-  - host: app.prd.argocd.com
+  - host: prd.kustomize.argocd.example.com
     http:
       paths:
       - path: /
