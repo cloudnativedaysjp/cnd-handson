@@ -79,10 +79,6 @@ Daemon: 1.14.2 a6748946 2023-09-09T20:59:33+00:00 go version go1.20.8 linux/amd6
 > **Info**
 > Observabilityについては[Chapter5d Hubble](./../chapter05d_hubble/)にて説明します。
 
-## CNI
-
-
-
 ## Networking
 
 ### Network Policy
