@@ -1,29 +1,8 @@
-# Chapter01 Cluster-Create
+# Kubernetesクラスターの作成
+
+## はじめに
 
 この章では以降の章で使用するKubernetesクラスターを作成します。
-
-- 準備
-- Kubernetesクラスターの作成
-- Kubernetesクラスターへの接続確認
-
-## 準備
-
-まず、Kubernetesクラスターの構築に必要な下記ツールをインストールします。
-
-- [kind](https://kind.sigs.k8s.io/)
-- [kubectl](https://kubernetes.io/ja/docs/reference/kubectl/)
-- [Cilium CLI](https://github.com/cilium/cilium-cli)
-
-kindはDockerを使用してローカル環境にKubernetesクラスターを構築するためのツールになります。
-また、kubectlはKubernetes APIを使用してKubernetesクラスターのコントロールプレーンと通信をするためのコマンドラインツールです。
-Cilium CLIはCiliumが動作しているKubernetesクラスターの管理やトラブルシュート等を行うためのコマンドラインツールになります。
-これらのツールは`install-tools.sh`を実行することでインストールされます。
-
-```bash
-./install-tools.sh
-```
-
-## Kubernetesクラスターの作成
 
 Kubernetesクラスターを作成する方法はいくつかありますが、今回のハンズオンでは、kindを利用してKubernetesクラスターを作成します。
 構成としてはControl Plane 1台とWorker Node 2台の構成で作成します。
@@ -31,6 +10,26 @@ Kubernetesクラスターを作成する方法はいくつかありますが、�
 Ciliumの詳細は[Chapter4d Cilium](./../chapter04d_cilium/)にて説明します。
 
 ![](image/ch1-1.png)
+
+まず、Kubernetesクラスターの構築に必要な下記ツールをインストールします。
+
+- [kind](https://kind.sigs.k8s.io/)
+- [kubectl](https://kubernetes.io/ja/docs/reference/kubectl/)
+- [Cilium CLI](https://github.com/cilium/cilium-cli)
+- [Helm](https://helm.sh/ja/)
+- [Helmfile](https://github.com/helmfile/helmfile)
+
+kindはDockerを使用してローカル環境にKubernetesクラスターを構築するためのツールになります。
+また、kubectlはKubernetes APIを使用してKubernetesクラスターのコントロールプレーンと通信をするためのコマンドラインツールです。
+Cilium CLIはCiliumが動作しているKubernetesクラスターの管理やトラブルシュート等を行うためのコマンドラインツールになります。
+HelmはKubernetes用のパッケージマネージャーであり、Helmfileを使用することで宣言的にHelmチャートを管理できます。
+詳細については上記リンクをご参照ください。
+
+上記のツールは`install-tools.sh`を実行することでインストールされます。
+
+```bash
+./install-tools.sh
+```
 
 > **Warning**  
 > [Known Issue#Pod errors due to "too many open files"](https://kind.sigs.k8s.io/docs/user/known-issues/#pod-errors-due-to-too-many-open-files)に記載があるように、kindではホストのinotifyリソースが不足しているとエラーが発生します。
@@ -93,14 +92,14 @@ Not sure what to do next? 😅  Check out https://kind.sigs.k8s.io/docs/user/qui
 - [Metallb](https://metallb.universe.tf/)
 - [Nginx Controller](https://docs.nginx.com/nginx-ingress-controller/)
 
-デプロイにはHelmおよびhelmfileを利用します。
-これらのツールは `install-helm.sh` を実行することでインストールされます。
+KubernetesクラスターのCNIとしてCiliumをインストールします。
+Ciliumについては[Chapter4d Cilium](./../chapter04d_cilium/)を参照してください。
+MetallbはKind上のクラスターでServiceリソースのType:LoadBalancerを利用するためにインストールします。
+Nginx Controllerはインターネットからのkind上のServiceリソースへ通信をルーティングするためにインストールします。
+各コンポーネントの詳細については上記リンクをご参照ください。
 
-```bash
-./install-helm.sh
-```
 
-`install-helm.sh` の実行が完了したら、以下のコマンドで上記コンポーネントをデプロイします。
+これらのコンポーネントはhelmfileコマンドを利用することでデプロイできます。
 
 ```sh
 helmfile apply -f helmfile
