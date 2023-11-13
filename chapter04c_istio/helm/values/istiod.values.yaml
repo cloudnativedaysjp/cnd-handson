@@ -3,14 +3,29 @@ global:
   logAsJson: true
   defaultPodDisruptionBudget:
     enabled: false
+  proxy:
+    resources:
+      requests:
+        cpu: 200m
+        memory: 256Mi
+      limits:
+        cpu: 200m
+        memory: 256Mi
 pilot:
-  deploymentLables:
+  deploymentLabels:
     app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/part-of: istio
+  podLabels:
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/part-of: istio
   autoscaleEnabled: false
   resources:
+    requests:
+      cpu: 100m
+      memory: 128Mi
     limits:
-      cpu: 500m
-      memory: 2048Mi
+      cpu: 100m
+      memory: 128Mi
 meshConfig:
   defaultConfig:
     holdApplicationUntilProxyStarts: true
@@ -18,3 +33,9 @@ meshConfig:
   accessLogEncoding: JSON
   outboundTrafficPolicy:
     mode: REGISTRY_ONLY
+sidecarInjectorWebhook:
+  templates:
+    grpc-simple: ""
+    grpc-agent: ""
+    waypoint: ""
+    kube-gateway: ""

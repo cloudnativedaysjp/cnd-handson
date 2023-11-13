@@ -2,6 +2,12 @@ name: istio-ingressgateway
 imagePullPolicy: IfNotPresent
 autoscaling:
   enabled: false
+labels:
+  app.kubernetes.io/part-of: istio
+resources:
+  limits:
+    cpu: 100m
+    memory: 128Mi
 service:
   type: ClusterIP
   ports:
