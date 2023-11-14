@@ -8,7 +8,7 @@ kubectl create namespace handson
 kubectl apply -Rf manifest -n handson
 ```
 ## 確認方法
-hostsファイルを修正しブラウザで確認
+みなさんが利用しているMacやWindowsのマシンのhostsファイルを修正しブラウザで確認
 ```
 133.242.235.81　app.example.com
 ```
