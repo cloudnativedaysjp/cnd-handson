@@ -105,9 +105,7 @@ http://argocd.example.com/
 へアクセスします。下記のページにアクセス出来るか確認して下さい。
 * ユーザ名: admin
 * パスワード: 以下のコマンドをサーバ上で実行した値
-
-```kubectl -n argo-cd get secret argocd-initial-admin-secret -o jsonpath="{.data.password}" | base64 -d```
-
+    * `kubectl -n argo-cd get secret argocd-initial-admin-secret -o jsonpath="{.data.password}" | base64 -d`
 
 ![webui](./imgs/setup/access-webui.png)
 ### レポジトリの登録
@@ -133,9 +131,9 @@ CONNECTをクリックして、下記のように表示されていることを�
 
 Argo CDに同期させるGitのブランチを準備します。
 ```bash
-git colne https://github.com/cloudnativedaysjp/cndt2023-handson.git
+git clone https://github.com/cloudnativedaysjp/cndt2023-handson.git
 git checkout -b new_branch_name
-git push orign　new_branch_name
+git push origin new_branch_name
 ```
 Applicationsの画面において + NEW APPをクリックします![Applications](./imgs/demoapp/new-app.png)
 上の画面上で各項目を次のように設定します。
