@@ -91,7 +91,7 @@ Not sure what to do next? 😅  Check out https://kind.sigs.k8s.io/docs/user/qui
 
 - [Cilium](https://cilium.io/)
 - [Metallb](https://metallb.universe.tf/)
-- [Nginx Controller](https://docs.nginx.com/nginx-ingress-controller/)
+- [Nginx Ingress Controller](https://docs.nginx.com/nginx-ingress-controller/)
 
 KubernetesクラスターのCNIとしてCiliumをインストールします。
 Ciliumについては[Chapter4d Cilium](./../chapter04d_cilium/)を参照してください。
@@ -107,7 +107,7 @@ helmfile apply -f helmfile
 ```
 
 > **Info**  
-> Kubernetesのイングレスコントローラーとして、Nginx Controllerをインストールしていますが、Cilium自体もKubernetes Ingressリソースをサポートしています。
+> Kubernetesのイングレスコントローラーとして、Nginx Ingress Controllerをインストールしていますが、Cilium自体もKubernetes Ingressリソースをサポートしています。
 > こちらに関しては、[Chapter4d Cilium](./../chapter04d_cilium/)にて説明します。
 
 Metallbに関しては、追加で`IPAddressPool`と`L2Advertisement`をデプロイする必要があります。
