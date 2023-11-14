@@ -59,12 +59,14 @@ Kubernetes clusterをGitの状態に同期させるため、マニュフェス�
 今回デプロイするWEBサービスのドメインは登録していないため、WEBサービスを利用する際にはハンズオンで利用する端末のhostsファイルを書き込む必要があります。
 
 hostsファイルのpathはOSによって様々なので環境によって変わりますが主要なpathは以下の通りです
+
 MacやLinuxの場合
 ```/etc/hosts```
+
 Windowsの場合
 ```C:\Windows\System32\drivers\etc\hosts```
 
-この章で利用するドメインは
+この章で利用するドメインは以下の通りになります。
 
 * argocd.example.com
 * app.argocd.example.com
@@ -91,6 +93,9 @@ http://argocd.example.com/
 以下のページにアクセス出来るか確認して下さい。
 ![webui](./imgs/setup/access-webui.png)
 ### レポジトリの登録
+
+同期させるGitのレポジトリを登録します。
+
 Settings - > Repositories と進み CONEECT REPOをクリック　![CONEECT REPO](./imgs/setup/add-repo-setting.png)
 上の画面上で各項目を次のように設定
 ```
@@ -101,11 +106,20 @@ Repository URL: https://github.com/cloudnativedaysjp/cndt2023-handson
 Username (optional):username
 password (optional):pass
 ```
-CONNECTをクリック　（以下のスクショのようになったら成功）![CONNECT](./imgs/setup/add-repo-complete.png)
+CONNECTをクリックして、以下のように表示されていることを確認して下さい。
+![CONNECT](./imgs/setup/add-repo-complete.png)
 
 
-## Demo appのデプロイ
-Applicationsの画面において + NEW APPを押下![Applications](./imgs/demoapp/new-app.png)
+## デモアプリのデプロイ
+試しにデモアプリのデプロイを行い、Argo CDの基本的な操作を学びます。
+
+Argo CDに同期させるGitのブランチを準備します。
+```bash
+git colne https://github.com/cloudnativedaysjp/cndt2023-handson.git
+git checkout -b new_branch_name
+git push orign　new_branch_name
+```
+Applicationsの画面において + NEW APPをクリックします![Applications](./imgs/demoapp/new-app.png)
 上の画面上で各項目を次のように設定します。
 ```
 GENERAL
@@ -115,29 +129,47 @@ GENERAL
   SYNC OPTIONS: AUTO CREATE NAMESPACE [v]
   SOURCE
     Repository URL: https://github.com/cloudnativedaysjp/cndt2023-handson
-    Revision: main
+    Revision: new_branch_name
     Path: chapter04b_argocd/app/default
   DESTINATION
     Cluster URL: https://kubernetes.default.svc
     Namespace: test
 ```
-設定できたら、CREATEをクリック　（うまくいくと以下のようになる）
+設定できたら、CREATEをクリックして、以下のように表示されていることを確認して下さい。
 ![create](./imgs/demoapp/create.png)
 ![create2](./imgs/demoapp/create2.png)
 
-ページ上部にある SYNCをクリック（無事デプロイされると以下のようになります）
+ページ上部にあるSYNCをクリックして、無事デプロイされると以下のように表示されていることを確認して下さい。
 
 ![sync](./imgs/demoapp/sync.png)
 
 http://app.argocd.example.com
-へアクセスして確認
+へアクセスして確認してみてください。青い色のタイルが出てくるのが確認できます。
 
 ![demo app](./imgs/demoapp/demo-app.png)
 
+上記の手順でGitに保存しているマニュフェストを参照して、アプリケーションのデプロイを行いました。次にGitの変更にKubernetes Clusterを同期させます。
+
+app/default/deployment.yamlの編集を行います。 imageのtagをblueからgreenに変更します。
+```
+image: argoproj/rollouts-demo:green
+```
+差分をremoteのnew_branch_nameブランチ（Argo cdのappを作成する際に指定したブランチ）に取り込みます。
+```
+git push origin new_branch_nam
+```
+Argo　CDはデフォルトでは3分に一回の頻度でブランチを確認し、差分を検出しています。 3分待てない場合には、ページ上部にある [REFRESH]をクリックします。以下のようにdeploymentにおいて差分が検出されます。（黄色で表示されているOutOfSyncが差分があることを示しています） ちなみにAppの設定において、SYNC POLICYをManualでなくAutoにしていた場合には、ここでOutOfSyncを検知すると自動でArgoCDがSyncを実行します。
+![]()
+Gitの変更をKubernetes Clusterに反映させるためにページ上部にあるSYNCをクリックして、以下のように表示されていることを確認して下さい。
+![]()
+http://app.argocd.example.com
+へアクセスして確認するとタイルが青から緑に変わったことが確認できます。
+![]()
 ## Kustomizeを使ったデプロイ
-ArgoCD上でマニュフェストの差分管理ツールである「Kustomize」を利用して、複数環境を簡単に用意します。
-Applicationsの画面において + NEW APPを押下![Applications](./imgs/demoapp/new-app.png)
-上の画面上で各項目を次のように設定します。
+ArgoCD上でマニュフェストの管理ツールである「Kustomize」を利用した、開発環境と本番環境の2つのマニュフェスト管理を行います。
+
+Applicationsの画面において + NEW APPをクリック![Applications](./imgs/demoapp/new-app.png)
+上の画面上で各項目を次のように設定します。(開発環境と本番環境はここのPathだけ変更になります)
 ```
 GENERAL
   Application Name: kustomize
@@ -146,7 +178,7 @@ GENERAL
   SYNC OPTIONS: AUTO CREATE NAMESPACE [v]
   SOURCE
     Repository URL: https://github.com/cloudnativedaysjp/cndt2023-handson
-    Revision: main
+    Revision: new_branch_name
     Path:
         開発環境： chapter04b_argocd/app/Kustomize/overlays/dev
         本番環境： chapter04b_argocd/app/Kustomize/overlays/prd
@@ -158,14 +190,19 @@ GENERAL
 ![](imgs/demoapp/Kustomize-create.png)
 ![](imgs/demoapp/Kustomize-create2.png)
 ページ上部にある SYNCをクリック(開発環境の場合はpodが1個、本番環境の場合はpodが2個出来るのが確認できます。)
+### 開発環境
 ![](imgs/demoapp/Kustomize-dev.png)
+### 本番環境
 ![](imgs/demoapp/Kustomize-prd.png)
 
 アクセスして確認します。
   * 開発環境: dev.kustomize.argocd.example.com
   * 本番環境: prd.kustomize.argocd.example.com
 ## Helmを使ったデプロイ
-Applicationsの画面において + NEW APPを押下![Applications](./imgs/demoapp/new-app.png)
+KubernetesのパッケージマネージャーのHelmを利用したデプロイを行います。
+
+Applicationsの画面において + NEW APPをクリック
+![Applications](./imgs/demoapp/new-app.png)
 上の画面上で各項目を次のように設定します。
 ```
 GENERAL
@@ -175,7 +212,7 @@ GENERAL
   SYNC OPTIONS: AUTO CREATE NAMESPACE [v]
   SOURCE
     Repository URL: https://github.com/cloudnativedaysjp/cndt2023-handson
-    Revision: main
+    Revision: new_branch_name
     Path: chapter04b_argocd/app/Helm/rollouts-demo
   DESTINATION
     Cluster URL: https://kubernetes.default.svc
