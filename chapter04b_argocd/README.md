@@ -159,12 +159,12 @@ image: argoproj/rollouts-demo:green
 git push origin new_branch_nam
 ```
 Argo　CDはデフォルトでは3分に一回の頻度でブランチを確認し、差分を検出しています。 3分待てない場合には、ページ上部にある [REFRESH]をクリックします。以下のようにdeploymentにおいて差分が検出されます。（黄色で表示されているOutOfSyncが差分があることを示しています） ちなみにAppの設定において、SYNC POLICYをManualでなくAutoにしていた場合には、ここでOutOfSyncを検知すると自動でArgoCDがSyncを実行します。
-![]()
+![blue2green](imgs/demoapp/blue2green.png)
 Gitの変更をKubernetes Clusterに反映させるためにページ上部にあるSYNCをクリックして、以下のように表示されていることを確認して下さい。
-![]()
+![blue2green](imgs/demoapp/blue2green-sync.png)
 http://app.argocd.example.com
 へアクセスして確認するとタイルが青から緑に変わったことが確認できます。
-![]()
+![blue2green](imgs/demoapp/blue2green-demoapp.png)
 ## Kustomizeを使ったデプロイ
 ArgoCD上でマニュフェストの管理ツールである「Kustomize」を利用した、開発環境と本番環境の2つのマニュフェスト管理を行います。
 
