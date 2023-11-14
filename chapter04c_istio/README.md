@@ -52,8 +52,9 @@ helmfile apply -f helm/helmfile.d/istio.yaml
 作成されるリソースは下記のとおりです。
 ```sh
 kubectl -n istio-system get service,deployment
-
-# 出力結果例
+```
+```sh
+# 実行結果
 NAME                           TYPE        CLUSTER-IP      EXTERNAL-IP   PORT(S)                                 AGE
 service/istio-ingressgateway   ClusterIP   10.96.12.35     <none>        15021/TCP,80/TCP                        73s
 service/istiod                 ClusterIP   10.96.112.206   <none>        15010/TCP,15012/TCP,443/TCP,15014/TCP   93s
@@ -73,8 +74,9 @@ kubectl label namespace default istio-injection=enabled
 ラベルが追加されたことを確認してください。
 ```sh
 kubectl get namespace default --show-labels
-
-# 出力結果例
+```
+```sh
+# 実行結果
 NAME      STATUS   AGE   LABELS
 default   Active   28m   istio-injection=enabled,kubernetes.io/metadata.name=default
 ```
@@ -87,8 +89,9 @@ kubectl rollout restart deployment/handson-blue
 アプリケーション再起動、またはdeploy完了後のリソースは下記の通りです。Podが`Running`状態になった後に、アプリケーションpod内でcontainerが2つ動作していることを確認してください。
 ```sh
 kubectl get service,pod -l app=handson
-
-＃ 出力結果例
+```
+```sh
+＃ 実行結果
 NAME              TYPE        CLUSTER-IP      EXTERNAL-IP   PORT(S)   AGE
 service/handson   ClusterIP   10.96.191.153   <none>        80/TCP    3m36s
 
@@ -99,8 +102,9 @@ pod/handson-blue-6c4f4c9c57-597dx   2/2     Running   0          26s
 Envoy proxyがサイドカーとしてアプリケーションpodに注入されているか確認しましょう。
 ```sh
 kubectl get pods -l app=handson -o jsonpath={.items..spec..containers..image} | tr -s '[[:space:]]' '\n';echo
-
-# 出力結果
+```
+```sh
+# 実行結果
 docker.io/istio/proxyv2:1.19.0
 argoproj/rollouts-demo:blue
 ```
@@ -117,8 +121,9 @@ kubectl apply -f networking/simple-routing.yaml
 作成されるリソースは下記のとおりです。
 ```sh
 kubectl get gateway,virtualservice
-
-# 出力結果例
+```
+```sh
+# 実行結果
 NAME                                  AGE
 gateway.networking.istio.io/handson   18s
 
@@ -141,8 +146,9 @@ helmfile apply -f helm/helmfile.d/kiali.yaml
 作成されるリソースは下記の通りです。
 ```sh
 kubectl -n istio-system get service,pod -l app=kiali
-
-# 出力結果例
+```
+```sh
+# 実行結果
 NAME            TYPE        CLUSTER-IP     EXTERNAL-IP   PORT(S)              AGE
 service/kiali   ClusterIP   10.96.123.32   <none>        20001/TCP,9090/TCP   36s
 
@@ -158,8 +164,9 @@ kubectl apply -f ingress/kiali-ingress.yaml
 しばらくすると、ingressリソースにIPが付与されます。
 ```sh
 kubectl -n istio-system get ingress -l app=kiali
-
-# 出力結果例
+```
+```sh
+# 実行結果
 NAME             CLASS   HOSTS               ADDRESS        PORTS   AGE
 kiali-by-nginx   nginx   kiali.example.com   10.96.88.164   80      2m5s
 ```
@@ -190,8 +197,9 @@ Istio Virtual Service/Destination Ruleを用いて加重ルーティングを実
 現在動作中のアプリケーションは下記のとおりです。
 ```sh
 kubectl get pod -l app=handson
-
-# 出力結果例
+```
+```sh
+# 実行結果
 NAME                            READY   STATUS    RESTARTS   AGE
 handson-blue-6c4f4c9c57-597dx   2/2     Running   0          5m
 ```
@@ -204,8 +212,9 @@ kubectl apply -f app/handson-yellow.yaml
 2つのワークロードが稼働していることを確認してください。
 ```sh
 kubectl get pod -l app=handson
-
-# 出力結果例
+```
+```sh
+# 実行結果
 NAME                              READY   STATUS    RESTARTS   AGE
 handson-blue-6c4f4c9c57-597dx     2/2     Running   0          64m
 handson-yellow-5f468df4f7-w669z   2/2     Running   0          62s
@@ -221,8 +230,9 @@ kubectl apply -f networking/weight-based-routing.yaml
 作成されるリソースは下記のとおりです。
 ```sh
 kubectl get virtualservice,destinationrule
-
-# 出力結果例
+```
+```sh
+# 実行結果
 NAME                                                      GATEWAYS      HOSTS                 AGE
 virtualservice.networking.istio.io/weight-based-routing   ["handson"]   ["app.example.com"]   35s
 
@@ -270,8 +280,9 @@ L4レベルのトラフィックに対し、Istio Authorization Policyを作成�
 現在動作中のアプリケーションは下記のとおりです。
 ```sh
 kubectl get pod -l app=handson
-
-# 出力結果例
+```
+```sh
+# 実行結果
 NAME                            READY   STATUS    RESTARTS   AGE
 handson-blue-6c4f4c9c57-597dx   2/2     Running   0          84m
 ```
@@ -284,8 +295,9 @@ kubectl apply -f app/curl-allow.yaml,app/curl-deny.yaml
 作成されるリソースは下記の通りです。
 ```sh
 kubectl get po -l content=layer4-authz
-
-# 出力結果例
+```
+```sh
+# 実行結果
 NAME         READY   STATUS    RESTARTS   AGE
 curl-allow   2/2     Running   0          29s
 curl-deny    2/2     Running   0          29s
@@ -301,7 +313,7 @@ done
 ```
 
 双方のワークロードからのリクエストが成功していることが分かります。
-```
+```sh
 # 出力結果
 curl-allow: 200
 curl-deny:  200
@@ -332,8 +344,9 @@ kubectl apply -f networking/L4-authorization-policy.yaml
 作成されるリソースは下記の通りです。
 ```sh
 kubectl get authorizationpolicy -l content=layer4-authz
-
-# 出力結果例
+```
+```sh
+# 実行結果
 NAME           AGE
 layer4-authz   27s
 ```
@@ -349,7 +362,7 @@ done
 
 しばらくすると、`curl-deny` ワークロードからのリクエストは拒否されるようになります。
 
-```
+```sh
 # 出力結果例
 curl-allow: 200
 curl-deny:  200
@@ -391,8 +404,9 @@ Istio Authorization Policyを用いてL7レベルのアクセス管理を実装�
 現在動作中のアプリケーションは下記のとおりです。
 ```sh
 kubectl get pod -l app=handson
-
-# 出力結果例
+```
+```sh
+# 実行結果
 NAME                            READY   STATUS    RESTARTS   AGE
 handson-blue-6bdf8c8b6d-xhqkq   2/2     Running   0          21m
 ```
@@ -405,8 +419,9 @@ kubectl apply -f app/curl.yaml
 作成されるリソースは下記のとおりです。
 ```sh
 kubectl get po -l content=layer7-authz
-
-# 出力結果例
+```
+```sh
+# 実行結果
 NAME   READY   STATUS    RESTARTS   AGE
 curl   2/2     Running   0          24s
 ```
@@ -417,7 +432,7 @@ while :; do kubectl exec curl -- curl -s -o /dev/null -w '%{http_code}\n' handso
 ```
 
 リクエストが成功していることを確認してください。
-```
+```sh
 # 出力結果
 200
 200
@@ -442,8 +457,9 @@ kubectl apply -f networking/L7-authorization-policy.yaml
 作成されたリソースは下記の通りです。
 ```sh
 kubectl get authorizationpolicy -l content=layer7-authz
-
-# 出力結果例
+```
+```sh
+# 実行結果
 NAME           AGE
 layer7-authz   2m24s
 ```
@@ -454,7 +470,7 @@ while :; do kubectl exec curl -- curl -s -o /dev/null -w '%{http_code}\n' handso
 ```
 
 先ほどと同じく、リクエストが成功していることを確認してください。
-```
+```sh
 # 出力結果
 200
 200
@@ -472,8 +488,8 @@ while :; do kubectl exec curl -- curl -X POST -s -o /dev/null -d '{}' -w '%{http
 ```
 
 しばらくすると、403にて拒否されるようになります。
-```
-# 出力結果例
+```sh
+# 実行結果
 200
 200
 403
