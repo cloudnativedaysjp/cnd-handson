@@ -53,16 +53,23 @@ Ciliumは下記の主要コンポーネントで構成されています。
 Chapter01 Cluster Createで導入したCiliumに対して、上記のコンポーネントを簡単に確認してみます。
 
 ```console
-$ # AgentはDaemonsetリソース、OperatorはDeploymentリソースとしてデプロイされます
-$ kubectl get -n kube-system -l app.kubernetes.io/part-of=cilium ds,deploy
+# AgentはDaemonsetリソース、OperatorはDeploymentリソースとしてデプロイされます
+kubectl get -n kube-system -l app.kubernetes.io/part-of=cilium ds,deploy
+```
+```console
+# 実行結果
 NAME                    DESIRED   CURRENT   READY   UP-TO-DATE   AVAILABLE   NODE SELECTOR            AGE
 daemonset.apps/cilium   3         3         3       3            3           kubernetes.io/os=linux   11m
 
 NAME                              READY   UP-TO-DATE   AVAILABLE   AGE
 deployment.apps/cilium-operator   2/2     2            2           11m
-$
-$ # Client(CLI)のバージョン確認
-$ kubectl exec -n kube-system ds/cilium -c cilium-agent -- cilium version
+```
+```console
+# Client(CLI)のバージョン確認
+kubectl exec -n kube-system ds/cilium -c cilium-agent -- cilium version
+```
+```console
+# 実行結果
 Client: 1.14.2 a6748946 2023-09-09T20:59:33+00:00 go version go1.20.8 linux/amd64
 Daemon: 1.14.2 a6748946 2023-09-09T20:59:33+00:00 go version go1.20.8 linux/amd64
 ```
@@ -125,6 +132,7 @@ kubectl exec -n handson-cilium curl-deny  -- /bin/sh -c "echo -n 'curl-deny:colo
 ```
 
 ```console
+# 実行結果
 curl-allow: 200
 curl-deny:  200
 curl-allow:color: 200
@@ -186,7 +194,10 @@ kubectl apply -f manifest/ingress.yaml
 curlコマンドでHTTPステータスコード200が返ってくることを確認します。
 
 ```console
-$ curl -I app.cilium.example.com:8080
+curl -I app.cilium.example.com:8080
+```
+```console
+# 実行結果
 HTTP/1.1 200 OK
 accept-ranges: bytes
 content-length: 1395
@@ -226,7 +237,10 @@ kubectl apply -n handson-cilium  -f manifest/gateway_ch4d-2.yaml
 上記をデプロイすると、`Type:Loadbalancer`が作成されることが分かります。
 
 ```console
-$ kubectl get svc -n handson-cilium
+kubectl get svc -n handson-cilium
+```
+```console
+# 実行結果
 NAME                      TYPE           CLUSTER-IP      EXTERNAL-IP      PORT(S)        AGE
 cilium-gateway-color-gw   LoadBalancer   10.96.196.114   172.24.255.200   80:30485/TCP   97s
 handson                   ClusterIP      10.96.172.207   <none>           80/TCP         19m
