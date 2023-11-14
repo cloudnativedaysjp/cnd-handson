@@ -27,6 +27,15 @@ nodes:
     hostPort: 8443
     listenAddress: "0.0.0.0"
     protocol: TCP
+  # ingress port for istio
+  - containerPort: 32080
+    hostPort: 18080
+    listenAddress: "0.0.0.0"
+    protocol: TCP
+  - containerPort: 32443
+    hostPort: 18443
+    listenAddress: "0.0.0.0"
+    protocol: TCP
 - role: worker
 - role: worker
 networking:
