@@ -36,7 +36,7 @@ ZtunnelはKubernetesクラスタ上でDaemonSetとしてデプロイされます
 
 ## セットアップ
 > **Important**
-> Istio ambientではCNIとしてciliumを使用することが現在できません。[chapter01_cluster-create](../chapter01_cluster-create/)でciliumベースのKubernetes clusterを作成している場合は、clusterを先に削除してから本チャプターを進めてください。
+> Istio ambientではCNIとしてciliumを使用することが現在できません。[chapter01_cluster-create](https://github.com/cloudnativedaysjp/cndt2023-handson/tree/main/chapter01_cluster-create)でciliumベースのKubernetes clusterを作成している場合は、clusterを先に削除してから本チャプターを進めてください。
 
 ### Kubernetes cluster作成
 ```sh
