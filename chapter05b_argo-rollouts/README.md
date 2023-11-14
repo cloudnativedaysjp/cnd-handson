@@ -4,20 +4,20 @@
 ## プログレッシブデリバリーについて
 プログレッシブデリバリー（Progressive Delivery）は、アプリケーションの新機能や変更を段階的に展開し、その過程を自動化してリスクを最小限に抑え、品質を確保する手法です。
 
-実現するために、一部のユーザに対してアプリケーションを提供するトラフィック制御（カナリアリリース）、提供したアプリケーションの新機能に対する分析、分析をもとに自動化されたロールバックの三つの機能が必要になります
+実現するために、一部のユーザに対してアプリケーションを提供するトラフィック制御（Canary Release）、提供したアプリケーションの新機能に対する分析、分析をもとに自動化されたロールバックの三つの機能が必要になります
 
 ```mermaid
 graph LR;
-    カナリアリリース-->分析;
+    Canary Release-->分析;
     分析-->成功;
     分析-->失敗;
     失敗-->ロールバック;
-    成功-->カナリアリリース
+    成功-->Canary Release
 ```
   
 ## Argo Rolloutsについて
 
-Argo Rolloutsは、Kubernetesコントローラおよび一連のカスタムリソース定義（CRD）で、KubernetesにBlue/Green Deployment、カナリアリリース、分析、およびプログレッシブデリバリーの機能が追加されます。
+Argo Rolloutsは、Kubernetesコントローラおよび一連のカスタムリソース定義（CRD）で、KubernetesにBlue/Green Deployment、Canary Release、分析、およびプログレッシブデリバリーの機能が追加されます。
 
 ![Argo Rollouts](https://argo-rollouts.readthedocs.io/en/stable/architecture-assets/argo-rollout-architecture.png)
 
@@ -26,7 +26,7 @@ Argo Rolloutsは、Kubernetesコントローラおよび一連のカスタムリ
   - Deploymentに代わり、Rollout resouce　に指定された状態にクラスターを持っていく処理を行っています。
 - Rollout resource
   - ネイティブのKubernetes Deploymentリソースとほぼ互換性があるカスタムKubernetesリソース
-  - KubernetesにBlue/Green Deployment、カナリアリリースなど高度なデプロイ方法を追加し、サポートします。
+  - KubernetesにBlue/Green Deployment、Canary Releaseなど高度なデプロイ方法を追加し、サポートします。
 - AnalysisTemplate
   -　どのメトリクスをクエリするかを記載するテンプレート的なカスタムリソース
   - Rolloutまたはクラスター全体で定義でき、複数のRolloutで共有するためにClusterAnalysisTemplateとしても使用が可能です。
@@ -41,6 +41,7 @@ Argo CDとの連携が可能で、簡単に既存のGit Opsにプログレッシ
 今回デプロイするWEBサービスのドメインは登録していないため、WEBサービスを利用する際にはハンズオンで利用する端末のhostsファイルを書き込む必要があります。
 
 hostsファイルのpathはOSによって様々なので環境によって変わりますが主要なpathは以下の通りです
+
 MacやLinuxの場合
 ```/etc/hosts```
 Windowsの場合
@@ -73,16 +74,16 @@ podが作成されていることを確認します。
 ```
 kubectl get pod -n argo-rollouts
 ```
-## Blue GreenデプロイとCanaryリリース
+## Blue/Green DeploymentとCanary Release
 Argo Rolloutsによって追加された、プログレッシブデリバリーに必要な二つのデプロイ方法を体験します。
 
 既存のローリングアップデートでは、一部のリソースを順次更新して本番環境をアップデートするため、新バージョンと旧バージョンが混在してしまいます。
 
-Blue Greenデプロイでは、新バージョンを事前に用意しネットワークを切り替える事で新旧両方が混在せず一気にアップデートを行う方法です。
+Blue/Green Deploymentでは、新バージョンを事前に用意しネットワークを切り替える事で新旧両方が混在せず一気にアップデートを行う方法です。
 
-Canaryリリースは、新旧混在状態を制御し、本番環境において限られたユーザーグループやトラフィックに対して新しいバージョンを段階的に展開するアップデート方法です。
+Canary Releaseは、新旧混在状態を制御し、本番環境において限られたユーザーグループやトラフィックに対して新しいバージョンを段階的に展開するアップデート方法です。
 
-### Blue Greenデプロイ
+### Blue/Green Deployment
  Applicationsの画面において + NEW APPをクリック![Applications](./imgs/analysis/application.png)
 上の画面上で各項目を次のように設定します。
   ```
@@ -108,9 +109,9 @@ Canaryリリースは、新旧混在状態を制御し、本番環境におい�
 
 以上の手順で、Blue GreenのBlueに当たる状態がArgoCDを用いてデプロイされ、localからingressでアクセス可能となりました。
 
-ここからは、実際にBlue Green deployを行いその様子を見ていこうと思います。
+ここからは、実際にBlue/Green Deploymentyを行いその様子を見ていこうと思います。
 
- `bluegreen-rollout.yaml`の編集を行います。
+ `rollout.yaml`の編集を行います。
  imageのtagをblueから`green`に、変更し、差分をremoteのmasterブランチ（argocdのappを作成する際に指定したブランチ）に取り込みます。
 
   ```yaml
@@ -131,13 +132,13 @@ Canaryリリースは、新旧混在状態を制御し、本番環境におい�
  rolloutの3点リーダーをクリックし [Promte-Full]をクリックすることで、blue-green deployが行われます。プロモートが行われたどちらのingressもgreenを見るようになり、blueのreplicasetは削除されます。
   ![promote](imgs/BG/promote.png)
  
- このように、ArgoRolloutのBlueGreenデプロイにおいては、一旦greenに当たるサービスが、previewServiceとして登録され、プロモートすることで、activeServiceに昇格するような動きをして、BlueGreenデプロイを実現します。  
+ このように、ArgoRolloutのBlue/Green Deploymentにおいては、一旦greenに当たるサービスが、previewServiceとして登録され、プロモートすることで、activeServiceに昇格するような動きをして、Blue/Green Deploymentを実現します。  
  
  
  rollout-extensionを使用した場合、rolloutを選択しmoreのタブが出現します。moreのタブを選ぶとこのようにblueとgreenがどうなっているか一目で確認できるようになります。
   ![rollout-extension](imgs/BG/rollout-extension.png)
 
-### Canaryリリース
+### Canary Release
  Applicationsの画面において + NEW APPをクリック![Applications](./imgs/analysis/application.png)
  上の画面上で各項目を次のように設定します。
   ```
@@ -161,9 +162,9 @@ Canaryリリースは、新旧混在状態を制御し、本番環境におい�
  無事デプロイされると以下のようになります
   ![sync](imgs/canary/sync.png)
 
-以上の手順で、canaryリリースにおける安定バージョンに当たるバージョンがArgoCDを用いてデプロイされ、localからingressでアクセス可能となりました
+以上の手順で、Canary Releaseにおける安定バージョンに当たるバージョンがArgoCDを用いてデプロイされ、localからingressでアクセス可能となりました
 
-ここからは、実際に、canaryリリースを行いその様子を見ていこうと思います。
+ここからは、実際に、Canary Releaseを行いその様子を見ていこうと思います。
 
  `rollout.yaml`の編集を行います。imageのtagをblueから`green`に、変更し、差分をremoteのmainブランチ（argocdのappを作成する際に指定したブランチ）に取り込みます
 
@@ -179,7 +180,7 @@ Canaryリリースは、新旧混在状態を制御し、本番環境におい�
  syncされた結果以下のようになります
   ![update](imgs/canary/update.png)
  ingressにアクセスすると以下のようになります。
-ArgoRolloutのcanaryリリースにおいては、安定バージョンであるBlueから新バージョンであるGreenのタイルが少しづつ増えて行っているのが確認できます。
+ArgoRolloutのCanary Releaseにおいては、安定バージョンであるBlueから新バージョンであるGreenのタイルが少しづつ増えて行っているのが確認できます。
   ![demoapp](imgs/canary/demoapp.png)
  rollout-extensionを使用した場合、rolloutを選択しmoreのタブが出現します。moreのタブを選ぶと、アプリケーションの動作を確認せずとも自動で決められたStepを動いているのが一目で確認できるようになります。
   ![rollout-extension](imgs/canary/extended.png)
@@ -187,7 +188,7 @@ ArgoRolloutのcanaryリリースにおいては、安定バージョンである
 
 ## Analysis Metrics
 新しいリリースやバージョンを本番環境に展開する前に、新バージョンの健康状態やパフォーマンスなどを評価するために使用されます。
-例えば、Blue/Green Deployの場合、Green（新バージョン）への切り替えの前にGreenのデプロイが成功しているのか一度確認したり、Canaryリリースの場合、新バージョンのパフォーマンスの分析等に利用されます。
+例えば、Blue/Green Deployの場合、Green（新バージョン）への切り替えの前にGreenのデプロイが成功しているのか一度確認したり、Canary Releaseの場合、新バージョンのパフォーマンスの分析等に利用されます。
 ### Metricsの種類
 * Job
 * Web
