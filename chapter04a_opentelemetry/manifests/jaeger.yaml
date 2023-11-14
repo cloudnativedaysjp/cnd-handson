@@ -1,0 +1,22 @@
+apiVersion: jaegertracing.io/v1
+kind: Jaeger
+metadata:
+  name: jaeger
+  namespace: jaeger
+spec:
+  strategy: allInOne
+  allInOne:
+    options:
+      log-level: debug
+  storage:
+    type: memory
+    options:
+      memory:
+        max-traces: 100000
+  ingress:
+    enabled: true
+    hosts:
+    - jaeger.example.com
+    ingressClassName: nginx
+    annotations:
+      nginx.ingress.kubernetes.io/ssl-redirect: "false"
