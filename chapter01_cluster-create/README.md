@@ -172,8 +172,10 @@ Commercial support is available at
 </html>
 ```
 
+確認できたら、`kubectl port-forward`コマンドは「Ctrl + C」などで止めてください。
+
 > **Info**  
-> [End-To-End Connectivity Testing](https://docs.cilium.io/en/stable/contributing/testing/e2e/#end-to-end-connectivity-testing)に記載があるように、Cilium CLIを利用することでEnd-To-Endのテストを行うこともできます。
+> [End-To-End Connectivity Testing](https://docs.cilium.io/en/stable/contributing/testing/e2e/#end-to-end-connectivity-testing)に記載があるように、Cilium CLIを利用することでEnd-To-Endのテストを行うこともできます。このテストは10分ほどかかります。
 > ```sh
 > cilium connectivity test
 > ```
