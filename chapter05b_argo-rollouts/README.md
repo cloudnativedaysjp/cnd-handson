@@ -100,8 +100,8 @@ Canaryリリースは、新旧混在状態を制御し、本番環境におい�
       Namespace: blue-green
   ```
  設定できたら、CREATEをクリックします　（うまくいくと以下のようになります）
-  ![create](./imgs/BG/create.png)
-  ![create2](./imgs/BG/create2.png)
+  ![create](imgs/BG/CREATE.png)
+  ![create2](imgs/BG/CREATE2.png)
  ページ上部にある SYNC をクリックします
  無事デプロイされると以下のようになります
   ![sync](imgs/BG/SYNC.png)
@@ -123,7 +123,7 @@ Canaryリリースは、新旧混在状態を制御し、本番環境におい�
 
   ![OutOfSync](imgs/BG/OutOfSync.png)
  rolloutを手動でSyncします
-  ![Sync](imgs/BG/Rollout-sync.png)
+  ![Sync](imgs/BG/rollout-sync.png)
  syncされた結果以下のようになります。blue, green両方のreplicasetが作成されているのは、bluegreen-rollout.yamlにおいてspec.strategy.bluegreen.autoPromotionEnabledがfalseに設定されているからです
   ![update](imgs/BG/deploy.png)
  それぞれのingressにアクセスすると以下のようになります。
@@ -135,7 +135,7 @@ ArgoRolloutのBlueGreenデプロイにおいては、一旦greenに当たるサ�
   ![rollout-extension](imgs/BG/rollout-extension.png)
 
 ### Canaryリリース
- Applicationsの画面において + NEW APPをクリック![Applications](./imgs/demoapp/new-app.png)
+ Applicationsの画面において + NEW APPをクリック![Applications](./imgs/analysis/application.png)
  上の画面上で各項目を次のように設定します。
   ```
   GENERAL
