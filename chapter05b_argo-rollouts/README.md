@@ -240,8 +240,8 @@ data:
         health
         # 下記追加
         hosts {
-           IPアドレス app.example.com
-           IPアドレス app-preview.example.com
+           IPアドレス app.argocd.example.com
+           IPアドレス app-preview.argocd.example.com
            IPアドレス prometheus.example.com
            fallthrough
         }
