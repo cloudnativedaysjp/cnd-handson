@@ -2,10 +2,10 @@ apiVersion: gateway.networking.k8s.io/v1beta1
 kind: Gateway
 metadata:
   annotations:
-    istio.io/for-service-account: sample-app-blue
+    istio.io/for-service-account: handson-blue
   labels:
-    app.kubernetes.io/part-of: sample-app
-  name: sample-app
+    app.kubernetes.io/component: waypoint-proxy
+  name: handson
 spec:
   gatewayClassName: istio-waypoint
   listeners:

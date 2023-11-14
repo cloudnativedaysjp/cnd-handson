@@ -14,13 +14,6 @@ podmonitors:
       - honorLabels: true
         path: /metrics
         relabelings:
-          # - action: drop
-          #   sourceLabels:
-          #     - __meta_kubernetes_pod_label_app
-          #   regex: kiali
-          # NOTE(h.hara):
-          # 採用Istio version(1.19.0-alpha.1)ではistio-cniのhelm chartでは
-          # label追加設定がないため、ここでdropする。
           - action: drop
             sourceLabels:
               - __meta_kubernetes_pod_label_k8s_app

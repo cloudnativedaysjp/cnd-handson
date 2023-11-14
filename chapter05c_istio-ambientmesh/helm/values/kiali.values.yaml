@@ -27,3 +27,5 @@ external_services:
     url_service_version: http://istiod:15014/version
   tracing:
     enabled: false
+server:
+  metrics_enabled: false

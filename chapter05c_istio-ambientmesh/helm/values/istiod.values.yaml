@@ -42,3 +42,9 @@ telemetry:
   enabled: false
   v2:
     enabled: false
+sidecarInjectorWebhook:
+  templates:
+    sidecar: ""
+    gateway: ""
+    grpc-simple: ""
+    grpc-agent: ""
