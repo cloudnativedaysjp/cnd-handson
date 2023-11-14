@@ -6,4 +6,4 @@ configs:
 server:
   extensions:
     # -- Enable support for Argo UI extensions
-    enabled: false
+    enabled: true
