@@ -52,8 +52,9 @@ helmfile apply -f helm/helmfile.d/istio-ambient.yaml
 作成されるリソースは下記のとおりです。
 ```sh
 kubectl -n istio-system get service,daemonset,deployment
-
-# 出力結果例
+```
+```sh
+# 実行結果
 NAME             TYPE        CLUSTER-IP     EXTERNAL-IP   PORT(S)                                 AGE
 service/istiod   ClusterIP   10.96.87.196   <none>        15010/TCP,15012/TCP,443/TCP,15014/TCP   92s
 
@@ -91,10 +92,12 @@ kubectl rollout restart deploy/handson-blue
 疎通確認完了後、Port forwardのjobを停止してください。
 ```sh
 jobs
-
-# 出力結果例
+```
+```sh
+# 実行結果
 [1]  + terminated  kubectl port-forward service/handson 18080:8080 > /dev/null
-
+```
+```sh
 # `kubectl port-forward`を実行しているjobを停止。
 kill %1
 ```
@@ -110,8 +113,9 @@ helmfile apply -f helm/helmfile.d/kiali.yaml
 作成されるリソースは下記の通りです。
 ```sh
 kubectl -n istio-system get service,pod -l app=kiali
-
-# 出力結果例
+```
+```sh
+# 実行結果
 NAME            TYPE        CLUSTER-IP     EXTERNAL-IP   PORT(S)              AGE
 service/kiali   ClusterIP   10.96.123.32   <none>        20001/TCP,9090/TCP   36s
 
@@ -127,8 +131,9 @@ kubectl apply -f ingress/kiali-ingress.yaml
 しばらくすると、ingressリソースにIPが付与されます。
 ```sh
 kubectl -n istio-system get ingress -l app=kiali
-
-# 出力結果例
+```
+```sh
+# 実行結果
 NAME             CLASS   HOSTS               ADDRESS        PORTS   AGE
 kiali-by-nginx   nginx   kiali.example.com   10.96.88.164   80      2m5s
 ```
@@ -166,8 +171,9 @@ kubectl apply -f app/curl-allow.yaml,app/curl-deny.yaml
 作成されるリソースは下記の通りです。
 ```sh
 kubectl get po -l content=layer4-authz
-
-# 出力結果例
+```
+```sh
+# 実行結果
 NAME         READY   STATUS    RESTARTS   AGE
 curl-allow   1/1     Running   0          46s
 curl-deny    1/1     Running   0          46s
@@ -183,7 +189,7 @@ done
 ```
 
 双方のワークロードからのリクエストが成功していることが分かります。
-```
+```sh
 # 出力結果
 curl-allow: 200
 curl-deny:  200
@@ -214,8 +220,9 @@ kubectl apply -f networking/L4-authorization-policy.yaml
 作成されるリソースは下記の通りです。
 ```sh
 kubectl get authorizationpolicy -l content=layer4-authz
-
-# 出力結果例
+```
+```sh
+# 実行結果
 NAME           AGE
 layer4-authz   20s
 ```
@@ -230,7 +237,7 @@ done
 ```
 
 しばらくすると、`curl-deny` podからのリクエストは拒否されるようになります。
-```plain
+```sh
 # 出力結果例
 curl-allow: 200
 curl-deny:  200
@@ -271,7 +278,7 @@ echo ----------------;sleep 1;
 done
 ```
 
-```plain
+```sh
 # 出力結果例
 curl-deny:  000
 command terminated with exit code 56
@@ -293,8 +300,8 @@ ZTUNNEL_POD=$(kubectl get pod -n istio-system -l app=ztunnel --field-selector=sp
 
 kubectl logs -n istio-system "$ZTUNNEL_POD"
 ```
-```plain
-# 出力結果例(1行が長いためtimestampは表示は省略しています)
+```sh
+# 実行結果 (1行が長いためtimestampは表示は省略しています)
 INFO outbound{id=032d82f8befe58dde9685d40e6b72e73}: ztunnel::proxy::outbound: proxying to 10.244.1.5:8080 using node local fast path
 INFO outbound{id=032d82f8befe58dde9685d40e6b72e73}: ztunnel::proxy::outbound: RBAC rejected conn=10.244.1.15(spiffe://cluster.local/ns/default/sa/curl-deny)->10.244.1.5:8080
 WARN outbound{id=032d82f8befe58dde9685d40e6b72e73}: ztunnel::proxy::outbound: failed dur=120.708¬µs err=http status: 401 Unauthorized
@@ -349,8 +356,9 @@ kubectl apply -f networking/k8s-gateway.yaml
 作成されるリソースは下記の通りです。
 ```sh
 kubectl get pod,gateway -l app.kubernetes.io/component=waypoint-proxy
-
-# 出力結果例
+```
+```sh
+# 実行結果
 NAME                                          READY   STATUS    RESTARTS   AGE
 pod/handson-istio-waypoint-575c848cc7-9znj9   1/1     Running   0          99s
 
@@ -367,8 +375,9 @@ kubectl apply -f app/curl.yaml
 作成されるリソースは下記の通りです。
 ```sh
 kubectl get po -l content=layer7-authz
-
-# 出力結果例
+```
+```sh
+# 実行結果
 NAME   READY   STATUS    RESTARTS   AGE
 curl   1/1     Running   0          15s
 ```
@@ -379,7 +388,7 @@ while :; do kubectl exec curl -- curl -s -o /dev/null handson:8080 -w '%{http_co
 ```
 
 リクエストは成功していることを確認してください。
-```
+```sh
 # 出力結果
 200
 200
@@ -404,8 +413,9 @@ kubectl apply -f networking/L7-authorization-policy.yaml
 作成されたリソースは下記の通りです。
 ```sh
 kubectl get authorizationpolicy -l content=layer7-authz
-
-# 出力結果例
+```
+```sh
+# 実行結果
 NAME           AGE
 layer7-authz   2m24s
 ```
@@ -416,7 +426,7 @@ while :; do kubectl exec curl -- curl -s -o /dev/null -w '%{http_code}\n' handso
 ```
 
 先ほどと同じく、リクエストが成功していることを確認してください。
-```
+```sh
 # 出力結果
 200
 200
@@ -434,7 +444,7 @@ while :; do kubectl exec curl -- curl -X POST -s -o /dev/null -d '{}' -w '%{http
 ```
 
 しばらくすると、403にて拒否されるようになります。
-```
+```sh
 # 出力結果例
 200
 200
@@ -454,7 +464,7 @@ while :; do kubectl exec curl -- curl -X POST -s -o /dev/null -d '{}' -w '%{http
 
 ここで、ztunnelとwaypoint proxyがどのような動きをしたのかログで確認してみましょう。まずは、ztunnelのログを見てみます。
 ```sh
-# 出力結果例(1行が長いためtimestampは表示は省略しています)
+# 実行結果 (1行が長いためtimestampは表示は省略しています)
 INFO outbound{id=0c2180533d65d4ca5c314014e5a0f806}: ztunnel::proxy::outbound: proxy to 10.96.157.249:8080 using HBONE via 10.244.1.19:15008 type ToServerWaypoint
 INFO outbound{id=0c2180533d65d4ca5c314014e5a0f806}: ztunnel::proxy::outbound: complete dur=1.690584ms
 INFO outbound{id=b613b5bf5d8649a7c8bd39edbeb78812}: ztunnel::proxy::outbound: proxy to 10.96.157.249:8080 using HBONE via 10.244.1.19:15008 type ToServerWaypoint
@@ -466,8 +476,9 @@ INFO outbound{id=b613b5bf5d8649a7c8bd39edbeb78812}: ztunnel::proxy::outbound: co
 HBONEトネリングを使用して、waypoint proxy pod(ID: 10.244.1.19)を経由して`handson` Kubernetes service(IP: 10.96.157.249)にトラッフィックを流していることがわかります。次は、waypoint proxyのログを確認します。
 ```sh
 kubectl logs -l app.kubernetes.io/component=waypoint-proxy
-
-# 出力結果例(見やすいようにjqで成形しています。)
+```
+```json
+# 実行結果 (見やすいようにjqで成形しています。)
 {
   "upstream_service_time": null,
   "response_code": 403,
