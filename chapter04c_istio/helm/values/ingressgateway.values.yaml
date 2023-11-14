@@ -9,13 +9,19 @@ resources:
     cpu: 100m
     memory: 128Mi
 service:
-  type: ClusterIP
+  type: NodePort
   ports:
-  - name: status-port
-    port: 15021
-    protocol: TCP
+  - port: 15021
     targetPort: 15021
-  - name: http
-    port: 80
+    name: status-port
     protocol: TCP
-    targetPort: 80
+  - port: 80
+    targetPort: 8080
+    nodePort: 18080
+    name: http2
+    protocol: TCP
+  - port: 443
+    targetPort: 8443
+    nodePort: 18443
+    name: https
+    protocol: TCP
