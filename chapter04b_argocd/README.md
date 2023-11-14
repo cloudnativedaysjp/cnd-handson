@@ -160,9 +160,9 @@ GENERAL
 ページ上部にあるSYNCをクリックして、無事デプロイされると下記のように表示されていることを確認して下さい。
 
 ![sync](./imgs/demoapp/sync.png)
-
+ブラウザから
 http://app.argocd.example.com
-へアクセスして確認してみてください。青い色のタイルが出てくるのが確認できます。
+へアクセスして確認してみてください。アプリケーションが表示され青い色のタイルが出てくるのが確認できます。
 
 ![demo app](./imgs/demoapp/demo-app.png)
 
@@ -213,7 +213,8 @@ GENERAL
 ### 本番環境
 ![](imgs/demoapp/Kustomize-prd.png)
 
-アクセスして確認します。
+
+ブラウザで各環境へアクセスして確認してみてください。タイルの色が開発環境と本番環境で違う事が確認できます。
   * 開発環境: dev.kustomize.argocd.example.com
   * 本番環境: prd.kustomize.argocd.example.com
 ## Helmを使ったデプロイ
@@ -241,5 +242,6 @@ GENERAL
 ![](./imgs/demoapp/helm-create2.png)
 ページ上部にある SYNCをクリック（無事デプロイされると下記のようになります）
 ![](./imgs/demoapp/helm.png)
+ブラウザで
 helm.argocd.example.com
-アクセスして確認します。
+アクセスして確認してみてください。Helmを使ってデプロイが出来てる事が確認できます。
