@@ -498,6 +498,10 @@ spec:
     argument: "1"
 ```
 
+```shell
+kubectl apply -f manifests/go-instrumentation.yaml
+```
+
 自動インスツルメンテーションを利用するには、Podのアノテーションに`instrumentation.opentelemetry.io/inject-go`などの言語ごとの有効化設定を行います。
 なお、Goの場合にはeBPFを利用して計装するために、追加で実行しているバイナリをアノテーションで指定する必要があります。
 今回の例ではrootディレクトリ直下にある`/rollouts-demo`を実行しているため、下記のような指定をする必要があります。
