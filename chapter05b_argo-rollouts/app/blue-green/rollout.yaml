@@ -31,3 +31,4 @@ spec:
     blueGreen:
       activeService: handson
       previewService: handson-preview
+      autoPromotionEnabled: false
