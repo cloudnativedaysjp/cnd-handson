@@ -107,11 +107,11 @@ Canary Releaseは、新旧混在状態を制御し、本番環境において限
  無事デプロイされると以下のようになります
   ![sync](imgs/BG/SYNC.png)
 
-以上の手順で、Blue GreenのBlueに当たる状態がArgoCDを用いてデプロイされ、localからingressでアクセス可能となりました。
+以上の手順で、Blue/GreenのBlueに当たる状態がArgoCDを用いてデプロイされ、localからingressでアクセス可能となりました。
 
 ここからは、実際にBlue/Green Deploymentyを行いその様子を見ていこうと思います。
 
- `rollout.yaml`の編集を行います。
+ `app/blue-green/rollout.yaml`の編集を行います。
  imageのtagをblueから`green`に、変更し、差分をremoteのmasterブランチ（argocdのappを作成する際に指定したブランチ）に取り込みます。
 
   ```yaml
