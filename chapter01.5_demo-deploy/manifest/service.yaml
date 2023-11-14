@@ -7,9 +7,9 @@ metadata:
 spec:
   type: ClusterIP
   ports:
-  - port: 80
+  - name: http-app
+    port: 8080
     protocol: TCP
     targetPort: http
-    name: http
   selector:
     app: handson

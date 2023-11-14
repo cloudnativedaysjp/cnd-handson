@@ -1,9 +1,13 @@
+---
 apiVersion: apps/v1
 kind: Deployment
 metadata:
   labels:
     app: handson
-  name: handson
+    color: blue
+    version: v1
+    prometheus-monitor-ignore: ""
+  name: handson-blue
 spec:
   replicas: 1
   revisionHistoryLimit: 1
@@ -19,7 +23,11 @@ spec:
     metadata:
       labels:
         app: handson
+        color: blue
+        version: v1
+        prometheus-monitor-ignore: ""
     spec:
+      serviceAccountName: handson-blue
       containers:
       - image: argoproj/rollouts-demo:blue
         imagePullPolicy: IfNotPresent
@@ -28,10 +36,20 @@ spec:
         - name: http
           containerPort: 8080
           protocol: TCP
+        livenessProbe:
+          httpGet:
+            path: /
+            port: 8080
+            scheme: HTTP
+        readinessProbe:
+          httpGet:
+            path: /
+            port: 8080
+            scheme: HTTP
         resources:
           requests:
-            memory: 32Mi
-            cpu: 5m
+            memory: 84Mi
+            cpu: 100m
           limits:
             memory: 84Mi
             cpu: 100m
