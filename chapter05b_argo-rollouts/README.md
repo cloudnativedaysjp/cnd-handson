@@ -352,20 +352,3 @@ rolloutを手動でSyncすると、アプリケーションのpodと新たにAna
 Analysisrunの詳細をクリックし、Live Manifestを確認するとどういったレスポンスが帰ってきて、成功したのか失敗したのか確認できます。
 ![log](imgs/analysis/prometheus-log.png)
 Analysisrunが成功すると、自動的にCanary Releseが進んでいくのが分かります。
-### 事前に準備が必要なもの
-#### nginx-ingress 
-```
-helm upgrade ingress-nginx ingress-nginx/ingress-nginx \
---namespace ingress-nginx \
---set controller.metrics.enabled=true \
---set controller.metrics.serviceMonitor.enabled=true \
---set controller.metrics.serviceMonitor.additionalLabels.release="prometheus"
-```
-
-
-#### prometheus
-```
-helm upgrade kube-prometheus-stack prometheus-community/kube-prometheus-stack \
---namespace prometheus  \
---set prometheus.prometheusSpec.podMonitorSelectorNilUsesHelmValues=false \
---set prometheus.prometheusSpec.serviceMonitorSelectorNilUsesHelmValues=false
