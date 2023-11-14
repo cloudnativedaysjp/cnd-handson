@@ -8,11 +8,11 @@
 
 ```mermaid
 graph LR;
-    Canary Release-->分析;
+    CanaryRelease-->分析;
     分析-->成功;
     分析-->失敗;
     失敗-->ロールバック;
-    成功-->Canary Release
+    成功-->CanaryRelease;
 ```
   
 ## Argo Rolloutsについて
