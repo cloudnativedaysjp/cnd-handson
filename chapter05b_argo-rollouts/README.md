@@ -148,7 +148,7 @@ Canary Releaseは、新旧混在状態を制御し、本番環境において限
  * app-preview.argocd.example.com
 
   ![demoapp](imgs/BG/demoapp.png)
- rolloutの3点リーダーをクリックし [Promte-Full]をクリックすることで、blue-green deployが行われます。プロモートが行われたどちらのingressもgreenを見るようになり、blueのreplicasetは削除されます。
+ rolloutの3点リーダーをクリックし [Promote-Full]をクリックすることで、blue-green deployが行われます。プロモートが行われたどちらのingressもgreenを見るようになり、blueのreplicasetは削除されます。
   ![promote](imgs/BG/promote.png)
  
  このように、ArgoRolloutのBlue/Green Deploymentにおいては、一旦greenに当たるサービスが、previewServiceとして登録され、プロモートすることで、activeServiceに昇格するような動きをして、Blue/Green Deploymentを実現します。  
@@ -240,8 +240,8 @@ data:
         health
         # 下記追加
         hosts {
-           IPアドレス app.rollout.com
-           IPアドレス app-preview.rollout.com
+           IPアドレス app.example.com
+           IPアドレス app-preview.example.com
            IPアドレス prometheus.example.com
            fallthrough
         }
@@ -266,7 +266,7 @@ metadata:
 
   ```
 ### Job metrics (Blue/Green Deploy)
-アップデートする際に、jobをデプロイし、jobの実行結果によってBlue/Green DeployをPromteするかどうかを判断させるAnalysisを作成します。
+アップデートする際に、jobをデプロイし、jobの実行結果によってBlue/Green DeployをPromoteするかどうかを判断させるAnalysisを作成します。
   
   
 Applicationsの画面において + NEW APPをクリックします
@@ -303,7 +303,7 @@ rolloutを手動でSyncすると、アプリケーションのpodと新たにAna
 ![update](./imgs/analysis/job-update.png)
 jobが成功すると、自動的にBlue/Green Deployが進んでいくのが分かります。
 ### Web metrics (Blue/Green Deploy)
-Analysis実行時にリクエストを送信し、レスポンスの内容にてよってPromteするかどうかを判断します
+Analysis実行時にリクエストを送信し、レスポンスの内容にてよってPromoteするかどうかを判断します
   * Json形式のレスポンスの場合Jsonの中身を見て判断します
   * Json形式以外のレスポンスの場合はstatus codeが200であるかどうかの判断になります
 
@@ -343,7 +343,7 @@ Analysisrunの詳細をクリックし、Live Manifestを確認するとどう�
 ![log](imgs/analysis/web-log.png)
 正常なレスポンスが到達すると、自動的にBlue/Green Deployが進んでいくのが分かります。
 ### Prometheus metrics (Canary Release)
-Analysis実行時にPrometheusにPromQLを送信し、その結果によってPromteするかどうかを判断します
+Analysis実行時にPrometheusにPromQLを送信し、その結果によってPromoteするかどうかを判断します
 
 Applicationsの画面において + NEW APPをクリックします
 ![Applications](./imgs/analysis/application.png)
