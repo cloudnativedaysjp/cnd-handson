@@ -1,0 +1,21 @@
+apiVersion: argoproj.io/v1alpha1
+kind: AnalysisTemplate
+metadata:
+  name: handson-analysis
+spec:
+  args:
+  - name: ingress
+  metrics:
+  - name: handson-analysis
+    interval: 10s
+    successCondition: isNaN(result[0]) || result[0] > 0.90
+    failureLimit: 3
+    provider:
+      prometheus:
+        address: http://prometheus.example.com/
+        query: >+
+          sum(
+            rate(nginx_ingress_controller_requests{ingress="{{args.ingress}}",status!~"[4-5].*"}[1m]))
+            /
+            sum(rate(nginx_ingress_controller_requests{ingress="{{args.ingress}}"}[1m])
+          )
