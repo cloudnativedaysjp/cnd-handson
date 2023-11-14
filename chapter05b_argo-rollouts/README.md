@@ -127,10 +127,13 @@ Canaryリリースは、新旧混在状態を制御し、本番環境におい�
  syncされた結果以下のようになります。blue, green両方のreplicasetが作成されているのは、bluegreen-rollout.yamlにおいてspec.strategy.bluegreen.autoPromotionEnabledがfalseに設定されているからです
   ![update](imgs/BG/deploy.png)
  それぞれのingressにアクセスすると以下のようになります。
-ArgoRolloutのBlueGreenデプロイにおいては、一旦greenに当たるサービスが、previewServiceとして登録され、6の手順を実行することで、activeServiceに昇格するような動きをして、BlueGreenデプロイを実現します。
   ![demoapp](imgs/BG/demoapp.png)
- bluegreen-rolloutの3点リーダーをクリックし [Promte-Full]を押下することで、blue-green deployが行われます。プロモートが行われたどちらのingressもgreenを見るようになり、blueのreplicasetは削除されます。
+ rolloutの3点リーダーをクリックし [Promte-Full]をクリックすることで、blue-green deployが行われます。プロモートが行われたどちらのingressもgreenを見るようになり、blueのreplicasetは削除されます。
   ![promote](imgs/BG/promote.png)
+ 
+ このように、ArgoRolloutのBlueGreenデプロイにおいては、一旦greenに当たるサービスが、previewServiceとして登録され、プロモートすることで、activeServiceに昇格するような動きをして、BlueGreenデプロイを実現します。  
+ 
+ 
  rollout-extensionを使用した場合、rolloutを選択しmoreのタブが出現します。moreのタブを選ぶとこのようにblueとgreenがどうなっているか一目で確認できるようになります。
   ![rollout-extension](imgs/BG/rollout-extension.png)
 
@@ -266,7 +269,7 @@ Applicationsの画面において + NEW APPをクリックします
 ![create](./imgs/analysis/job-create.png)
 ![create2](./imgs/analysis/job-create2.png)
 ページ上部にある SYNC をクリックします
-![create2](./imgs/analysis/job-sync.png)
+![create2](./imgs/analysis/Job-sync.png)
 rollout.yamlの編集を行います。imageのtagをblueからgreenに、変更し、差分をremoteのmasterブランチ（argocdのappを作成する際に指定したブランチ）に取り込みます。
 ```yaml
 image: argoproj/rollouts-demo:green
