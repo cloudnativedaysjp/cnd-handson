@@ -58,7 +58,7 @@ Windowsの場合
 既存のマニュフェストに変更を加える事で、様々なデプロイを行うため自由に利用できるブランチを用意します。
 
 new_branch_nameは自由に決めて下さい。
-```
+```sh
 git colne https://github.com/cloudnativedaysjp/cndt2023-handson.git
 git checkout -b new_branch_name
 git push orign　new_branch_name
@@ -67,19 +67,22 @@ git push orign　new_branch_name
 [chapter04ｂargocd](https://github.com/cloudnativedaysjp/cndt2023-handson/tree/main/chapter04b_argocd#argo-cd%E3%81%AE%E3%82%A4%E3%83%B3%E3%82%B9%E3%83%88%E3%83%BC%E3%83%AB)を参照してWebUIの確認とレポジトリの登録まで行って下さい。
 
 今回のchapterでは更にArgo CDのプラグインである、rollout-extensionをインストールしてArgoCD上でrolloutの操作結果が確認できるようにします。
-```
+```sh
 kubectl apply -n argo-cd \
     -f https://raw.githubusercontent.com/argoproj-labs/rollout-extension/v0.2.1/manifests/install.yaml
 ```
 
 ### Argo Rolloutsのインストール
 helmファイルを利用してArgo CDをインストールします。
-```
+```sh
 helmfile apply -f ./helm/helmfile.yaml
 ```
 作成されるリソースは下記の通りです。
+```sh
+kubectl get service,deployment  -n argo-rollouts
 ```
-$kubectl get service,deployment  -n argo-rollouts
+```sh
+# 実行結果
 NAME                            READY   UP-TO-DATE   AVAILABLE   AGE
 deployment.apps/argo-rollouts   2/2     2            2           28d
 ```
@@ -221,9 +224,10 @@ Canary Releaseは、新旧混在状態を制御し、本番環境において限
 
 ### 事前準備
 Argo Rolloutsのメトリクスプロバイダーが、デモアプリやPrometheusにアクセスできるようにCore DNSのを設定を行います。
+  ```sh
+  kubectl edit cm coredns -n kube-system
   ```
-  $ kubectl edit cm coredns -n kube-system
-
+  ```yaml
 # Please edit the object below. Lines beginning with a '#' will be ignored,
 # and an empty file will abort the edit. If an error occurs while saving this file will be
 # reopened with the relevant failures.

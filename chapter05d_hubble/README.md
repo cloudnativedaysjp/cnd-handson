@@ -28,7 +28,10 @@ Hubble RelayとHubble UIのデプロイを行います。
 Hubble Relayのステータスについてはciliumコマンドからも確認可能です。
 
 ```console
-$ cilium status
+cilium status
+```
+```console
+# 実行結果
     /¯¯\
  /¯¯\__/¯¯\    Cilium:             OK
  \__/¯¯\__/    Operator:           OK
@@ -81,13 +84,16 @@ Hubble UIに関しては、L7トラフィックの可視化を行うためにann
 下記コマンドで設定を適用します。
 
 ```console
-$ helmfile apply -f helmfile
+helmfile apply -f helmfile
 ```
 
 下記コマンドでHubble RelayのステータスがOKになっていることを確認します。
 
 ```console
-$ cilium status
+cilium status
+```
+```console
+# 実行結果
     /¯¯\
  /¯¯\__/¯¯\    Cilium:             OK
  \__/¯¯\__/    Operator:           OK
@@ -137,8 +143,10 @@ Hubble CLIを利用してHubble Relayにアクセスします。
 やり方はいろいろありますが、今回はkubectlコマンドを利用します。
 
 ```console
-$ # 別のコンソールを開き実行
-$ kubectl port-forward -n kube-system deploy/hubble-relay 4245 4245
+# 別のコンソールを開き実行
+kubectl port-forward -n kube-system deploy/hubble-relay 4245 4245
+```
+```console
 Forwarding from 127.0.0.1:4245 -> 4245
 Forwarding from [::1]:4245 -> 4245
 ```
@@ -146,7 +154,10 @@ Forwarding from [::1]:4245 -> 4245
 下記コマンドでStatusを確認し、HealthcheckがOKとなっていることを確認します。
 
 ```console
-$ hubble status
+hubble status
+```
+```console
+# 実行結果
 Healthcheck (via localhost:4245): Ok
 Current/Max Flows: 7,479/12,285 (60.88%)
 Flows/s: 33.34
@@ -156,7 +167,7 @@ Connected Nodes: 3/3
 Hubble Relay経由で取得したHubble Serverのフロー情報は、下記コマンドで出力できます。
 
 ```console
-$ hubble observe flows
+hubble observe flows
 ```
 
 コマンドを実行すると下記のような情報が出力されます。
@@ -190,7 +201,10 @@ policy.cilium.io/proxy-visibility: "<Ingress/8081/TCP/HTTP>"
 また、CiliumEndpointsを確認することで、Visibility Policyのステータスを確認することが可能です。
 
 ```console
-$ kubectl get cep -n kube-system
+kubectl get cep -n kube-system
+```
+```console
+# 実行結果
 NAME                            ENDPOINT ID   IDENTITY ID   INGRESS ENFORCEMENT   EGRESS ENFORCEMENT   VISIBILITY POLICY   ENDPOINT STATE   IPV4         IPV6
 coredns-5d78c9869d-99cjz        2133          63980         non-enforcing         non-enforcing                            ready            10.0.1.202
 coredns-5d78c9869d-nn2bc        2155          63980         non-enforcing         non-enforcing                            ready            10.0.1.159

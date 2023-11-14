@@ -82,6 +82,9 @@ helmfile apply -f helm/helmfile.yaml
 作成されるリソースは下記の通りです。
 ```
 kubectl get service,deployment  -n argo-cd
+```
+```
+# 実行結果
 NAME                                               TYPE        CLUSTER-IP      EXTERNAL-IP   PORT(S)             AGE
 service/argo-cd-argocd-applicationset-controller   ClusterIP   10.96.209.173   <none>        7000/TCP            26d
 service/argo-cd-argocd-dex-server                  ClusterIP   10.96.116.27    <none>        5556/TCP,5557/TCP   26d

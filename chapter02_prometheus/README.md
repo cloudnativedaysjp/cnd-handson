@@ -39,7 +39,7 @@ Prometheusターゲット設定：Prometheus固有の言語を学ぶ必要なく
 
 これにより、CPUやメモリ使用率、HTTPリクエスト数、レイテンシーなどのメトリクスを追跡できます。
 
-例として、repricaが3つでport`8080`で以下のようなアプリケーションが公開されていることに前提に説明していきます。
+例として、replicaが3つでport`8080`で以下のようなアプリケーションが公開されていることに前提に説明していきます。
 
 ```yaml
 apiVersion: apps/v1
@@ -165,8 +165,11 @@ grafana:
 実際に各種サービスが起動しているか確認してみましょう。
 
 ```bash
-$ helmfile sync
-$ kubectl get pods -n prometheus
+helmfile sync
+kubectl get pods -n prometheus
+```
+```bash
+# 実行結果
 alertmanager-kube-prometheus-stack-alertmanager-0           2/2     Running   0          92s
 kube-prometheus-stack-grafana-5f4bf8df47-5csmk              3/3     Running   0          100s
 kube-prometheus-stack-kube-state-metrics-776cff966c-x4v7w   1/1     Running   0          100s
@@ -181,8 +184,8 @@ prometheus-kube-prometheus-stack-prometheus-0               2/2     Running   0 
 kube-prometheus-stack をアンインストールする場合は、以下のコマンドを実行してください。
 
 ```zsh
-$ kubectl delete -f ingress.yaml
-$ helmfile destroy
+kubectl delete -f ingress.yaml
+helmfile destroy
 ```
 
 ### Ingressによるサービスの公開
@@ -239,7 +242,7 @@ spec:
 ```
 
 ```bash
-$ kubectl apply -f ingress.yaml
+kubectl apply -f ingress.yaml
 ```
 
 実際にそれぞれのUIが公開されているか確認してみましょう。

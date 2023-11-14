@@ -45,6 +45,7 @@ HelmはKubernetes用のパッケージマネージャーであり、Helmfileを�
 > $ cat <<EOF >> /etc/sysctl.conf
 > fs.inotify.max_user_watches = 524288
 > fs.inotify.max_user_instances = 512
+> EOF
 > ```
 
 構築するKubernetesクラスターの設定は`kind-config.yaml`で行います。
@@ -90,7 +91,7 @@ Not sure what to do next? 😅  Check out https://kind.sigs.k8s.io/docs/user/qui
 
 - [Cilium](https://cilium.io/)
 - [Metallb](https://metallb.universe.tf/)
-- [Nginx Controller](https://docs.nginx.com/nginx-ingress-controller/)
+- [Nginx Ingress Controller](https://docs.nginx.com/nginx-ingress-controller/)
 
 KubernetesクラスターのCNIとしてCiliumをインストールします。
 Ciliumについては[Chapter4d Cilium](./../chapter04d_cilium/)を参照してください。
@@ -106,7 +107,7 @@ helmfile apply -f helmfile
 ```
 
 > **Info**  
-> Kubernetesのイングレスコントローラーとして、Nginx Controllerをインストールしていますが、Cilium自体もKubernetes Ingressリソースをサポートしています。
+> Kubernetesのイングレスコントローラーとして、Nginx Ingress Controllerをインストールしていますが、Cilium自体もKubernetes Ingressリソースをサポートしています。
 > こちらに関しては、[Chapter4d Cilium](./../chapter04d_cilium/)にて説明します。
 
 Metallbに関しては、追加で`IPAddressPool`と`L2Advertisement`をデプロイする必要があります。
@@ -125,19 +126,33 @@ kubectl apply -f manifest/metallb.yaml
 まずはKubernetesクラスターの情報が取得できることを確認します。
 
 ```console
-$ kubectl cluster-info
+kubectl cluster-info
+```
+```console
+# 実行結果
 Kubernetes control plane is running at https://127.0.0.1:44707
 CoreDNS is running at https://127.0.0.1:44707/api/v1/namespaces/kube-system/services/kube-dns:dns/proxy
 
 To further debug and diagnose cluster problems, use 'kubectl cluster-info dump'.
 ```
 
-次に、動作確認用のNginxのPodを作成し、ポートフォワードします。
+次に、動作確認用のNginxのPodを作成し、
 
 ```console
-$ kubectl run --restart=Never nginx --image=nginx:alpine --wait
+kubectl run --restart=Never nginx --image=nginx:alpine --wait
+```
+```console
+# 実行結果
 pod/nginx created
+```
+
+ポートフォワードします。
+
+```console
 $ kubectl port-forward nginx 8081:80
+```
+```console
+# 実行結果
 Forwarding from 127.0.0.1:8081 -> 80
 Forwarding from [::1]:8081 -> 80
 ```
@@ -146,6 +161,9 @@ Forwarding from [::1]:8081 -> 80
 
 ```console
 $ curl localhost:8081
+```
+```console
+# 実行結果
 <!DOCTYPE html>
 <html>
 <head>
@@ -171,8 +189,10 @@ Commercial support is available at
 </html>
 ```
 
+確認できたら、`kubectl port-forward`コマンドは「Ctrl + C」などで止めてください。
+
 > **Info**  
-> [End-To-End Connectivity Testing](https://docs.cilium.io/en/stable/contributing/testing/e2e/#end-to-end-connectivity-testing)に記載があるように、Cilium CLIを利用することでEnd-To-Endのテストを行うこともできます。
+> [End-To-End Connectivity Testing](https://docs.cilium.io/en/stable/contributing/testing/e2e/#end-to-end-connectivity-testing)に記載があるように、Cilium CLIを利用することでEnd-To-Endのテストを行うこともできます。このテストは10分ほどかかります。
 > ```sh
 > cilium connectivity test
 > ```
