@@ -45,6 +45,7 @@ HelmはKubernetes用のパッケージマネージャーであり、Helmfileを�
 > $ cat <<EOF >> /etc/sysctl.conf
 > fs.inotify.max_user_watches = 524288
 > fs.inotify.max_user_instances = 512
+> EOF
 > ```
 
 構築するKubernetesクラスターの設定は`kind-config.yaml`で行います。
