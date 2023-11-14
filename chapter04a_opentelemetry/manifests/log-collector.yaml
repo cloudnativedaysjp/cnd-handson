@@ -13,7 +13,7 @@ spec:
   volumes:
     - name: host-log-volumes
       hostPath:
-        path:  /data
+        path:  /tmp
   config: |
     receivers:
       filelog:
