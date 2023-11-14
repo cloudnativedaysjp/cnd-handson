@@ -7,17 +7,17 @@ spec:
   hosts:
   - app.example.com
   gateways:
-  - sample-app
+  - handson
   http:
   - route:
     - destination:
-        host: sample-app
+        host: handson
         port:
           number: 8080
         subset: blue
       weight: 50
     - destination:
-        host: sample-app
+        host: handson
         port:
           number: 8080
         subset: yellow
@@ -28,7 +28,7 @@ kind: DestinationRule
 metadata:
   name: weight-based-routing
 spec:
-  host: sample-app
+  host: handson
   subsets:
   - name: blue
     labels:

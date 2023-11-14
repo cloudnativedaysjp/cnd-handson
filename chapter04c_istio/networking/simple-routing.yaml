@@ -7,10 +7,10 @@ spec:
   hosts:
   - app.example.com
   gateways:
-  - sample-app
+  - handson
   http:
   - route:
     - destination:
-        host: sample-app
+        host: handson
         port:
           number: 8080

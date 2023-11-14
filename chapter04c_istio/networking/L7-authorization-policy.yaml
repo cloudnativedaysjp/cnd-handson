@@ -8,13 +8,12 @@ metadata:
 spec:
   selector:
     matchLabels:
-      app: sample-app
+      app: handson
   action: ALLOW
   rules:
   - from:
     - source:
         principals:
-        - cluster.local/ns/istio-system/sa/istio-ingressgateway
         - cluster.local/ns/default/sa/curl
     to:
     - operation:

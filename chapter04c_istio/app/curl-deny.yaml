@@ -20,8 +20,8 @@ spec:
   - name: curl
     image: curlimages/curl
     command:
-      - "/bin/sleep"
-      - "1d"
+    - "/bin/sleep"
+    - "1d"
     imagePullPolicy: IfNotPresent
     resources:
       requests:
