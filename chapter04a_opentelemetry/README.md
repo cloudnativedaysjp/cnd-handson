@@ -70,7 +70,7 @@ helmfileを使用してOpenTelemetry Operatorをインストールします。
 OpenTelemetry Operatorをインストールすることで、OpenTelemetry CollectorなどをKubernetesのリソースで管理することができます。
 
 ```sh
-helmfile apply -f helm/helmfile.d/opentelemetry.yaml
+helmfile sync
 ```
 
 monitoring NamespaceにデプロイされたOpenTelemetry OperatorのPodが起動していれば成功です。
