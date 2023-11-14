@@ -110,11 +110,10 @@ Canary Releaseは、新旧混在状態を制御し、本番環境において限
       Cluster URL: https://kubernetes.default.svc
       Namespace: blue-green
   ```
- 設定できたら、CREATEをクリックします　（うまくいくと下記のようになります）
+ 設定できたら、CREATEをクリックして、下記のように表示されていることを確認して下さい
   ![create](imgs/BG/CREATE.png)
   ![create2](imgs/BG/CREATE2.png)
- ページ上部にある SYNC をクリックします
- 無事デプロイされると下記のようになります
+ ページ上部にある SYNC をクリックして、無事デプロイされると下記のようになります
   ![sync](imgs/BG/SYNC.png)
 
 以上の手順で、Blue/GreenのBlueに当たる状態がArgoCDを用いてデプロイされ、localからingressでアクセス可能となりました。
@@ -129,15 +128,21 @@ Canary Releaseは、新旧混在状態を制御し、本番環境において限
   ```
 
  ArgoCDはデフォルトでは3分に一回の頻度でブランチを確認し、差分を検出しています。
- 3分待てない場合には、ページ上部にある [REFRESH]をクリックします。下記のようにbluegreen-demo rolloutにおいて差分が検出されます。（黄色で表示されているOutOfSyncが差分があることを示しています）
-ちなみにAppの設定において、SYNC POLICYをManualでなくAutoにしていた場合には、ここでOutOfSyncを検知すると自動でArgoCDがSyncを実行します。
+ 3分待てない場合には、ページ上部にある [REFRESH]をクリックします。下記のようにrolloutにおいて差分が検出されます。（黄色で表示されているOutOfSyncが差分があることを示しています）
+ 
+ ちなみにAppの設定において、SYNC POLICYをManualでなくAutoにしていた場合には、ここでOutOfSyncを検知すると自動でArgoCDがSyncを実行します。
 
   ![OutOfSync](imgs/BG/OutOfSync.png)
  rolloutを手動でSyncします
   ![Sync](imgs/BG/rollout-sync.png)
- syncされた結果下記のようになります。blue, green両方のreplicasetが作成されているのは、bluegreen-rollout.yamlにおいてspec.strategy.bluegreen.autoPromotionEnabledがfalseに設定されているからです
+ syncされた結果下記のよう。blue, green両方のreplicasetが作成されている事が確認できます。
+ 
+ 両方のreplicasetが作成されているのは、bluegreen-rollout.yamlにおいてspec.strategy.bluegreen.autoPromotionEnabledがfalseに設定されているからです
   ![update](imgs/BG/deploy.png)
- それぞれのingressにアクセスすると下記のようになります。
+ それぞれのingressにアクセスすると下記のようにblueとgreenの異なるタイルが表示されていることが確認できます。
+ * app.argocd.example.com
+ * app-preview.argocd.example.com
+
   ![demoapp](imgs/BG/demoapp.png)
  rolloutの3点リーダーをクリックし [Promte-Full]をクリックすることで、blue-green deployが行われます。プロモートが行われたどちらのingressもgreenを見るようになり、blueのreplicasetは削除されます。
   ![promote](imgs/BG/promote.png)
@@ -165,18 +170,18 @@ Canary Releaseは、新旧混在状態を制御し、本番環境において限
       Cluster URL: https://kubernetes.default.svc
       Namespace: canary
   ```
- 設定できたら、CREATEをクリックします　（うまくいくと下記のようになります）
+ 設定できたら、CREATEをクリックして、下記のように表示されていることを確認して下さい
   ![create](./imgs/canary/create.png)
   ![create2](./imgs/canary/create2.png)
- ページ上部にある SYNC をクリックします
- 無事デプロイされると下記のようになります
+ ページ上部にある SYNC をクリックして、無事デプロイされると下記のようになります
   ![sync](imgs/canary/sync.png)
 
-以上の手順で、Canary Releaseにおける安定バージョンに当たるバージョンがArgoCDを用いてデプロイされ、localからingressでアクセス可能となりました
+以上の手順で、Canary Releaseにおける安定バージョンがArgoCDを用いてデプロイされ、localからingressでアクセス可能となりました
 
 ここからは、実際に、Canary Releaseを行いその様子を見ていこうと思います。
 
- `app/canary/rollout.yaml`の編集を行います。imageのtagをblueから`green`に、変更し、差分をremoteのnew_branch_nameブランチ（argocdのappを作成する際に指定したブランチ）に取り込みます
+ `app/canary/rollout.yaml`の編集を行います。
+ imageのtagをblueから`green`に、変更し、差分をremoteのnew_branch_nameブランチ（argocdのappを作成する際に指定したブランチ）に取り込みます
 
   ```yaml
   image: argoproj/rollouts-demo:green 
@@ -187,10 +192,9 @@ Canary Releaseは、新旧混在状態を制御し、本番環境において限
   ![OutOfSync](imgs/canary/OutOfSync.png)
  rolloutを手動でSyncします
   ![rollout-sync](imgs/canary/rollout-sync.png)
- syncされた結果下記のようになります
+ syncされた結果安定バージョンと新バージョンの両方のreplicasetが確認できます。
   ![update](imgs/canary/update.png)
- ingressにアクセスすると下記のようになります。
-ArgoRolloutのCanary Releaseにおいては、安定バージョンであるBlueから新バージョンであるGreenのタイルが少しづつ増えて行っているのが確認できます。
+ ingressにアクセスすると下記のように、安定バージョンであるBlueから新バージョンであるGreenのタイルが少しづつ増えて行っているのが確認できます。
   ![demoapp](imgs/canary/demoapp.png)
  rollout-extensionを使用した場合、rolloutを選択しmoreのタブが出現します。moreのタブを選ぶと、アプリケーションの動作を確認せずとも自動で決められたStepを動いているのが一目で確認できるようになります。
   ![rollout-extension](imgs/canary/extended.png)
@@ -214,7 +218,7 @@ ArgoRolloutのCanary Releaseにおいては、安定バージョンであるBlue
 * 独自Plugin
 
 ### 事前準備
-Argo Rolloutsのメトリクスプロバイダーが、デモアプリやPrometheusにアクセスできるようにCore DNSのを設定を行う
+Argo Rolloutsのメトリクスプロバイダーが、デモアプリやPrometheusにアクセスできるようにCore DNSのを設定を行います。
   ```
   $ kubectl edit cm coredns -n kube-system
 
@@ -276,7 +280,7 @@ Applicationsの画面において + NEW APPをクリックします
       Cluster URL: https://kubernetes.default.svc
       Namespace: job-analysis
   ```
-設定できたら、CREATEをクリックします　（うまくいくと下記のようになります）
+設定できたら、CREATEをクリックして、下記のように表示されていることを確認して下さい
 ![create](./imgs/analysis/job-create.png)
 ![create2](./imgs/analysis/job-create2.png)
 ページ上部にある SYNC をクリックします
@@ -313,7 +317,7 @@ Applicationsの画面において + NEW APPをクリックします
       Cluster URL: https://kubernetes.default.svc
       Namespace: web-analysis
   ```
-設定できたら、CREATEをクリックします　（うまくいくと下記のようになります）
+設定できたら、CREATEをクリックして、下記のように表示されていることを確認して下さい
 ![create](./imgs/analysis/web-create.png)
 ![create](./imgs/analysis/web-create2.png)
 ページ上部にある SYNC をクリックします
@@ -350,7 +354,7 @@ Applicationsの画面において + NEW APPをクリックします
       Cluster URL: https://kubernetes.default.svc
       Namespace: prometheus-analysis
   ```
-設定できたら、CREATEをクリックします　（うまくいくと下記のようになります）
+設定できたら、CREATEをクリックして、下記のように表示されていることを確認して下さい
 ![create](./imgs/analysis/prometheus-create.png)
 ![create](./imgs/analysis/prometheus-create2.png)
 ページ上部にある SYNC をクリックします
