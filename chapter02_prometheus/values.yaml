@@ -1,3 +1,7 @@
 grafana:
   adminUser: admin
   adminPassword: handson_saiko!
+prometheus:
+  prometheusSpec:
+    podMonitorSelectorNilUsesHelmValues: false
+    serviceMonitorSelectorNilUsesHelmValues: false

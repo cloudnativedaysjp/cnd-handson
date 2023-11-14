@@ -1,4 +1,6 @@
 controller:
+  metrics:
+    enabled: true
   nodeSelector:
     kubernetes.io/hostname: kind-control-plane
   tolerations:

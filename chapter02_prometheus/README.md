@@ -292,40 +292,33 @@ PromQLの詳細な仕様についてはこちらを御覧ください。
 
 ### Nginx Ingressのメトリクスを外部公開する
 
-Ingress NGINX controllerのメトリクスを外部公開するために、以下の3つの設定を反映します。
+Ingress NGINX controllerのメトリクスを外部公開するために、ServiceMonitorを作成し、PrometheusがIngress NGINX Controllerのメトリクスを取得するようにします。
 
-```zsh
-controller.metrics.enabled=true
-controller.metrics.serviceMonitor.enabled=true
-controller.metrics.serviceMonitor.additionalLabels.release="prometheus"
-```
-
-values.yamlを以下のように変更します。
 
 ```yaml
-controller:
-  metrics:
-    enabled: true
-    serviceMonitor:
-      additionalLabels:
-        release: prometheus
-      enabled: true
+apiVersion: monitoring.coreos.com/v1
+kind: ServiceMonitor
+metadata:
+  name: ingress-nginx-controller
+  namespace: ingress-nginx
+spec:
+  endpoints:
+    - port: metrics
+      interval: 30s
+  namespaceSelector:
+    matchNames:
+      - ingress-nginx
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: ingress-nginx
+      app.kubernetes.io/instance: ingress-nginx
+      app.kubernetes.io/component: controller
 ```
 
-### Prometheusの設定変更
-
-デフォルトでPrometheusでは、同じネームスペースの`ServiceMonitors`や`PodMonitor`のみを検知します。
-
-そのため、Prometheusが実行されていない`ingress-nginx`のネームスペースの`ServiceMonitors`や`PodMonitor`を検知することはできません。
-
-他のネームスペースの`ServiceMonitors`や`PodMonitor`を検知するために、以下の設定を反映します。
-
-```yaml
-prometheus:
-  prometheusSpec:
-    podMonitorSelectorNilUsesHelmValues: false
-    serviceMonitorSelectorNilUsesHelmValues: false
+```shell
+kubectl apply -f manifests/ingress-nginx-servicemonitor.yaml
 ```
+
 
 ![image](https://github.com/kubernetes/ingress-nginx/blob/main/docs/images/prometheus-dashboard1.png)
 
