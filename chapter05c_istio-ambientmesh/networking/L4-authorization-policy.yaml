@@ -8,7 +8,7 @@ metadata:
 spec:
   selector:
     matchLabels:
-      app: sample-app
+      app: handson
   action: ALLOW
   rules:
   - from:

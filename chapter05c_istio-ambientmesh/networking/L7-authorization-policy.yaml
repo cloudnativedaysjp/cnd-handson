@@ -8,7 +8,7 @@ metadata:
 spec:
   selector:
     matchLabels:
-     istio.io/gateway-name: sample-app
+     istio.io/gateway-name: handson
   action: ALLOW
   rules:
   - from:
