@@ -113,6 +113,7 @@ Canary Releaseは、新旧混在状態を制御し、本番環境において限
  設定できたら、CREATEをクリックして、下記のように表示されていることを確認して下さい
   ![create](imgs/BG/CREATE.png)
   ![create2](imgs/BG/CREATE2.png)
+  
  ページ上部にある SYNC をクリックして、無事デプロイされると下記のようになります
   ![sync](imgs/BG/SYNC.png)
 
@@ -173,6 +174,7 @@ Canary Releaseは、新旧混在状態を制御し、本番環境において限
  設定できたら、CREATEをクリックして、下記のように表示されていることを確認して下さい
   ![create](./imgs/canary/create.png)
   ![create2](./imgs/canary/create2.png)
+  
  ページ上部にある SYNC をクリックして、無事デプロイされると下記のようになります
   ![sync](imgs/canary/sync.png)
 
@@ -283,6 +285,7 @@ Applicationsの画面において + NEW APPをクリックします
 設定できたら、CREATEをクリックして、下記のように表示されていることを確認して下さい
 ![create](./imgs/analysis/job-create.png)
 ![create2](./imgs/analysis/job-create2.png)
+
 ページ上部にある SYNC をクリックします
 ![create2](./imgs/analysis/Job-sync.png)
 analysis/job/rollout.yamlの編集を行います。imageのtagをblueからgreenに、変更し、差分をnew_branch_nameのブランチ（argocdのappを作成する際に指定したブランチ）に取り込みます。
@@ -320,6 +323,7 @@ Applicationsの画面において + NEW APPをクリックします
 設定できたら、CREATEをクリックして、下記のように表示されていることを確認して下さい
 ![create](./imgs/analysis/web-create.png)
 ![create](./imgs/analysis/web-create2.png)
+
 ページ上部にある SYNC をクリックします
 ![create](./imgs/analysis/web-sync.png)
 analysis/web/rollout.yamlの編集を行います。imageのtagをblueからgreenに、変更し、差分をremoteのnew_branch_nameブランチ（argocdのappを作成する際に指定したブランチ）に取り込みます。
@@ -357,6 +361,7 @@ Applicationsの画面において + NEW APPをクリックします
 設定できたら、CREATEをクリックして、下記のように表示されていることを確認して下さい
 ![create](./imgs/analysis/prometheus-create.png)
 ![create](./imgs/analysis/prometheus-create2.png)
+
 ページ上部にある SYNC をクリックします
 ![create](./imgs/analysis/prometheus-sync.png)
 analysis/prometheus/rollout.yamlの編集を行います。imageのtagをblueからgreenに、変更し、差分をremoteのnew_branch_nameブランチ（argocdのappを作成する際に指定したブランチ）に取り込みます。
