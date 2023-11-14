@@ -68,6 +68,7 @@ OpenTelemetry Collectorは、内部的には4つのコンポーネントで構�
 
 helmfileを使用してOpenTelemetry Operatorをインストールします。
 OpenTelemetry Operatorをインストールすることで、OpenTelemetry CollectorなどをKubernetesのリソースで管理することができます。
+ValidatingWebhookの兼ね合いで`helmfile sync`が失敗することがあるため、失敗した場合は再度実行してください。
 
 ```sh
 helmfile sync
