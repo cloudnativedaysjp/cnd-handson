@@ -76,7 +76,10 @@ helmfile sync
 monitoring NamespaceにデプロイされたOpenTelemetry OperatorのPodが起動していれば成功です。
 
 ```sh
-$ kubectl -n monitoring get pods
+kubectl -n monitoring get pods
+```
+```sh
+# 実行結果
 NAME                                      READY   STATUS    RESTARTS   AGE
 opentelemetry-operator-677b4d8655-6q5j5   2/2     Running   0          20h
 ```
@@ -185,14 +188,27 @@ spec:
 OpenTelemetryCollectorリソースをデプロイすると、自動的にDaemonSetとPodが起動していることがわかります。
 
 ```sh
-$ kubectl apply -f manifests/log-collector.yaml
+kubectl apply -f manifests/log-collector.yaml
+```
+```sh
+# 実行結果
 opentelemetrycollector/log-collector created
+```
 
-$ kubectl get opentelemetrycollector
+```sh
+kubectl get opentelemetrycollector
+```
+```sh
+# 実行結果
 NAME                MODE         VERSION   READY   AGE     IMAGE                                         MANAGEMENT
 log-collector       daemonset    0.87.0    1/1     18h     otel/opentelemetry-collector-contrib:0.87.0   managed
+```
 
-$ kubectl get daemonsets,pods -l app.kubernetes.io/name=log-collector-collector
+```sh
+kubectl get daemonsets,pods -l app.kubernetes.io/name=log-collector-collector
+```
+```sh
+# 実行結果
 NAME                                     DESIRED   CURRENT   READY   UP-TO-DATE   AVAILABLE   NODE SELECTOR   AGE
 daemonset.apps/log-collector-collector   2         2         2       2            2           <none>          18h
 
@@ -316,14 +332,27 @@ spec:
 OpenTelemetryCollectorリソースをデプロイすると、自動的にDaemonSetとPodが起動していることがわかります。
 
 ```sh
-$ kubectl apply -f manifests/metrics-collector.yaml
+kubectl apply -f manifests/metrics-collector.yaml
+```
+```sh
+# 実行結果
 opentelemetrycollector/metrics-collector created
+```
 
-$ kubectl get opentelemetrycollector metrics-collector
+```sh
+kubectl get opentelemetrycollector metrics-collector
+```
+```sh
+# 実行結果
 NAME                MODE        VERSION   READY   AGE   IMAGE                                         MANAGEMENT
 metrics-collector   daemonset   0.87.0    1/1     44m   otel/opentelemetry-collector-contrib:0.87.0   managed
+```
 
-$ kubectl get daemonsets,pods -l app.kubernetes.io/name=metrics-collector-collector
+```sh
+kubectl get daemonsets,pods -l app.kubernetes.io/name=metrics-collector-collector
+```
+```sh
+# 実行結果
 NAME                                         DESIRED   CURRENT   READY   UP-TO-DATE   AVAILABLE   NODE SELECTOR   AGE
 daemonset.apps/metrics-collector-collector   2         2         2       2            2           <none>          3m24s
 
@@ -336,8 +365,11 @@ pod/metrics-collector-collector-mzd9j   2/2     Running   0          3m24s
 下記のようにログを確認すると、2つのメトリクスで合計166個のデータポイントが取得されていることが確認できます。
 メトリクス名まで確認したい場合には、OpenTelemetryCollectorの`spec.config`の`exporters.debug.verbosity`を`detailed`に設定することで確認することができます。
 
+```sh
+kubectl logs -l app.kubernetes.io/name=metrics-collector-collector -f
 ```
-$ kubectl logs -l app.kubernetes.io/name=metrics-collector-collector -f
+```sh
+# 実行結果
 2023-11-12T20:08:46.171Z        info    MetricsExporter {"kind": "exporter", "data_type": "metrics", "name": "debug", "resource metrics": 2, "metrics": 2, "data points": 166}
 2023-11-12T20:09:16.171Z        info    MetricsExporter {"kind": "exporter", "data_type": "metrics", "name": "debug", "resource metrics": 2, "metrics": 2, "data points": 166}
 2023-11-12T20:09:46.171Z        info    MetricsExporter {"kind": "exporter", "data_type": "metrics", "name": "debug", "resource metrics": 2, "metrics": 2, "data points": 166}
@@ -401,7 +433,10 @@ spec:
 実際にJaegerをデプロイします。
 
 ```bash
-$ kubectl apply -f manifests/jaeger.yaml
+kubectl apply -f manifests/jaeger.yaml
+```
+```bash
+# 実行結果
 jaeger.jaegertracing.io/jaeger created
 
 $ kubectl -n jaeger get jaeger
@@ -456,14 +491,26 @@ OpenTelemetryCollectorリソースをデプロイすると、自動的にDeploym
 また、OTLPを受け付ける口として、Serviceも作成されています。
 
 ```sh
-$ kubectl apply -f manifests/trace-collector.yaml
+kubectl apply -f manifests/trace-collector.yaml
+```
+```sh
+# 実行結果
 opentelemetrycollector/metrics-collector created
+```
 
-$ kubectl get opentelemetrycollector trace-collector
+```sh
+kubectl get opentelemetrycollector trace-collector
+```
+```sh
+# 実行結果
 NAME              MODE         VERSION   READY   AGE   IMAGE                                         MANAGEMENT
 trace-collector   deployment   0.87.0    1/1     10m   otel/opentelemetry-collector-contrib:0.87.0   managed
-
-$ kubectl get deployments,pods,services -l app.kubernetes.io/name=trace-collector-collector
+```
+```sh
+kubectl get deployments,pods,services -l app.kubernetes.io/name=trace-collector-collector
+```
+```sh
+# 実行結果
 NAME                                        READY   UP-TO-DATE   AVAILABLE   AGE
 deployment.apps/trace-collector-collector   1/1     1            1           10m
 
@@ -517,7 +564,10 @@ spec:
 作成されたPodを確認すると、Podにサイドカーとして`opentelemetry-auto-instrumentation`コンテナが含まれた形で作成されていることが確認できます。
 
 ```bash
-$ kubectl get pods
+kubectl get pods
+```
+```bash
+# 実行結果
 NAME                               READY   STATUS   RESTARTS   AGE
 sample-app-blue-5fb8dc75fd-7cvxg   3/3     Ready    0          30s
 ```
