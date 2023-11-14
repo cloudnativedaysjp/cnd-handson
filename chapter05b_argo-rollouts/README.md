@@ -34,48 +34,58 @@ Argo Rolloutsは、Kubernetesコントローラおよび一連のカスタムリ
   - 　AnalysisTemplateを元に実際に動いたjob的なカスタムリソース
  
 
-Argo CDとの連携が可能で、簡単に既存のGit Opsにプログレッシブデリバリーができる
+Argo CDとの連携が可能で、簡単に既存のGit Opsでプログレッシブデリバリーができる
 ## セットアップ
 今回のハンズオンでは、Argo CDからArgo Rolloutsを利用します。
 ### ローカル環境での準備
 今回デプロイするWEBサービスのドメインは登録していないため、WEBサービスを利用する際にはハンズオンで利用する端末のhostsファイルを書き込む必要があります。
 
-hostsファイルのpathはOSによって様々なので環境によって変わりますが主要なpathは以下の通りです
+hostsファイルのpathはOSによって様々なので環境によって変わりますが主要なpathは下記の通りです
 
 MacやLinuxの場合
 ```/etc/hosts```
+
 Windowsの場合
 ```C:\Windows\System32\drivers\etc\hosts```
 
 この章で利用するドメインは
 
+* argocd.example.com
 * app.argocd.example.com
 * app-preview.argocd.example.com
-### Argo CDのインストール
-helmファイルを利用してArgo CDをインストールします。
+
+### Gitブランチの準備
+既存のマニュフェストに変更を加える事で、様々なデプロイを行うため自由に利用できるブランチを用意します。
+
+new_branch_nameは自由に決めて下さい。
 ```
-helmfile apply -f ../chapter04b_argocd/helm/helmfile.yaml
+git colne https://github.com/cloudnativedaysjp/cndt2023-handson.git
+git checkout -b new_branch_name
+git push orign　new_branch_name
 ```
-rollout-extensionをインストールしてArgoCD上でrolloutの操作結果が確認できるようにします。
+### Argo CDのセットアップ
+[chapter04ｂargocd](https://github.com/cloudnativedaysjp/cndt2023-handson/tree/main/chapter04b_argocd#argo-cd%E3%81%AE%E3%82%A4%E3%83%B3%E3%82%B9%E3%83%88%E3%83%BC%E3%83%AB)を参照してWebUIの確認とレポジトリの登録まで行って下さい。
+
+今回のchapterでは更にArgo CDのプラグインである、rollout-extensionをインストールしてArgoCD上でrolloutの操作結果が確認できるようにします。
 ```
 kubectl apply -n argo-cd \
     -f https://raw.githubusercontent.com/argoproj-labs/rollout-extension/v0.2.1/manifests/install.yaml
 ```
-ingressをdeployして、Argo CDのWEB UIにアクセス出来るようにします。
-```
-kubectl apply -f  ../chapter04b_argocd/ingress/ingress.yaml
-```
+
 ### Argo Rolloutsのインストール
 helmファイルを利用してArgo CDをインストールします。
 ```
 helmfile apply -f ./helm/helmfile.yaml
 ```
-podが作成されていることを確認します。
+作成されるリソースは下記の通りです。
 ```
-kubectl get pod -n argo-rollouts
+$kubectl get service,deployment  -n argo-rollouts
+NAME                            READY   UP-TO-DATE   AVAILABLE   AGE
+deployment.apps/argo-rollouts   2/2     2            2           28d
 ```
+
 ## Blue/Green DeploymentとCanary Release
-Argo Rolloutsによって追加された、プログレッシブデリバリーに必要な二つのデプロイ方法を体験します。
+Argo Rolloutsによって追加された、Blue/Green DeploymentとCanary Releaseの二つのデプロイ方法を試します。
 
 既存のローリングアップデートでは、一部のリソースを順次更新して本番環境をアップデートするため、新バージョンと旧バージョンが混在してしまいます。
 
@@ -94,17 +104,17 @@ Canary Releaseは、新旧混在状態を制御し、本番環境において限
     SYNC OPTIONS: AUTO CREATE NAMESPACE [v]
     SOURCE
       Repository URL: https://github.com/cloudnativedaysjp/cndt2023-handson
-      Revision: main
+      Revision: new_branch_name
       Path: chapter05b_argo-rollouts/app/blue-green
     DESTINATION
       Cluster URL: https://kubernetes.default.svc
       Namespace: blue-green
   ```
- 設定できたら、CREATEをクリックします　（うまくいくと以下のようになります）
+ 設定できたら、CREATEをクリックします　（うまくいくと下記のようになります）
   ![create](imgs/BG/CREATE.png)
   ![create2](imgs/BG/CREATE2.png)
  ページ上部にある SYNC をクリックします
- 無事デプロイされると以下のようになります
+ 無事デプロイされると下記のようになります
   ![sync](imgs/BG/SYNC.png)
 
 以上の手順で、Blue/GreenのBlueに当たる状態がArgoCDを用いてデプロイされ、localからingressでアクセス可能となりました。
@@ -112,22 +122,22 @@ Canary Releaseは、新旧混在状態を制御し、本番環境において限
 ここからは、実際にBlue/Green Deploymentyを行いその様子を見ていこうと思います。
 
  `app/blue-green/rollout.yaml`の編集を行います。
- imageのtagをblueから`green`に、変更し、差分をremoteのmasterブランチ（argocdのappを作成する際に指定したブランチ）に取り込みます。
+ imageのtagをblueから`green`に、変更し、差分をremoteのnew_branch_nameブランチ（argocdのappを作成する際に指定したブランチ）に取り込みます。
 
   ```yaml
   image: argoproj/rollouts-demo:green
   ```
 
  ArgoCDはデフォルトでは3分に一回の頻度でブランチを確認し、差分を検出しています。
- 3分待てない場合には、ページ上部にある [REFRESH]をクリックします。以下のようにbluegreen-demo rolloutにおいて差分が検出されます。（黄色で表示されているOutOfSyncが差分があることを示しています）
+ 3分待てない場合には、ページ上部にある [REFRESH]をクリックします。下記のようにbluegreen-demo rolloutにおいて差分が検出されます。（黄色で表示されているOutOfSyncが差分があることを示しています）
 ちなみにAppの設定において、SYNC POLICYをManualでなくAutoにしていた場合には、ここでOutOfSyncを検知すると自動でArgoCDがSyncを実行します。
 
   ![OutOfSync](imgs/BG/OutOfSync.png)
  rolloutを手動でSyncします
   ![Sync](imgs/BG/rollout-sync.png)
- syncされた結果以下のようになります。blue, green両方のreplicasetが作成されているのは、bluegreen-rollout.yamlにおいてspec.strategy.bluegreen.autoPromotionEnabledがfalseに設定されているからです
+ syncされた結果下記のようになります。blue, green両方のreplicasetが作成されているのは、bluegreen-rollout.yamlにおいてspec.strategy.bluegreen.autoPromotionEnabledがfalseに設定されているからです
   ![update](imgs/BG/deploy.png)
- それぞれのingressにアクセスすると以下のようになります。
+ それぞれのingressにアクセスすると下記のようになります。
   ![demoapp](imgs/BG/demoapp.png)
  rolloutの3点リーダーをクリックし [Promte-Full]をクリックすることで、blue-green deployが行われます。プロモートが行われたどちらのingressもgreenを見るようになり、blueのreplicasetは削除されます。
   ![promote](imgs/BG/promote.png)
@@ -149,37 +159,37 @@ Canary Releaseは、新旧混在状態を制御し、本番環境において限
     SYNC OPTIONS: AUTO CREATE NAMESPACE [v]
     SOURCE
       Repository URL: https://github.com/cloudnativedaysjp/cndt2023-handson
-      Revision: main
+      Revision: new_branch_name
       Path: chapter05b_argo-rollouts/app/canary
     DESTINATION
       Cluster URL: https://kubernetes.default.svc
       Namespace: canary
   ```
- 設定できたら、CREATEをクリックします　（うまくいくと以下のようになります）
+ 設定できたら、CREATEをクリックします　（うまくいくと下記のようになります）
   ![create](./imgs/canary/create.png)
   ![create2](./imgs/canary/create2.png)
  ページ上部にある SYNC をクリックします
- 無事デプロイされると以下のようになります
+ 無事デプロイされると下記のようになります
   ![sync](imgs/canary/sync.png)
 
 以上の手順で、Canary Releaseにおける安定バージョンに当たるバージョンがArgoCDを用いてデプロイされ、localからingressでアクセス可能となりました
 
 ここからは、実際に、Canary Releaseを行いその様子を見ていこうと思います。
 
- `rollout.yaml`の編集を行います。imageのtagをblueから`green`に、変更し、差分をremoteのmainブランチ（argocdのappを作成する際に指定したブランチ）に取り込みます
+ `app/canary/rollout.yaml`の編集を行います。imageのtagをblueから`green`に、変更し、差分をremoteのnew_branch_nameブランチ（argocdのappを作成する際に指定したブランチ）に取り込みます
 
   ```yaml
   image: argoproj/rollouts-demo:green 
   ```
 
- ArgoCDはデフォルトでは3分に一回の頻度でブランチを確認し、差分を検出しています。3分待てない場合には、ページ上部にある [REFRESH]をクリックします。以下のようにrolloutにおいて差分が検出されます。（黄色で表示されているOutOfSyncが差分があることを示しています）
+ ArgoCDはデフォルトでは3分に一回の頻度でブランチを確認し、差分を検出しています。3分待てない場合には、ページ上部にある [REFRESH]をクリックします。下記のようにrolloutにおいて差分が検出されます。（黄色で表示されているOutOfSyncが差分があることを示しています）
 ちなみにAppの設定において、SYNC POLICYをManualでなくAutoにしていた場合には、ここでOutOfSyncを検知すると自動でArgoCDがSyncを実行します。
   ![OutOfSync](imgs/canary/OutOfSync.png)
  rolloutを手動でSyncします
   ![rollout-sync](imgs/canary/rollout-sync.png)
- syncされた結果以下のようになります
+ syncされた結果下記のようになります
   ![update](imgs/canary/update.png)
- ingressにアクセスすると以下のようになります。
+ ingressにアクセスすると下記のようになります。
 ArgoRolloutのCanary Releaseにおいては、安定バージョンであるBlueから新バージョンであるGreenのタイルが少しづつ増えて行っているのが確認できます。
   ![demoapp](imgs/canary/demoapp.png)
  rollout-extensionを使用した場合、rolloutを選択しmoreのタブが出現します。moreのタブを選ぶと、アプリケーションの動作を確認せずとも自動で決められたStepを動いているのが一目で確認できるようになります。
@@ -218,7 +228,7 @@ data:
     .:53 {
         errors
         health
-        # 以下追加
+        # 下記追加
         hosts {
            IPアドレス app.rollout.com
            IPアドレス app-preview.rollout.com
@@ -260,22 +270,22 @@ Applicationsの画面において + NEW APPをクリックします
     SYNC OPTIONS: AUTO CREATE NAMESPACE [v]
     SOURCE
       Repository URL: https://github.com/cloudnativedaysjp/cndt2023-handson
-      Revision: main
+      Revision: new_branch_name
       Path: chapter05b_argo-rollouts/analysis/job
     DESTINATION
       Cluster URL: https://kubernetes.default.svc
       Namespace: job-analysis
   ```
-設定できたら、CREATEをクリックします　（うまくいくと以下のようになります）
+設定できたら、CREATEをクリックします　（うまくいくと下記のようになります）
 ![create](./imgs/analysis/job-create.png)
 ![create2](./imgs/analysis/job-create2.png)
 ページ上部にある SYNC をクリックします
 ![create2](./imgs/analysis/Job-sync.png)
-rollout.yamlの編集を行います。imageのtagをblueからgreenに、変更し、差分をremoteのmasterブランチ（argocdのappを作成する際に指定したブランチ）に取り込みます。
+analysis/job/rollout.yamlの編集を行います。imageのtagをblueからgreenに、変更し、差分をnew_branch_nameのブランチ（argocdのappを作成する際に指定したブランチ）に取り込みます。
 ```yaml
 image: argoproj/rollouts-demo:green
 ```
-ArgoCDはデフォルトでは3分に一回の頻度でブランチを確認し、差分を検出しています。3分待てない場合には、ページ上部にある [REFRESH]をクリックします。以下のようにrolloutにおいて差分が検出されます。（黄色で表示されているOutOfSyncが差分があることを示しています）
+ArgoCDはデフォルトでは3分に一回の頻度でブランチを確認し、差分を検出しています。3分待てない場合には、ページ上部にある [REFRESH]をクリックします。下記のようにrolloutにおいて差分が検出されます。（黄色で表示されているOutOfSyncが差分があることを示しています）
 ちなみにAppの設定において、SYNC POLICYをManualでなくAutoにしていた場合には、ここでOutOfSyncを検知すると自動でArgoCDがSyncを実行します。
 ![sync](./imgs/analysis/Job-refresh.png)
 rolloutを手動でSyncすると、アプリケーションのpodと新たにAnalysisrunが生成され、jobが発行されたのが確認できます。
@@ -297,22 +307,22 @@ Applicationsの画面において + NEW APPをクリックします
     SYNC OPTIONS: AUTO CREATE NAMESPACE [v]
     SOURCE
       Repository URL: https://github.com/cloudnativedaysjp/cndt2023-handson
-      Revision: main
+      Revision: new_branch_name
       Path: chapter05b_argo-rollouts/analysis/web
     DESTINATION
       Cluster URL: https://kubernetes.default.svc
       Namespace: web-analysis
   ```
-設定できたら、CREATEをクリックします　（うまくいくと以下のようになります）
+設定できたら、CREATEをクリックします　（うまくいくと下記のようになります）
 ![create](./imgs/analysis/web-create.png)
 ![create](./imgs/analysis/web-create2.png)
 ページ上部にある SYNC をクリックします
 ![create](./imgs/analysis/web-sync.png)
-rollout.yamlの編集を行います。imageのtagをblueからgreenに、変更し、差分をremoteのmasterブランチ（argocdのappを作成する際に指定したブランチ）に取り込みます。
+analysis/web/rollout.yamlの編集を行います。imageのtagをblueからgreenに、変更し、差分をremoteのnew_branch_nameブランチ（argocdのappを作成する際に指定したブランチ）に取り込みます。
 ```yaml
 image: argoproj/rollouts-demo:green
 ```
-ArgoCDはデフォルトでは3分に一回の頻度でブランチを確認し、差分を検出しています。3分待てない場合には、ページ上部にある [REFRESH]をクリックします。以下のようにrolloutにおいて差分が検出されます。（黄色で表示されているOutOfSyncが差分があることを示しています）
+ArgoCDはデフォルトでは3分に一回の頻度でブランチを確認し、差分を検出しています。3分待てない場合には、ページ上部にある [REFRESH]をクリックします。下記のようにrolloutにおいて差分が検出されます。（黄色で表示されているOutOfSyncが差分があることを示しています）
 ちなみにAppの設定において、SYNC POLICYをManualでなくAutoにしていた場合には、ここでOutOfSyncを検知すると自動でArgoCDがSyncを実行します。
 ![sync](./imgs/analysis/web-refresh.png)
 rolloutを手動でSyncすると、アプリケーションのpodと新たにAnalysisrunが生成されます。
@@ -334,22 +344,22 @@ Applicationsの画面において + NEW APPをクリックします
     SYNC OPTIONS: AUTO CREATE NAMESPACE [v]
     SOURCE
       Repository URL: https://github.com/cloudnativedaysjp/cndt2023-handson
-      Revision: main
+      Revision: new_branch_name
       Path: chapter05b_argo-rollouts/analysis/prometheus
     DESTINATION
       Cluster URL: https://kubernetes.default.svc
       Namespace: prometheus-analysis
   ```
-設定できたら、CREATEをクリックします　（うまくいくと以下のようになります）
+設定できたら、CREATEをクリックします　（うまくいくと下記のようになります）
 ![create](./imgs/analysis/prometheus-create.png)
 ![create](./imgs/analysis/prometheus-create2.png)
 ページ上部にある SYNC をクリックします
 ![create](./imgs/analysis/prometheus-sync.png)
-rollout.yamlの編集を行います。imageのtagをblueからgreenに、変更し、差分をremoteのmasterブランチ（argocdのappを作成する際に指定したブランチ）に取り込みます。
+analysis/prometheus/rollout.yamlの編集を行います。imageのtagをblueからgreenに、変更し、差分をremoteのnew_branch_nameブランチ（argocdのappを作成する際に指定したブランチ）に取り込みます。
 ```yaml
 image: argoproj/rollouts-demo:green
 ```
-ArgoCDはデフォルトでは3分に一回の頻度でブランチを確認し、差分を検出しています。3分待てない場合には、ページ上部にある [REFRESH]をクリックします。以下のようにrolloutにおいて差分が検出されます。（黄色で表示されているOutOfSyncが差分があることを示しています）
+ArgoCDはデフォルトでは3分に一回の頻度でブランチを確認し、差分を検出しています。3分待てない場合には、ページ上部にある [REFRESH]をクリックします。下記のようにrolloutにおいて差分が検出されます。（黄色で表示されているOutOfSyncが差分があることを示しています）
 ちなみにAppの設定において、SYNC POLICYをManualでなくAutoにしていた場合には、ここでOutOfSyncを検知すると自動でArgoCDがSyncを実行します。
 ![sync](./imgs/analysis/prometheus-refresh.png)
 rolloutを手動でSyncすると、アプリケーションのpodと新たにAnalysisrunが生成されます。
