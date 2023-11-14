@@ -3,10 +3,10 @@ spec:
   http:
   - route:
     - destination:
-        host: sample-app
+        host: handson
         subset: blue
       weight: 0
     - destination:
-        host: sample-app
+        host: handson
         subset: yellow
       weight: 100

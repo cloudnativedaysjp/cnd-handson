@@ -2,7 +2,7 @@
 apiVersion: networking.istio.io/v1alpha3
 kind: Gateway
 metadata:
-  name: sample-app
+  name: handson
 spec:
   selector:
     istio: ingressgateway
