@@ -66,11 +66,11 @@ Windowsの場合
 
 この章で利用するドメインは
 
-* app.argocd.com
-* app.argocd.com
-* dev.kustomize.argocd.com
-* prd.kustomize.argocd.com
-* helm.argocd.com
+* argocd.example.com
+* app.argocd.example.com
+* dev.kustomize.argocd.example.com
+* prd.kustomize.argocd.example.com
+* helm.argocd.example.com
 
 ### Argo CDのインストール
 helmファイルを利用してArgo CDをインストールします。
@@ -91,8 +91,8 @@ http://argocd.example.com/
 以下のページにアクセス出来るか確認して下さい。
 ![webui](./imgs/setup/access-webui.png)
 ### レポジトリの登録
-* Settings - > Repositories と進み CONEECT REPOをクリック　![CONEECT REPO](./imgs/setup/add-repo-setting.png)
-*  上の画面上で各項目を次のように設定
+Settings - > Repositories と進み CONEECT REPOをクリック　![CONEECT REPO](./imgs/setup/add-repo-setting.png)
+上の画面上で各項目を次のように設定
 ```
 Choose you connection method: VIA HTTPS
 Type: git
@@ -101,12 +101,12 @@ Repository URL: https://github.com/cloudnativedaysjp/cndt2023-handson
 Username (optional):username
 password (optional):pass
 ```
-* CONNECTをクリック　（以下のスクショのようになったら成功）![CONNECT](./imgs/setup/add-repo-complete.png)
+CONNECTをクリック　（以下のスクショのようになったら成功）![CONNECT](./imgs/setup/add-repo-complete.png)
 
 
 ## Demo appのデプロイ
-* Applicationsの画面において + NEW APPを押下![Applications](./imgs/demoapp/new-app.png)
-* 上の画面上で各項目を次のように設定します．
+Applicationsの画面において + NEW APPを押下![Applications](./imgs/demoapp/new-app.png)
+上の画面上で各項目を次のように設定します。
 ```
 GENERAL
   Application Name: test
@@ -121,24 +121,23 @@ GENERAL
     Cluster URL: https://kubernetes.default.svc
     Namespace: test
 ```
-* 設定できたら、CREATEをクリック　（うまくいくと以下のようになる）
+設定できたら、CREATEをクリック　（うまくいくと以下のようになる）
 ![create](./imgs/demoapp/create.png)
 ![create2](./imgs/demoapp/create2.png)
 
-* ページ上部にある SYNCをクリック
-* 無事デプロイされると以下のようになります．
+ページ上部にある SYNCをクリック（無事デプロイされると以下のようになります）
 
 ![sync](./imgs/demoapp/sync.png)
 
-* http://app.argocd.com/
+http://app.argocd.example.com
 へアクセスして確認
 
 ![demo app](./imgs/demoapp/demo-app.png)
 
 ## Kustomizeを使ったデプロイ
 ArgoCD上でマニュフェストの差分管理ツールである「Kustomize」を利用して、複数環境を簡単に用意します。
-* Applicationsの画面において + NEW APPを押下![Applications](./imgs/demoapp/new-app.png)
-* 上の画面上で各項目を次のように設定します．
+Applicationsの画面において + NEW APPを押下![Applications](./imgs/demoapp/new-app.png)
+上の画面上で各項目を次のように設定します。
 ```
 GENERAL
   Application Name: kustomize
@@ -155,14 +154,19 @@ GENERAL
     Cluster URL: https://kubernetes.default.svc
     Namespace: kustomize
 ```
-* 設定できたら、CREATEをクリック
-* ページ上部にある SYNCをクリック
-* アクセスして確認します。
-  * 開発環境: dev.kustomize.argocd.com
-  * 本番環境: prd.kustomize.argocd.com
+設定できたら、CREATEをクリック
+![](imgs/demoapp/Kustomize-create.png)
+![](imgs/demoapp/Kustomize-create2.png)
+ページ上部にある SYNCをクリック(開発環境の場合はpodが1個、本番環境の場合はpodが2個出来るのが確認できます。)
+![](imgs/demoapp/Kustomize-dev.png)
+![](imgs/demoapp/Kustomize-prd.png)
+
+アクセスして確認します。
+  * 開発環境: dev.kustomize.argocd.example.com
+  * 本番環境: prd.kustomize.argocd.example.com
 ## Helmを使ったデプロイ
-* Applicationsの画面において + NEW APPを押下![Applications](./imgs/demoapp/new-app.png)
-* 上の画面上で各項目を次のように設定します．
+Applicationsの画面において + NEW APPを押下![Applications](./imgs/demoapp/new-app.png)
+上の画面上で各項目を次のように設定します。
 ```
 GENERAL
   Application Name: helm
@@ -177,7 +181,10 @@ GENERAL
     Cluster URL: https://kubernetes.default.svc
     Namespace: helm
 ```
-* 設定できたら、CREATEをクリック
-* ページ上部にある SYNCをクリック
-* helm.argocd.com
+設定できたら、CREATEをクリック
+![](./imgs/demoapp/helm-create.png)
+![](./imgs/demoapp/helm-create2.png)
+ページ上部にある SYNCをクリック（無事デプロイされると以下のようになります）
+![](./imgs/demoapp/helm.png)
+helm.argocd.example.com
 アクセスして確認します。

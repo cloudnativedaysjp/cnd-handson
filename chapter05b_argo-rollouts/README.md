@@ -29,7 +29,7 @@ Argo Rolloutsは、Kubernetesコントローラおよび一連のカスタムリ
   - KubernetesにBlue/Green Deployment、カナリアリリースなど高度なデプロイ方法を追加し、サポートします。
 - AnalysisTemplate
   -　どのメトリクスをクエリするかを記載するテンプレート的なカスタムリソース
-  - Rolloutまたはクラスター全体で定義でき、複数のRolloutで共有するためにClusterAnalysisTemplateとしても使用が可能です。 
+  - Rolloutまたはクラスター全体で定義でき、複数のRolloutで共有するためにClusterAnalysisTemplateとしても使用が可能です。
 - AnalysisRun
   - 　AnalysisTemplateを元に実際に動いたjob的なカスタムリソース
  
@@ -84,7 +84,7 @@ Canaryリリースは、新旧混在状態を制御し、本番環境におい�
 
 ### Blue Greenデプロイ
  Applicationsの画面において + NEW APPをクリック![Applications](./imgs/analysis/application.png)
-上の画面上で各項目を次のように設定します．
+上の画面上で各項目を次のように設定します。
   ```
   GENERAL
     Application Name: blue-green
@@ -106,35 +106,37 @@ Canaryリリースは、新旧混在状態を制御し、本番環境におい�
  無事デプロイされると以下のようになります
   ![sync](imgs/BG/SYNC.png)
 
-以上の手順で、Blue GreenのBlueに当たる状態がArgoCDを用いてデプロイされ、localからingressでアクセス可能となりました
+以上の手順で、Blue GreenのBlueに当たる状態がArgoCDを用いてデプロイされ、localからingressでアクセス可能となりました。
 
-ここからは、実際にBlue Green deployを行いその様子を見ていこうと思います．
+ここからは、実際にBlue Green deployを行いその様子を見ていこうと思います。
 
- `bluegreen-rollout.yaml`の編集を行います．imageのtagをblueから`green`に、変更し、差分をremoteのmasterブランチ（argocdのappを作成する際に指定したブランチ）に取り込みます
+ `bluegreen-rollout.yaml`の編集を行います。
+ imageのtagをblueから`green`に、変更し、差分をremoteのmasterブランチ（argocdのappを作成する際に指定したブランチ）に取り込みます。
 
   ```yaml
-  image: argoproj/rollouts-demo:green 
+  image: argoproj/rollouts-demo:green
   ```
 
- ArgoCDはデフォルトでは3分に一回の頻度でブランチを確認し、差分を検出しています．3分待てない場合には、ページ上部にある [REFRESH]をクリックします．以下のようにbluegreen-demo rolloutにおいて差分が検出されます．（黄色で表示されているOutOfSyncが差分があることを示しています）
-ちなみにAppの設定において、SYNC POLICYをManualでなくAutoにしていた場合には、ここでOutOfSyncを検知すると自動でArgoCDがSyncを実行します．
+ ArgoCDはデフォルトでは3分に一回の頻度でブランチを確認し、差分を検出しています。
+ 3分待てない場合には、ページ上部にある [REFRESH]をクリックします。以下のようにbluegreen-demo rolloutにおいて差分が検出されます。（黄色で表示されているOutOfSyncが差分があることを示しています）
+ちなみにAppの設定において、SYNC POLICYをManualでなくAutoにしていた場合には、ここでOutOfSyncを検知すると自動でArgoCDがSyncを実行します。
 
   ![OutOfSync](imgs/BG/OutOfSync.png)
  rolloutを手動でSyncします
   ![Sync](imgs/BG/Rollout-sync.png)
- syncされた結果以下のようになります．blue, green両方のreplicasetが作成されているのは、bluegreen-rollout.yamlにおいてspec.strategy.bluegreen.autoPromotionEnabledがfalseに設定されているからです
+ syncされた結果以下のようになります。blue, green両方のreplicasetが作成されているのは、bluegreen-rollout.yamlにおいてspec.strategy.bluegreen.autoPromotionEnabledがfalseに設定されているからです
   ![update](imgs/BG/deploy.png)
- それぞれのingressにアクセスすると以下のようになります．
-ArgoRolloutのBlueGreenデプロイにおいては、一旦greenに当たるサービスが、previewServiceとして登録され、6の手順を実行することで、activeServiceに昇格するような動きをして、BlueGreenデプロイを実現します．
+ それぞれのingressにアクセスすると以下のようになります。
+ArgoRolloutのBlueGreenデプロイにおいては、一旦greenに当たるサービスが、previewServiceとして登録され、6の手順を実行することで、activeServiceに昇格するような動きをして、BlueGreenデプロイを実現します。
   ![demoapp](imgs/BG/demoapp.png)
- bluegreen-rolloutの3点リーダーをクリックし [Promte-Full]を押下することで、blue-green deployが行われます．プロモートが行われたどちらのingressもgreenを見るようになり、blueのreplicasetは削除されます．
+ bluegreen-rolloutの3点リーダーをクリックし [Promte-Full]を押下することで、blue-green deployが行われます。プロモートが行われたどちらのingressもgreenを見るようになり、blueのreplicasetは削除されます。
   ![promote](imgs/BG/promote.png)
  rollout-extensionを使用した場合、rolloutを選択しmoreのタブが出現します。moreのタブを選ぶとこのようにblueとgreenがどうなっているか一目で確認できるようになります。
   ![rollout-extension](imgs/BG/rollout-extension.png)
 
 ### Canaryリリース
  Applicationsの画面において + NEW APPをクリック![Applications](./imgs/demoapp/new-app.png)
- 上の画面上で各項目を次のように設定します．
+ 上の画面上で各項目を次のように設定します。
   ```
   GENERAL
     Application Name: canary
@@ -158,22 +160,22 @@ ArgoRolloutのBlueGreenデプロイにおいては、一旦greenに当たるサ�
 
 以上の手順で、canaryリリースにおける安定バージョンに当たるバージョンがArgoCDを用いてデプロイされ、localからingressでアクセス可能となりました
 
-ここからは、実際に、canaryリリースを行いその様子を見ていこうと思います．
+ここからは、実際に、canaryリリースを行いその様子を見ていこうと思います。
 
- `rollout.yaml`の編集を行います．imageのtagをblueから`green`に、変更し、差分をremoteのmainブランチ（argocdのappを作成する際に指定したブランチ）に取り込みます
+ `rollout.yaml`の編集を行います。imageのtagをblueから`green`に、変更し、差分をremoteのmainブランチ（argocdのappを作成する際に指定したブランチ）に取り込みます
 
   ```yaml
   image: argoproj/rollouts-demo:green 
   ```
 
- ArgoCDはデフォルトでは3分に一回の頻度でブランチを確認し、差分を検出しています．3分待てない場合には、ページ上部にある [REFRESH]をクリックします．以下のようにrolloutにおいて差分が検出されます．（黄色で表示されているOutOfSyncが差分があることを示しています）
-ちなみにAppの設定において、SYNC POLICYをManualでなくAutoにしていた場合には、ここでOutOfSyncを検知すると自動でArgoCDがSyncを実行します．
+ ArgoCDはデフォルトでは3分に一回の頻度でブランチを確認し、差分を検出しています。3分待てない場合には、ページ上部にある [REFRESH]をクリックします。以下のようにrolloutにおいて差分が検出されます。（黄色で表示されているOutOfSyncが差分があることを示しています）
+ちなみにAppの設定において、SYNC POLICYをManualでなくAutoにしていた場合には、ここでOutOfSyncを検知すると自動でArgoCDがSyncを実行します。
   ![OutOfSync](imgs/canary/OutOfSync.png)
  rolloutを手動でSyncします
   ![rollout-sync](imgs/canary/rollout-sync.png)
  syncされた結果以下のようになります
   ![update](imgs/canary/update.png)
- ingressにアクセスすると以下のようになります．
+ ingressにアクセスすると以下のようになります。
 ArgoRolloutのcanaryリリースにおいては、安定バージョンであるBlueから新バージョンであるGreenのタイルが少しづつ増えて行っているのが確認できます。
   ![demoapp](imgs/canary/demoapp.png)
  rollout-extensionを使用した場合、rolloutを選択しmoreのタブが出現します。moreのタブを選ぶと、アプリケーションの動作を確認せずとも自動で決められたStepを動いているのが一目で確認できるようになります。
@@ -245,7 +247,7 @@ metadata:
   
 Applicationsの画面において + NEW APPをクリックします
 ![Applications](./imgs/analysis/application.png)
-上の画面上で各項目を次のように設定します．
+上の画面上で各項目を次のように設定します。
   ```
   GENERAL
     Application Name: job
@@ -261,17 +263,17 @@ Applicationsの画面において + NEW APPをクリックします
       Namespace: job-analysis
   ```
 設定できたら、CREATEをクリックします　（うまくいくと以下のようになります）
-![create](./imgs/BG/create.png)
-![create2](./imgs/BG/create2.png)
+![create](./imgs/analysis/job-create.png)
+![create2](./imgs/analysis/job-create2.png)
 ページ上部にある SYNC をクリックします
-![create2](./imgs/BG/create2.png)
-rollout.yamlの編集を行います．imageのtagをblueからgreenに、変更し、差分をremoteのmasterブランチ（argocdのappを作成する際に指定したブランチ）に取り込みます．
+![create2](./imgs/analysis/job-sync.png)
+rollout.yamlの編集を行います。imageのtagをblueからgreenに、変更し、差分をremoteのmasterブランチ（argocdのappを作成する際に指定したブランチ）に取り込みます。
 ```yaml
 image: argoproj/rollouts-demo:green
 ```
-ArgoCDはデフォルトでは3分に一回の頻度でブランチを確認し、差分を検出しています．3分待てない場合には、ページ上部にある [REFRESH]をクリックします．以下のようにrolloutにおいて差分が検出されます．（黄色で表示されているOutOfSyncが差分があることを示しています）
-ちなみにAppの設定において、SYNC POLICYをManualでなくAutoにしていた場合には、ここでOutOfSyncを検知すると自動でArgoCDがSyncを実行します．
-![sync](./imgs/analysis/Job-sync.png)
+ArgoCDはデフォルトでは3分に一回の頻度でブランチを確認し、差分を検出しています。3分待てない場合には、ページ上部にある [REFRESH]をクリックします。以下のようにrolloutにおいて差分が検出されます。（黄色で表示されているOutOfSyncが差分があることを示しています）
+ちなみにAppの設定において、SYNC POLICYをManualでなくAutoにしていた場合には、ここでOutOfSyncを検知すると自動でArgoCDがSyncを実行します。
+![sync](./imgs/analysis/Job-refresh.png)
 rolloutを手動でSyncすると、アプリケーションのpodと新たにAnalysisrunが生成され、jobが発行されたのが確認できます。
 ![update](./imgs/analysis/job-update.png)
 jobが成功すると、自動的にBlue/Green Deployが進んでいくのが分かります。
@@ -282,7 +284,7 @@ Analysis実行時にリクエストを送信し、レスポンスの内容にて
 
 Applicationsの画面において + NEW APPをクリックします
 ![Applications](./imgs/analysis/application.png)
-上の画面上で各項目を次のように設定します．
+上の画面上で各項目を次のように設定します。
   ```
   GENERAL
     Application Name: web
@@ -298,17 +300,17 @@ Applicationsの画面において + NEW APPをクリックします
       Namespace: web-analysis
   ```
 設定できたら、CREATEをクリックします　（うまくいくと以下のようになります）
-![create](./imgs/BG/create.png)
-![create2](./imgs/BG/create2.png)
+![create](./imgs/analysis/web-create.png)
+![create](./imgs/analysis/web-create2.png)
 ページ上部にある SYNC をクリックします
-![create2](./imgs/BG/create2.png)
-rollout.yamlの編集を行います．imageのtagをblueからgreenに、変更し、差分をremoteのmasterブランチ（argocdのappを作成する際に指定したブランチ）に取り込みます．
+![create](./imgs/analysis/web-sync.png)
+rollout.yamlの編集を行います。imageのtagをblueからgreenに、変更し、差分をremoteのmasterブランチ（argocdのappを作成する際に指定したブランチ）に取り込みます。
 ```yaml
 image: argoproj/rollouts-demo:green
 ```
-ArgoCDはデフォルトでは3分に一回の頻度でブランチを確認し、差分を検出しています．3分待てない場合には、ページ上部にある [REFRESH]をクリックします．以下のようにrolloutにおいて差分が検出されます．（黄色で表示されているOutOfSyncが差分があることを示しています）
-ちなみにAppの設定において、SYNC POLICYをManualでなくAutoにしていた場合には、ここでOutOfSyncを検知すると自動でArgoCDがSyncを実行します．
-![sync](./imgs/analysis/web-sync.png)
+ArgoCDはデフォルトでは3分に一回の頻度でブランチを確認し、差分を検出しています。3分待てない場合には、ページ上部にある [REFRESH]をクリックします。以下のようにrolloutにおいて差分が検出されます。（黄色で表示されているOutOfSyncが差分があることを示しています）
+ちなみにAppの設定において、SYNC POLICYをManualでなくAutoにしていた場合には、ここでOutOfSyncを検知すると自動でArgoCDがSyncを実行します。
+![sync](./imgs/analysis/web-refresh.png)
 rolloutを手動でSyncすると、アプリケーションのpodと新たにAnalysisrunが生成されます。
 ![update](./imgs/analysis/web-update.png)
 Analysisrunの詳細をクリックし、Live Manifestを確認するとどういったレスポンスが帰ってきて、成功したのか失敗したのか確認できます。
@@ -319,7 +321,7 @@ Analysis実行時にPrometheusにPromQLを送信し、その結果によってPr
 
 Applicationsの画面において + NEW APPをクリックします
 ![Applications](./imgs/analysis/application.png)
-上の画面上で各項目を次のように設定します．
+上の画面上で各項目を次のように設定します。
   ```
   GENERAL
     Application Name: prometheus
@@ -335,36 +337,19 @@ Applicationsの画面において + NEW APPをクリックします
       Namespace: prometheus-analysis
   ```
 設定できたら、CREATEをクリックします　（うまくいくと以下のようになります）
-![create](./imgs/BG/create.png)
-![create2](./imgs/BG/create2.png)
+![create](./imgs/analysis/prometheus-create.png)
+![create](./imgs/analysis/prometheus-create2.png)
 ページ上部にある SYNC をクリックします
-![create2](./imgs/BG/create2.png)
-rollout.yamlの編集を行います．imageのtagをblueからgreenに、変更し、差分をremoteのmasterブランチ（argocdのappを作成する際に指定したブランチ）に取り込みます．
+![create](./imgs/analysis/prometheus-sync.png)
+rollout.yamlの編集を行います。imageのtagをblueからgreenに、変更し、差分をremoteのmasterブランチ（argocdのappを作成する際に指定したブランチ）に取り込みます。
 ```yaml
 image: argoproj/rollouts-demo:green
 ```
-ArgoCDはデフォルトでは3分に一回の頻度でブランチを確認し、差分を検出しています．3分待てない場合には、ページ上部にある [REFRESH]をクリックします．以下のようにrolloutにおいて差分が検出されます．（黄色で表示されているOutOfSyncが差分があることを示しています）
-ちなみにAppの設定において、SYNC POLICYをManualでなくAutoにしていた場合には、ここでOutOfSyncを検知すると自動でArgoCDがSyncを実行します．
-![sync](./imgs/analysis/prometheus-sync.png)
+ArgoCDはデフォルトでは3分に一回の頻度でブランチを確認し、差分を検出しています。3分待てない場合には、ページ上部にある [REFRESH]をクリックします。以下のようにrolloutにおいて差分が検出されます。（黄色で表示されているOutOfSyncが差分があることを示しています）
+ちなみにAppの設定において、SYNC POLICYをManualでなくAutoにしていた場合には、ここでOutOfSyncを検知すると自動でArgoCDがSyncを実行します。
+![sync](./imgs/analysis/prometheus-refresh.png)
 rolloutを手動でSyncすると、アプリケーションのpodと新たにAnalysisrunが生成されます。
-![update](./imgs/analysis/prometheus-update.png)
+![update](./imgs/analysis/prometheus-updat1e.png)
 Analysisrunの詳細をクリックし、Live Manifestを確認するとどういったレスポンスが帰ってきて、成功したのか失敗したのか確認できます。
 ![log](imgs/analysis/prometheus-log.png)
 Analysisrunが成功すると、自動的にCanary Releseが進んでいくのが分かります。
-### 事前に準備が必要なもの
-#### nginx-ingress 
-```
-helm upgrade ingress-nginx ingress-nginx/ingress-nginx \
---namespace ingress-nginx \
---set controller.metrics.enabled=true \
---set controller.metrics.serviceMonitor.enabled=true \
---set controller.metrics.serviceMonitor.additionalLabels.release="prometheus"
-```
-
-
-#### prometheus
-```
-helm upgrade kube-prometheus-stack prometheus-community/kube-prometheus-stack \
---namespace prometheus  \
---set prometheus.prometheusSpec.podMonitorSelectorNilUsesHelmValues=false \
---set prometheus.prometheusSpec.serviceMonitorSelectorNilUsesHelmValues=false
