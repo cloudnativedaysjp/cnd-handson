@@ -126,19 +126,33 @@ kubectl apply -f manifest/metallb.yaml
 まずはKubernetesクラスターの情報が取得できることを確認します。
 
 ```console
-$ kubectl cluster-info
+kubectl cluster-info
+```
+```console
+# 実行結果
 Kubernetes control plane is running at https://127.0.0.1:44707
 CoreDNS is running at https://127.0.0.1:44707/api/v1/namespaces/kube-system/services/kube-dns:dns/proxy
 
 To further debug and diagnose cluster problems, use 'kubectl cluster-info dump'.
 ```
 
-次に、動作確認用のNginxのPodを作成し、ポートフォワードします。
+次に、動作確認用のNginxのPodを作成し、
 
 ```console
-$ kubectl run --restart=Never nginx --image=nginx:alpine --wait
+kubectl run --restart=Never nginx --image=nginx:alpine --wait
+```
+```console
+# 実行結果
 pod/nginx created
+```
+
+ポートフォワードします。
+
+```console
 $ kubectl port-forward nginx 8081:80
+```
+```console
+# 実行結果
 Forwarding from 127.0.0.1:8081 -> 80
 Forwarding from [::1]:8081 -> 80
 ```
@@ -147,6 +161,9 @@ Forwarding from [::1]:8081 -> 80
 
 ```console
 $ curl localhost:8081
+```
+```console
+# 実行結果
 <!DOCTYPE html>
 <html>
 <head>
