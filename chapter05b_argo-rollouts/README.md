@@ -48,7 +48,8 @@ Windowsの場合
 
 この章で利用するドメインは
 
-* app.argocd.com
+* app.argocd.example.com
+* app-preview.argocd.example.com
 ### Argo CDのインストール
 helmファイルを利用してArgo CDをインストールします。
 ```

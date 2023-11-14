@@ -17,7 +17,7 @@ spec:
     spec:
       containers:
       - name: handson
-        image: argoproj/rollouts-demo:green
+        image: argoproj/rollouts-demo:blue
         imagePullPolicy: Always
         ports:
         - name: http
@@ -30,6 +30,7 @@ spec:
   strategy:
     blueGreen:
       activeService: handson
+      previewService: handson-preview
       postPromotionAnalysis:
         templates:
         - templateName: handson-analysis
