@@ -58,7 +58,7 @@ Kubernetes clusterをGitの状態に同期させるため、マニュフェス�
 ### ローカル環境での準備
 今回デプロイするWEBサービスのドメインは登録していないため、WEBサービスを利用する際にはハンズオンで利用する端末のhostsファイルを書き込む必要があります。
 
-hostsファイルのpathはOSによって様々なので環境によって変わりますが主要なpathは以下の通りです
+hostsファイルのpathはOSによって様々なので環境によって変わりますが主要なpathは下記の通りです
 
 MacやLinuxの場合
 ```/etc/hosts```
@@ -66,7 +66,7 @@ MacやLinuxの場合
 Windowsの場合
 ```C:\Windows\System32\drivers\etc\hosts```
 
-この章で利用するドメインは以下の通りになります。
+この章で利用するドメインは下記の通りになります。
 
 * argocd.example.com
 * app.argocd.example.com
@@ -79,18 +79,36 @@ helmファイルを利用してArgo CDをインストールします。
 ```
 helmfile apply -f helm/helmfile.yaml
 ```
-ingressをdeployして、Argo CDのWEB UIにアクセス出来るようにします。
+作成されるリソースは下記の通りです。
+```
+kubectl get service,deployment  -n argo-cd
+NAME                                               TYPE        CLUSTER-IP      EXTERNAL-IP   PORT(S)             AGE
+service/argo-cd-argocd-applicationset-controller   ClusterIP   10.96.209.173   <none>        7000/TCP            26d
+service/argo-cd-argocd-dex-server                  ClusterIP   10.96.116.27    <none>        5556/TCP,5557/TCP   26d
+service/argo-cd-argocd-redis                       ClusterIP   10.96.28.90     <none>        6379/TCP            26d
+service/argo-cd-argocd-repo-server                 ClusterIP   10.96.249.188   <none>        8081/TCP            26d
+service/argo-cd-argocd-server                      ClusterIP   10.96.152.238   <none>        80/TCP,443/TCP      26d
+
+NAME                                                       READY   UP-TO-DATE   AVAILABLE   AGE
+deployment.apps/argo-cd-argocd-applicationset-controller   1/1     1            1           26d
+deployment.apps/argo-cd-argocd-dex-server                  1/1     1            1           26d
+deployment.apps/argo-cd-argocd-notifications-controller    1/1     1            1           26d
+deployment.apps/argo-cd-argocd-redis                       1/1     1            1           26d
+deployment.apps/argo-cd-argocd-repo-server                 1/1     1            1           26d
+deployment.apps/argo-cd-argocd-server                      1/1     1            1           26d
+```
+ingressを作成し、Argo CDのWEB UIにアクセス出来るようにします。
 ```
 kubectl apply -f ingress/ingress.yaml
 ```
 http://argocd.example.com/
-へアクセスします。
+へアクセスします。下記のページにアクセス出来るか確認して下さい。
 * ユーザ名: admin
 * パスワード: 以下のコマンドをサーバ上で実行した値
 
 ```kubectl -n argo-cd get secret argocd-initial-admin-secret -o jsonpath="{.data.password}" | base64 -d```
 
-以下のページにアクセス出来るか確認して下さい。
+
 ![webui](./imgs/setup/access-webui.png)
 ### レポジトリの登録
 
@@ -106,7 +124,7 @@ Repository URL: https://github.com/cloudnativedaysjp/cndt2023-handson
 Username (optional):username
 password (optional):pass
 ```
-CONNECTをクリックして、以下のように表示されていることを確認して下さい。
+CONNECTをクリックして、下記のように表示されていることを確認して下さい。
 ![CONNECT](./imgs/setup/add-repo-complete.png)
 
 
@@ -135,11 +153,11 @@ GENERAL
     Cluster URL: https://kubernetes.default.svc
     Namespace: test
 ```
-設定できたら、CREATEをクリックして、以下のように表示されていることを確認して下さい。
+設定できたら、CREATEをクリックして、下記のように表示されていることを確認して下さい。
 ![create](./imgs/demoapp/create.png)
 ![create2](./imgs/demoapp/create2.png)
 
-ページ上部にあるSYNCをクリックして、無事デプロイされると以下のように表示されていることを確認して下さい。
+ページ上部にあるSYNCをクリックして、無事デプロイされると下記のように表示されていることを確認して下さい。
 
 ![sync](./imgs/demoapp/sync.png)
 
@@ -158,9 +176,9 @@ image: argoproj/rollouts-demo:green
 ```
 git push origin new_branch_nam
 ```
-Argo　CDはデフォルトでは3分に一回の頻度でブランチを確認し、差分を検出しています。 3分待てない場合には、ページ上部にある [REFRESH]をクリックします。以下のようにdeploymentにおいて差分が検出されます。（黄色で表示されているOutOfSyncが差分があることを示しています） ちなみにAppの設定において、SYNC POLICYをManualでなくAutoにしていた場合には、ここでOutOfSyncを検知すると自動でArgoCDがSyncを実行します。
+Argo　CDはデフォルトでは3分に一回の頻度でブランチを確認し、差分を検出しています。 3分待てない場合には、ページ上部にある [REFRESH]をクリックします。下記のようにdeploymentにおいて差分が検出されます。（黄色で表示されているOutOfSyncが差分があることを示しています） ちなみにAppの設定において、SYNC POLICYをManualでなくAutoにしていた場合には、ここでOutOfSyncを検知すると自動でArgoCDがSyncを実行します。
 ![blue2green](imgs/demoapp/blue2green.png)
-Gitの変更をKubernetes Clusterに反映させるためにページ上部にあるSYNCをクリックして、以下のように表示されていることを確認して下さい。
+Gitの変更をKubernetes Clusterに反映させるためにページ上部にあるSYNCをクリックして、下記のように表示されていることを確認して下さい。
 ![blue2green](imgs/demoapp/blue2green-sync.png)
 http://app.argocd.example.com
 へアクセスして確認するとタイルが青から緑に変わったことが確認できます。
@@ -221,7 +239,7 @@ GENERAL
 設定できたら、CREATEをクリック
 ![](./imgs/demoapp/helm-create.png)
 ![](./imgs/demoapp/helm-create2.png)
-ページ上部にある SYNCをクリック（無事デプロイされると以下のようになります）
+ページ上部にある SYNCをクリック（無事デプロイされると下記のようになります）
 ![](./imgs/demoapp/helm.png)
 helm.argocd.example.com
 アクセスして確認します。
