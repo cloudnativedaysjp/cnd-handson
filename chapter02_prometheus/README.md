@@ -247,8 +247,9 @@ kubectl apply -f ingress.yaml
 実際にそれぞれのUIが公開されているか確認してみましょう。
 hostsファイルを書き換えた状態で、ブラウザで `prometheus.example.com` と `grafana.example.com` にアクセスしてみてください。
 
-Grafanaの管理者がvalues.yamlに記載した認証情報でログインできなかった場合は、
-以下のコマンドを実行してパスワードを確認し、ログインしてください ( デフォルトでは `prom-operator` になっているはずです)
+Grafanaではユーザログインが必要ですが、先程設定したvalues.yamlの内容でログインできます( `username: admin, password: handson_saiko!` )
+values.yamlに記載した認証情報でログインできなかった場合は、
+以下のコマンドを実行してパスワードを確認し、ログインしてください。
 
 ```bash
 kubectl get secrets -n prometheus kube-prometheus-stack-grafana -o json | jq -r .data[\"admin-password\"] | base64 -d
