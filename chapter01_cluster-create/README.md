@@ -58,7 +58,6 @@ HelmはKubernetes用のパッケージマネージャーであり、Helmfileを�
 - CiliumをCNIとして利用するため、DefaultのCNIの無効化
 - Ciliumをkube-proxyの代替として利用するため、kube-proxyの無効化
 
-
 configオプションで`kind-config.yaml`を指定してKubernetesクラスターを作成します。
 
 ```console
@@ -90,20 +89,31 @@ Not sure what to do next? 😅  Check out https://kind.sigs.k8s.io/docs/user/qui
 最後に、下記のコンポーネントをデプロイします。
 
 - [Cilium](https://cilium.io/)
+- [Gateway API](https://gateway-api.sigs.k8s.io/)
 - [Metallb](https://metallb.universe.tf/)
 - [Nginx Ingress Controller](https://docs.nginx.com/nginx-ingress-controller/)
 
-KubernetesクラスターのCNIとしてCiliumをインストールします。
+今回はKubernetesクラスターのCNIとしてCiliumをインストールします。
 Ciliumについては[Chapter4d Cilium](./../chapter04d_cilium/)を参照してください。
 MetallbはKind上のクラスターでServiceリソースのType:LoadBalancerを利用するためにインストールします。
 Nginx Controllerはインターネットからのkind上のServiceリソースへ通信をルーティングするためにインストールします。
 各コンポーネントの詳細については上記リンクをご参照ください。
 
 
+まず、Gateway APIのCRDをデプロイします。
+
+```sh
+kubectl apply -f https://raw.githubusercontent.com/kubernetes-sigs/gateway-api/v0.7.0/config/crd/standard/gateway.networking.k8s.io_gatewayclasses.yaml
+kubectl apply -f https://raw.githubusercontent.com/kubernetes-sigs/gateway-api/v0.7.0/config/crd/standard/gateway.networking.k8s.io_gateways.yaml
+kubectl apply -f https://raw.githubusercontent.com/kubernetes-sigs/gateway-api/v0.7.0/config/crd/standard/gateway.networking.k8s.io_httproutes.yaml
+kubectl apply -f https://raw.githubusercontent.com/kubernetes-sigs/gateway-api/v0.7.0/config/crd/standard/gateway.networking.k8s.io_referencegrants.yaml
+kubectl apply -f https://raw.githubusercontent.com/kubernetes-sigs/gateway-api/v0.7.0/config/crd/experimental/gateway.networking.k8s.io_tlsroutes.yaml
+```
+
 これらのコンポーネントはhelmfileコマンドを利用することでデプロイできます。
 
 ```sh
-helmfile apply -f helmfile
+helmfile sync -f helmfile
 ```
 
 > **Info**  
@@ -197,3 +207,12 @@ Commercial support is available at
 > cilium connectivity test
 > ```
 
+# Chapter 1.5 デモアプリのデプロイ
+
+## 構築手順
+
+ingress + clusterIP + demoappが立ち上がる
+```
+kubectl create namespace handson
+kubectl apply -Rf manifest -n handson
+```
