@@ -3,7 +3,7 @@ apiVersion: networking.k8s.io/v1
 kind: Ingress
 metadata:
   name: app-ingress-by-cilium
-  namespace: handson-cilium
+  namespace: handson
   annotations:
     ingress.cilium.io/loadbalancer-mode: shared
 spec:

@@ -3,16 +3,16 @@ apiVersion: cilium.io/v2
 kind: CiliumEnvoyConfig
 metadata:
   name: ch4d-3
-  namespace: handson-cilium
+  namespace: handson
 spec:
   services:
     - name: handson
-      namespace: handson-cilium
+      namespace: handson
   backendServices:
     - name: handson-blue
-      namespace: handson-cilium
+      namespace: handson
     - name: handson-yellow
-      namespace: handson-cilium
+      namespace: handson
   resources:
     - "@type": type.googleapis.com/envoy.config.listener.v3.Listener
       name: envoy-lb-listener
@@ -39,16 +39,16 @@ spec:
               route:
                 weighted_clusters:
                   clusters:
-                    - name: "handson-cilium/handson-blue"
+                    - name: "handson/handson-blue"
                       weight: 10
-                    - name: "handson-cilium/handson-yellow"
+                    - name: "handson/handson-yellow"
                       weight: 90
                 retry_policy:
                   retry_on: 5xx
                   num_retries: 3
                   per_try_timeout: 1s
     - "@type": type.googleapis.com/envoy.config.cluster.v3.Cluster
-      name: "handson-cilium/handson-blue"
+      name: "handson/handson-blue"
       connect_timeout: 5s
       lb_policy: ROUND_ROBIN
       type: EDS
@@ -56,7 +56,7 @@ spec:
         split_external_local_origin_errors: true
         consecutive_local_origin_failure: 2
     - "@type": type.googleapis.com/envoy.config.cluster.v3.Cluster
-      name: "handson-cilium/handson-yellow"
+      name: "handson/handson-yellow"
       connect_timeout: 3s
       lb_policy: ROUND_ROBIN
       type: EDS

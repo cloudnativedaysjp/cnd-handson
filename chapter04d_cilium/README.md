@@ -8,19 +8,20 @@ eBPFについては[eBPF.io](https://ebpf.io/)をご確認ください。
 
 ## CNI (Container Network Interface)
 
-Ciliumは広義的にはCNIの1つとして挙げられます。では、CNIとは一体何なのでしょうか？
+Ciliumは広義的にはCNIの1つとして挙げられます。
 
 - CNIとは、Cloud Native Computing Foundationプロジェクトの1つになります
-- CNIは、LinuxやWindowsコンテナーのネットワーク機能を抽象化し、APIインターフェース仕様として切り出したものです
+- CNIは、LinuxやWindowsコンテナーのネットワーク機能を抽象化し、APIインターフェイス仕様として切り出したものです
 - コンテナのネットワーク接続性にのみ関与し、コンテナが削除されると割り当てられたリソースを削除します
 - CNIの仕様など詳細については、[こちら](https://www.cni.dev/)をご参照ください
 
-Cilium以外にもCNIとして提供されているプラグインは数多くあります。その中のいくつかをご紹介します。
+Cilium以外にもCNIとして提供されているプラグインは数多くあります。
+その中のいくつかをご紹介します。
 
 - [Flannel](https://github.com/flannel-io/flannel)
-  - シンプルなセットアップで利用可能で、クラスタ内でのネットワーク通信を容易にするために適しています
+  - シンプルなセットアップで利用可能で、Kubernetesクラスター内でのネットワーク通信を容易にするために適しています
   - VXLANやHost-GWモードを使用したオーバーレイネットワークにもサポートしてます
-  - 単一クラスタのシンプルなネットワーキングが必要なときや、シンプルな設定と高い拡張性が求められる場合に適しています
+  - 単一Kubernetesクラスターのシンプルなネットワーキングが必要なときや、シンプルな設定と高い拡張性が求められる場合に適しています
 - [Calico](https://github.com/projectcalico/calico)
   - BGPを使用したルーティングでスケーラビリティが高いと言われています
   - セキュリティポリシーやセグメンテーションの管理が可能です
@@ -40,36 +41,43 @@ Ciliumは下記の主要コンポーネントで構成されています。
   - Kubernetesクラスターの各ノードで実行され、Kubernetes APIサーバーとの接続を確立し、ネットワークおよびセキュリティポリシーを維持する役割を果たします
   - Linuxカーネルがコンテナーのネットワークアクセスを制御するために使用するeBPFプログラムの管理を行います
 - Operator
-  - クラスター全体の管理を行います。
-  - 一時的に利用できなくてもクラスターは機能し続けますが、IPアドレス管理の遅延やAgentの再起動につながるkvstoreの不調の原因になります
+  - Kubernetesクラスター全体の管理を行います。
+  - 一時的に利用できなくてもKubernetesクラスターは機能し続けますが、IPアドレス管理の遅延やAgentの再起動につながるkvstoreの不調の原因になります
 - Client(CLI)
   - Cilium Agentとともにインストールされるコマンドラインツールです
   - 同じノード上で動作するCilium AgentのREST APIと対話を行うことができ、Agentの状態やステータスの検査ができます
-  - Cliumのインストールや管理、トラブルシュートなどに使用されるCLIとは別物になります
+  - Ciliumのインストールや管理、トラブルシュートなどに使用されるCLIとは別物になります
 - CNI Plugin
   - PodがNode上でスケジュールまたは終了される時にKubernetesによって呼び出されます
   - Cilium APIと対話し、ネットワーキング/ロードバランシング/ネットワークポリシーを提供するために必要な設定を起動します
 
 Chapter01 Cluster Createで導入したCiliumに対して、上記のコンポーネントを簡単に確認してみます。
 
-```console
-# AgentはDaemonsetリソース、OperatorはDeploymentリソースとしてデプロイされます
+まず、AgentはDaemonSetリソース、OperatorはDeploymentリソースとしてデプロイされていることを確認します。
+
+```shell
 kubectl get -n kube-system -l app.kubernetes.io/part-of=cilium ds,deploy
 ```
-```console
-# 実行結果
+
+下記のような出力になれば大丈夫です。
+
+```shell
 NAME                    DESIRED   CURRENT   READY   UP-TO-DATE   AVAILABLE   NODE SELECTOR            AGE
 daemonset.apps/cilium   3         3         3       3            3           kubernetes.io/os=linux   11m
 
 NAME                              READY   UP-TO-DATE   AVAILABLE   AGE
 deployment.apps/cilium-operator   2/2     2            2           11m
 ```
-```console
-# Client(CLI)のバージョン確認
+
+次に、Cilium AgentにインストールされるClient CLIのバージョンを確認します。
+
+```shell
 kubectl exec -n kube-system ds/cilium -c cilium-agent -- cilium version
 ```
-```console
-# 実行結果
+
+下記のようにバージョン出力されれば大丈夫です。
+
+```shell
 Client: 1.14.2 a6748946 2023-09-09T20:59:33+00:00 go version go1.20.8 linux/amd64
 Daemon: 1.14.2 a6748946 2023-09-09T20:59:33+00:00 go version go1.20.8 linux/amd64
 ```
@@ -82,6 +90,15 @@ Daemon: 1.14.2 a6748946 2023-09-09T20:59:33+00:00 go version go1.20.8 linux/amd6
   - Ingress
   - Gateway API
   - Traffic Management
+
+Networkingに関しては、Netowrk Policyを利用し特定のPodに対するL7のトラフィック制御を行います。
+ServiceMeshでは、まずCiliumのIngressClassを設定したIngressリソースを利用するデモを行います。
+次に、トラフィックを9:1に分割するデモをGateway APIとCiliumのEnvoy Configを利用した2パターン説明します。
+今回はトラフィック分割のデモのみですが、他にもヘッダー変更、URLの書き換えなど行うことができます。
+その他の例については下記のページをご参照ください。
+
+- [Kubernetes Gateway API: Getting started with Gateway API](https://gateway-api.sigs.k8s.io/guides/#getting-started-with-gateway-api)
+- [Cilium: L7-Aware Traffic Management/Examples](https://docs.cilium.io/en/stable/network/servicemesh/l7-traffic-management/#examples)
 
 > **Info**
 > Observabilityについては[Chapter5d Hubble](./../chapter05d_hubble/)にて説明します。
@@ -104,17 +121,12 @@ Ciliumでは3種類のリソースでネットワークポリシーを定義で�
 
 この節では`CiliumNetworkPolicy`の動作確認を行います。
 
-まず動作確認用のアプリケーションをデプロイします。
+動作確認は[Chapter1 Cluster Create](./../chapter01_cluster-create)でデプロイしたアプリケーションを利用します。
+また、このアプリケーションに接続するためのクライアントを2種類デプロイします。
 
-```sh
-kubectl apply -Rf manifest/app
-```
-
-次にアプリケーションに接続するためのクライアントを2種類デプロイします。
-
-```sh
-kubectl run curl-allow -n handson-cilium --image=curlimages/curl --labels="app=curl-allow" --command -- sleep infinity
-kubectl run curl-deny  -n handson-cilium --image=curlimages/curl --labels="app=curl-deny"  --command -- sleep infinity
+```shell
+kubectl run curl-allow -n handson --image=curlimages/curl --labels="app=curl-allow" --command -- sleep infinity
+kubectl run curl-deny  -n handson --image=curlimages/curl --labels="app=curl-deny"  --command -- sleep infinity
 ```
 
 下記図のような構成になります。
@@ -122,82 +134,83 @@ kubectl run curl-deny  -n handson-cilium --image=curlimages/curl --labels="app=c
 ![](image/ch4-1.png)
 
 
-現状は`curl-allow`/`curl-deny`の両方から`/`と`/color`にアクセスすると、すべてHTTPステータスコードが200となっていることを確認します。
+現状はNetwork Policyの設定を行っていないので、`curl-allow`/`curl-deny`の両方から`/`と`/color`にアクセスできます。
+また、HTTPステータスコードはすべて200が返ってきます。
 
-```sh
-kubectl exec -n handson-cilium curl-allow -- /bin/sh -c "echo -n 'curl-allow: ';curl -s -o /dev/null handson:80 -w '%{http_code}\n'"
-kubectl exec -n handson-cilium curl-deny  -- /bin/sh -c "echo -n 'curl-deny:  ';curl -s -o /dev/null handson:80 -w '%{http_code}\n'"
-kubectl exec -n handson-cilium curl-allow -- /bin/sh -c "echo -n 'curl-allow:color: ';curl -s -o /dev/null handson:80/color -w '%{http_code}\n'"
-kubectl exec -n handson-cilium curl-deny  -- /bin/sh -c "echo -n 'curl-deny:color:  ';curl -s -o /dev/null handson:80/color -w '%{http_code}\n'"
+```shell
+kubectl exec -n handson curl-allow -- /bin/sh -c "echo -n 'curl-allow -> /     : ';curl -s -o /dev/null handson:80 -w '%{http_code}\n'"
+kubectl exec -n handson curl-deny  -- /bin/sh -c "echo -n 'curl-deny  -> /     : ';curl -s -o /dev/null handson:80 -w '%{http_code}\n'"
+kubectl exec -n handson curl-allow -- /bin/sh -c "echo -n 'curl-allow -> /color: ';curl -s -o /dev/null handson:80/color -w '%{http_code}\n'"
+kubectl exec -n handson curl-deny  -- /bin/sh -c "echo -n 'curl-deny  -> /color: ';curl -s -o /dev/null handson:80/color -w '%{http_code}\n'"
 ```
 
-```console
-# 実行結果
-curl-allow: 200
-curl-deny:  200
-curl-allow:color: 200
-curl-deny:color:  200
+下記のような実行結果になります。
+
+```shell
+curl-allow -> /     : 200
+curl-deny  -> /     : 200
+curl-allow -> /color: 200
+curl-deny  -> /color: 200
 ```
 
-動作確認として下記のような設定の`CiliumNetworkPolicy`をデプロイしてみます。
+動作確認として下記設定の`CiliumNetworkPolicy`をデプロイしてみます。
 - `/`へは`curl-allow`からのみアクセス可能
+  - つまり、`curl-deny`から`/`への通信は拒否される
 - `/color`へは`curl-allow`と`curl-deny`の両方からアクセスが可能
 
-```sh
-kubectl apply -f manifest/cnp_ch4d-1.yaml
+```shell
+kubectl apply -f manifest/cnp.yaml
 ```
 
 実際にアクセスし確認すると、想定通りの動作になっていることが分かります。
 
 ```sh
-kubectl exec -n handson-cilium curl-allow -- /bin/sh -c "echo -n 'curl-allow: ';curl -s -o /dev/null handson:80 -w '%{http_code}\n'"
-kubectl exec -n handson-cilium curl-deny  -- /bin/sh -c "echo -n 'curl-deny:  ';curl -s -o /dev/null handson:80 -w '%{http_code}\n'"
-kubectl exec -n handson-cilium curl-allow -- /bin/sh -c "echo -n 'curl-allow:color: ';curl -s -o /dev/null handson:80/color -w '%{http_code}\n'"
-kubectl exec -n handson-cilium curl-deny  -- /bin/sh -c "echo -n 'curl-deny:color:  ';curl -s -o /dev/null handson:80/color -w '%{http_code}\n'"
+kubectl exec -n handson curl-allow -- /bin/sh -c "echo -n 'curl-allow -> /     : ';curl -s -o /dev/null handson:80 -w '%{http_code}\n'"
+kubectl exec -n handson curl-deny  -- /bin/sh -c "echo -n 'curl-deny  -> /     : ';curl -s -o /dev/null handson:80 -w '%{http_code}\n'"
+kubectl exec -n handson curl-allow -- /bin/sh -c "echo -n 'curl-allow -> /color: ';curl -s -o /dev/null handson:80/color -w '%{http_code}\n'"
+kubectl exec -n handson curl-deny  -- /bin/sh -c "echo -n 'curl-deny  -> /color: ';curl -s -o /dev/null handson:80/color -w '%{http_code}\n'"
 ```
 
 下記のように、`/`にアクセスしたcurl-denyのみHTTPステータスコード403が返ってくることを確認します。
 
-```console
-curl-allow: 200
-curl-deny:  403
-curl-allow:color: 200
-curl-deny:color:  200
+```shell
+curl-allow -> /     : 200
+curl-deny  -> /     : 403
+curl-allow -> /color: 200
+curl-deny  -> /color: 200
 ```
 
-次節へ行く前に、作成したCiliumNetworkPolicyを削除しておきます。
+次節へ行く前に、作成したCiliumNetworkPolicyリソースを削除しておきます。
 
-```sh
-kubectl delete -f manifest/cnp_ch4d-1.yaml
+```shell
+kubectl delete -f manifest/cnp.yaml
 ```
 
 ## Service Mesh
 
 ### Ingress
 
-[Kubernetes Ingress Support](https://docs.cilium.io/en/stable/network/servicemesh/ingress/)に記載があるように、CiliumはIngressリソースをサポートしています。
-第1章でNginx Controllerをデプロイしましたが、Nginx Controllerを使わずともCilium単体でIngressリソースを利用できます。
-この節では、IngressClassとしてCiliumを利用したトラフィックルーティングを行います。
+CiliumはIngressリソースのサポートをしており、第1章でNginx Controllerをデプロイしましたが、Nginx Controllerを使わずともCilium単体でIngressリソースを利用できます。
+Ingressリソースを利用するためには、CiliumのHelm Chartで`ingressController.enabled: true`を指定する必要があります。
+この設定はすでに[Chapter1 Cluster Create](./../chapter01_cluster-create)で行っており、現時点でIngressリソースは利用できる状態になっています。
+詳細については[Kubernetes Ingress Support](https://docs.cilium.io/en/stable/network/servicemesh/ingress/)を参照ください。
 
-まずingressControllerを有効にします。
+この節では、IngressClassとしてCiliumを利用したトラフィックルーティングのデモを行います。
+Ingressリソースを利用するためには、`ingressClassName`フィールドに`cilium`を設定したIngressをアプライすればIngressリソースを利用できます。
 
-```bash
-helmfile apply -f helmfile
-```
-
-`ingressClassName`フィールドに`cilium`を設定したIngressをアプライすればIngressリソースを利用できます。
-
-```bash
+```shell
 kubectl apply -f manifest/ingress.yaml
 ```
 
 curlコマンドでHTTPステータスコード200が返ってくることを確認します。
 
-```console
+```shell
 curl -I app.cilium.example.com:8080
 ```
-```console
-# 実行結果
+
+下記のような応答が返ってきます。
+
+```shell
 HTTP/1.1 200 OK
 accept-ranges: bytes
 content-length: 1395
@@ -214,33 +227,23 @@ CiliumはGatweay APIをサポートしており、Gatway APIを利用するこ�
 この節ではGateway APIを利用したトラフックの分割を行います。
 Gateway APIの詳細は[Kubernetes Gateway API](https://gateway-api.sigs.k8s.io/)を参照してください。
 
-まず、Gateway APIのCRDをデプロイします。
-
-```sh
-kubectl apply -f https://raw.githubusercontent.com/kubernetes-sigs/gateway-api/v0.7.0/config/crd/standard/gateway.networking.k8s.io_gatewayclasses.yaml
-kubectl apply -f https://raw.githubusercontent.com/kubernetes-sigs/gateway-api/v0.7.0/config/crd/standard/gateway.networking.k8s.io_gateways.yaml
-kubectl apply -f https://raw.githubusercontent.com/kubernetes-sigs/gateway-api/v0.7.0/config/crd/standard/gateway.networking.k8s.io_httproutes.yaml
-kubectl apply -f https://raw.githubusercontent.com/kubernetes-sigs/gateway-api/v0.7.0/config/crd/standard/gateway.networking.k8s.io_referencegrants.yaml
-kubectl apply -f https://raw.githubusercontent.com/kubernetes-sigs/gateway-api/v0.7.0/config/crd/experimental/gateway.networking.k8s.io_tlsroutes.yaml
-```
-
-今回は下記のようにトラフィックを50:50に分割してみます。
+今回は下記のようにトラフィックを9:1に分割してみます。
 
 ![](image/ch4-2.png)
 
 トラフィックを分割するためにGatewayリソースとHTTPRouteリソースをデプロイします。
 
-```sh
-kubectl apply -n handson-cilium  -f manifest/gateway_ch4d-2.yaml
+```shell
+kubectl apply -n handson  -f manifest/gateway_api.yaml
 ```
 
-上記をデプロイすると、`Type:Loadbalancer`が作成されることが分かります。
+上記をデプロイすると、Serviceリソースの`Type:Loadbalancer`が作成されます。
 
-```console
-kubectl get svc -n handson-cilium
+```shell
+kubectl get svc -n handson
 ```
-```console
-# 実行結果
+
+```shell
 NAME                      TYPE           CLUSTER-IP      EXTERNAL-IP      PORT(S)        AGE
 cilium-gateway-color-gw   LoadBalancer   10.96.196.114   172.24.255.200   80:30485/TCP   97s
 handson                   ClusterIP      10.96.172.207   <none>           80/TCP         19m
@@ -248,30 +251,30 @@ handson-blue              ClusterIP      10.96.232.207   <none>           80/TCP
 handson-yellow            ClusterIP      10.96.62.8      <none>           80/TCP         19m
 ```
 
-LBのIPアドレスを取得します。
+作成されたServiceリソースのIPアドレスを取得します。
 
-```sh
-LB_IP=$(kubectl get -n handson-cilium  svc -l io.cilium.gateway/owning-gateway=color-gw -o=jsonpath='{.items[0].status.loadBalancer.ingress[0].ip}')
+```shell
+LB_IP=$(kubectl get -n handson svc -l io.cilium.gateway/owning-gateway=color-gw -o=jsonpath='{.items[0].status.loadBalancer.ingress[0].ip}')
 ```
 
-LBのIPアドレス宛に10回ほどアクセスし、おおよそ50:50に分散していることを確認します。
+LBのIPアドレス宛に10回ほどアクセスし、おおよそ9:1に分散していることを確認します。
 
-```sh
+```shell
 for in in {1..10}; do \
 curl ${LB_IP}/color;echo
 sleep 0.1
 done
 ```
 
-次節に行く前に、作成したGatewayリソースとHTTPRouteリソースを削除しておきます。
+次節へ行く前に、作成したGatewayリソースとHTTPRouteリソースを削除しておきます。
 
-```sh
-kubectl delete -f manifest/gateway_ch4d-2.yaml
+```shell
+kubectl delete -f manifest/gateway_api.yaml
 ```
 
 > **Info**
 > 今回のようなルーティング機能はCilium Service Meshの機能を利用しても提供することができます。
-> Cilium Service Meshを利用したトラフィック分割のデモを後述します。
+> Cilium Service Meshを利用したトラフィック分割のデモを次節で説明します。
 
 ### Traffic Management
 
@@ -287,7 +290,7 @@ Envoyの[Supported API versions](https://www.envoyproxy.io/docs/envoy/latest/api
 
 `handson-blue"`に10%、`handson-yellow`に90%のトラフィックを流すように設定します。
 
-```sh
+```shell
 kubectl delete -f manifest/cec.yaml
 ```
 
@@ -296,9 +299,9 @@ kubectl delete -f manifest/cec.yaml
 
 下記コマンドを実行すると、`handson-blue"`に10%、`handson-yellow`に90%のトラフィックが流れることが確認できます。
 
-```sh
+```shell
 for in in {1..10}; do \
-kubectl exec -n handson-cilium curl-allow -- /bin/sh -c "echo -n 'curl-allow:color: ';curl -s handson:80/color -w '\n'"
+kubectl exec -n handson curl-allow -- /bin/sh -c "echo -n 'curl-allow: Color is ';curl -s handson:80/color -w '\n'"
 sleep 0.1
 done
 ```
