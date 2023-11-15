@@ -9,7 +9,7 @@
 HubbleはCiliumのために開発されたネットワークとセキュリティのObservabilityプラットフォームであり、
 [Cilium Hubble Series (Part 1): Re-introducing Hubble](https://isovalent.com/blog/post/hubble-series-re-introducing-hubble/)で説明されるように下記のコンポーネントで構成されます。
 
-![](image/ch04_hubble-components_01.png)
+![](image/ch05_hubble-components_01.png)
 
 - Hubble Server
   - 各NodeのCilium Agentに組み込まれており、Prometheusメトリクスやネットワークおよびアプリケーションプロトコルレベルでのフロー情報の可視性を提供します
@@ -23,77 +23,14 @@ HubbleはCiliumのために開発されたネットワークとセキュリテ�
 
 ## 構築
 
+Hubble RelayとHubble UIのステータスを確認します。
+ステータスはciliumコマンドからも確認可能です。
 
-Hubble RelayとHubble UIのデプロイを行います。
-Hubble Relayのステータスについてはciliumコマンドからも確認可能です。
-
-```console
+```shell
 cilium status
 ```
-```console
-# 実行結果
-    /¯¯\
- /¯¯\__/¯¯\    Cilium:             OK
- \__/¯¯\__/    Operator:           OK
- /¯¯\__/¯¯\    Envoy DaemonSet:    disabled (using embedded mode)
- \__/¯¯\__/    Hubble Relay:       disabled
-    \__/       ClusterMesh:        disabled
 
-Deployment             cilium-operator    Desired: 2, Ready: 2/2, Available: 2/2
-DaemonSet              cilium             Desired: 3, Ready: 3/3, Available: 3/3
-Containers:            cilium             Running: 3
-                       cilium-operator    Running: 2
-Cluster Pods:          5/5 managed by Cilium
-Helm chart version:    1.14.2
-Image versions         cilium             quay.io/cilium/cilium:v1.14.2@sha256:6263f3a3d5d63b267b538298dbeb5ae87da3efacf09a2c620446c873ba807d35: 3
-                       cilium-operator    quay.io/cilium/operator-generic:v1.14.2@sha256:52f70250dea22e506959439a7c4ea31b10fe8375db62f5c27ab746e3a2af866d: 2
-```
-
-今回はHubble RelayとHubble UIをHelmを利用してデプロイします。
-そのため、valueファイル（``./helmfile/values/cilium.yaml`）に下記を設定しています。
-
-```yaml
-hubble:
-  enabled: true
-  relay:
-    enabled: true
-  ui:
-    enabled: true
-    podAnnotations:
-      policy.cilium.io/proxy-visibility: "<Ingress/8081/TCP/HTTP>"
-  metrics:
-    enableOpenMetrics: true
-    # see: https://docs.cilium.io/en/stable/observability/metrics/#hubble-metrics
-    enabled:
-      - dns
-      - drop
-      - tcp
-      - flow
-      - port-distribution
-      - icmp
-      - httpV2:exemplars=true;labelsContext=source_ip,source_namespace,source_workload,destination_ip,destination_namespace,destination_workload,traffic_direction
-```
-
-Hubble RelayとHubble UIのデプロイはそれぞれ`hubble.relay.enabled=true`と`hubble.ui.enabled=true`で設定可能です。
-Hubble UIに関しては、L7トラフィックの可視化を行うためにannotationに`policy.cilium.io/proxy-visibility: "<Ingress/8081/TCP/HTTP>"`を設定します。
-こちらについては後述します。
-
-また、Ciliumが管理するKubernetes Podのネットワークを監視するために、Hubbleのメトリクスを有効化しておきます。
-使用可能なメトリクスに関しては、[Hubble Exported Metrics](https://docs.cilium.io/en/stable/observability/metrics/#hubble-exported-metrics)を参照ください。
-
-下記コマンドで設定を適用します。
-
-```console
-helmfile apply -f helmfile
-```
-
-下記コマンドでHubble RelayのステータスがOKになっていることを確認します。
-
-```console
-cilium status
-```
-```console
-# 実行結果
+```shell
     /¯¯\
  /¯¯\__/¯¯\    Cilium:             OK
  \__/¯¯\__/    Operator:           OK
@@ -118,6 +55,38 @@ Image versions         cilium             quay.io/cilium/cilium:v1.14.2@sha256:6
                        hubble-relay       quay.io/cilium/hubble-relay:v1.14.2@sha256:a89030b31f333e8fb1c10d2473250399a1a537c27d022cd8becc1a65d1bef1d6: 1
 ```
 
+設定自体はすでに[Chapter1 Cluster Create](./../chapter01_cluster-create)で行っているため、Hubble-uiおよびHubble-relayが動作しています。
+Hubble RelayとHubble UIのデプロイはそれぞれ`hubble.relay.enabled=true`と`hubble.ui.enabled=true`で設定可能です。
+また、Ciliumが管理するKubernetes Podのネットワークを監視するために、Hubbleのメトリクスを有効化しています。
+使用可能なメトリクスに関しては、[Hubble Exported Metrics](https://docs.cilium.io/en/stable/observability/metrics/#hubble-exported-metrics)を参照ください。
+
+具体的な設定は以下のようなモノになります。
+
+```yaml
+hubble:
+  enabled: true
+  relay:
+    enabled: true
+  ui:
+    enabled: true
+    podAnnotations:
+      policy.cilium.io/proxy-visibility: "<Ingress/8081/TCP/HTTP>"
+  metrics:
+    enableOpenMetrics: true
+    # see: https://docs.cilium.io/en/stable/observability/metrics/#hubble-metrics
+    enabled:
+      - dns
+      - drop
+      - tcp
+      - flow
+      - port-distribution
+      - icmp
+      - httpV2:exemplars=true;labelsContext=source_ip,source_namespace,source_workload,destination_ip,destination_namespace,destination_workload,traffic_direction
+```
+
+Hubble UIに関しては、L7トラフィックの可視化を行うためにannotationに`policy.cilium.io/proxy-visibility: "<Ingress/8081/TCP/HTTP>"`を設定します。
+こちらについては後述します。
+
 ## 動作確認
 
 ### Hubble Relayへのアクセス
@@ -135,29 +104,28 @@ Hubble CLIを利用してHubble Relayにアクセスします。
 
 まずは、Hubble CLIをインストールします。
 
-```console
+```shell
 ./install-tools.sh
 ```
 
 次に、Hubble RelayへのReachabilityを確保します。
 やり方はいろいろありますが、今回はkubectlコマンドを利用します。
 
-```console
+```shell
 # 別のコンソールを開き実行
 kubectl port-forward -n kube-system deploy/hubble-relay 4245 4245
 ```
-```console
+```shell
 Forwarding from 127.0.0.1:4245 -> 4245
 Forwarding from [::1]:4245 -> 4245
 ```
 
 下記コマンドでStatusを確認し、HealthcheckがOKとなっていることを確認します。
 
-```console
+```shell
 hubble status
 ```
-```console
-# 実行結果
+```shell
 Healthcheck (via localhost:4245): Ok
 Current/Max Flows: 7,479/12,285 (60.88%)
 Flows/s: 33.34
@@ -166,13 +134,13 @@ Connected Nodes: 3/3
 
 Hubble Relay経由で取得したHubble Serverのフロー情報は、下記コマンドで出力できます。
 
-```console
+```shell
 hubble observe flows
 ```
 
 コマンドを実行すると下記のような情報が出力されます。
 
-![](./image/ch04_hubble-observe-flows_01.png)
+![](./image/ch05_hubble-observe-flows_01.png)
 
 ### Hubble UIの利用
 
@@ -180,14 +148,14 @@ Hubble UIからHubble Relayにアクセスし、Hubble Serverの情報を取得�
 
 Hubble UIへアクセスするために、Ingressリソースを作成します。
 
-```
-kubectl apply -f ingress.yaml
+```shell
+kubectl apply -f manifest/ingress.yaml
 ```
 
 ブラウザで`hubble.example.com`にアクセスしingress-nginxのnamespaceを確認すると、下記のような画面が出力されます。
 これより、インターネット側からingress-nginxの80ポートにアクセスがあり、その後hubble-uiの8081ポートにアクセスされたことが分かります。
 
-![](./image/ch04_hubble-ui_01.png)
+![](./image/ch05_hubble-ui_01.png)
 
 ### Layer 7プロトコルの可視化
 
@@ -200,10 +168,10 @@ policy.cilium.io/proxy-visibility: "<Ingress/8081/TCP/HTTP>"
 
 また、CiliumEndpointsを確認することで、Visibility Policyのステータスを確認することが可能です。
 
-```console
+```shell
 kubectl get cep -n kube-system
 ```
-```console
+```shell
 # 実行結果
 NAME                            ENDPOINT ID   IDENTITY ID   INGRESS ENFORCEMENT   EGRESS ENFORCEMENT   VISIBILITY POLICY   ENDPOINT STATE   IPV4         IPV6
 coredns-5d78c9869d-99cjz        2133          63980         non-enforcing         non-enforcing                            ready            10.0.1.202
@@ -229,4 +197,4 @@ HubbleからはCiliumが管理するPodのネットワーク動作に関する�
 
 Grafanaのダッシュボードにアクセスすると以下のようなダッシュボードが確認できます。
 
-![](./image/ch04_hubble-grafana_01.png)
+![](./image/ch05_hubble-grafana_01.png)

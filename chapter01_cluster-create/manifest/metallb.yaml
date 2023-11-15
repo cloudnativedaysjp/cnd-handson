@@ -9,6 +9,7 @@ spec:
   # docker network inspect -f '{{.IPAM.Config}}' kind
   #   see: https://kind.sigs.k8s.io/docs/user/loadbalancer/
   - 172.24.255.200-172.24.255.250
+
 ---
 apiVersion: metallb.io/v1beta1
 kind: L2Advertisement

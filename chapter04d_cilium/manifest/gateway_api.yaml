@@ -3,7 +3,7 @@ apiVersion: gateway.networking.k8s.io/v1beta1
 kind: Gateway
 metadata:
   name: color-gw
-  namespace: handson-cilium
+  namespace: handson
 spec:
   gatewayClassName: cilium
   listeners:
@@ -18,7 +18,7 @@ apiVersion: gateway.networking.k8s.io/v1beta1
 kind: HTTPRoute
 metadata:
   name: color-route-1
-  namespace: handson-cilium
+  namespace: handson
 spec:
   parentRefs:
   - name: color-gw
@@ -31,8 +31,8 @@ spec:
     - kind: Service
       name: handson-blue
       port: 80
-      weight: 50
+      weight: 10
     - kind: Service
       name: handson-yellow
       port: 80
-      weight: 50
+      weight: 90

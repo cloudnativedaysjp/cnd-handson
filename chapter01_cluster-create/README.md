@@ -23,26 +23,25 @@ kindはDockerを使用してローカル環境にKubernetesクラスターを構
 また、kubectlはKubernetes APIを使用してKubernetesクラスターのコントロールプレーンと通信をするためのコマンドラインツールです。
 Cilium CLIはCiliumが動作しているKubernetesクラスターの管理やトラブルシュート等を行うためのコマンドラインツールになります。
 HelmはKubernetes用のパッケージマネージャーであり、Helmfileを使用することで宣言的にHelmチャートを管理できます。
-詳細については上記リンクをご参照ください。
+各ツールの詳細については上記リンクをご参照ください。
 
 上記のツールは`install-tools.sh`を実行することでインストールされます。
 
-```bash
+```shell
 ./install-tools.sh
 ```
 
 > **Warning**  
 > [Known Issue#Pod errors due to "too many open files"](https://kind.sigs.k8s.io/docs/user/known-issues/#pod-errors-due-to-too-many-open-files)に記載があるように、kindではホストのinotifyリソースが不足しているとエラーが発生します。
-> ハンズオン環境ではinotifyリソースが不足しているため、下記のような設定変更を行う必要があります。
-> ```console
-> $ # 設定変更
-> $ sudo sysctl fs.inotify.max_user_watches=524288
-> fs.inotify.max_user_watches = 524288
-> $ sudo sysctl fs.inotify.max_user_instances=512
-> fs.inotify.max_user_instances = 512
-> $
-> $ # 設定の永続化
-> $ cat <<EOF >> /etc/sysctl.conf
+> ハンズオン環境ではinotifyリソースが不足しているため、sysctlを利用してカーネルパラメータを修正する必要があります。
+> ```shell
+> sudo sysctl fs.inotify.max_user_watches=524288
+> sudo sysctl fs.inotify.max_user_instances=512
+> ```
+>
+> また、設定の永続化を行うためには、下記のコマンドを実行する必要があります。
+> ```shell
+> cat << EOF >> /etc/sysctl.conf
 > fs.inotify.max_user_watches = 524288
 > fs.inotify.max_user_instances = 512
 > EOF
@@ -60,8 +59,13 @@ HelmはKubernetes用のパッケージマネージャーであり、Helmfileを�
 
 configオプションで`kind-config.yaml`を指定してKubernetesクラスターを作成します。
 
-```console
-$ kind create cluster --config=kind-config.yaml
+```shell
+kind create cluster --config=kind-config.yaml
+```
+
+コマンドを実行すると以下のような情報が出力されます。
+
+```shell
 Creating cluster "kind" ...
  ✓ Ensuring node image (kindest/node:v1.27.3) 🖼
  ✓ Preparing nodes 📦 📦 📦  
@@ -79,41 +83,40 @@ Not sure what to do next? 😅  Check out https://kind.sigs.k8s.io/docs/user/qui
 
 > **Info**  
 > kubectlコマンドの実行時には、Kubernetesクラスターに接続するための認証情報などが必要になります。
-> それらの情報は、kindでクラスターを作成した際にデフォルトで`~/.kube/config`に格納されます。
+> それらの情報は、kindでクラスターを作成した際に保存され、デフォルトで`~/.kube/config`に格納されます。
 > このファイルに格納される情報は、kindコマンドを利用しても取得することが可能です
 >
-> ```sh
+> ```shell
 > kind get kubeconfig
 > ```
 
 最後に、下記のコンポーネントをデプロイします。
 
-- [Cilium](https://cilium.io/)
 - [Gateway API](https://gateway-api.sigs.k8s.io/)
+- [Cilium](https://cilium.io/)
 - [Metallb](https://metallb.universe.tf/)
 - [Nginx Ingress Controller](https://docs.nginx.com/nginx-ingress-controller/)
 
-今回はKubernetesクラスターのCNIとしてCiliumをインストールします。
-Ciliumについては[Chapter4d Cilium](./../chapter04d_cilium/)を参照してください。
+Gateway APIはKubernetesクラスター外からKubernetesクラスター内のServiceへのトラフィックを管理するためのものです。
+Ciliumについては[Chapter4d Cilium](./../chapter04d_cilium/)で説明するのでそちらを参照してください。
 MetallbはKind上のクラスターでServiceリソースのType:LoadBalancerを利用するためにインストールします。
 Nginx Controllerはインターネットからのkind上のServiceリソースへ通信をルーティングするためにインストールします。
 各コンポーネントの詳細については上記リンクをご参照ください。
 
+まず、最初にGateway APIのCRDをデプロイします。
 
-まず、Gateway APIのCRDをデプロイします。
-
-```sh
-kubectl apply -f https://raw.githubusercontent.com/kubernetes-sigs/gateway-api/v0.7.0/config/crd/standard/gateway.networking.k8s.io_gatewayclasses.yaml
-kubectl apply -f https://raw.githubusercontent.com/kubernetes-sigs/gateway-api/v0.7.0/config/crd/standard/gateway.networking.k8s.io_gateways.yaml
-kubectl apply -f https://raw.githubusercontent.com/kubernetes-sigs/gateway-api/v0.7.0/config/crd/standard/gateway.networking.k8s.io_httproutes.yaml
-kubectl apply -f https://raw.githubusercontent.com/kubernetes-sigs/gateway-api/v0.7.0/config/crd/standard/gateway.networking.k8s.io_referencegrants.yaml
-kubectl apply -f https://raw.githubusercontent.com/kubernetes-sigs/gateway-api/v0.7.0/config/crd/experimental/gateway.networking.k8s.io_tlsroutes.yaml
+```shell
+kubectl apply -f https://raw.githubusercontent.com/kubernetes-sigs/gateway-api/v1.0.0/config/crd/standard/gateway.networking.k8s.io_gatewayclasses.yaml
+kubectl apply -f https://raw.githubusercontent.com/kubernetes-sigs/gateway-api/v1.0.0/config/crd/standard/gateway.networking.k8s.io_gateways.yaml
+kubectl apply -f https://raw.githubusercontent.com/kubernetes-sigs/gateway-api/v1.0.0/config/crd/standard/gateway.networking.k8s.io_httproutes.yaml
+kubectl apply -f https://raw.githubusercontent.com/kubernetes-sigs/gateway-api/v1.0.0/config/crd/standard/gateway.networking.k8s.io_referencegrants.yaml
+kubectl apply -f https://raw.githubusercontent.com/kubernetes-sigs/gateway-api/v1.0.0/config/crd/experimental/gateway.networking.k8s.io_tlsroutes.yaml
 ```
 
-これらのコンポーネントはhelmfileコマンドを利用することでデプロイできます。
+Gateway API以外のコンポーネントはhelmfileコマンドを利用することでデプロイできます。
 
-```sh
-helmfile sync -f helmfile
+```shell
+helmfile sync -f hel
 ```
 
 > **Info**  
@@ -122,7 +125,7 @@ helmfile sync -f helmfile
 
 Metallbに関しては、追加で`IPAddressPool`と`L2Advertisement`をデプロイする必要があります。
 
-```sh
+```shell
 kubectl apply -f manifest/metallb.yaml
 ```
 
@@ -135,84 +138,34 @@ kubectl apply -f manifest/metallb.yaml
 
 まずはKubernetesクラスターの情報が取得できることを確認します。
 
-```console
+```shell
 kubectl cluster-info
 ```
-```console
-# 実行結果
+
+下記のような情報が出力されれば大丈夫です。
+
+```shell
 Kubernetes control plane is running at https://127.0.0.1:44707
 CoreDNS is running at https://127.0.0.1:44707/api/v1/namespaces/kube-system/services/kube-dns:dns/proxy
 
 To further debug and diagnose cluster problems, use 'kubectl cluster-info dump'.
 ```
 
-次に、動作確認用のNginxのPodを作成し、
-
-```console
-kubectl run --restart=Never nginx --image=nginx:alpine --wait
-```
-```console
-# 実行結果
-pod/nginx created
-```
-
-ポートフォワードします。
-
-```console
-$ kubectl port-forward nginx 8081:80
-```
-```console
-# 実行結果
-Forwarding from 127.0.0.1:8081 -> 80
-Forwarding from [::1]:8081 -> 80
-```
-
-別のターミナルを開き、curlでアクセスできることを確認します。
-
-```console
-$ curl localhost:8081
-```
-```console
-# 実行結果
-<!DOCTYPE html>
-<html>
-<head>
-<title>Welcome to nginx!</title>
-<style>
-html { color-scheme: light dark; }
-body { width: 35em; margin: 0 auto;
-font-family: Tahoma, Verdana, Arial, sans-serif; }
-</style>
-</head>
-<body>
-<h1>Welcome to nginx!</h1>
-<p>If you see this page, the nginx web server is successfully installed and
-working. Further configuration is required.</p>
-
-<p>For online documentation and support please refer to
-<a href="http://nginx.org/">nginx.org</a>.<br/>
-Commercial support is available at
-<a href="http://nginx.com/">nginx.com</a>.</p>
-
-<p><em>Thank you for using nginx.</em></p>
-</body>
-</html>
-```
-
-確認できたら、`kubectl port-forward`コマンドは「Ctrl + C」などで止めてください。
-
 > **Info**  
 > [End-To-End Connectivity Testing](https://docs.cilium.io/en/stable/contributing/testing/e2e/#end-to-end-connectivity-testing)に記載があるように、Cilium CLIを利用することでEnd-To-Endのテストを行うこともできます。このテストは10分ほどかかります。
-> ```sh
+> ```shell
 > cilium connectivity test
 > ```
 
-# Chapter 1.5 デモアプリのデプロイ
+次に、次章以降で使用する動作確認用のアプリケーションをデプロイします。
+動作確認用のアプリとしては、[Argo Rollouts Demo Application](https://github.com/argoproj/rollouts-demo)を使用します。
+下記コマンドを実行することで、デプロイできます。
 
-## 構築手順
-
-ingress + clusterIP + demoappが立ち上がる
-```
+```shell
 kubectl create namespace handson
-kubectl apply -Rf manifest -n handson
+kubectl apply -Rf manifest/app -n handson
 ```
+
+ブラウザから`http://app.example.com`に接続し、下記のような画面が表示されることを確認してください。
+
+![](./image/app-simple-routing.png)
