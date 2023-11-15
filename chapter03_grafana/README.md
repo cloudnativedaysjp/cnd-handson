@@ -46,10 +46,48 @@ chapter02で導入したkube-prometheus-stackによって、すでにGrafanaは�
     - Pod
     - Workload
 
+## 実践: ハンズオンで利用するダッシュボードをインポートしてみる
+
+Grafanaでは手作業でダッシュボードを作成する以外に、
+すでに構築されたダッシュボードの設定をJSONで切り出して保存しておいたものを利用したり、
+<https://grafana.com/grafana/dashboards/> 等で提供されている様々なダッシュボードをインポートしたりできます。
+
+実際にハンズオンでインストールするツールに関するダッシュボードをインポートしてみましょう。
+以下のようなダッシュボードがありますが、ここではingress-nginxのダッシュボードを導入してみます。
+
+- <https://github.com/kubernetes/ingress-nginx/tree/main/deploy/grafana/dashboards>
+- <https://grafana.com/grafana/dashboards/7645-istio-control-plane-dashboard/>
+- <https://grafana.com/grafana/dashboards/14584-argocd/>
+- <https://grafana.com/grafana/dashboards/16611-cilium-metrics/>
+- <https://grafana.com/grafana/dashboards/13539-hubble/>
+
+<http://grafana.example.com/dashboards>
+
+まずは <http://grafana.example.com/dashboards> にアクセスし、 `New` ボタンのプルダウンメニューから `New folder` をクリックし、
+`ingress-nginx` というフォルダ名で作成します。
+
+![image](./images/dashboards.png)
+
+次に、<http://grafana.example.com/dashboards> にもう一度アクセスし、 `New` ボタンのプルダウンメニューから `Import` をクリックします。
+
+その後ダッシュボードのインポート形式を選択してインポートしますが、
+ingress-nginxはgrafana.comではなくGitHubでダッシュボードを公開しているので、JSONファイル形式で行います。
+
+<https://github.com/kubernetes/ingress-nginx/blob/main/deploy/grafana/dashboards/nginx.json> を手元にダウンロードしておきます。
+Grafana画面で `Upload dashboard JSON file` ボタンをクリックして、
+先程ダウンロードしたJSONファイルをアップロードします。
+
+最後に、以下のような画面に遷移するので、
+スクリーンショットのように設定し、 `Import` ボタンをクリックします。
+
+![image](./images/import-dashboard.png)
+
+インポートに成功すると、以下のようなダッシュボードが表示されるはずです。
+
+![image](./images/ingress-nginx.png)
+
 ## Datasourceについて
 
 ## Variablesについて
 
 ## Grafana Alertingについて
-
-## おすすめダッシュボード一覧
