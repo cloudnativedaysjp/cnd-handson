@@ -162,12 +162,18 @@ grafana:
   adminPassword: handson_saiko!
 ```
 
-実際に各種サービスが起動しているか確認してみましょう。
+これらのファイルをもとに、 `helmfile sync` を実行してreleaseをインストールしましょう。
 
 ```bash
 helmfile sync
+```
+
+実際に各種サービスが起動しているか確認してみましょう。
+
+```bash
 kubectl get pods -n prometheus
 ```
+
 ```bash
 # 実行結果
 alertmanager-kube-prometheus-stack-alertmanager-0           2/2     Running   0          92s
@@ -179,13 +185,6 @@ kube-prometheus-stack-prometheus-node-exporter-dbkqx        1/1     Running   0 
 kube-prometheus-stack-prometheus-node-exporter-jqk58        1/1     Running   0          100s
 kube-prometheus-stack-prometheus-node-exporter-tm89f        1/1     Running   0          100s
 prometheus-kube-prometheus-stack-prometheus-0               2/2     Running   0          92s
-```
-
-kube-prometheus-stack をアンインストールする場合は、以下のコマンドを実行してください。
-
-```zsh
-kubectl delete -f ingress.yaml
-helmfile destroy
 ```
 
 ### Ingressによるサービスの公開
@@ -246,7 +245,7 @@ kubectl apply -f ingress.yaml
 ```
 
 実際にそれぞれのUIが公開されているか確認してみましょう。
-hostsファイルを書き換えた状態で、ブラウザで `prometheus.example.com/grafana.example.com` にアクセスしてみてください。
+hostsファイルを書き換えた状態で、ブラウザで `prometheus.example.com` と `grafana.example.com` にアクセスしてみてください。
 
 Grafanaの管理者がvalues.yamlに記載した認証情報でログインできなかった場合は、
 以下のコマンドを実行してパスワードを確認し、ログインしてください ( デフォルトでは `prom-operator` になっているはずです)
@@ -257,19 +256,6 @@ kubectl get secrets -n prometheus kube-prometheus-stack-grafana -o json | jq -r 
 
 ## 実践: Prometheus Web UIを触ってみよう
 
-### Alerts
-
-kube-prometheus-stackでデフォルトで導入されているアラートルールを確認することができます。
-
-![image](./images/alerts.png)
-
-### Status
-
-現在稼働しているPrometheusの状態確認がおこなえます。
-以下のスクリーンショットでは、scrape_configに設定されたexporterに対するスクレイプが正しくおこなえているかどうか等の情報が表示されています。
-
-![image](./images/targets.png)
-
 ### PromQL
 
 Prometheus Web UIでは、PromQLを利用してインタラクティブに簡単なモニタリングをおこなうことができます。
@@ -279,13 +265,30 @@ PromQLの詳細な仕様についてはこちらを御覧ください。
 
 > https://prometheus.io/docs/prometheus/latest/querying/basics/
 
-`prometheus.example.com` にアクセスして、PromQL入力欄に `go_goroutines` と入力してみます。
+<http://prometheus.example.com/graph> にアクセスして、PromQL入力欄に `go_goroutines` と入力してみます。
 
 ![image](./images/go_goroutines.png)
 
 これは、Go言語で実装されたExporterでよく公開されている、現在のgoroutineの発行数となるメトリックです。
 これはGaugeとなっているので、単調増加ではなく微妙に増減しているのが確認できます。
 後ほど、いくつかのPromQL実践例を紹介します。
+
+### Alerts
+
+kube-prometheus-stackでデフォルトで導入されているアラートルールを確認することができます。
+
+<http://prometheus.example.com/alerts>
+
+![image](./images/alerts.png)
+
+### Status
+
+現在稼働しているPrometheusの状態確認がおこなえます。
+以下のスクリーンショットでは、scrape_configに設定されたexporterに対するスクレイプが正しくおこなえているかどうか等の情報が表示されています。
+
+<http://prometheus.example.com/targets>
+
+![image](./images/targets.png)
 
 ## 実践: Nginx Ingressからメトリクスを収集する
 
@@ -296,7 +299,6 @@ PromQLの詳細な仕様についてはこちらを御覧ください。
 ### Nginx Ingressのメトリクスを外部公開する
 
 Ingress NGINX controllerのメトリクスを外部公開するために、ServiceMonitorを作成し、PrometheusがIngress NGINX Controllerのメトリクスを取得するようにします。
-
 
 ```yaml
 apiVersion: monitoring.coreos.com/v1
@@ -322,12 +324,21 @@ spec:
 kubectl apply -f manifests/ingress-nginx-servicemonitor.yaml
 ```
 
-
 ![image](https://github.com/kubernetes/ingress-nginx/blob/main/docs/images/prometheus-dashboard1.png)
 
 ## PromQLチートシート
 
 TODO
+
+## kube-prometheus-stackのクリーンアップ
+
+ハンズオン中では実行しませんが、
+kube-prometheus-stackおよびIngressのクリーンアップをおこなう場合は以下のコマンドを実行してください。
+
+```zsh
+kubectl delete -f ingress.yaml
+helmfile destroy
+```
 
 ## 参考文献
 
