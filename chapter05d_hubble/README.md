@@ -11,6 +11,8 @@ HubbleはCiliumのために開発されたネットワークとセキュリテ�
 
 ![](image/ch05_hubble-components_01.png)
 
+（出典：https://isovalent.com/blog/post/hubble-series-re-introducing-hubble/）
+
 - Hubble Server
   - 各NodeのCilium Agentに組み込まれており、Prometheusメトリクスやネットワークおよびアプリケーションプロトコルレベルでのフロー情報の可視性を提供します
 - Hubble Relay
@@ -109,15 +111,10 @@ Hubble CLIを利用してHubble Relayにアクセスします。
 ```
 
 次に、Hubble RelayへのReachabilityを確保します。
-やり方はいろいろありますが、今回はkubectlコマンドを利用します。
+別のターミナルを開き、下記コマンドを実行することでReachabilityを確保できます。
 
 ```shell
-# 別のコンソールを開き実行
-kubectl port-forward -n kube-system deploy/hubble-relay 4245 4245
-```
-```shell
-Forwarding from 127.0.0.1:4245 -> 4245
-Forwarding from [::1]:4245 -> 4245
+cilium hubble port-forward
 ```
 
 下記コマンドでStatusを確認し、HealthcheckがOKとなっていることを確認します。
@@ -131,6 +128,13 @@ Current/Max Flows: 7,479/12,285 (60.88%)
 Flows/s: 33.34
 Connected Nodes: 3/3
 ```
+
+> **Info**  
+> ciliumコマンドではなく、下記のようなkubectlコマンドを実行することでも、Reachabilityを確保可能です。
+> ```shell
+> kubectl port-forward -n kube-system deploy/hubble-relay 4245 4245
+> ```
+
 
 Hubble Relay経由で取得したHubble Serverのフロー情報は、下記コマンドで出力できます。
 
@@ -152,7 +156,7 @@ Hubble UIへアクセスするために、Ingressリソースを作成します�
 kubectl apply -f manifest/ingress.yaml
 ```
 
-ブラウザで`hubble.example.com`にアクセスしingress-nginxのnamespaceを確認すると、下記のような画面が出力されます。
+ブラウザで`hubble.cilium.example.com:8080`にアクセスしkube-systemのnamespaceを確認すると、下記のような画面が出力されます。
 これより、インターネット側からingress-nginxの80ポートにアクセスがあり、その後hubble-uiの8081ポートにアクセスされたことが分かります。
 
 ![](./image/ch05_hubble-ui_01.png)

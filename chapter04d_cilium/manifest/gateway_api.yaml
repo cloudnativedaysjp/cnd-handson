@@ -30,9 +30,9 @@ spec:
     backendRefs:
     - kind: Service
       name: handson-blue
-      port: 80
+      port: 8080
       weight: 10
     - kind: Service
       name: handson-yellow
-      port: 80
+      port: 8080
       weight: 90

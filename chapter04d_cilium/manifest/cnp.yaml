@@ -2,7 +2,7 @@
 apiVersion: "cilium.io/v2"
 kind: CiliumNetworkPolicy
 metadata:
-  name: ch4d-1
+  name: cnp
   namespace: handson
 spec:
   endpointSelector:
