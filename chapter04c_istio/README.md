@@ -46,7 +46,7 @@ Istioサービスメッシュは大きく2つのコンポーネントで構成�
 ## セットアップ
 ### Istioのインストール
 ```sh
-helmfile apply -f helm/helmfile.d/istio.yaml
+helmfile sync -f helm/helmfile.d/istio.yaml
 ```
 
 作成されるリソースは下記のとおりです。
@@ -140,7 +140,7 @@ Istioサービスメッシュ内のトラフィックを可視化するために
 
 helmfileを使ってKialiをインストールします。
 ```sh
-helmfile apply -f helm/helmfile.d/kiali.yaml
+helmfile sync -f helm/helmfile.d/kiali.yaml
 ```
 
 作成されるリソースは下記の通りです。
@@ -520,5 +520,7 @@ kubectl delete -f app/curl.yaml
 ## クリーンアップ
 Istio, Kialiを削除します。
 ```sh
-helmfile delete -f helm/helmfile.d/
+helmfile destroy -f helm/helmfile.d/
+kubectl delete customresourcedefinitions -l release=istio
+kubectl delete namespace istio-system
 ```
