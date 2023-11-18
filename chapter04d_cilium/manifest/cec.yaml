@@ -2,7 +2,7 @@
 apiVersion: cilium.io/v2
 kind: CiliumEnvoyConfig
 metadata:
-  name: ch4d-3
+  name: cec
   namespace: handson
 spec:
   services:

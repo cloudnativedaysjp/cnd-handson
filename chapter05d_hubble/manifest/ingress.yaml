@@ -2,14 +2,14 @@
 apiVersion: networking.k8s.io/v1
 kind: Ingress
 metadata:
-  name: hubble-ingress-by-nginx
+  name: hubble-ingress-by-cilium
   namespace: kube-system
   annotations:
-    nginx.ingress.kubernetes.io/ssl-redirect: "false"
+    ingress.cilium.io/loadbalancer-mode: shared
 spec:
-  ingressClassName: nginx
+  ingressClassName: cilium
   rules:
-  - host: hubble.example.com
+  - host: hubble.cilium.example.com
     http:
       paths:
       - path: /

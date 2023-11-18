@@ -18,4 +18,4 @@ spec:
           service:
             name: handson
             port:
-              number: 80
+              number: 8080
