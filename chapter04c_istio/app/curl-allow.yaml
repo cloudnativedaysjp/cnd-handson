@@ -4,6 +4,7 @@ kind: ServiceAccount
 automountServiceAccountToken: false
 metadata:
   name: curl-allow
+  namespace: handson
 ---
 apiVersion: v1
 kind: Pod
@@ -13,6 +14,7 @@ metadata:
     version: v1
     content: layer4-authz
   name: curl-allow
+  namespace: handson
 spec:
   serviceAccountName: curl-allow
   terminationGracePeriodSeconds: 0

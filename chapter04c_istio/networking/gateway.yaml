@@ -3,13 +3,14 @@ apiVersion: networking.istio.io/v1alpha3
 kind: Gateway
 metadata:
   name: handson
+  namespace: handson
 spec:
   selector:
     istio: ingressgateway
   servers:
   - port:
-      number: 80
-      name: http
+      number: 18080
+      name: http-app
       protocol: HTTP
     hosts:
     - app.example.com

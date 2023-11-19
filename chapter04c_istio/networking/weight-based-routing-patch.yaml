@@ -1,4 +1,6 @@
 ---
+metadata:
+  name: weight-based-routing
 spec:
   http:
   - route:

@@ -3,6 +3,9 @@ apiVersion: networking.istio.io/v1beta1
 kind: VirtualService
 metadata:
   name: weight-based-routing
+  namespace: handson
+  labels:
+    content: weight-based-routing
 spec:
   hosts:
   - app.example.com
@@ -27,6 +30,7 @@ apiVersion: networking.istio.io/v1beta1
 kind: DestinationRule
 metadata:
   name: weight-based-routing
+  namespace: handson
 spec:
   host: handson
   subsets:
