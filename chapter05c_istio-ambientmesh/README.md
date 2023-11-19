@@ -46,7 +46,7 @@ kind create cluster --config kind/config.yaml
 ### Istio ambientのインストール
 helmfileを使用してインストールをします。
 ```sh
-helmfile apply -f helm/helmfile.d/istio-ambient.yaml
+helmfile sync -f helm/helmfile.d/istio-ambient.yaml
 ```
 
 作成されるリソースは下記のとおりです。
@@ -107,7 +107,7 @@ Istioサービスメッシュ内のトラフィックを可視化するために
 
 helmfileを使ってKialiをインストールします。
 ```sh
-helmfile apply -f helm/helmfile.d/kiali.yaml
+helmfile sync -f helm/helmfile.d/kiali.yaml
 ```
 
 作成されるリソースは下記の通りです。
