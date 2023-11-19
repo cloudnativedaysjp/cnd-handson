@@ -4,6 +4,7 @@ kind: ServiceAccount
 automountServiceAccountToken: false
 metadata:
   name: handson-yellow
+  namespace: handson
 ---
 apiVersion: apps/v1
 kind: Deployment
@@ -13,6 +14,7 @@ metadata:
     color: yellow
     version: v1
   name: handson-yellow
+  namespace: handson
 spec:
   replicas: 1
   revisionHistoryLimit: 1

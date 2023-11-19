@@ -3,6 +3,9 @@ apiVersion: networking.istio.io/v1beta1
 kind: VirtualService
 metadata:
   name: simple-routing
+  namespace: handson
+  labels:
+    content: simple-routing
 spec:
   hosts:
   - app.example.com

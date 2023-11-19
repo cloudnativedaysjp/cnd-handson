@@ -54,14 +54,13 @@ helmfile sync -f helm/helmfile.d/istio.yaml
 kubectl -n istio-system get service,deployment
 ```
 ```sh
-# 実行結果
 NAME                           TYPE        CLUSTER-IP      EXTERNAL-IP   PORT(S)                                 AGE
-service/istio-ingressgateway   ClusterIP   10.96.12.35     <none>        15021/TCP,80/TCP                        73s
-service/istiod                 ClusterIP   10.96.112.206   <none>        15010/TCP,15012/TCP,443/TCP,15014/TCP   93s
+service/istio-ingressgateway   NodePort    10.96.152.203   <none>        18080:32080/TCP,443:32443/TCP           95s
+service/istiod                 ClusterIP   10.96.249.249   <none>        15010/TCP,15012/TCP,443/TCP,15014/TCP   115s
 
 NAME                                   READY   UP-TO-DATE   AVAILABLE   AGE
-deployment.apps/istio-ingressgateway   1/1     1            1           73s
-deployment.apps/istiod                 1/1     1            1           93s
+deployment.apps/istio-ingressgateway   1/1     1            1           95s
+deployment.apps/istiod                 1/1     1            1           114s
 ```
 
 `istiod`がコントロールプレーンです。データプレーンはアプリケーションpodにサイドカーとして注入されるため、この段階ではまだ確認をすることはできません。
@@ -69,26 +68,26 @@ deployment.apps/istiod                 1/1     1            1           93s
 ### アプリケーションのサービスメッシュへの追加
 Envoy sidecar proxyをアプリケーションpodに自動注入するようIstioに指示するために、deploy先のKubernetes namespaceにラベルを追加します。
 ```sh
-kubectl label namespace default istio-injection=enabled
+kubectl label namespace handson istio-injection=enabled
 ```
 ラベルが追加されたことを確認してください。
 ```sh
-kubectl get namespace default --show-labels
+kubectl get namespace handson --show-labels
 ```
 ```sh
 # 実行結果
-NAME      STATUS   AGE   LABELS
-default   Active   28m   istio-injection=enabled,kubernetes.io/metadata.name=default
+NAME      STATUS   AGE    LABELS
+handson   Active   175m   istio-injection=enabled,kubernetes.io/metadata.name=handson
 ```
 
 Handson用のアプリケーション(以下、アプリケーション)を再起動してpodにサイドカーとしてenvoy proxyが注入されるようにします。
 ```sh
-kubectl rollout restart deployment/handson-blue
+kubectl rollout restart deployment/handson-blue -n handson
 ```
 
 アプリケーション再起動、またはdeploy完了後のリソースは下記の通りです。Podが`Running`状態になった後に、アプリケーションpod内でcontainerが2つ動作していることを確認してください。
 ```sh
-kubectl get service,pod -l app=handson
+kubectl get service,pod -n handson -l app=handson
 ```
 ```sh
 ＃ 実行結果
@@ -101,7 +100,7 @@ pod/handson-blue-6c4f4c9c57-597dx   2/2     Running   0          26s
 
 Envoy proxyがサイドカーとしてアプリケーションpodに注入されているか確認しましょう。
 ```sh
-kubectl get pods -l app=handson -o jsonpath={.items..spec..containers..image} | tr -s '[[:space:]]' '\n';echo
+kubectl get pods -n handson -l app=handson -o jsonpath={.items..spec..containers..image} | tr -s '[[:space:]]' '\n';echo
 ```
 ```sh
 # 実行結果
@@ -120,7 +119,7 @@ kubectl apply -f networking/simple-routing.yaml
 
 作成されるリソースは下記のとおりです。
 ```sh
-kubectl get gateway,virtualservice
+kubectl get gateway,virtualservice -n handson
 ```
 ```sh
 # 実行結果
@@ -131,7 +130,7 @@ NAME                                                GATEWAYS      HOSTS         
 virtualservice.networking.istio.io/simple-routing   ["handson"]   ["app.example.com"]   25s
 ```
 
-これでメッシュ外からのアクセスをアプリケーションにルーティングする準備ができました。ブラウザから`http://app.exmaple.com`にアクセスしてアプリケーションが表示されることを確認してください。
+これでメッシュ外からのアクセスをアプリケーションにルーティングする準備ができました。ブラウザから`http://app.example.com:18080/`にアクセスしてアプリケーションが表示されることを確認してください。
 
 ![image](./imgs/app-simple-routing.png)
 
@@ -149,11 +148,11 @@ kubectl -n istio-system get service,pod -l app=kiali
 ```
 ```sh
 # 実行結果
-NAME            TYPE        CLUSTER-IP     EXTERNAL-IP   PORT(S)              AGE
-service/kiali   ClusterIP   10.96.123.32   <none>        20001/TCP,9090/TCP   36s
+NAME            TYPE        CLUSTER-IP      EXTERNAL-IP   PORT(S)     AGE
+service/kiali   ClusterIP   10.96.221.215   <none>        20001/TCP   44s
 
 NAME                        READY   STATUS    RESTARTS   AGE
-pod/kiali-8cf44fffc-h6hkw   1/1     Running   0          36s
+pod/kiali-6d68c8469-2wbcn   1/1     Running   0          43s
 ```
 
 外部(インターネット)からKialiにアクセスできるようにするためにIngressリソースを作成します。
@@ -176,7 +175,7 @@ kiali-by-nginx   nginx   kiali.example.com   10.96.88.164   80      2m5s
 ![image](./imgs/kiali-overview.png)
 
 Kialiダッシュボードのグラフ表示の設定を変更します。TOP画面左のサイドメニューの`Graph`をクリックし、画面上部にある表示項目を下記の通り設定してください。
-- `Namespace`の`default`にチェック
+- `Namespace`の`handson`にチェック
 
 ![image](./imgs/kiali-graph-namespace.png)
 
@@ -196,7 +195,7 @@ Istio Virtual Service/Destination Ruleを用いて加重ルーティングを実
 ### 追加アプリケーションのdeploy
 現在動作中のアプリケーションは下記のとおりです。
 ```sh
-kubectl get pod -l app=handson
+kubectl get pod -n handson -l app=handson
 ```
 ```sh
 # 実行結果
@@ -211,7 +210,7 @@ kubectl apply -f app/handson-yellow.yaml
 
 2つのワークロードが稼働していることを確認してください。
 ```sh
-kubectl get pod -l app=handson
+kubectl get pod -n handson -l app=handson
 ```
 ```sh
 # 実行結果
@@ -229,7 +228,7 @@ kubectl apply -f networking/weight-based-routing.yaml
 
 作成されるリソースは下記のとおりです。
 ```sh
-kubectl get virtualservice,destinationrule
+kubectl get virtualservice,destinationrule -n handson
 ```
 ```sh
 # 実行結果
@@ -240,22 +239,22 @@ NAME                                                       HOST      AGE
 destinationrule.networking.istio.io/weight-based-routing   handson   35s
 ```
 
-実際にリクエストを流して、期待した通り50%ずつトラフィックが流れているかKialiで確認してみましょう。ローカル端末から下記コマンドを実行してください。
+実際にリクエストを流して、期待した通り50%ずつトラフィックが流れているかKialiで確認してみましょう。**ローカル端末から**下記コマンドを実行してください。
 ```sh
-while :; do curl -s -o /dev/null -w '%{http_code}\n' http://app.example.com;sleep 1;done
+while :; do curl -s -o /dev/null -w '%{http_code}\n' http://app.example.com:18080;sleep 1;done
 ```
 
-しばらくすると、グラフが表示されます(なかなか表示されない場合は、Kialiダッシュボード右上の青い`Refresh`ボタンを押して状態を更新してください)。しばらくすると、トラフィックが凡そ均等にルーティングされていることを確認してください。
+しばらくすると、グラフが表示されます(なかなか表示されない場合は、Kialiダッシュボード右上の青い`Refresh`ボタンを押して状態を更新してください)。しばらくすると、トラフィックが均等(約±5%)にルーティングされていることを確認してください。
 ![image](./imgs/kiali-graph-weigh-based-routing-50-50.png)
 
 それでは、リクエストを一旦停止し、新しいアプリケーションにトラフィックが100%ルーティングされるように設定を変更します。
 ```sh
-kubectl patch virtualservice weight-based-routing --type merge --patch-file networking/weight-based-routing-patch.yaml
+kubectl patch virtualservice weight-based-routing -n handson --type merge --patch-file networking/weight-based-routing-patch.yaml
 ```
 
-再度リクエストを流します。
+再度**ローカル端末から**リクエストを流します。
 ```sh
-while :; do curl -s -o /dev/null -w '%{http_code}\n' http://app.example.com;sleep 1;done
+while :; do curl -s -o /dev/null -w '%{http_code}\n' http://app.example.com:18080;sleep 1;done
 ```
 
 しばらくすると、新しいアプリケーションにトラッフィックが100%ルーティングされていることが確認できます(変化が見られない場合は、Kialiダッシュボード右上の青い`Refresh`ボタンを押して状態を更新してください)。
@@ -279,7 +278,7 @@ L4レベルのトラフィックに対し、Istio Authorization Policyを作成�
 ### 追加アプリケーションdeploy
 現在動作中のアプリケーションは下記のとおりです。
 ```sh
-kubectl get pod -l app=handson
+kubectl get pod -n handson -l app=handson
 ```
 ```sh
 # 実行結果
@@ -294,7 +293,7 @@ kubectl apply -f app/curl-allow.yaml,app/curl-deny.yaml
 
 作成されるリソースは下記の通りです。
 ```sh
-kubectl get po -l content=layer4-authz
+kubectl get po -n handson -l content=layer4-authz
 ```
 ```sh
 # 実行結果
@@ -306,8 +305,8 @@ curl-deny    2/2     Running   0          29s
 それでは`curl-allow`, `curl-deny`双方のワークロードから`handson-blue` ワークロードに対してリクエストをします。
 ```sh
 while :; do
-kubectl exec curl-allow -- /bin/sh -c "echo -n 'curl-allow: ';curl -s -o /dev/null -w '%{http_code}\n' handson:8080";
-kubectl exec curl-deny -- /bin/sh -c "echo -n 'curl-deny:  ';curl -s -o /dev/null -w '%{http_code}\n' handson:8080";
+kubectl exec curl-allow -n handson -- /bin/sh -c "echo -n 'curl-allow: ';curl -s -o /dev/null -w '%{http_code}\n' handson:8080";
+kubectl exec curl-deny -n handson -- /bin/sh -c "echo -n 'curl-deny:  ';curl -s -o /dev/null -w '%{http_code}\n' handson:8080";
 echo ----------------;sleep 1;
 done
 ```
@@ -343,7 +342,7 @@ kubectl apply -f networking/L4-authorization-policy.yaml
 
 作成されるリソースは下記の通りです。
 ```sh
-kubectl get authorizationpolicy -l content=layer4-authz
+kubectl get authorizationpolicy -n handson -l content=layer4-authz
 ```
 ```sh
 # 実行結果
@@ -354,8 +353,8 @@ layer4-authz   27s
 再度リクエストをします。
 ```sh
 while :; do
-kubectl exec curl-allow -- /bin/sh -c "echo -n 'curl-allow: ';curl -s -o /dev/null -w '%{http_code}\n' handson:8080";
-kubectl exec curl-deny -- /bin/sh -c "echo -n 'curl-deny:  ';curl -s -o /dev/null -w '%{http_code}\n' handson:8080";
+kubectl exec curl-allow -n handson -- /bin/sh -c "echo -n 'curl-allow: ';curl -s -o /dev/null -w '%{http_code}\n' handson:8080";
+kubectl exec curl-deny -n handson -- /bin/sh -c "echo -n 'curl-deny:  ';curl -s -o /dev/null -w '%{http_code}\n' handson:8080";
 echo ----------------;sleep 1;
 done
 ```
@@ -403,7 +402,7 @@ Istio Authorization Policyを用いてL7レベルのアクセス管理を実装�
 ### 追加アプリケーションdeploy
 現在動作中のアプリケーションは下記のとおりです。
 ```sh
-kubectl get pod -l app=handson
+kubectl get pod -n handson -l app=handson
 ```
 ```sh
 # 実行結果
@@ -418,7 +417,7 @@ kubectl apply -f app/curl.yaml
 
 作成されるリソースは下記のとおりです。
 ```sh
-kubectl get po -l content=layer7-authz
+kubectl get po -n handson -l content=layer7-authz
 ```
 ```sh
 # 実行結果
@@ -428,7 +427,7 @@ curl   2/2     Running   0          24s
 
 それでは、`curl` ワークロードから`handson-blue`ワークロードに対してリクエストをします。
 ```sh
-while :; do kubectl exec curl -- curl -s -o /dev/null -w '%{http_code}\n' handson:8080;sleep 1;done
+while :; do kubectl exec curl -n handson -- curl -s -o /dev/null -w '%{http_code}\n' handson:8080;sleep 1;done
 ```
 
 リクエストが成功していることを確認してください。
@@ -456,7 +455,7 @@ kubectl apply -f networking/L7-authorization-policy.yaml
 
 作成されたリソースは下記の通りです。
 ```sh
-kubectl get authorizationpolicy -l content=layer7-authz
+kubectl get authorizationpolicy -n handson -l content=layer7-authz
 ```
 ```sh
 # 実行結果
@@ -466,7 +465,7 @@ layer7-authz   2m24s
 
 まずは確認のためにGETリクエストをします。
 ```sh
-while :; do kubectl exec curl -- curl -s -o /dev/null -w '%{http_code}\n' handson:8080;sleep 1;done
+while :; do kubectl exec curl -n handson -- curl -s -o /dev/null -w '%{http_code}\n' handson:8080;sleep 1;done
 ```
 
 先ほどと同じく、リクエストが成功していることを確認してください。
@@ -484,7 +483,7 @@ while :; do kubectl exec curl -- curl -s -o /dev/null -w '%{http_code}\n' handso
 
 それでは、POSTメソッドでリクエストをしてみましょう。`handson-blue`ワークロードにPOSTメソッドは実装されていないので、空データを使用します。
 ```sh
-while :; do kubectl exec curl -- curl -X POST -s -o /dev/null -d '{}' -w '%{http_code}\n' handson:8080;sleep 1;done
+while :; do kubectl exec curl -n handson -- curl -X POST -s -o /dev/null -d '{}' -w '%{http_code}\n' handson:8080;sleep 1;done
 ```
 
 しばらくすると、403にて拒否されるようになります。
