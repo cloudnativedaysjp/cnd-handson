@@ -24,7 +24,7 @@ releases:
 
   - name: istio-ztunnel
     namespace: istio-system
-    chart: istio/ztunnel
+    chart: istio-official/ztunnel
     version: 1.19.0-alpha.1
     needs:
       - istio-system/istiod
@@ -33,7 +33,7 @@ releases:
 
   - name: istio-cni
     namespace: istio-system
-    chart: istio/cni
+    chart: istio-official/cni
     version: 1.19.0-alpha.1
     needs:
       - istio-system/istiod
