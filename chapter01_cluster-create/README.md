@@ -17,12 +17,12 @@ Ciliumの詳細は[Chapter4d Cilium](./../chapter04d_cilium/)にて説明しま�
 - [kubectl](https://kubernetes.io/ja/docs/reference/kubectl/)
 - [Cilium CLI](https://github.com/cilium/cilium-cli)
 - [Helm](https://helm.sh/ja/)
-- [Helmfile](https://github.com/helmfile/helmfile)
+- [Helmfile](https://helmfile.readthedocs.io/en/latest/)
 
 kindはDockerを使用してローカル環境にKubernetesクラスターを構築するためのツールになります。
 また、kubectlはKubernetes APIを使用してKubernetesクラスターのコントロールプレーンと通信をするためのコマンドラインツールです。
 Cilium CLIはCiliumが動作しているKubernetesクラスターの管理やトラブルシュート等を行うためのコマンドラインツールになります。
-HelmはKubernetes用のパッケージマネージャーであり、Helmfileを使用することで宣言的にHelmチャートを管理できます。
+HelmはKubernetes用のパッケージマネージャーであり、Helmfileを使用することで複数のHelmチャートを宣言的に管理できます。
 各ツールの詳細については上記リンクをご参照ください。
 
 上記のツールは`install-tools.sh`を実行することでインストールされます。
