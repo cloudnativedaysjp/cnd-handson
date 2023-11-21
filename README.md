@@ -1,141 +1,43 @@
-# CNDT2023 handson repository
+# CNDT Co-located Hands-on Event 2023
+CNDT Co-located ハンズオンイベント2023のドキュメントです。
 
-https://github.com/cloudnativedaysjp/cndt2023-handson
+## Chapter
+全10chapterから構成されています。
+- [chapter01_cluster-create](./chapter01_cluster-create/)
+- [chapter02_prometheus](./chapter02_prometheus/)
+- [chapter03_grafana](./chapter03_grafana/)
+- [chapter04a_opentelemetry](./chapter04a_opentelemetry/)
+- [chapter04b_argocd](./chapter04b_argocd/)
+- [chapter04c_istio](./chapter04c_istio/)
+- [chapter04d_cilium](./chapter04d_cilium/)
+- [chapter05b_argo-rollouts](./chapter05b_argo-rollouts/)
+- [chapter05c_istio-ambientmesh](./chapter05c_istio-ambientmesh/)
+- [chapter05d_hubble](./chapter05d_hubble/)
 
-* **できれば継続的にアップデートできるように、ダウンロードして取得したファイルなどは所在をコメントするか、取得するスクリプトを置いておいてください！**
-* 各自レビューなくマージしちゃって良いです。
+### 進め方
+最初にchapter01、chapter02、chapter03を順に実施してください。<br>
+chapter04とchapter05はそれぞれ独立しているため、順番に進めることはもちろん、お好きなchapterだけを実施いただくことも可能です。また、下記のように、気になる技術に焦点を当てたchapterを進めることもできます。
 
+- OpenTelemetry関するchapter
+  ```plain text
+  chapter01 -> chater02 -> chapter03 -> chapter04a
+  ```
 
-## Ingress の利用方法
+- Argo CD/Rolloutsに関するchapter
+  ```plain text
+  chapter01 -> chater02 -> chapter03 -> chapter04b -> chapter05b
+  ```
 
-VM の hostPort > kind の cotainerPort > NodePort Service > ingress-nginx Pod の順に転送するように設定してあるため、
+- Istio/Istio ambient meshに関するするchapter
+  ```plain text
+    chapter01 -> chater02 -> chapter03 -> chapter04c -> chapter05c
+  ```
 
-* Ingress リソースの作成
+- Cilium/Hubbleに関するするchapter
+  ```plain text
+    chapter01 -> chater02 -> chapter03 -> chapter04d -> chapter05d
+  ```
 
-<details><summary>詳細（sample.example.com を追加する例）</summary>
-
-```yaml
-apiVersion: networking.k8s.io/v1
-kind: Ingress
-metadata:
-  name: sample-ingress-by-nginx
-  annotations:
-    nginx.ingress.kubernetes.io/ssl-redirect: "false"
-spec:
-  ingressClassName: nginx
-  rules:
-  - host: sample.example.com
-    http:
-      paths:
-      - path: /path1
-        pathType: Prefix
-        backend:
-          service:
-            name: sample-ingress-svc-1
-            port:
-              number: 8888
-  defaultBackend:
-    service:
-      name: sample-ingress-default
-      port:
-        number: 8888
-  tls:
-  - hosts:
-    - sample.example.com
-    secretName: tls-sample
-```
-
-* app 例
-
-```yaml
----
-apiVersion: v1
-kind: Service
-metadata:
-  name: sample-ingress-svc-1
-spec:
-  type: NodePort
-  ports:
-  - name: "http-port"
-    protocol: "TCP"
-    port: 8888
-    targetPort: 80
-  selector:
-    ingress-app: sample1
----
-apiVersion: v1
-kind: Pod
-metadata:
-  name: sample-ingress-apps-1
-  labels:
-    ingress-app: sample1
-spec:
-  containers:
-  - name: nginx-container
-    image: amsy810/echo-nginx:v2.0
----
-apiVersion: v1
-kind: Service
-metadata:
-  name: sample-ingress-svc-2
-spec:
-  type: NodePort
-  ports:
-  - name: "http-port"
-    protocol: "TCP"
-    port: 8888
-    targetPort: 80
-  selector:
-    ingress-app: sample2
----
-apiVersion: v1
-kind: Pod
-metadata:
-  name: sample-ingress-apps-2
-  labels:
-    ingress-app: sample2
-spec:
-  containers:
-  - name: nginx-container
-    image: amsy810/echo-nginx:v2.0
----
-apiVersion: v1
-kind: Service
-metadata:
-  name: sample-ingress-default
-spec:
-  type: NodePort
-  ports:
-  - name: "http-port"
-    protocol: "TCP"
-    port: 8888
-    targetPort: 80
-  selector:
-    ingress-app: default
----
-apiVersion: v1
-kind: Pod
-metadata:
-  name: sample-ingress-default
-  labels:
-    ingress-app: default
-spec:
-  containers:
-  - name: nginx-container
-    image: amsy810/echo-nginx:v2.0
-```
-
-</details>
-
-* ローカルマシンの /etc/hosts にエントリを追加
-
-<details><summary>詳細（sample.example.com を追加する例）</summary>
-
-`133.242.235.81 sample.example.com` を /etc/hosts に追記
-
-`133.242.235.81` は VM の IP Address です。
-
-</details>
-
-の2点を実施することで、Ingress 経由でアクセス可能になっています。
-
+## 免責事項
+本ドキュメントに掲載された内容によって生じた損害等の一切の責任を負いかねます。
+また、本ドキュメントのコンテンツや情報において、可能な限り正確な情報を掲載するよう努めていますが、情報が古くなったりすることもあります。必ずしも正確性を保証するものではありません。あらかじめご了承ください。
