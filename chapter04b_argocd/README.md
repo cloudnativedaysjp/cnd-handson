@@ -151,7 +151,7 @@ Applicationsの画面において + NEW APPをクリックします![Application
 上の画面上で各項目を次のように設定します。
 ```
 GENERAL
-  Application Name: test
+  Application Name: argocd-demo
   Project Name: default
   SYNC POLICY: Manual
   SYNC OPTIONS: AUTO CREATE NAMESPACE [v]
@@ -161,7 +161,7 @@ GENERAL
     Path: chapter04b_argocd/app/default
   DESTINATION
     Cluster URL: https://kubernetes.default.svc
-    Namespace: test
+    Namespace: argocd-demo
 ```
 設定できたら、CREATEをクリックして、下記のように表示されていることを確認して下さい。
 ![create](./imgs/demoapp/create.png)
@@ -200,7 +200,7 @@ Applicationsの画面において + NEW APPをクリック![Applications](./imgs
 上の画面上で各項目を次のように設定します。(開発環境と本番環境はここのPathだけ変更になります)
 ```
 GENERAL
-  Application Name: kustomize
+  Application Name: argocd-kustomize
   Project Name: default
   SYNC POLICY: Manual
   SYNC OPTIONS: AUTO CREATE NAMESPACE [v]
@@ -212,7 +212,7 @@ GENERAL
         本番環境： chapter04b_argocd/app/Kustomize/overlays/prd
   DESTINATION
     Cluster URL: https://kubernetes.default.svc
-    Namespace: kustomize
+    Namespace: argocd-kustomize
 ```
 設定できたら、CREATEをクリック
 ![](imgs/demoapp/Kustomize-create.png)
@@ -235,7 +235,7 @@ Applicationsの画面において + NEW APPをクリック
 上の画面上で各項目を次のように設定します。
 ```
 GENERAL
-  Application Name: helm
+  Application Name: argocd-helm
   Project Name: default
   SYNC POLICY: Manual
   SYNC OPTIONS: AUTO CREATE NAMESPACE [v]
@@ -245,7 +245,7 @@ GENERAL
     Path: chapter04b_argocd/app/Helm/rollouts-demo
   DESTINATION
     Cluster URL: https://kubernetes.default.svc
-    Namespace: helm
+    Namespace: argocd-helm
 ```
 設定できたら、CREATEをクリック
 ![](./imgs/demoapp/helm-create.png)
@@ -255,3 +255,17 @@ GENERAL
 ブラウザで
 helm.argocd.example.com
 アクセスして確認してみてください。Helmを使ってデプロイが出来てる事が確認できます。
+## Argo CDのクリーンアップ
+### 作成したデモアプリを削除
+Applicationsの画面の各アプリのDELETEをクリック
+### Argo CDを削除
+chapter05b_argo-rolloutsをする場合は削除する必要はありません。
+```
+helmfile destroy -f  helm/helmfile.yaml
+kubectl delete namespace argocd-demo
+kubectl delete namespace argocd-kustomize
+kubectl delete namespace argocd-helm
+```
+
+
+
