@@ -159,9 +159,8 @@ To further debug and diagnose cluster problems, use 'kubectl cluster-info dump'.
 > cilium connectivity test
 > ```
 
-次に、次章以降で使用する動作確認用のアプリケーションをデプロイします。
-動作確認用のアプリとして[Argo Rollouts Demo Application](https://github.com/argoproj/rollouts-demo)を使用します。
-こちらは、下記コマンドを実行することでデプロイできます。
+## アプリケーションのデプロイ
+次章以降で使用する動作確認用アプリケーションとして、[Argo Rollouts Demo Application](https://github.com/argoproj/rollouts-demo)をデプロイします。
 
 ```shell
 kubectl create namespace handson
