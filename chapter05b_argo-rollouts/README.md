@@ -37,7 +37,7 @@ Argo Rolloutsは、Kubernetesコントローラおよび一連のカスタムリ
 Argo CDとの連携が可能で、簡単に既存のGit Opsでプログレッシブデリバリーができる
 ## セットアップ
 今回のハンズオンでは、Argo CDからArgo Rolloutsを利用します。
-### ローカル環境での準備
+### hostsファイルの準備(ローカル環境)
 今回デプロイするWEBサービスのドメインは登録していないため、WEBサービスを利用する際にはハンズオンで利用する端末のhostsファイルを書き込む必要があります。
 
 hostsファイルのpathはOSによって様々なので環境によって変わりますが主要なpathは下記の通りです
@@ -54,17 +54,22 @@ Windowsの場合
 * app.argocd.example.com
 * app-preview.argocd.example.com
 
-### Gitブランチの準備
-既存のマニュフェストに変更を加える事で、様々なデプロイを行うため自由に利用できるブランチを用意します。
+### Gitリポジトリの準備(ローカル環境)
+Argo CDを利用する上では、GitHubへのPush等の変更が必要不可欠になります。そのため、このハンズオンのリポジトリをforkして操作する為の準備をします。
 
-new_branch_nameは自由に決めて下さい。
-```sh
-git colne https://github.com/cloudnativedaysjp/cndt2023-handson.git
-git checkout -b new_branch_name
-git push orign　new_branch_name
-```
+[このハンズオン](https://github.com/自身のアカウント名/cndt2023-handson)にアクセスし、forkをクリックします
+![fork1](../chapter04b_argocd/imgs/setup/fork-1.png)
+
+Create fork をクリックします
+![fork2](../chapter04b_argocd/imgs/setup/fork-2.png)
+
+自身のアカウントでforkされていることが確認できます
+![fork2](../chapter04b_argocd/imgs/setup/fork-3.png)
+
+GitHubのリポジトリの登録やPushはforkした自身のリポジトリを利用して下さい
+
 ### Argo CDのセットアップ
-[chapter04ｂargocd](https://github.com/cloudnativedaysjp/cndt2023-handson/tree/main/chapter04b_argocd#argo-cd%E3%81%AE%E3%82%A4%E3%83%B3%E3%82%B9%E3%83%88%E3%83%BC%E3%83%AB)を参照してWebUIの確認とレポジトリの登録まで行って下さい。
+[chapter04ｂargocd](https://github.com/自身のアカウント名/cndt2023-handson/tree/main/chapter04b_argocd#argo-cd%E3%81%AE%E3%82%A4%E3%83%B3%E3%82%B9%E3%83%88%E3%83%BC%E3%83%AB)を参照してWebUIの確認とレポジトリの登録まで行って下さい。
 
 今回のchapterでは更にArgo CDのプラグインである、rollout-extensionをインストールしてArgoCD上でrolloutの操作結果が確認できるようにします。
 ```sh
@@ -86,7 +91,49 @@ kubectl get service,deployment  -n argo-rollouts
 NAME                            READY   UP-TO-DATE   AVAILABLE   AGE
 deployment.apps/argo-rollouts   2/2     2            2           28d
 ```
+### Corednsへhotsの追加
+Argo Rolloutsのメトリクスプロバイダーが、デモアプリやPrometheusにアクセスできるようにCore DNSのを設定を行います。
+  ```sh
+  kubectl edit cm coredns -n kube-system
+  ```
+  ```yaml
+# Please edit the object below. Lines beginning with a '#' will be ignored,
+# and an empty file will abort the edit. If an error occurs while saving this file will be
+# reopened with the relevant failures.
+#
+apiVersion: v1
+data:
+  Corefile: |
+    .:53 {
+        errors
+        health
+        # 下記追加
+        hosts {
+           IPアドレス app.argocd.example.com
+           IPアドレス app-preview.argocd.example.com
+           IPアドレス prometheus.example.com
+           fallthrough
+        }
+        # ここまで
+        kubernetes cluster.local in-addr.arpa ip6.arpa {
+           pods insecure
+           upstream
+           fallthrough in-addr.arpa ip6.arpa
+        }
+        prometheus :9153
+        proxy . /etc/resolv.conf
+        cache 30
+        loop
+        reload
+        loadbalance
+    }
+kind: ConfigMap
+metadata:
+  name: coredns
+  namespace: kube-system
+  (略)
 
+  ```
 ## Blue/Green DeploymentとCanary Release
 Argo Rolloutsによって追加された、Blue/Green DeploymentとCanary Releaseの二つのデプロイ方法を試します。
 
@@ -106,7 +153,7 @@ Canary Releaseは、新旧混在状態を制御し、本番環境において限
     SYNC POLICY: Manual
     SYNC OPTIONS: AUTO CREATE NAMESPACE [v]
     SOURCE
-      Repository URL: https://github.com/cloudnativedaysjp/cndt2023-handson
+      Repository URL: https://github.com/自身のアカウント名/cndt2023-handson
       Revision: new_branch_name
       Path: chapter05b_argo-rollouts/app/blue-green
     DESTINATION
@@ -167,7 +214,7 @@ Canary Releaseは、新旧混在状態を制御し、本番環境において限
     SYNC POLICY: Manual
     SYNC OPTIONS: AUTO CREATE NAMESPACE [v]
     SOURCE
-      Repository URL: https://github.com/cloudnativedaysjp/cndt2023-handson
+      Repository URL: https://github.com/自身のアカウント名/cndt2023-handson
       Revision: new_branch_name
       Path: chapter05b_argo-rollouts/app/canary
     DESTINATION
@@ -222,49 +269,7 @@ Canary Releaseは、新旧混在状態を制御し、本番環境において限
 * Apache SkyWalking
 * 独自Plugin
 
-### 事前準備
-Argo Rolloutsのメトリクスプロバイダーが、デモアプリやPrometheusにアクセスできるようにCore DNSのを設定を行います。
-  ```sh
-  kubectl edit cm coredns -n kube-system
-  ```
-  ```yaml
-# Please edit the object below. Lines beginning with a '#' will be ignored,
-# and an empty file will abort the edit. If an error occurs while saving this file will be
-# reopened with the relevant failures.
-#
-apiVersion: v1
-data:
-  Corefile: |
-    .:53 {
-        errors
-        health
-        # 下記追加
-        hosts {
-           IPアドレス app.argocd.example.com
-           IPアドレス app-preview.argocd.example.com
-           IPアドレス prometheus.example.com
-           fallthrough
-        }
-        # ここまで
-        kubernetes cluster.local in-addr.arpa ip6.arpa {
-           pods insecure
-           upstream
-           fallthrough in-addr.arpa ip6.arpa
-        }
-        prometheus :9153
-        proxy . /etc/resolv.conf
-        cache 30
-        loop
-        reload
-        loadbalance
-    }
-kind: ConfigMap
-metadata:
-  name: coredns
-  namespace: kube-system
-  (略)
 
-  ```
 ### Job metrics (Blue/Green Deploy)
 アップデートする際に、jobをデプロイし、jobの実行結果によってBlue/Green DeployをPromoteするかどうかを判断させるAnalysisを作成します。
   
@@ -279,7 +284,7 @@ Applicationsの画面において + NEW APPをクリックします
     SYNC POLICY: Manual
     SYNC OPTIONS: AUTO CREATE NAMESPACE [v]
     SOURCE
-      Repository URL: https://github.com/cloudnativedaysjp/cndt2023-handson
+      Repository URL: https://github.com/自身のアカウント名/cndt2023-handson
       Revision: new_branch_name
       Path: chapter05b_argo-rollouts/analysis/job
     DESTINATION
@@ -317,7 +322,7 @@ Applicationsの画面において + NEW APPをクリックします
     SYNC POLICY: Manual
     SYNC OPTIONS: AUTO CREATE NAMESPACE [v]
     SOURCE
-      Repository URL: https://github.com/cloudnativedaysjp/cndt2023-handson
+      Repository URL: https://github.com/自身のアカウント名/cndt2023-handson
       Revision: new_branch_name
       Path: chapter05b_argo-rollouts/analysis/web
     DESTINATION
@@ -355,7 +360,7 @@ Applicationsの画面において + NEW APPをクリックします
     SYNC POLICY: Manual
     SYNC OPTIONS: AUTO CREATE NAMESPACE [v]
     SOURCE
-      Repository URL: https://github.com/cloudnativedaysjp/cndt2023-handson
+      Repository URL: https://github.com/自身のアカウント名/cndt2023-handson
       Revision: new_branch_name
       Path: chapter05b_argo-rollouts/analysis/prometheus
     DESTINATION
@@ -380,3 +385,17 @@ rolloutを手動でSyncすると、アプリケーションのpodと新たにAna
 Analysisrunの詳細をクリックし、Live Manifestを確認するとどういったレスポンスが帰ってきて、成功したのか失敗したのか確認できます。
 ![log](imgs/analysis/prometheus-log.png)
 Analysisrunが成功すると、自動的にCanary Releseが進んでいくのが分かります。
+
+## Argo Rolloutsのクリーンアップ
+### 作成したデモアプリを削除
+Applicationsの画面の各アプリのDELETEをクリック
+### Argo CDを削除
+```
+helmfile destroy -f  ../chapter04b_argocd/helm/helmfile.yaml
+kubectl delete -n argo-cd \
+    -f https://raw.githubusercontent.com/argoproj-labs/rollout-extension/v0.2.1/manifests/install.yaml
+```
+### Argo Rolloutsを削除
+```
+helmfile destroy -f  ./helm/helmfile.yaml
+```
