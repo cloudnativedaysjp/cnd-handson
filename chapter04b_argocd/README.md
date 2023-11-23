@@ -55,7 +55,7 @@ HelmやKustomizeなどのコードから生成されたマニフェストをキ�
 Kubernetes clusterをGitの状態に同期させるため、マニュフェストの反映（デプロイ）をします。
 
 ## セットアップ
-### ローカル環境での準備
+### hostsファイルの準備(ローカル環境)
 今回デプロイするWEBサービスのドメインは登録していないため、WEBサービスを利用する際にはハンズオンで利用する端末のhostsファイルを書き込む必要があります。
 
 hostsファイルのpathはOSによって様々なので環境によって変わりますが主要なpathは下記の通りです
@@ -74,6 +74,19 @@ Windowsの場合
 * prd.kustomize.argocd.example.com
 * helm.argocd.example.com
 
+### Gitリポジトリの準備(ローカル環境)
+Argo CDを利用する上では、GitHubへのPush等の変更が必要不可欠になります。そのため、このハンズオンのリポジトリをforkして操作する為の準備をします。
+
+[このハンズオン](https://github.com/自身のアカウント名/cndt2023-handson)にアクセスし、forkをクリックします
+![fork1](imgs/setup/fork-1.png)
+
+Create fork をクリックします
+![fork2](imgs/setup/fork-2.png)
+
+自身のアカウントでforkされていることが確認できます
+![fork2](imgs/setup/fork-3.png)
+
+GitHubのリポジトリの登録やPushはforkした自身のリポジトリを利用して下さい
 ### Argo CDのインストール
 helmファイルを利用してArgo CDをインストールします。
 ```
@@ -121,9 +134,7 @@ Settings - > Repositories と進み CONEECT REPOをクリック　![CONEECT REPO
 Choose you connection method: VIA HTTPS
 Type: git
 Project: default
-Repository URL: https://github.com/cloudnativedaysjp/cndt2023-handson
-Username (optional):username
-password (optional):pass
+Repository URL: https://github.com/自身のアカウント名/cndt2023-handson
 ```
 CONNECTをクリックして、下記のように表示されていることを確認して下さい。
 ![CONNECT](./imgs/setup/add-repo-complete.png)
@@ -132,11 +143,9 @@ CONNECTをクリックして、下記のように表示されていることを�
 ## デモアプリのデプロイ
 試しにデモアプリのデプロイを行い、Argo CDの一連の操作を行います。
 
-Argo CDに同期させるGitのブランチを準備します。
+Argo CDに同期させるGitリポジトリをを準備します。
 ```bash
-git clone https://github.com/cloudnativedaysjp/cndt2023-handson.git
-git checkout -b new_branch_name
-git push origin new_branch_name
+git clone https://github.com/自身のアカウント名/cndt2023-handson.git
 ```
 Applicationsの画面において + NEW APPをクリックします![Applications](./imgs/demoapp/new-app.png)
 上の画面上で各項目を次のように設定します。
@@ -147,8 +156,8 @@ GENERAL
   SYNC POLICY: Manual
   SYNC OPTIONS: AUTO CREATE NAMESPACE [v]
   SOURCE
-    Repository URL: https://github.com/cloudnativedaysjp/cndt2023-handson
-    Revision: new_branch_name
+    Repository URL: https://github.com/自身のアカウント名/cndt2023-handson
+    Revision: main
     Path: chapter04b_argocd/app/default
   DESTINATION
     Cluster URL: https://kubernetes.default.svc
@@ -173,9 +182,9 @@ app/default/deployment.yamlの編集を行います。 imageのtagをblueからg
 ```
 image: argoproj/rollouts-demo:green
 ```
-差分をremoteのnew_branch_nameブランチ（Argo cdのappを作成する際に指定したブランチ）に取り込みます。
+差分をremoteのmainブランチ（Argo cdのappを作成する際に指定したブランチ）に取り込みます。
 ```
-git push origin new_branch_nam
+git push origin main
 ```
 Argo　CDはデフォルトでは3分に一回の頻度でブランチを確認し、差分を検出しています。 3分待てない場合には、ページ上部にある [REFRESH]をクリックします。下記のようにdeploymentにおいて差分が検出されます。（黄色で表示されているOutOfSyncが差分があることを示しています） ちなみにAppの設定において、SYNC POLICYをManualでなくAutoにしていた場合には、ここでOutOfSyncを検知すると自動でArgoCDがSyncを実行します。
 ![blue2green](imgs/demoapp/blue2green.png)
@@ -196,8 +205,8 @@ GENERAL
   SYNC POLICY: Manual
   SYNC OPTIONS: AUTO CREATE NAMESPACE [v]
   SOURCE
-    Repository URL: https://github.com/cloudnativedaysjp/cndt2023-handson
-    Revision: new_branch_name
+    Repository URL: https://github.com/自身のアカウント名/cndt2023-handson
+    Revision: main
     Path:
         開発環境： chapter04b_argocd/app/Kustomize/overlays/dev
         本番環境： chapter04b_argocd/app/Kustomize/overlays/prd
@@ -231,8 +240,8 @@ GENERAL
   SYNC POLICY: Manual
   SYNC OPTIONS: AUTO CREATE NAMESPACE [v]
   SOURCE
-    Repository URL: https://github.com/cloudnativedaysjp/cndt2023-handson
-    Revision: new_branch_name
+    Repository URL: https://github.com/自身のアカウント名/cndt2023-handson
+    Revision: main
     Path: chapter04b_argocd/app/Helm/rollouts-demo
   DESTINATION
     Cluster URL: https://kubernetes.default.svc
