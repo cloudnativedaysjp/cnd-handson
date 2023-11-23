@@ -7,12 +7,13 @@ releases:
     chart: istio-official/base
     version: 1.19.0-alpha.1
 
-  # - name: istio-misc
-  #   namespace: istio-system
-  #   chart: ../charts/istio-misc
-  #   disableValidation: true
-  #   needs:
-  #     - /istio-base
+- name: istiod
+  namespace: istio-system
+  chart: istio-official/istiod
+  version: 1.19.0-alpha.1
+  wait: true
+  values:
+  - ../values/istiod.values.yaml
 
   - name: istiod
     namespace: istio-system
