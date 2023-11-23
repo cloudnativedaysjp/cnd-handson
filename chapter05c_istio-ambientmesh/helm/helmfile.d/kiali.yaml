@@ -1,10 +1,20 @@
 repositories:
   - name: kiali
     url: https://kiali.org/helm-charts
+- name: kiali
+  url: https://kiali.org/helm-charts
+- name: prometheus-community
+  url: https://prometheus-community.github.io/helm-charts
+
 releases:
-  - name: istio-prometheus-monitors
-    namespace: prometheus
-    chart: ../charts/prometheus-monitor
+- name: kube-prometheus-stack
+  namespace: prometheus
+  createNamespace: true
+  chart: prometheus-community/kube-prometheus-stack
+  version: 50.3.1
+  wait: true
+  values:
+  - ../values/prometheus-stack.values.yaml
 
   - name: kiali-server
     namespace: istio-system
@@ -13,3 +23,12 @@ releases:
     version: 1.74.0
     values:
       - ../values/kiali.values.yaml
+- name: kiali-server
+  namespace: istio-system
+  createNamespace: true
+  chart: kiali/kiali-server
+  version: 1.74.0
+  needs:
+  - prometheus/kube-prometheus-stack
+  values:
+  - ../values/kiali.values.yaml

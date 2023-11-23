@@ -12,6 +12,7 @@ metadata:
     app: curl-deny
     version: v1
     content: layer4-authz
+    prometheus-monitor-ignore: ""
   name: curl-deny
 spec:
   serviceAccountName: curl-deny
