@@ -1,6 +1,4 @@
 repositories:
-  - name: kiali
-    url: https://kiali.org/helm-charts
 - name: kiali
   url: https://kiali.org/helm-charts
 - name: prometheus-community
@@ -16,13 +14,6 @@ releases:
   values:
   - ../values/prometheus-stack.values.yaml
 
-  - name: kiali-server
-    namespace: istio-system
-    createNamespace: true
-    chart: kiali/kiali-server
-    version: 1.74.0
-    values:
-      - ../values/kiali.values.yaml
 - name: kiali-server
   namespace: istio-system
   createNamespace: true
