@@ -192,7 +192,7 @@ kubectl delete -f manifest/cnp.yaml
 
 ### Ingress
 
-CiliumはIngressリソースのサポートをしており、第1章でNginx Controllerをデプロイしましたが、Nginx Controllerを使わずともCilium単体でIngressリソースを利用できます。
+CiliumはIngressリソースのサポートをしており、第1章でIngress NGINX Controllerをデプロイしましたが、Ingress NGINX Controllerを使わずともCilium単体でIngressリソースを利用できます。
 Ingressリソースを利用するためには、CiliumのHelm Chartで`ingressController.enabled: true`を指定する必要があります。
 この設定はすでに[Chapter1 Cluster Create](./../chapter01_cluster-create)で行っており、現時点でIngressリソースは利用できる状態になっています。
 詳細については[Kubernetes Ingress Support](https://docs.cilium.io/en/stable/network/servicemesh/ingress/)を参照ください。

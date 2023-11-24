@@ -215,7 +215,8 @@ handson-blue-6c4f4c9c57-597dx   2/2     Running   0          5m
 
 加重ルーティング実装のための追加アプリケーションをデプロイします。
 ```sh
-kubectl apply -f app/handson-yellow.yaml
+kubectl apply -f ../chapter01_cluster-create/manifest/app/serviceaccount.yaml -n handson -l color=yellow
+kubectl apply -f ../chapter01_cluster-create/manifest/app/deployment.yaml -n handson -l color=yellow
 ```
 
 2つのワークロードが`handson` namespaceで稼働していることを確認してください。
@@ -271,7 +272,8 @@ Istio Virtual Service/Destination Ruleを使用して、加重ルーティング
 
 ### クリーンアップ
 ```sh
-kubectl delete -f app/handson-yellow.yaml
+kubectl delete -f ../chapter01_cluster-create/manifest/app/serviceaccount.yaml -n handson -l color=yellow
+kubectl delete -f ../chapter01_cluster-create/manifest/app/deployment.yaml -n handson -l color=yellow
 kubectl delete -f networking/gateway.yaml,networking/weight-based-routing.yaml
 ```
 
@@ -538,21 +540,29 @@ kubectl delete -f app/curl.yaml
 サービスメッシュを提供するIstioを使用することで、アプリケーションレイヤーではなくインフラレイヤーでサービス間のトラフィック管理を、またKialiを使用することでサービスメッシュの可視化をすることができます。本chapterではVirtual Service, Destination Ruleを使用したルーティング制御、Authorization Policyを使用した認可処理しか紹介していませんが、Istioには他にも[沢山の機能](https://istio.io/latest/docs/tasks/)がありますので、是非確認してみてください。
 
 ## クリーンアップ
-Istio, Kialiを削除します。
+`handson` namespaceをIstioサービスメッシュ管理から外します。
 ```sh
-helmfile destroy -f helm/helmfile.d/ && \
-kubectl delete customresourcedefinitions -l release=istio && \
-kubectl delete namespace istio-system && \
-kubectl label namespace handson istio-injection- && \
+kubectl label namespace handson istio-injection-
+```
+ラベルが取り除かれたことを確認してください。
+```sh
+kubectl get namespace handson --show-labels
+```
+```sh
+# 実行結果
+NAME      STATUS   AGE    LABELS
+handson   Active   152m   kubernetes.io/metadata.name=handson
+```
+`handson-blue`ワークロードを再起動して現在動作中のenvoyコンテナを削除します。
+```sh
 kubectl rollout restart deployment/handson-blue -n handson
 ```
-
 `handson-blue` podのコンテナが1つだけになっていることを確認してください。
 ```sh
 kubectl get pods -l app=handson -n handson
 ```
 ```sh
 # 実行結果
-NAME                           READY   STATUS    RESTARTS   AGE
-handson-blue-89879f65f-scwxg   1/1     Running   0          2m39s
+NAME                            READY   STATUS    RESTARTS   AGE
+handson-blue-5bc85b4d98-z7lcz   1/1     Running   0          71s
 ```

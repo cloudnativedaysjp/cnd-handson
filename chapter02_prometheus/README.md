@@ -190,7 +190,7 @@ prometheus-kube-prometheus-stack-prometheus-0               2/2     Running   0 
 ### Ingressによるサービスの公開
 
 続いて、PrometheusやGrafana等の各UIをIngressで公開していきます。
-すでにingress-nginxがデプロイされていると思うので、以下のような設定でIngressをデプロイして公開します。
+すでにIngress NGINX Controllerがデプロイされていると思うので、以下のような設定でIngressをデプロイして公開します。
 ここで、仮のドメインとして `example.com` を使用します。
 このドメインには、 `/etc/hosts` (Windowsの場合 `C:\Windows\System32\drivers\etc\hosts`) を編集してアクセスします。
 
@@ -291,15 +291,15 @@ kube-prometheus-stackでデフォルトで導入されているアラートル�
 
 ![image](./images/targets.png)
 
-## 実践: Nginx Ingressからメトリクスを収集する
+## 実践: Ingress NGINX Controllerからメトリクスを収集する
 
-ここでは、`Ingress-Nginx Controller`のメトリクスをPrometheusとGrafanaによる収集方法を説明します。
+ここでは、`Ingress NGINX Controller`のメトリクスをPrometheusとGrafanaによる収集方法を説明します。
 
 - `emptyDir`をPrometheusとGrafanaに使っている場合は、データを失う可能性があるので気をつけてください。
 
 ### Nginx Ingressのメトリクスを外部公開する
 
-Ingress NGINX controllerのメトリクスを外部公開するために、ServiceMonitorを作成し、PrometheusがIngress NGINX Controllerのメトリクスを取得するようにします。
+Ingress NGINX Controllerのメトリクスを外部公開するために、ServiceMonitorを作成し、PrometheusがIngress NGINX Controllerのメトリクスを取得するようにします。
 
 ```yaml
 apiVersion: monitoring.coreos.com/v1

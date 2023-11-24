@@ -60,7 +60,7 @@ Grafanaでは手作業でDashboardを作成する以外に、
 <https://grafana.com/docs/grafana/latest/dashboards/manage-dashboards/#import-a-dashboard>
 
 実際にハンズオンでインストールするツールに関するDashboardをインポートしてみましょう。
-以下のようなDashboardがありますが、ここではingress-nginxのDashboardを導入してみます。
+以下のようなDashboardがありますが、ここではIngress NGINX ControllerのDashboardを導入してみます。
 
 - <https://github.com/kubernetes/ingress-nginx/tree/main/deploy/grafana/dashboards>
 - <https://grafana.com/grafana/dashboards/7645-istio-control-plane-dashboard/>
@@ -78,7 +78,7 @@ Grafanaでは手作業でDashboardを作成する以外に、
 次に、<http://grafana.example.com/dashboards> にもう一度アクセスし、 `New` ボタンのプルダウンメニューから `Import` をクリックします。
 
 その後Dashboardのインポート形式を選択してインポートしますが、
-ingress-nginxはgrafana.comではなくGitHubでダッシュボードを公開しているので、JSONファイル形式で行います。
+Ingress NGINX Controllerはgrafana.comではなくGitHubでダッシュボードを公開しているので、JSONファイル形式で行います。
 
 <https://github.com/kubernetes/ingress-nginx/blob/main/deploy/grafana/dashboards/nginx.json> を手元にダウンロードしておきます。
 Grafana画面で `Upload dashboard JSON file` ボタンをクリックして、
