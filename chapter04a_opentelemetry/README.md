@@ -141,7 +141,7 @@ Open Telemetryの設定ファイルに関しては、[公式サイト](https://o
 
 今回は、`/var/log`ディレクトリにある`cndt-*.json`にマッチするログを`filelog` Receiverで取得し、JSON形式でパースした後、デバッグログとして出力しながら、`file` Exporterでまとめてファイルとしても出力する簡単な例で試してみます。
 
-![](images/log-collector.png)
+![](image/log-collector.png)
 
 OpenTelemetry Collectorをデプロイするには、OpenTelemetryCollectorリソースをKubernetesに登録します。
 これにより、OpenTelemetry Operatorが自動的にDeploymentやDaemonSetを作成します。
@@ -288,7 +288,7 @@ docker exec -it kind-worker sh -c "cat /tmp/all.json  | jq ."
 
 今回は簡単な例でしたが、syslogやFluentdなどさまざまなデータを受け取ってフィルタリングやラベルの追加処理を実施後、Lokiに転送しつつ、S3にgzip圧縮して送るといった複雑なユースケースにも対応することができます。
 
-![](images/log-collector-example.png)
+![](image/log-collector-example.png)
 
 ## Metrics をOpenTelemetryで管理する例
 
@@ -296,7 +296,7 @@ docker exec -it kind-worker sh -c "cat /tmp/all.json  | jq ."
 
 今回は、`hostmetrics` Receiverを利用し、ホスト上のCPUやメモリに関するデータを取得し、そのデータを`prometheusremotewrite` Exporterを利用してPrometheusに対してRemote Writeで書き込みを行ってみます。
 
-![](images/metrics-collector.png)
+![](image/metrics-collector.png)
 
 ログの時と同様に、OpenTelemetryCollectorリソースを利用してKubernetesにデプロイします。
 今回はホスト上のメトリクスを取得するエージェントとして動作させる想定なため、`.spec.mode`にはdaemonsetを指定し、DaemonSetとして起動します。
@@ -386,11 +386,11 @@ kubectl logs -l app.kubernetes.io/name=metrics-collector-collector -f
 今回利用している`hostmetrics` Receiverで取得しているメトリクスには[Host Metrics Receiver](https://github.com/open-telemetry/opentelemetry-collector-contrib/blob/main/receiver/hostmetricsreceiver/internal/scraper/cpuscraper/documentation.md)のページから確認することができます。
 `exporters.prometheusremotewrite.external_labels`の設定で`oteltest=cndt2023`のラベルを付与しているため、ラベルの指定をすることでOpenTelemetry Colelctorが出力したメトリクスのみに絞ることも可能です。
 
-![](./images/grafana-metrics-collector-setting.png)
+![](./image/grafana-metrics-collector-setting.png)
 
 実際に出力されたメトリクスを確認すると、CPUの使用内訳（state）やユニット（cpu）などのラベルが付与された状態でメトリクスが書き込まれていることが確認できます。
 
-![](./images/grafana-metrics-collector-graph.png)
+![](./image/grafana-metrics-collector-graph.png)
 
 * 利用しているReceiver
   * [hostmetricsreceiver](https://github.com/open-telemetry/opentelemetry-collector-contrib/blob/main/receiver/hostmetricsreceiver)
@@ -401,7 +401,7 @@ kubectl logs -l app.kubernetes.io/name=metrics-collector-collector -f
 今回は簡単な例でしたが、OpenMetrics互換のエンドポイントからデータを取得し、Prometheus・Datadog・PubSubにデータをそれぞれ転送するといったユースケースにも対応することができます。
 また、ScrapeしてRemote Writeするといったユースケースでは、Prometheusの代替にするために`prometheusreceiver`といったプラグインを利用することもできます。
 
-![](images/metrics-collector-example.png)
+![](image/metrics-collector-example.png)
 
 
 ## Trace をOpenTelemetryで管理する例
@@ -459,7 +459,7 @@ jaeger   Running   1.49.0    allinone   memory    10m
 今回は、`otlp` Receiverを利用し、OpenTelemetry Protocol（OTLP）を利用してトレースデータを受け取ります。そしてそのデータを`otlp` Exporterを利用してJaegerに対して保存、`debug` Exporterを利用して標準出力にもデバッグログを出力します。
 Jaegerは以前までは`jaeger`プロトコルを利用していましたが、最近はOTLPにネイティブ対応しています。
 
-![](images/trace-collector.png)
+![](image/trace-collector.png)
 
 
 ログの時と同様に、OpenTelemetryCollectorリソースを利用してKubernetesにデプロイします。
@@ -590,7 +590,7 @@ sample-app-blue-5fb8dc75fd-7cvxg   3/3     Ready    0          30s
 `https://jaeger.example.com/explore` に接続し、Service名に`sample-app-blue`を指定してみると、トレースデータが確認できます。
 今回は複雑なマイクロサービスではないため、シンプルな表示になっていますが、サービス間の通信がある場合はもう少し複雑なトレースデータを確認することができます。
 
-![](./images/jaeger.png)
+![](./image/jaeger.png)
 
 
 * 利用しているReceiver
@@ -605,7 +605,7 @@ sample-app-blue-5fb8dc75fd-7cvxg   3/3     Ready    0          30s
 OpenTelemetryでは、OpenTelemetry Protocol（OTLP）を利用して、OpenTelemetry CollectorからOpenTelemetry Collectorへテレメトリデータを転送することもできます。
 複数のノードからデータを取得し、サンプリングするAggregator層を挟んむなど、処理を中継させたりすることなども可能です。
 
-![](./images/collector-pipeline.png)
+![](./image/collector-pipeline.png)
 
 ## 推奨される Processor
 
