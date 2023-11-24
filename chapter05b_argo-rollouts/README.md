@@ -38,22 +38,8 @@ Argo CDとの連携が可能で、簡単に既存のGit Opsでプログレッシ
 ## セットアップ
 今回のハンズオンでは、Argo CDからArgo Rolloutsを利用します。
 
-### Gitリポジトリの準備(ローカル環境)
-Argo CDを利用する上では、GitHubへのPush等の変更が必要不可欠になります。そのため、このハンズオンのリポジトリをforkして操作する為の準備をします。
-
-[このハンズオン](https://github.com/cloudnativedaysjp/cndt2023-handson)にアクセスし、forkをクリックします
-![fork1](../chapter04b_argocd/image/setup/fork-1.png)
-
-Create fork をクリックします
-![fork2](../chapter04b_argocd/image/setup/fork-2.png)
-
-自身のアカウントでforkされていることが確認できます
-![fork2](../chapter04b_argocd/image/setup/fork-3.png)
-
-GitHubのリポジトリの登録やPushはforkした自身のリポジトリを利用して下さい
-
 ### Argo CDのセットアップ
-[chapter04ｂargocd](https://github.com/cloudnativedaysjp/cndt2023-handson/tree/main/chapter04b_argocd#argo-cd%E3%81%AE%E3%82%A4%E3%83%B3%E3%82%B9%E3%83%88%E3%83%BC%E3%83%AB)を参照してWebUIの確認とレポジトリの登録まで行って下さい。
+[chapter04ｂargocd](https://github.com/cloudnativedaysjp/cndt2023-handson/tree/main/chapter04b_argocd#argo-cd%E3%81%AE%E3%82%A4%E3%83%B3%E3%82%B9%E3%83%88%E3%83%BC%E3%83%AB)を参照してWebUIの確認とレポジトリのfork～登録まで行って下さい。
 
 今回のchapterでは更にArgo CDのプラグインである、rollout-extensionをインストールしてArgoCD上でrolloutの操作結果が確認できるようにします。
 ```sh
@@ -155,12 +141,14 @@ Canary Releaseは、新旧混在状態を制御し、本番環境において限
 
 ここからは、実際にBlue/Green Deploymentyを行いその様子を見ていこうと思います。
 
- `app/blue-green/rollout.yaml`の編集を行います。
- imageのtagをblueから`green`に、変更し、差分をremoteのmainブランチ（argocdのappを作成する際に指定したブランチ）に取り込みます。
-
-  ```yaml
-  image: argoproj/rollouts-demo:green
-  ```
+ `app/blue-green/rollout.yaml`の編集を行います。 imageのtagをblueからgreenに変更します。
+```
+image: argoproj/rollouts-demo:green
+```
+差分をforkしたmainブランチ（appを作成する際に指定したブランチ）に取り込みます。
+```
+git push origin main
+```
 
  ArgoCDはデフォルトでは3分に一回の頻度でブランチを確認し、差分を検出しています。
  3分待てない場合には、ページ上部にある [REFRESH]をクリックします。下記のようにrolloutにおいて差分が検出されます。（黄色で表示されているOutOfSyncが差分があることを示しています）
@@ -231,12 +219,14 @@ Applications画面の場合は、一番右下の端に、
 
 ここからは、実際に、Canary Releaseを行いその様子を見ていこうと思います。
 
- `app/canary/rollout.yaml`の編集を行います。
- imageのtagをblueから`green`に、変更し、差分をremoteのmainブランチ（argocdのappを作成する際に指定したブランチ）に取り込みます
-
-  ```yaml
-  image: argoproj/rollouts-demo:green 
-  ```
+ `app/canary/rollout.yaml`の編集を行います。imageのtagをblueからgreenに変更します。
+```
+image: argoproj/rollouts-demo:green
+```
+差分をforkしたmainブランチ（appを作成する際に指定したブランチ）に取り込みます。
+```
+git push origin main
+```
 
  ArgoCDはデフォルトでは3分に一回の頻度でブランチを確認し、差分を検出しています。3分待てない場合には、ページ上部にある [REFRESH]をクリックします。下記のようにrolloutにおいて差分が検出されます。（黄色で表示されているOutOfSyncが差分があることを示しています）
 ちなみにAppの設定において、SYNC POLICYをManualでなくAutoにしていた場合には、ここでOutOfSyncを検知すると自動でArgoCDがSyncを実行します。
@@ -314,9 +304,13 @@ Applicationsの画面において + NEW APPをクリックします
 
 ページ上部にある SYNC をクリックします
 ![create2](./image/analysis/Job-sync.png)
-analysis/job/rollout.yamlの編集を行います。imageのtagをblueからgreenに、変更し、差分をmainのブランチ（argocdのappを作成する際に指定したブランチ）に取り込みます。
-```yaml
+analysis/job/rollout.yamlの編集を行います。 imageのtagをblueからgreenに変更します。
+```
 image: argoproj/rollouts-demo:green
+```
+差分をforkしたmainブランチ（appを作成する際に指定したブランチ）に取り込みます。
+```
+git push origin main
 ```
 ArgoCDはデフォルトでは3分に一回の頻度でブランチを確認し、差分を検出しています。3分待てない場合には、ページ上部にある [REFRESH]をクリックします。下記のようにrolloutにおいて差分が検出されます。（黄色で表示されているOutOfSyncが差分があることを示しています）
 ちなみにAppの設定において、SYNC POLICYをManualでなくAutoにしていた場合には、ここでOutOfSyncを検知すると自動でArgoCDがSyncを実行します。
@@ -368,9 +362,13 @@ Applicationsの画面において + NEW APPをクリックします
 
 ページ上部にある SYNC をクリックします
 ![create](./image/analysis/web-sync.png)
-analysis/web/rollout.yamlの編集を行います。imageのtagをblueからgreenに、変更し、差分をremoteのmainブランチ（argocdのappを作成する際に指定したブランチ）に取り込みます。
-```yaml
+analysis/web/rollout.yamlの編集を行います。 imageのtagをblueからgreenに変更します。
+```
 image: argoproj/rollouts-demo:green
+```
+差分をforkしたmainブランチ（appを作成する際に指定したブランチ）に取り込みます。
+```
+git push origin main
 ```
 ArgoCDはデフォルトでは3分に一回の頻度でブランチを確認し、差分を検出しています。3分待てない場合には、ページ上部にある [REFRESH]をクリックします。下記のようにrolloutにおいて差分が検出されます。（黄色で表示されているOutOfSyncが差分があることを示しています）
 ちなみにAppの設定において、SYNC POLICYをManualでなくAutoにしていた場合には、ここでOutOfSyncを検知すると自動でArgoCDがSyncを実行します。
@@ -420,9 +418,13 @@ Applicationsの画面において + NEW APPをクリックします
 
 ページ上部にある SYNC をクリックします
 ![create](./image/analysis/prometheus-sync.png)
-analysis/prometheus/rollout.yamlの編集を行います。imageのtagをblueからgreenに、変更し、差分をremoteのmainブランチ（argocdのappを作成する際に指定したブランチ）に取り込みます。
-```yaml
+analysis/prometheus/rollout.yamlの編集を行います。 imageのtagをblueからgreenに変更します。
+```
 image: argoproj/rollouts-demo:green
+```
+差分をforkしたmainブランチ（appを作成する際に指定したブランチ）に取り込みます。
+```
+git push origin main
 ```
 ArgoCDはデフォルトでは3分に一回の頻度でブランチを確認し、差分を検出しています。3分待てない場合には、ページ上部にある [REFRESH]をクリックします。下記のようにrolloutにおいて差分が検出されます。（黄色で表示されているOutOfSyncが差分があることを示しています）
 ちなみにAppの設定において、SYNC POLICYをManualでなくAutoにしていた場合には、ここでOutOfSyncを検知すると自動でArgoCDがSyncを実行します。
