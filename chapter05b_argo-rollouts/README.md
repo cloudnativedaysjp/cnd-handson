@@ -428,7 +428,7 @@ ArgoCDはデフォルトでは3分に一回の頻度でブランチを確認し�
 ちなみにAppの設定において、SYNC POLICYをManualでなくAutoにしていた場合には、ここでOutOfSyncを検知すると自動でArgoCDがSyncを実行します。
 ![sync](./image/analysis/prometheus-refresh.png)
 rolloutを手動でSyncすると、アプリケーションのpodと新たにAnalysisrunが生成されます。
-![update](./image/analysis/prometheus-updat1e.png)
+![update](./image/analysis/prometheus-update.png)
 Analysisrunの詳細をクリックし、Live Manifestを確認するとどういったレスポンスが帰ってきて、成功したのか失敗したのか確認できます。
 ![log](image/analysis/prometheus-log.png)
 Analysisrunが成功すると、自動的にCanary Releseが進んでいくのが分かります。
