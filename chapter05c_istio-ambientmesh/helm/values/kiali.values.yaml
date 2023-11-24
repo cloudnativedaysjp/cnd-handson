@@ -2,6 +2,7 @@ istio_namespace: istio-system
 auth:
   strategy: anonymous
 deployment:
+  service_type: NodePort
   image_pull_policy: IfNotPresent
   ingress_enabled: false
   pod_labels:
@@ -28,4 +29,5 @@ external_services:
   tracing:
     enabled: false
 server:
+  port: 28080
   metrics_enabled: false

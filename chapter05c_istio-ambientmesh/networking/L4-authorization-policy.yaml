@@ -9,12 +9,12 @@ spec:
   selector:
     matchLabels:
       app: handson
-  action: ALLOW
+  action: DENY
   rules:
   - from:
     - source:
         principals:
-        - cluster.local/ns/default/sa/curl-allow
+        - cluster.local/ns/default/sa/curl-deny
     to:
     - operation:
         ports:

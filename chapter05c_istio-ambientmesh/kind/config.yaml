@@ -4,22 +4,14 @@ name: istio-ambient
 nodes:
 - role: control-plane
   image: kindest/node:v1.27.3@sha256:3966ac761ae0136263ffdb6cfd4db23ef8a83cba8a463690e98317add2c9ba72
-  kubeadmConfigPatches:
-  - |
-    kind: InitConfiguration
-    nodeRegistration:
-      kubeletExtraArgs:
-        node-labels: "ingress-ready=true"
   extraPortMappings:
-  # ingress port for nginx
-  - containerPort: 30080
-    hostPort: 80
+  - containerPort: 32766
+    hostPort: 28080
     listenAddress: "0.0.0.0"
     protocol: TCP
-  - containerPort: 30443
-    hostPort: 443
+  - containerPort: 32767
+    hostPort: 28443
     listenAddress: "0.0.0.0"
     protocol: TCP
 - role: worker
   image: kindest/node:v1.27.3@sha256:3966ac761ae0136263ffdb6cfd4db23ef8a83cba8a463690e98317add2c9ba72
-

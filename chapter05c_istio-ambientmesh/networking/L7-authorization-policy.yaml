@@ -9,7 +9,7 @@ spec:
   selector:
     matchLabels:
      istio.io/gateway-name: handson
-  action: ALLOW
+  action: DENY
   rules:
   - from:
     - source:
@@ -18,6 +18,9 @@ spec:
     to:
     - operation:
         methods:
-        - GET
-        # ports:
-        # - "8080"
+        - POST
+        - PUT
+        - PATCH
+        - DELETE
+        ports:
+        - "8080"
