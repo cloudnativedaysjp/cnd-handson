@@ -203,7 +203,17 @@ Canary Releaseは、新旧混在状態を制御し、本番環境において限
  
 rollout-extensionを使用した場合、rolloutを選択しmoreのタブが出現します。moreのタブを選ぶとこのようにblueとgreenがどうなっているか一目で確認できるようになります。
   ![rollout-extension](imgs/BG/rollout-extension.png)
+最後にアプリケーションの削除を行います。 Deleteをクリックします
 
+
+Applications画面の場合は、一番右下の端に、
+![delete](../chapter04b_argocd/imgs/demoapp/Delete-1.png)
+
+詳細画面の場合は、右上の2番目にあります。
+![delete](../chapter04b_argocd/imgs/demoapp/Delete-2.png)
+
+削除する際にアプリケーション名の入力があるので「blue-green」と入力してOKをクリックします。
+![delete](../chapter04b_argocd/imgs/demoapp/Delete-3.png)
 
 ### Canary Release
  Applicationsの画面において + NEW APPをクリックします![Applications](./imgs/analysis/application.png)
