@@ -239,7 +239,7 @@ kubectl apply -f manifest/service.yaml
 
 次に、トラフィック分割機能を利用して下記のように9:1にトラフィックを分割してみます。
 
-![](image/ch4-2.png)
+![](images/ch4-2.png)
 
 トラフィックを分割するためにGatewayリソースとHTTPRouteリソースをデプロイします。
 

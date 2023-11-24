@@ -26,7 +26,7 @@ Istioが提供する主な機能は下記のとおりです。
 サービスメッシュとは、サービス間通信を処理するための専用インフラストラクチャレイヤーです。これにより、透過的に観測性、トラフィック管理、セキュリティなどの機能をアプリケーションに組み込むことなく利用することが可能です。特にcloud nativeアプリケーションにおいてはKubernetesのようなオーケストレーターによって動的にワークロードがスケジューリングされるため、サービス間通信が複雑になります。この管理をアプリケーションではなくサービスメッシュが行うことにより、アプリケーションの管理、運用を容易にすることができます。
 
 ### Istioアーキテクチャ
-![image](./imgs/istio-architecture.png)
+![image](./image/istio-architecture.png)
 
 (出展元: https://istio.io/latest/docs/ops/deployment/architecture/)
 
@@ -142,7 +142,7 @@ virtualservice.networking.istio.io/simple-routing   ["handson"]   ["app.example.
 
 これでメッシュ外からのアクセスをアプリケーションにルーティングする準備ができました。ブラウザから`http://app.example.com:18080`にアクセスしてアプリケーションが表示されることを確認してください。
 
-![image](./imgs/app-simple-routing.png)
+![image](./image/app-simple-routing.png)
 
 ### Kialiのデプロイ
 Istioサービスメッシュ内のトラフィックを可視化するために、[Kiali](https://kiali.io)をデプロイします。KialiはIstioサービスメッシュ用のコンソールであり、Kialiが提供するダッシュボードから、サービスメッシュの構造の確認、トラフィックフローの監視、および、サービスメッシュ設定の確認、変更をすることが可能です。
@@ -182,20 +182,20 @@ kiali-by-nginx   nginx   kiali.example.com   10.96.88.164   80      2m5s
 
 ブラウザから`http://kiali.example.com`にアクセスをしてKialiダッシュボードが表示されることを確認してください。
 
-![image](./imgs/kiali-overview.png)
+![image](./image/kiali-overview.png)
 
 Kialiダッシュボードのグラフ表示の設定を変更します。TOP画面左のサイドメニューの`Graph`をクリックし、画面上部にある表示項目を下記の通り設定してください。
 - `Namespace`の`handson`にチェック
 
-![image](./imgs/kiali-graph-namespace.png)
+![image](./image/kiali-graph-namespace.png)
 
 - `Versioned app graph`から`Workload graph`に変更
 
-![image](./imgs/kiali-graph-workload.png)
+![image](./image/kiali-graph-workload.png)
 
 - `Display`項目から`Traffic Distribution`をチェック
 
-![image](./imgs/kiali-graph-traffic-distribution.png)
+![image](./image/kiali-graph-traffic-distribution.png)
 
 ## 加重ルーティング
 Istio Virtual Service/Destination Ruleを用いて加重ルーティングを実装します。旧バージョンから新バージョンへのアプリケーションの段階的な移行がユースケースとして挙げられます。本ケースでは、現在稼働しているアプリケーションとコンテナイメージタグが異なる追加のアプリケーションをdeployし、トラフィックを50%ずつ振り分けて、最終的に新しいアプリケーションに移行するシナリオを想定します。
@@ -256,7 +256,7 @@ while :; do curl -s -o /dev/null -w '%{http_code}\n' http://app.example.com:1808
 ```
 
 しばらくすると、グラフが表示されます(なかなか表示されない場合は、Kialiダッシュボード右上の青い`Refresh`ボタンを押して状態を更新してください)。しばらくすると、トラフィックが均等(約±5%)にルーティングされていることを確認してください。
-![image](./imgs/kiali-graph-weigh-based-routing-50-50.png)
+![image](./image/kiali-graph-weigh-based-routing-50-50.png)
 
 それでは、新しいアプリケーションにトラフィックが100%ルーティングされるように設定を変更します。ローカル環境から実施しているリクエストは継続して行なってください。
 ```sh
@@ -264,7 +264,7 @@ kubectl patch virtualservice weight-based-routing -n handson --type merge --patc
 ```
 
 しばらくすると、新しいアプリケーションにトラッフィックが100%ルーティングされていることが確認できます(変化が見られない場合は、Kialiダッシュボード右上の青い`Refresh`ボタンを押して状態を更新してください)。
-![image](./imgs/kiali-graph-weigh-based-routing-0-100.png)
+![image](./image/kiali-graph-weigh-based-routing-0-100.png)
 
 確認ができたらリクエストを停止してください。
 
@@ -337,7 +337,7 @@ curl-deny:  200
 
 Kiali dashboardからも確認してみましょう。リクエストを流した状態でブラウザから`http://kiali.example.com`にアクセスをしてください。`curl-allow`, `curl-deny` 双方のワークロードが`handson-blue`ワークロードにアクセス出来ていることが確認できます。グラフが表示されない場合は、Kialiダッシュボード右上の青い`Refresh`ボタンを押して状態を更新してください。
 
-![image](./imgs/kiali-L4-authz-autholizationpolicy-notapplied.png)
+![image](./image/kiali-L4-authz-autholizationpolicy-notapplied.png)
 
 確認ができたら、リクエストを一旦停止してください。
 
@@ -389,7 +389,7 @@ curl-deny:  403
 
 改めてKiali dashboardから確認してみましょう。ブラウザから`http://kiali.example.com`にアクセスをしてください。しばらくすると、`curl-allow` ワークロードからのリクエストは許可されている一方で、`curl-deny` ワークロードからのリクエストは拒否されていることが確認できます(変化が見られない場合は、Kialiダッシュボード右上の青い`Refresh`ボタンを押して状態を更新してください)。
 
-![image](./imgs/kiali-L4-authz-autholizationpolicy-applied.png)
+![image](./image/kiali-L4-authz-autholizationpolicy-applied.png)
 
 確認ができたら、リクエストを停止してください。
 
@@ -450,7 +450,7 @@ while :; do kubectl exec curl -n handson -- curl -s -o /dev/null -w '%{http_code
 
 Kiali dashboardからも確認してみましょう。リクエストを流した状態でブラウザから`http://kiali.example.com`にアクセスをしてください。`curl` ワークロードから`handson-blue`ワークロードにアクセス出来ていることが確認できます(なかなか表示されない場合は、Kialiダッシュボード右上の青い`Refresh`ボタンを押して状態を更新してください)。
 
-![image](./imgs/kiali-L7-authz-autholizationpolicy-notapplied.png)
+![image](./image/kiali-L7-authz-autholizationpolicy-notapplied.png)
 
 確認ができたら、リクエストを一旦停止してください。
 
@@ -508,7 +508,7 @@ while :; do kubectl exec curl -n handson -- curl -X POST -s -o /dev/null -d '{}'
 
 Kiali dashboardから確認してみましょう。ブラウザから`http://kiali.example.com`にアクセスをしてください。しばらくすると、`curl` ワークロードからのPOSTリクエストは拒否されていることが確認できます(変化が見られない場合は、Kialiダッシュボード右上の青い`Refresh`ボタンを押して状態を更新してください)。
 
-![image](./imgs/kiali-L7-authz-autholizationpolicy-applied.png)
+![image](./image/kiali-L7-authz-autholizationpolicy-applied.png)
 
 確認ができたらリクエストを停止してください。
 

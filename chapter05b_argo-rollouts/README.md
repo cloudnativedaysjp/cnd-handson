@@ -42,13 +42,13 @@ Argo CDとの連携が可能で、簡単に既存のGit Opsでプログレッシ
 Argo CDを利用する上では、GitHubへのPush等の変更が必要不可欠になります。そのため、このハンズオンのリポジトリをforkして操作する為の準備をします。
 
 [このハンズオン](https://github.com/cloudnativedaysjp/cndt2023-handson)にアクセスし、forkをクリックします
-![fork1](../chapter04b_argocd/imgs/setup/fork-1.png)
+![fork1](../chapter04b_argocd/image/setup/fork-1.png)
 
 Create fork をクリックします
-![fork2](../chapter04b_argocd/imgs/setup/fork-2.png)
+![fork2](../chapter04b_argocd/image/setup/fork-2.png)
 
 自身のアカウントでforkされていることが確認できます
-![fork2](../chapter04b_argocd/imgs/setup/fork-3.png)
+![fork2](../chapter04b_argocd/image/setup/fork-3.png)
 
 GitHubのリポジトリの登録やPushはforkした自身のリポジトリを利用して下さい
 
@@ -128,7 +128,7 @@ Blue/Green Deploymentでは、新バージョンを事前に用意しネット�
 Canary Releaseは、新旧混在状態を制御し、本番環境において限られたユーザーグループやトラフィックに対して新しいバージョンを段階的に展開するアップデート方法です。
 
 ### Blue/Green Deployment
- Applicationsの画面において + NEW APPをクリックします![Applications](./imgs/analysis/application.png)
+ Applicationsの画面において + NEW APPをクリックします![Applications](./image/analysis/application.png)
 上の画面上で各項目を次のように設定します。
   ```
   GENERAL
@@ -145,11 +145,11 @@ Canary Releaseは、新旧混在状態を制御し、本番環境において限
       Namespace: blue-green
   ```
  設定できたら、CREATEをクリックして、下記のように表示されていることを確認して下さい
-  ![create](imgs/BG/blue-green-create.png)
-  ![create2](imgs/BG/blue-green-create2.png)
+  ![create](image/BG/blue-green-create.png)
+  ![create2](image/BG/blue-green-create2.png)
   
  ページ上部にある SYNC をクリックして、無事デプロイされると下記のようになります
-  ![sync](imgs/BG/blue-green-sync.png)
+  ![sync](image/BG/blue-green-sync.png)
 
 以上の手順で、Blue/GreenのBlueに当たる状態がArgoCDを用いてデプロイされ、localからingressでアクセス可能となりました。
 
@@ -167,9 +167,9 @@ Canary Releaseは、新旧混在状態を制御し、本番環境において限
  
  ちなみにAppの設定において、SYNC POLICYをManualでなくAutoにしていた場合には、ここでOutOfSyncを検知すると自動でArgoCDがSyncを実行します。
 
-  ![OutOfSync](imgs/BG/blue-green-OutofSync.png)
+  ![OutOfSync](image/BG/blue-green-OutofSync.png)
  rolloutを手動でSyncします。 blue, green両方のreplicasetが作成されている事が確認できます。
-  ![Sync](imgs/BG/blue-green-sync2.png)
+  ![Sync](image/BG/blue-green-sync2.png)
 
  
  両方のreplicasetが作成されているのは、bluegreen-rollout.yamlにおいてspec.strategy.bluegreen.autoPromotionEnabledがfalseに設定されているからです
@@ -178,15 +178,15 @@ Canary Releaseは、新旧混在状態を制御し、本番環境において限
  * app.argocd.example.com
  * app-preview.argocd.example.com
 
-  ![demoapp](imgs/BG/demoapp.png)
+  ![demoapp](image/BG/demoapp.png)
  rolloutの3点リーダーをクリックし [Promote-Full]をクリックすることで、blue-green deployが行われます。プロモートが行われたどちらのingressもgreenを見るようになり、blueのreplicasetは削除されます。
-  ![promote](imgs/BG/promote.png)
+  ![promote](image/BG/promote.png)
  
  このように、ArgoRolloutのBlue/Green Deploymentにおいては、一旦greenに当たるサービスが、previewServiceとして登録され、プロモートすることで、activeServiceに昇格するような動きをして、Blue/Green Deploymentを実現します。  
  
  
 rollout-extensionを使用した場合、rolloutを選択しmoreのタブが出現します。moreのタブを選ぶとこのようにblueとgreenがどうなっているか一目で確認できるようになります。
-  ![rollout-extension](imgs/BG/blue-green-promote.png)
+  ![rollout-extension](image/BG/blue-green-promote.png)
 最後にアプリケーションの削除を行います。 Deleteをクリックします
 
 
@@ -194,17 +194,17 @@ Applications画面の場合は、一番右下の端に、
 
 
 
-![delete](../chapter04b_argocd/imgs/demoapp/Delete-1.png)
+![delete](../chapter04b_argocd/image/demoapp/Delete-1.png)
 
 詳細画面の場合は、右上の2番目にあります。
 
-![delete](../chapter04b_argocd/imgs/demoapp/Delete-2.png)
+![delete](../chapter04b_argocd/image/demoapp/Delete-2.png)
 
 削除する際にアプリケーション名の入力があるので「blue-green」と入力してOKをクリックします。
-![delete](imgs/BG/blue-green-delete.png)
+![delete](image/BG/blue-green-delete.png)
 
 ### Canary Release
- Applicationsの画面において + NEW APPをクリックします![Applications](./imgs/analysis/application.png)
+ Applicationsの画面において + NEW APPをクリックします![Applications](./image/analysis/application.png)
  上の画面上で各項目を次のように設定します。
   ```
   GENERAL
@@ -221,11 +221,11 @@ Applications画面の場合は、一番右下の端に、
       Namespace: canary
   ```
  設定できたら、CREATEをクリックして、下記のように表示されていることを確認して下さい
-  ![create](./imgs/canary/canary-create.png)
-  ![create2](./imgs/canary/canary-create2.png)
+  ![create](./image/canary/canary-create.png)
+  ![create2](./image/canary/canary-create2.png)
   
  ページ上部にある SYNC をクリックして、無事デプロイされると下記のようになります
-  ![sync](imgs/canary/canary-sync.png)
+  ![sync](image/canary/canary-sync.png)
 
 以上の手順で、Canary Releaseにおける安定バージョンがArgoCDを用いてデプロイされ、localからingressでアクセス可能となりました
 
@@ -240,18 +240,18 @@ Applications画面の場合は、一番右下の端に、
 
  ArgoCDはデフォルトでは3分に一回の頻度でブランチを確認し、差分を検出しています。3分待てない場合には、ページ上部にある [REFRESH]をクリックします。下記のようにrolloutにおいて差分が検出されます。（黄色で表示されているOutOfSyncが差分があることを示しています）
 ちなみにAppの設定において、SYNC POLICYをManualでなくAutoにしていた場合には、ここでOutOfSyncを検知すると自動でArgoCDがSyncを実行します。
-  ![OutOfSync](imgs/canary/canary-OutOfSync.png)
+  ![OutOfSync](image/canary/canary-OutOfSync.png)
 rolloutを手動でSyncします
-  ![rollout-sync](imgs/canary/canary-sync2.png)
+  ![rollout-sync](image/canary/canary-sync2.png)
 syncされた結果安定バージョンと新バージョンの両方のreplicasetが確認できます。
-  ![update](imgs/canary/update.png)
+  ![update](image/canary/update.png)
 ingressにアクセスすると下記のように、安定バージョンであるBlueから新バージョンであるGreenのタイルが少しづつ増えて行っているのが確認できます。
-  ![demoapp](imgs/canary/demoapp.png)
+  ![demoapp](image/canary/demoapp.png)
 rollout-extensionを使用した場合、rolloutを選択しmoreのタブが出現します。moreのタブを選ぶと、アプリケーションの動作を確認せずともどこのStepを動いているのが一目で確認できるようになります。
-  ![rollout-extension](imgs/canary/canary-more.png)
+  ![rollout-extension](image/canary/canary-more.png)
 全てのpodを新バージョンにアップデートしたい場合には、rolloutのPromote Fullをクリックして下さい。
 
-![promote-full](imgs/canary/canary-promote.png)
+![promote-full](image/canary/canary-promote.png)
 
 デモアプリへアクセスしてアップデートが完了していることを確認して下さい。
 
@@ -260,13 +260,13 @@ rollout-extensionを使用した場合、rolloutを選択しmoreのタブが出�
 Applications画面の場合は、一番右下の端に、
 
 
-![delete](../chapter04b_argocd/imgs/demoapp/Delete-1.png)
+![delete](../chapter04b_argocd/image/demoapp/Delete-1.png)
 
 詳細画面の場合は、右上の2番目にあります。
-![delete](../chapter04b_argocd/imgs/demoapp/Delete-2.png)
+![delete](../chapter04b_argocd/image/demoapp/Delete-2.png)
 
 削除する際にアプリケーション名の入力があるので「canary」と入力してOKをクリックします。
-![delete](imgs/canary/canary-delete.png)
+![delete](image/canary/canary-delete.png)
 
 
 ## Analysis Metrics
@@ -292,7 +292,7 @@ Applications画面の場合は、一番右下の端に、
   
   
 Applicationsの画面において + NEW APPをクリックします
-![Applications](./imgs/analysis/application.png)
+![Applications](./image/analysis/application.png)
 上の画面上で各項目を次のように設定します。
   ```
   GENERAL
@@ -309,20 +309,20 @@ Applicationsの画面において + NEW APPをクリックします
       Namespace: job-analysis
   ```
 設定できたら、CREATEをクリックして、下記のように表示されていることを確認して下さい
-![create](./imgs/analysis/job-create.png)
-![create2](./imgs/analysis/job-create2.png)
+![create](./image/analysis/job-create.png)
+![create2](./image/analysis/job-create2.png)
 
 ページ上部にある SYNC をクリックします
-![create2](./imgs/analysis/Job-sync.png)
+![create2](./image/analysis/Job-sync.png)
 analysis/job/rollout.yamlの編集を行います。imageのtagをblueからgreenに、変更し、差分をnew_branch_nameのブランチ（argocdのappを作成する際に指定したブランチ）に取り込みます。
 ```yaml
 image: argoproj/rollouts-demo:green
 ```
 ArgoCDはデフォルトでは3分に一回の頻度でブランチを確認し、差分を検出しています。3分待てない場合には、ページ上部にある [REFRESH]をクリックします。下記のようにrolloutにおいて差分が検出されます。（黄色で表示されているOutOfSyncが差分があることを示しています）
 ちなみにAppの設定において、SYNC POLICYをManualでなくAutoにしていた場合には、ここでOutOfSyncを検知すると自動でArgoCDがSyncを実行します。
-![sync](./imgs/analysis/Job-refresh.png)
+![sync](./image/analysis/Job-refresh.png)
 rolloutを手動でSyncすると、アプリケーションのpodと新たにAnalysisrunが生成され、jobが発行されたのが確認できます。
-![update](./imgs/analysis/job-update.png)
+![update](./image/analysis/job-update.png)
 jobが成功すると、自動的にBlue/Green Deployが進んでいくのが分かります。
 
 最後にアプリケーションの削除を行います。 Deleteをクリックします
@@ -332,13 +332,13 @@ Applications画面の場合は、一番右下の端に、
 
 
 
-![delete](../chapter04b_argocd/imgs/demoapp/Delete-1.png)
+![delete](../chapter04b_argocd/image/demoapp/Delete-1.png)
 
 詳細画面の場合は、右上の2番目にあります。
-![delete](../chapter04b_argocd/imgs/demoapp/Delete-2.png)
+![delete](../chapter04b_argocd/image/demoapp/Delete-2.png)
 
 削除する際にアプリケーション名の入力があるので「job」と入力してOKをクリックします。
-![delete](../chapter04b_argocd/imgs/demoapp/Delete-3.png)
+![delete](../chapter04b_argocd/image/demoapp/Delete-3.png)
 
 ### Web metrics (Blue/Green Deploy)
 Analysis実行時にリクエストを送信し、レスポンスの内容にてよってPromoteするかどうかを判断します
@@ -346,7 +346,7 @@ Analysis実行時にリクエストを送信し、レスポンスの内容にて
   * Json形式以外のレスポンスの場合はstatus codeが200であるかどうかの判断になります
 
 Applicationsの画面において + NEW APPをクリックします
-![Applications](./imgs/analysis/application.png)
+![Applications](./image/analysis/application.png)
 上の画面上で各項目を次のように設定します。
   ```
   GENERAL
@@ -363,22 +363,22 @@ Applicationsの画面において + NEW APPをクリックします
       Namespace: web-analysis
   ```
 設定できたら、CREATEをクリックして、下記のように表示されていることを確認して下さい
-![create](./imgs/analysis/web-create.png)
-![create](./imgs/analysis/web-create2.png)
+![create](./image/analysis/web-create.png)
+![create](./image/analysis/web-create2.png)
 
 ページ上部にある SYNC をクリックします
-![create](./imgs/analysis/web-sync.png)
+![create](./image/analysis/web-sync.png)
 analysis/web/rollout.yamlの編集を行います。imageのtagをblueからgreenに、変更し、差分をremoteのnew_branch_nameブランチ（argocdのappを作成する際に指定したブランチ）に取り込みます。
 ```yaml
 image: argoproj/rollouts-demo:green
 ```
 ArgoCDはデフォルトでは3分に一回の頻度でブランチを確認し、差分を検出しています。3分待てない場合には、ページ上部にある [REFRESH]をクリックします。下記のようにrolloutにおいて差分が検出されます。（黄色で表示されているOutOfSyncが差分があることを示しています）
 ちなみにAppの設定において、SYNC POLICYをManualでなくAutoにしていた場合には、ここでOutOfSyncを検知すると自動でArgoCDがSyncを実行します。
-![sync](./imgs/analysis/web-refresh.png)
+![sync](./image/analysis/web-refresh.png)
 rolloutを手動でSyncすると、アプリケーションのpodと新たにAnalysisrunが生成されます。
-![update](./imgs/analysis/web-update.png)
+![update](./image/analysis/web-update.png)
 Analysisrunの詳細をクリックし、Live Manifestを確認するとどういったレスポンスが帰ってきて、成功したのか失敗したのか確認できます。
-![log](imgs/analysis/web-log.png)
+![log](image/analysis/web-log.png)
 正常なレスポンスが到達すると、自動的にBlue/Green Deployが進んでいくのが分かります。
 
 最後にアプリケーションの削除を行います。 Deleteをクリックします。
@@ -387,18 +387,18 @@ Applications画面の場合は、一番右下の端に、
 
 
 
-![delete](../chapter04b_argocd/imgs/demoapp/Delete-1.png)
+![delete](../chapter04b_argocd/image/demoapp/Delete-1.png)
 
 詳細画面の場合は、右上の2番目にあります。
-![delete](../chapter04b_argocd/imgs/demoapp/Delete-2.png)
+![delete](../chapter04b_argocd/image/demoapp/Delete-2.png)
 
 削除する際にアプリケーション名の入力があるので「web」と入力してOKをクリックします。
-![delete](../chapter04b_argocd/imgs/demoapp/Delete-3.png)
+![delete](../chapter04b_argocd/image/demoapp/Delete-3.png)
 ### Prometheus metrics (Canary Release)
 Analysis実行時にPrometheusにPromQLを送信し、その結果によってPromoteするかどうかを判断します
 
 Applicationsの画面において + NEW APPをクリックします
-![Applications](./imgs/analysis/application.png)
+![Applications](./image/analysis/application.png)
 上の画面上で各項目を次のように設定します。
   ```
   GENERAL
@@ -415,22 +415,22 @@ Applicationsの画面において + NEW APPをクリックします
       Namespace: prometheus-analysis
   ```
 設定できたら、CREATEをクリックして、下記のように表示されていることを確認して下さい
-![create](./imgs/analysis/prometheus-create.png)
-![create](./imgs/analysis/prometheus-create2.png)
+![create](./image/analysis/prometheus-create.png)
+![create](./image/analysis/prometheus-create2.png)
 
 ページ上部にある SYNC をクリックします
-![create](./imgs/analysis/prometheus-sync.png)
+![create](./image/analysis/prometheus-sync.png)
 analysis/prometheus/rollout.yamlの編集を行います。imageのtagをblueからgreenに、変更し、差分をremoteのnew_branch_nameブランチ（argocdのappを作成する際に指定したブランチ）に取り込みます。
 ```yaml
 image: argoproj/rollouts-demo:green
 ```
 ArgoCDはデフォルトでは3分に一回の頻度でブランチを確認し、差分を検出しています。3分待てない場合には、ページ上部にある [REFRESH]をクリックします。下記のようにrolloutにおいて差分が検出されます。（黄色で表示されているOutOfSyncが差分があることを示しています）
 ちなみにAppの設定において、SYNC POLICYをManualでなくAutoにしていた場合には、ここでOutOfSyncを検知すると自動でArgoCDがSyncを実行します。
-![sync](./imgs/analysis/prometheus-refresh.png)
+![sync](./image/analysis/prometheus-refresh.png)
 rolloutを手動でSyncすると、アプリケーションのpodと新たにAnalysisrunが生成されます。
-![update](./imgs/analysis/prometheus-updat1e.png)
+![update](./image/analysis/prometheus-updat1e.png)
 Analysisrunの詳細をクリックし、Live Manifestを確認するとどういったレスポンスが帰ってきて、成功したのか失敗したのか確認できます。
-![log](imgs/analysis/prometheus-log.png)
+![log](image/analysis/prometheus-log.png)
 Analysisrunが成功すると、自動的にCanary Releseが進んでいくのが分かります。
 最後にアプリケーションの削除を行います。 Deleteをクリックします
 
@@ -439,13 +439,13 @@ Applications画面の場合は、一番右下の端に、
 
 
 
-![delete](../chapter04b_argocd/imgs/demoapp/Delete-1.png)
+![delete](../chapter04b_argocd/image/demoapp/Delete-1.png)
 
 詳細画面の場合は、右上の2番目にあります。
-![delete](../chapter04b_argocd/imgs/demoapp/Delete-2.png)
+![delete](../chapter04b_argocd/image/demoapp/Delete-2.png)
 
 削除する際にアプリケーション名の入力があるので「prometheus」と入力してOKをクリックします。
-![delete](../chapter04b_argocd/imgs/demoapp/Delete-3.png)
+![delete](../chapter04b_argocd/image/demoapp/Delete-3.png)
 
 ## Argo Rolloutsのクリーンアップ
 ### Argo CDを削除

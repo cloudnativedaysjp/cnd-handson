@@ -267,7 +267,7 @@ PromQLの詳細な仕様についてはこちらを御覧ください。
 
 <http://prometheus.example.com/graph> にアクセスして、PromQL入力欄に `go_goroutines` と入力してみます。
 
-![image](./images/go_goroutines.png)
+![image](./image/go_goroutines.png)
 
 これは、Go言語で実装されたExporterでよく公開されている、現在のgoroutineの発行数となるメトリックです。
 これはGaugeとなっているので、単調増加ではなく微妙に増減しているのが確認できます。
@@ -279,7 +279,7 @@ kube-prometheus-stackでデフォルトで導入されているアラートル�
 
 <http://prometheus.example.com/alerts>
 
-![image](./images/alerts.png)
+![image](./image/alerts.png)
 
 ### Status
 
@@ -288,7 +288,7 @@ kube-prometheus-stackでデフォルトで導入されているアラートル�
 
 <http://prometheus.example.com/targets>
 
-![image](./images/targets.png)
+![image](./image/targets.png)
 
 ## 実践: Ingress NGINX Controllerからメトリクスを収集する
 

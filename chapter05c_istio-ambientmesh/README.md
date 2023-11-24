@@ -15,7 +15,7 @@ Istio ambient meshはこれらの問題を解決する目的で、Google, Solo.i
 L4、L7機能の全てを管理しているサイドカーモードにおけるデータプレーンと異なり、Istio ambientモードではデータプレーンの機能を2つの層に分けて管理をします。
 
 - Secure overlay layer
-![image](./imgs/secure-overlay-layer.png)
+![image](./image/secure-overlay-layer.png)
 
 (出展元: https://istio.io/v1.16/blog/2022/introducing-ambient-mesh/)
 
@@ -24,7 +24,7 @@ L4、L7機能の全てを管理しているサイドカーモードにおける�
 ZtunnelはKubernetesクラスタ上でDaemonSetとしてデプロイされます。サイドカーモードでは、envoyが各pod内で通信のproxyをしますが、ambientモードではztunnelがメッシュ内のワークロードをnode単位でproxyします。また、node間通信(もう少し厳密に言うと、メッシュ内のサービス間通信)は、Istio 1.16リリースで公開されたHTTP/2の`CONNECT`メソッドをベースにした[HBONE](https://istio.io/latest/news/releases/1.16.x/announcing-1.16/#hbone-for-sidecars-and-ingress-experimental)(HTTP-Based Overlay Network Environment)というトンネリングを用いたmTLS接続によって行われます。
 
 - waypoint proxy layer
-![image](./imgs/waypoint-proxy-layer.png)
+![image](./image/waypoint-proxy-layer.png)
 
 (出展元: https://istio.io/v1.16/blog/2022/introducing-ambient-mesh/)
 
@@ -193,7 +193,7 @@ kiali   NodePort   10.96.140.207   <none>        28080:32766/TCP   30m
 
 ブラウザから`http://kiali-ambient.example.com:28080`にアクセスをしてKialiダッシュボードが表示されることを確認してください。
 
-![image](./imgs/kiali-overview.png)
+![image](./image/kiali-overview.png)
 
 ## L4アクセス管理
 Ztunnelによって管理されるL4レベルのトラフィックに対し、Istio Authorization Policyを作成してアクセス管理を実装します。Istio ambient mesh内において、あるワークロードに対して、特定のワークロードからのL4レベルでのアクセス制御をしたい時がユースケースとして挙げられます。本ケースでは、`handson-blue`ワークロードが待ち構えているport 8080へアクセスするワークロードを2つ用意し、ひとつからは許可を、もうひとつからは拒否をするケースを想定します。
@@ -204,15 +204,15 @@ Ztunnelによって管理されるL4レベルのトラフィックに対し、Is
 TCPトラフィックの状態を確認するために、TOP画面左のサイドメニューの`Graph`をクリックし、下記のとおり設定をしてください。
 - `Namespace`の`default`にチェック
 
-![image](./imgs/kiali-graph-namespace.png)
+![image](./image/kiali-graph-namespace.png)
 
 - `Traffic`の`Tcp`のみにチェック
 
-![image](./imgs/kiali-graph-traffic-tcp.png)
+![image](./image/kiali-graph-traffic-tcp.png)
 
 - `Versioned app graph`から`Workload graph`に変更
 
-![image](./imgs/kiali-graph-workload.png)
+![image](./image/kiali-graph-workload.png)
 
 
 ### 追加アプリケーションのデプロイ
@@ -260,7 +260,7 @@ curl-deny:  200
 
 Kiali dashboardからも確認してみましょう。リクエストを流した状態でブラウザから`http://kiali-ambient.example.com:28080`にアクセスをしてください。`curl-allow`, `curl-deny` podのワークロードが`handson-blue`ワークロードにアクセス出来ていることが確認できます(紺色の矢印はTCP通信を表しています)。グラフが表示されない場合は、Kialiダッシュボード右上の青い`Refresh`ボタンを押して状態を更新してください。
 
-![image](./imgs/kiali-L4-authz-autholizationpolicy-notapplied.png)
+![image](./image/kiali-L4-authz-autholizationpolicy-notapplied.png)
 
 確認ができたら、リクエストを一旦停止してください。
 
@@ -318,7 +318,7 @@ Http code 000はレスポンスが何もなかったという意味で、`comman
 
 改めてKiali dashboardから確認してみましょう。ブラウザから`http://kiali-ambient.example.com:28080`にアクセスをしてください。しばらくすると、`curl-allow` podからのリクエストのみグラフに表示されるようになります(グラフに変化が見られない場合は、Kialiダッシュボード右上の青い`Refresh`ボタンを押して状態を更新してください)。これは`curl-deny` podからのport 8080のリクエストをztunnelがAuthorization Poliyの設定に基づいて`handson-blue`ワークロードへのproxyを拒否しているためです。
 
-![image](./imgs/kiali-L4-authz-autholizationpolicy-applied.png)
+![image](./image/kiali-L4-authz-autholizationpolicy-applied.png)
 
 リクエストを停止し、次は`curl-deny` podのみからリクエストをしてztunnelのログを見てみましょう。
 ```sh
@@ -398,15 +398,15 @@ waypoint proxyによって管理されるL7レベルのトラフィックに対�
 HTTPトラフィックの状態を確認するために、TOP画面左のサイドメニューのGraphをクリックし、下記のとおり設定してください。
 - `Namespace`の`default`にチェック
 
-![image](./imgs/kiali-graph-namespace.png)
+![image](./image/kiali-graph-namespace.png)
 
 - `Traffic`の`Http`のみにチェック
 
-![image](./imgs/kiali-graph-traffic-http.png)
+![image](./image/kiali-graph-traffic-http.png)
 
 - `Versioned app graph`から`Workload graph`に変更
 
-![image](./imgs/kiali-graph-workload.png)
+![image](./image/kiali-graph-workload.png)
 
 ### Waypoint proxyのデプロイ
 Waypoint proxyを有効にするには[Kubernetes Gateway API](https://github.com/kubernetes-sigs/gateway-api)(本項では説明は省略)の`gateway`リソースが必要になるため、まずはKubernetes Gateway CRDをインストールします。
@@ -469,7 +469,7 @@ while :; do kubectl exec curl -- curl -s -o /dev/null handson:8080 -w '%{http_co
 
 Kiali dashboardからも確認してみましょう。リクエストを流した状態でブラウザから`http://kiali-ambient.example.com:28080`にアクセスをしてください(グラフに変化が見られない場合は、Kialiダッシュボード右上の青い`Refresh`ボタンを押して状態を更新してください)。`curl` podから`handson-blue`ワークロードにアクセス出来ていることが確認できます。
 
-![image](./imgs/kiali-L7-authz-autholizationpolicy-notapplied.png)
+![image](./image/kiali-L7-authz-autholizationpolicy-notapplied.png)
 
 確認ができたら、リクエストを一旦停止してください。
 
@@ -527,7 +527,7 @@ while :; do kubectl exec curl -- curl -X POST -s -o /dev/null -d '{}' -w '%{http
 
 改めてKiali dashboardから確認してみましょう。ブラウザから`http://kiali-ambient.example.com:28080`にアクセスをしてください(グラフに変化が見られない場合は、Kialiダッシュボード右上の青い`Refresh`ボタンを押して状態を更新してください)。しばらくすると、`curl` ワークロードからのPOSTリクエストは拒否されていることが確認できます。
 
-![image](./imgs/kiali-L7-authz-autholizationpolicy-applied.png)
+![image](./image/kiali-L7-authz-autholizationpolicy-applied.png)
 
 確認ができたらリクエストを停止してください。
 
