@@ -50,7 +50,7 @@ kubectl apply -n argo-cd \
 ### Argo Rolloutsのインストール
 helmファイルを利用してArgo CDをインストールします。
 ```sh
-helmfile apply -f ./helm/helmfile.yaml
+helmfile sync -f ./helm/helmfile.yaml
 ```
 作成されるリソースは下記の通りです。
 ```sh
