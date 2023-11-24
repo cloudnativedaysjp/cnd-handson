@@ -5,6 +5,7 @@ metadata:
   labels:
     app: handson
   name: handson-blue
+  namespace: handson
 spec:
   type: ClusterIP
   ports:
@@ -23,6 +24,7 @@ metadata:
   labels:
     app: handson
   name: handson-yellow
+  namespace: handson
 spec:
   type: ClusterIP
   ports:
