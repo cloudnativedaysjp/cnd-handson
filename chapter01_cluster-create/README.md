@@ -164,13 +164,27 @@ To further debug and diagnose cluster problems, use 'kubectl cluster-info dump'.
 
 ```shell
 kubectl create namespace handson
-kubectl apply -Rf manifest/app -n handson
+kubectl apply -f manifest/app/serviceaccount.yaml -n handson -l color=blue
+kubectl apply -f manifest/app/deployment.yaml -n handson -l color=blue
+kubectl apply -f manifest/app/service.yaml -n handson
+kubectl apply -f manifest/app/ingress.yaml -n handson
 ```
 
-下記コマンドでデプロイされたリソースを確認できます。
+作成されるリソースは下記のとおりです。
 
 ```shell
-kubectl get -n handson all
+kubectl get services,deployments,ingresses -n handson
+```
+```shell
+# 実行結果
+NAME              TYPE        CLUSTER-IP     EXTERNAL-IP   PORT(S)    AGE
+service/handson   ClusterIP   10.96.82.202   <none>        8080/TCP   3m33s
+
+NAME                           READY   UP-TO-DATE   AVAILABLE   AGE
+deployment.apps/handson-blue   1/1     1            1           3m34s
+
+NAME                                             CLASS   HOSTS             ADDRESS       PORTS   AGE
+ingress.networking.k8s.io/app-ingress-by-nginx   nginx   app.example.com   10.96.54.28   80      3m9s
 ```
 
 ブラウザから`http://app.example.com`に接続し、下記のような画面が表示されることを確認してください。

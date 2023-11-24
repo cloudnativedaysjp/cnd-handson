@@ -30,7 +30,7 @@ spec:
         version: v1
         prometheus-monitor-ignore: ""
     spec:
-      serviceAccountName: handson
+      serviceAccountName: handson-blue
       containers:
       - image: argoproj/rollouts-demo:blue
         imagePullPolicy: IfNotPresent
@@ -93,7 +93,7 @@ spec:
         version: v1
         prometheus-monitor-ignore: ""
     spec:
-      serviceAccountName: handson
+      serviceAccountName: handson-yellow
       containers:
       - image: argoproj/rollouts-demo:yellow
         imagePullPolicy: IfNotPresent

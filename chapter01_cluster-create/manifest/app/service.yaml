@@ -14,39 +14,3 @@ spec:
     targetPort: http
   selector:
     app: handson
-
----
-apiVersion: v1
-kind: Service
-metadata:
-  labels:
-    app: handson
-  name: handson-blue
-spec:
-  type: ClusterIP
-  ports:
-  - port: 8080
-    protocol: TCP
-    targetPort: http
-    name: http-app
-  selector:
-    app: handson
-    color: blue
-
----
-apiVersion: v1
-kind: Service
-metadata:
-  labels:
-    app: handson
-  name: handson-yellow
-spec:
-  type: ClusterIP
-  ports:
-  - port: 8080
-    protocol: TCP
-    targetPort: http
-    name: http-app
-  selector:
-    app: handson
-    color: yellow
