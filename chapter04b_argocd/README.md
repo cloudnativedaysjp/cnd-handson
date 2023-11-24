@@ -70,7 +70,7 @@ GitHubのリポジトリの登録やPushはforkした自身のリポジトリを
 ### Argo CDのインストール
 helmファイルを利用してArgo CDをインストールします。
 ```
-helmfile apply -f helm/helmfile.yaml
+helmfile sync  -f helm/helmfile.yaml
 ```
 作成されるリソースは下記の通りです。
 ```
