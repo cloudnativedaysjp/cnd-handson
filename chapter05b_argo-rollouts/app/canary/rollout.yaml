@@ -29,7 +29,6 @@ spec:
             cpu: 5m
   strategy:
     canary:
-      canaryService: handson-preview
       steps:
       - setWeight: 20
       - pause: {}
