@@ -207,9 +207,9 @@ GENERAL
 ![Kustomize-create](imgs/demoapp/Kustomize-create2-prd.png)
 ページ上部にある SYNCをクリックします(開発環境の場合はpodが1個、本番環境の場合はpodが2個出来るのが確認できます。)
 ### 開発環境
-![Kustomize-dev](imgs/demoapp/Kustomize-dev.png)
+![Kustomize-dev](imgs/demoapp/Kustomize-sync-dev.png)
 ### 本番環境
-![Kustomize-prd](imgs/demoapp/Kustomize-prd.png)
+![Kustomize-prd](imgs/demoapp/Kustomize-sync-prd.png)
 
 
 ブラウザで各環境へアクセスして確認してみてください。タイルの色が開発環境と本番環境で違う事が確認できます。
