@@ -37,22 +37,6 @@ Argo Rolloutsは、Kubernetesコントローラおよび一連のカスタムリ
 Argo CDとの連携が可能で、簡単に既存のGit Opsでプログレッシブデリバリーができる
 ## セットアップ
 今回のハンズオンでは、Argo CDからArgo Rolloutsを利用します。
-### hostsファイルの準備(ローカル環境)
-今回デプロイするWEBサービスのドメインは登録していないため、WEBサービスを利用する際にはハンズオンで利用する端末のhostsファイルを書き込む必要があります。
-
-hostsファイルのpathはOSによって様々なので環境によって変わりますが主要なpathは下記の通りです
-
-MacやLinuxの場合
-```/etc/hosts```
-
-Windowsの場合
-```C:\Windows\System32\drivers\etc\hosts```
-
-この章で利用するドメインは
-
-* argocd.example.com
-* app.argocd.example.com
-* app-preview.argocd.example.com
 
 ### Gitリポジトリの準備(ローカル環境)
 Argo CDを利用する上では、GitHubへのPush等の変更が必要不可欠になります。そのため、このハンズオンのリポジトリをforkして操作する為の準備をします。

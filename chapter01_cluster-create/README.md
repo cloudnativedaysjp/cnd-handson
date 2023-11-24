@@ -203,10 +203,4 @@ ingress.networking.k8s.io/app-ingress-by-nginx   nginx   app.example.com   10.96
 
 ブラウザから`http://app.example.com`に接続し、下記のような画面が表示されることを確認してください。
 
-> **Info**  
-> hostsファイルを利用して名前解決を行う必要があります。
-> 利用しているOSに応じてhostsファイルに設定を書き込んでください。
-> - Windows：`C:\Windows\System32\drivers\etc\hosts`
-> - Linux: `/etc/hosts`
-
 ![](./image/app-simple-routing.png)
