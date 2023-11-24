@@ -138,7 +138,7 @@ Canary Releaseは、新旧混在状態を制御し、本番環境において限
     SYNC OPTIONS: AUTO CREATE NAMESPACE [v]
     SOURCE
       Repository URL: https://github.com/自身のアカウント名/cndt2023-handson
-      Revision: new_branch_name
+      Revision: main
       Path: chapter05b_argo-rollouts/app/blue-green
     DESTINATION
       Cluster URL: https://kubernetes.default.svc
@@ -156,7 +156,7 @@ Canary Releaseは、新旧混在状態を制御し、本番環境において限
 ここからは、実際にBlue/Green Deploymentyを行いその様子を見ていこうと思います。
 
  `app/blue-green/rollout.yaml`の編集を行います。
- imageのtagをblueから`green`に、変更し、差分をremoteのnew_branch_nameブランチ（argocdのappを作成する際に指定したブランチ）に取り込みます。
+ imageのtagをblueから`green`に、変更し、差分をremoteのmainブランチ（argocdのappを作成する際に指定したブランチ）に取り込みます。
 
   ```yaml
   image: argoproj/rollouts-demo:green
@@ -214,7 +214,7 @@ Applications画面の場合は、一番右下の端に、
     SYNC OPTIONS: AUTO CREATE NAMESPACE [v]
     SOURCE
       Repository URL: https://github.com/自身のアカウント名/cndt2023-handson
-      Revision: new_branch_name
+      Revision: main
       Path: chapter05b_argo-rollouts/app/canary
     DESTINATION
       Cluster URL: https://kubernetes.default.svc
@@ -232,7 +232,7 @@ Applications画面の場合は、一番右下の端に、
 ここからは、実際に、Canary Releaseを行いその様子を見ていこうと思います。
 
  `app/canary/rollout.yaml`の編集を行います。
- imageのtagをblueから`green`に、変更し、差分をremoteのnew_branch_nameブランチ（argocdのappを作成する際に指定したブランチ）に取り込みます
+ imageのtagをblueから`green`に、変更し、差分をremoteのmainブランチ（argocdのappを作成する際に指定したブランチ）に取り込みます
 
   ```yaml
   image: argoproj/rollouts-demo:green 
@@ -302,7 +302,7 @@ Applicationsの画面において + NEW APPをクリックします
     SYNC OPTIONS: AUTO CREATE NAMESPACE [v]
     SOURCE
       Repository URL: https://github.com/自身のアカウント名/cndt2023-handson
-      Revision: new_branch_name
+      Revision: main
       Path: chapter05b_argo-rollouts/analysis/job
     DESTINATION
       Cluster URL: https://kubernetes.default.svc
@@ -314,7 +314,7 @@ Applicationsの画面において + NEW APPをクリックします
 
 ページ上部にある SYNC をクリックします
 ![create2](./image/analysis/Job-sync.png)
-analysis/job/rollout.yamlの編集を行います。imageのtagをblueからgreenに、変更し、差分をnew_branch_nameのブランチ（argocdのappを作成する際に指定したブランチ）に取り込みます。
+analysis/job/rollout.yamlの編集を行います。imageのtagをblueからgreenに、変更し、差分をmainのブランチ（argocdのappを作成する際に指定したブランチ）に取り込みます。
 ```yaml
 image: argoproj/rollouts-demo:green
 ```
@@ -356,7 +356,7 @@ Applicationsの画面において + NEW APPをクリックします
     SYNC OPTIONS: AUTO CREATE NAMESPACE [v]
     SOURCE
       Repository URL: https://github.com/自身のアカウント名/cndt2023-handson
-      Revision: new_branch_name
+      Revision: main
       Path: chapter05b_argo-rollouts/analysis/web
     DESTINATION
       Cluster URL: https://kubernetes.default.svc
@@ -368,7 +368,7 @@ Applicationsの画面において + NEW APPをクリックします
 
 ページ上部にある SYNC をクリックします
 ![create](./image/analysis/web-sync.png)
-analysis/web/rollout.yamlの編集を行います。imageのtagをblueからgreenに、変更し、差分をremoteのnew_branch_nameブランチ（argocdのappを作成する際に指定したブランチ）に取り込みます。
+analysis/web/rollout.yamlの編集を行います。imageのtagをblueからgreenに、変更し、差分をremoteのmainブランチ（argocdのappを作成する際に指定したブランチ）に取り込みます。
 ```yaml
 image: argoproj/rollouts-demo:green
 ```
@@ -408,7 +408,7 @@ Applicationsの画面において + NEW APPをクリックします
     SYNC OPTIONS: AUTO CREATE NAMESPACE [v]
     SOURCE
       Repository URL: https://github.com/自身のアカウント名/cndt2023-handson
-      Revision: new_branch_name
+      Revision: main
       Path: chapter05b_argo-rollouts/analysis/prometheus
     DESTINATION
       Cluster URL: https://kubernetes.default.svc
@@ -420,7 +420,7 @@ Applicationsの画面において + NEW APPをクリックします
 
 ページ上部にある SYNC をクリックします
 ![create](./image/analysis/prometheus-sync.png)
-analysis/prometheus/rollout.yamlの編集を行います。imageのtagをblueからgreenに、変更し、差分をremoteのnew_branch_nameブランチ（argocdのappを作成する際に指定したブランチ）に取り込みます。
+analysis/prometheus/rollout.yamlの編集を行います。imageのtagをblueからgreenに、変更し、差分をremoteのmainブランチ（argocdのappを作成する際に指定したブランチ）に取り込みます。
 ```yaml
 image: argoproj/rollouts-demo:green
 ```
