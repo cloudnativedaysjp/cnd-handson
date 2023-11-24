@@ -235,7 +235,7 @@ Gateway APIの詳細は[Kubernetes Gateway API](https://gateway-api.sigs.k8s.io/
 また、yellowイメージとblueイメージのそれぞれにアクセスするためのServiceリソースを作成します。
 
 ```shell
-kubectl apply -Rf ../chapter-1_cluster-create/manifest/app -n handson -l color=yellow
+kubectl apply -Rf ../chapter01_cluster-create/manifest/app -n handson -l color=yellow
 kubectl apply -f manifest/service.yaml
 ```
 
