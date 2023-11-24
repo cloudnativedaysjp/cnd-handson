@@ -161,11 +161,11 @@ Canary Releaseは、新旧混在状態を制御し、本番環境において限
       Namespace: blue-green
   ```
  設定できたら、CREATEをクリックして、下記のように表示されていることを確認して下さい
-  ![create](imgs/BG/CREATE.png)
-  ![create2](imgs/BG/CREATE2.png)
+  ![create](imgs/BG/blue-green-create.png)
+  ![create2](imgs/BG/blue-green-create2.png)
   
  ページ上部にある SYNC をクリックして、無事デプロイされると下記のようになります
-  ![sync](imgs/BG/SYNC.png)
+  ![sync](imgs/BG/blue-green-sync.png)
 
 以上の手順で、Blue/GreenのBlueに当たる状態がArgoCDを用いてデプロイされ、localからingressでアクセス可能となりました。
 
@@ -183,13 +183,13 @@ Canary Releaseは、新旧混在状態を制御し、本番環境において限
  
  ちなみにAppの設定において、SYNC POLICYをManualでなくAutoにしていた場合には、ここでOutOfSyncを検知すると自動でArgoCDがSyncを実行します。
 
-  ![OutOfSync](imgs/BG/OutOfSync.png)
- rolloutを手動でSyncします
-  ![Sync](imgs/BG/rollout-sync.png)
- syncされた結果下記のよう。blue, green両方のreplicasetが作成されている事が確認できます。
+  ![OutOfSync](imgs/BG/blue-green-OutofSync.png)
+ rolloutを手動でSyncします。 blue, green両方のreplicasetが作成されている事が確認できます。
+  ![Sync](imgs/BG/blue-green-sync2.png)
+
  
  両方のreplicasetが作成されているのは、bluegreen-rollout.yamlにおいてspec.strategy.bluegreen.autoPromotionEnabledがfalseに設定されているからです
-  ![update](imgs/BG/deploy.png)
+
  それぞれのingressにアクセスすると下記のようにblueとgreenの異なるタイルが表示されていることが確認できます。
  * app.argocd.example.com
  * app-preview.argocd.example.com
@@ -202,7 +202,7 @@ Canary Releaseは、新旧混在状態を制御し、本番環境において限
  
  
 rollout-extensionを使用した場合、rolloutを選択しmoreのタブが出現します。moreのタブを選ぶとこのようにblueとgreenがどうなっているか一目で確認できるようになります。
-  ![rollout-extension](imgs/BG/rollout-extension.png)
+  ![rollout-extension](imgs/BG/blue-green-promote.png)
 最後にアプリケーションの削除を行います。 Deleteをクリックします
 
 
@@ -213,7 +213,7 @@ Applications画面の場合は、一番右下の端に、
 ![delete](../chapter04b_argocd/imgs/demoapp/Delete-2.png)
 
 削除する際にアプリケーション名の入力があるので「blue-green」と入力してOKをクリックします。
-![delete](../chapter04b_argocd/imgs/demoapp/Delete-3.png)
+![delete](/imgs/BG/blue-green-delete.png)
 
 ### Canary Release
  Applicationsの画面において + NEW APPをクリックします![Applications](./imgs/analysis/application.png)
@@ -233,11 +233,11 @@ Applications画面の場合は、一番右下の端に、
       Namespace: canary
   ```
  設定できたら、CREATEをクリックして、下記のように表示されていることを確認して下さい
-  ![create](./imgs/canary/create.png)
-  ![create2](./imgs/canary/create2.png)
+  ![create](./imgs/canary/canary-create.png)
+  ![create2](./imgs/canary/canary-create2.png)
   
  ページ上部にある SYNC をクリックして、無事デプロイされると下記のようになります
-  ![sync](imgs/canary/sync.png)
+  ![sync](imgs/canary/canary-sync.png)
 
 以上の手順で、Canary Releaseにおける安定バージョンがArgoCDを用いてデプロイされ、localからingressでアクセス可能となりました
 
@@ -252,18 +252,22 @@ Applications画面の場合は、一番右下の端に、
 
  ArgoCDはデフォルトでは3分に一回の頻度でブランチを確認し、差分を検出しています。3分待てない場合には、ページ上部にある [REFRESH]をクリックします。下記のようにrolloutにおいて差分が検出されます。（黄色で表示されているOutOfSyncが差分があることを示しています）
 ちなみにAppの設定において、SYNC POLICYをManualでなくAutoにしていた場合には、ここでOutOfSyncを検知すると自動でArgoCDがSyncを実行します。
-  ![OutOfSync](imgs/canary/OutOfSync.png)
- rolloutを手動でSyncします
-  ![rollout-sync](imgs/canary/rollout-sync.png)
- syncされた結果安定バージョンと新バージョンの両方のreplicasetが確認できます。
+  ![OutOfSync](imgs/canary/canary-OutOfSync.png)
+rolloutを手動でSyncします
+  ![rollout-sync](imgs/canary/canary-sync2.png)
+syncされた結果安定バージョンと新バージョンの両方のreplicasetが確認できます。
   ![update](imgs/canary/update.png)
- ingressにアクセスすると下記のように、安定バージョンであるBlueから新バージョンであるGreenのタイルが少しづつ増えて行っているのが確認できます。
+ingressにアクセスすると下記のように、安定バージョンであるBlueから新バージョンであるGreenのタイルが少しづつ増えて行っているのが確認できます。
   ![demoapp](imgs/canary/demoapp.png)
- rollout-extensionを使用した場合、rolloutを選択しmoreのタブが出現します。moreのタブを選ぶと、アプリケーションの動作を確認せずとも自動で決められたStepを動いているのが一目で確認できるようになります。
-  ![rollout-extension](imgs/canary/extended.png)
+rollout-extensionを使用した場合、rolloutを選択しmoreのタブが出現します。moreのタブを選ぶと、アプリケーションの動作を確認せずともどこのStepを動いているのが一目で確認できるようになります。
+  ![rollout-extension](imgs/canary/canary-more.png)
+全てのpodを新バージョンにアップデートしたい場合には、rolloutのPromote Fullをクリックして下さい。
+
+![promote-full](imgs/canary/canary-promote.png)
+
+デモアプリへアクセスしてアップデートが完了していることを確認して下さい。
 
 最後にアプリケーションの削除を行います。 Deleteをクリックします。
-
 
 Applications画面の場合は、一番右下の端に、
 ![delete](../chapter04b_argocd/imgs/demoapp/Delete-1.png)
@@ -272,7 +276,7 @@ Applications画面の場合は、一番右下の端に、
 ![delete](../chapter04b_argocd/imgs/demoapp/Delete-2.png)
 
 削除する際にアプリケーション名の入力があるので「canary」と入力してOKをクリックします。
-![delete](../chapter04b_argocd/imgs/demoapp/Delete-3.png)
+![delete](/imgs/canary/canary-delete.png)
 
 
 ## Analysis Metrics
