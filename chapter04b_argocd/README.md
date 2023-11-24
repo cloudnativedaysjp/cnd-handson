@@ -128,7 +128,8 @@ http://argocd.example.com/
 
 同期させるGitのレポジトリを登録します。
 
-Settings - > Repositories と進み CONEECT REPOをクリック　![CONEECT REPO](./imgs/setup/add-repo-setting.png)
+Settings - > Repositories と進み CONEECT REPOをクリックします　
+![CONEECT REPO](./imgs/setup/add-repo-setting.png)
 上の画面上で各項目を次のように設定
 ```
 Choose you connection method: VIA HTTPS
@@ -182,11 +183,11 @@ app/default/deployment.yamlの編集を行います。 imageのtagをblueからg
 ```
 image: argoproj/rollouts-demo:green
 ```
-差分をremoteのmainブランチ（Argo cdのappを作成する際に指定したブランチ）に取り込みます。
+差分をforkしたmainブランチ（Argo CDのappを作成する際に指定したブランチ）に取り込みます。
 ```
 git push origin main
 ```
-Argo　CDはデフォルトでは3分に一回の頻度でブランチを確認し、差分を検出しています。 3分待てない場合には、ページ上部にある [REFRESH]をクリックします。下記のようにdeploymentにおいて差分が検出されます。（黄色で表示されているOutOfSyncが差分があることを示しています） ちなみにAppの設定において、SYNC POLICYをManualでなくAutoにしていた場合には、ここでOutOfSyncを検知すると自動でArgoCDがSyncを実行します。
+Argo CDはデフォルトでは3分に一回の頻度でブランチを確認し、差分を検出しています。 3分待てない場合には、ページ上部にある [REFRESH]をクリックします。下記のようにdeploymentにおいて差分が検出されます。（黄色で表示されているOutOfSyncが差分があることを示しています） ちなみにAppの設定において、SYNC POLICYをManualでなくAutoにしていた場合には、ここでOutOfSyncを検知すると自動でArgoCDがSyncを実行します。
 ![blue2green](imgs/demoapp/blue2green.png)
 Gitの変更をKubernetes Clusterに反映させるためにページ上部にあるSYNCをクリックして、下記のように表示されていることを確認して下さい。
 ![blue2green](imgs/demoapp/blue2green-sync.png)
@@ -196,11 +197,13 @@ http://app.argocd.example.com
 ## Kustomizeを使ったデプロイ
 ArgoCD上でマニュフェストの管理ツールである「Kustomize」を利用した、開発環境と本番環境の2つのマニュフェスト管理を行います。
 
-Applicationsの画面において + NEW APPをクリック![Applications](./imgs/demoapp/new-app.png)
+Applicationsの画面において + NEW APPをクリックします![Applications](./imgs/demoapp/new-app.png)
 上の画面上で各項目を次のように設定します。(開発環境と本番環境はここのPathだけ変更になります)
 ```
 GENERAL
-  Application Name: argocd-kustomize
+  Application Name: 
+    開発環境: argocd-kustomize-dev
+    本番環境: argocd-kustomize-prd
   Project Name: default
   SYNC POLICY: Manual
   SYNC OPTIONS: AUTO CREATE NAMESPACE [v]
@@ -208,20 +211,25 @@ GENERAL
     Repository URL: https://github.com/自身のアカウント名/cndt2023-handson
     Revision: main
     Path:
-        開発環境： chapter04b_argocd/app/Kustomize/overlays/dev
-        本番環境： chapter04b_argocd/app/Kustomize/overlays/prd
+      開発環境: chapter04b_argocd/app/Kustomize/overlays/dev
+      本番環境: chapter04b_argocd/app/Kustomize/overlays/prd
   DESTINATION
     Cluster URL: https://kubernetes.default.svc
-    Namespace: argocd-kustomize
+    Namespace: 
+      開発環境: argocd-kustomize-dev
+      本番環境: argocd-kustomize-prd
 ```
-設定できたら、CREATEをクリック
-![](imgs/demoapp/Kustomize-create.png)
-![](imgs/demoapp/Kustomize-create2.png)
-ページ上部にある SYNCをクリック(開発環境の場合はpodが1個、本番環境の場合はpodが2個出来るのが確認できます。)
+設定できたら、CREATEをクリックします
+![Kustomize-create](imgs/demoapp/Kustomize-create.png)
 ### 開発環境
-![](imgs/demoapp/Kustomize-dev.png)
+![Kustomize-create](imgs/demoapp/Kustomize-create2-dev.png)
 ### 本番環境
-![](imgs/demoapp/Kustomize-prd.png)
+![Kustomize-create](imgs/demoapp/Kustomize-create2-prd.png)
+ページ上部にある SYNCをクリックします(開発環境の場合はpodが1個、本番環境の場合はpodが2個出来るのが確認できます。)
+### 開発環境
+![Kustomize-dev](imgs/demoapp/Kustomize-dev.png)
+### 本番環境
+![Kustomize-prd](imgs/demoapp/Kustomize-prd.png)
 
 
 ブラウザで各環境へアクセスして確認してみてください。タイルの色が開発環境と本番環境で違う事が確認できます。
@@ -230,7 +238,7 @@ GENERAL
 ## Helmを使ったデプロイ
 KubernetesのパッケージマネージャーのHelmを利用したデプロイを行います。
 
-Applicationsの画面において + NEW APPをクリック
+Applicationsの画面において + NEW APPをクリックします
 ![Applications](./imgs/demoapp/new-app.png)
 上の画面上で各項目を次のように設定します。
 ```
@@ -247,24 +255,39 @@ GENERAL
     Cluster URL: https://kubernetes.default.svc
     Namespace: argocd-helm
 ```
-設定できたら、CREATEをクリック
-![](./imgs/demoapp/helm-create.png)
-![](./imgs/demoapp/helm-create2.png)
-ページ上部にある SYNCをクリック（無事デプロイされると下記のようになります）
-![](./imgs/demoapp/helm.png)
+設定できたら、CREATEをクリックします
+![helm-create](./imgs/demoapp/helm-create.png)
+![helm-create2](./imgs/demoapp/helm-create2.png)
+ページ上部にある SYNCをクリックします（無事デプロイされると下記のようになります）
+![helm-sync](./imgs/demoapp/helm-sync.png)
 ブラウザで
 helm.argocd.example.com
 アクセスして確認してみてください。Helmを使ってデプロイが出来てる事が確認できます。
 ## Argo CDのクリーンアップ
 ### 作成したデモアプリを削除
-Applicationsの画面の各アプリのDELETEをクリック
+各アプリのDELETEをクリックします
+
+Applications画面の場合は、一番右下の端に、
+![delete](imgs/demoapp/Delete-1.png)
+
+詳細画面の場合は、右上の2番目にあります。
+![delete](imgs/demoapp/Delete-2.png)
+
+削除する際にアプリケーション名の入力があるので入力してOKをクリックします。
+![delete](imgs/demoapp/Delete-3.png)
+
+全てのアプリケーションを削除して、初めてアクセスした画面と同じようにして下さい。
+![aplication](imgs/setup/access-webui.png)
+
+namespaceの削除を行います。
+```
+kubectl delete namespace argocd-demo argocd-kustomize-dev argocd-kustomize-prd argocd-helm
+```
 ### Argo CDを削除
 chapter05b_argo-rolloutsをする場合は削除する必要はありません。
 ```
 helmfile destroy -f  helm/helmfile.yaml
-kubectl delete namespace argocd-demo
-kubectl delete namespace argocd-kustomize
-kubectl delete namespace argocd-helm
+kubectl delete namespace argo-cd
 ```
 
 
