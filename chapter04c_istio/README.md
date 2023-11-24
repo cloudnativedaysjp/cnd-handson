@@ -215,7 +215,8 @@ handson-blue-6c4f4c9c57-597dx   2/2     Running   0          5m
 
 加重ルーティング実装のための追加アプリケーションをデプロイします。
 ```sh
-kubectl apply -f app/handson-yellow.yaml
+kubectl apply -f ../chapter01_cluster-create/manifest/app/serviceaccount.yaml -n handson -l color=yellow
+kubectl apply -f ../chapter01_cluster-create/manifest/app/deployment.yaml -n handson -l color=yellow
 ```
 
 2つのワークロードが`handson` namespaceで稼働していることを確認してください。
@@ -271,7 +272,8 @@ Istio Virtual Service/Destination Ruleを使用して、加重ルーティング
 
 ### クリーンアップ
 ```sh
-kubectl delete -f app/handson-yellow.yaml
+kubectl delete -f ../chapter01_cluster-create/manifest/app/serviceaccount.yaml -n handson -l color=yellow
+kubectl delete -f ../chapter01_cluster-create/manifest/app/deployment.yaml -n handson -l color=yellow
 kubectl delete -f networking/gateway.yaml,networking/weight-based-routing.yaml
 ```
 
