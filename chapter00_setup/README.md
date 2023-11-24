@@ -6,7 +6,7 @@
 
 今回の演習では、ローカル端末のhostsファイルを利用して名前解決を行います。
 
-> **Info**
+**Info**
 > 利用しているOSに応じてhostsファイルに設定を書き込んでください。
 > - Windows：`C:\Windows\System32\drivers\etc\hosts`
 > - Linux: `/etc/hosts`
