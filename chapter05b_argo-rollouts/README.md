@@ -207,9 +207,11 @@ rollout-extensionを使用した場合、rolloutを選択しmoreのタブが出�
 
 
 Applications画面の場合は、一番右下の端に、
+
 ![delete](../chapter04b_argocd/imgs/demoapp/Delete-1.png)
 
 詳細画面の場合は、右上の2番目にあります。
+
 ![delete](../chapter04b_argocd/imgs/demoapp/Delete-2.png)
 
 削除する際にアプリケーション名の入力があるので「blue-green」と入力してOKをクリックします。
