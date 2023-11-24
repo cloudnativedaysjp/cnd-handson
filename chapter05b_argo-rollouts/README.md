@@ -208,6 +208,8 @@ rollout-extensionを使用した場合、rolloutを選択しmoreのタブが出�
 
 Applications画面の場合は、一番右下の端に、
 
+
+
 ![delete](../chapter04b_argocd/imgs/demoapp/Delete-1.png)
 
 詳細画面の場合は、右上の2番目にあります。
@@ -215,7 +217,7 @@ Applications画面の場合は、一番右下の端に、
 ![delete](../chapter04b_argocd/imgs/demoapp/Delete-2.png)
 
 削除する際にアプリケーション名の入力があるので「blue-green」と入力してOKをクリックします。
-![delete](/imgs/BG/blue-green-delete.png)
+![delete](imgs/BG/blue-green-delete.png)
 
 ### Canary Release
  Applicationsの画面において + NEW APPをクリックします![Applications](./imgs/analysis/application.png)
@@ -272,13 +274,15 @@ rollout-extensionを使用した場合、rolloutを選択しmoreのタブが出�
 最後にアプリケーションの削除を行います。 Deleteをクリックします。
 
 Applications画面の場合は、一番右下の端に、
+
+
 ![delete](../chapter04b_argocd/imgs/demoapp/Delete-1.png)
 
 詳細画面の場合は、右上の2番目にあります。
 ![delete](../chapter04b_argocd/imgs/demoapp/Delete-2.png)
 
 削除する際にアプリケーション名の入力があるので「canary」と入力してOKをクリックします。
-![delete](/imgs/canary/canary-delete.png)
+![delete](imgs/canary/canary-delete.png)
 
 
 ## Analysis Metrics
@@ -341,6 +345,9 @@ jobが成功すると、自動的にBlue/Green Deployが進んでいくのが分
 
 
 Applications画面の場合は、一番右下の端に、
+
+
+
 ![delete](../chapter04b_argocd/imgs/demoapp/Delete-1.png)
 
 詳細画面の場合は、右上の2番目にあります。
@@ -393,6 +400,9 @@ Analysisrunの詳細をクリックし、Live Manifestを確認するとどう�
 最後にアプリケーションの削除を行います。 Deleteをクリックします。
 
 Applications画面の場合は、一番右下の端に、
+
+
+
 ![delete](../chapter04b_argocd/imgs/demoapp/Delete-1.png)
 
 詳細画面の場合は、右上の2番目にあります。
@@ -442,6 +452,9 @@ Analysisrunが成功すると、自動的にCanary Releseが進んでいくの�
 
 
 Applications画面の場合は、一番右下の端に、
+
+
+
 ![delete](../chapter04b_argocd/imgs/demoapp/Delete-1.png)
 
 詳細画面の場合は、右上の2番目にあります。
