@@ -227,8 +227,12 @@ docker exec -it kind-worker sh -c "echo '{\"key1\": \"value1\", \"key2\": \"valu
 
 その後、`file` Exporterによって出力されたファイルを見てみると、確かにReceiverで受け取ったログがExporterで出力されていることが確認できます。
 
+```sh
+docker exec -it kind-worker sh -c "cat /tmp/all.json  | jq ."
+```
+
 ```json
-$ docker exec -it kind-worker sh -c "cat /tmp/all.json  | jq ."
+# 実行結果
 {
   "resourceLogs": [
     {
@@ -436,11 +440,15 @@ spec:
 ```bash
 kubectl apply -f manifests/jaeger.yaml
 ```
-```bash
-# 実行結果
-jaeger.jaegertracing.io/jaeger created
 
-$ kubectl -n jaeger get jaeger
+デプロイされたJaegerリソースを確認し、ステータスがRunningなことを確認してください。
+
+```sh
+kubectl -n jaeger get jaeger
+```
+
+```sh
+# 実行結果
 NAME     STATUS    VERSION   STRATEGY   STORAGE   AGE
 jaeger   Running   1.49.0    allinone   memory    10m
 ```

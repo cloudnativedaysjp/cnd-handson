@@ -97,12 +97,12 @@ Not sure what to do next? 😅  Check out https://kind.sigs.k8s.io/docs/user/qui
 - [Gateway API](https://gateway-api.sigs.k8s.io/)
 - [Cilium](https://cilium.io/)
 - [Metallb](https://metallb.universe.tf/)
-- [Nginx Ingress Controller](https://docs.nginx.com/nginx-ingress-controller/)
+- [Ingress NGINX Controller](https://github.com/kubernetes/ingress-nginx)
 
 Gateway APIはKubernetesクラスター外からKubernetesクラスター内のServiceへのトラフィックを管理するためのものです。
 Ciliumについては[Chapter4d Cilium](./../chapter04d_cilium/)で説明するのでそちらを参照してください。
 MetallbはKind上のクラスターでServiceリソースのType:LoadBalancerを利用するためにインストールします。
-Nginx Controllerはインターネットからのkind上のServiceリソースへ通信をルーティングするためにインストールします。
+Ingress NGINX Controllerはインターネットからのkind上のServiceリソースへ通信をルーティングするためにインストールします。
 各コンポーネントの詳細については上記リンクをご参照ください。
 
 まず、最初にGateway APIのCRDをデプロイします。
@@ -122,7 +122,7 @@ helmfile sync -f hel
 ```
 
 > **Info**  
-> Kubernetesのイングレスコントローラーとして、Nginx Ingress Controllerをインストールしていますが、Cilium自体もKubernetes Ingressリソースをサポートしています。
+> Kubernetesのイングレスコントローラーとして、Ingress NGINX Controllerをインストールしていますが、Cilium自体もKubernetes Ingressリソースをサポートしています。
 > こちらに関しては、[Chapter4d Cilium](./../chapter04d_cilium/)にて説明します。
 
 Metallbに関しては、追加で`IPAddressPool`と`L2Advertisement`をデプロイする必要があります。
@@ -135,6 +135,20 @@ kubectl apply -f manifest/metallb.yaml
 > manifest/metallb.yamlでデプロイしたIPAddressPoolリソースの`spec.addresses`に設定する値は、docker kindネットワークのアドレス帯から選択する必要があります。
 > 今回は`manifest/metallb.yaml`既に設定済みのため意識する必要はありせんが、別環境でMetallbを設定するときには注意してください。
 > 詳細は[Loadbalancer](https://kind.sigs.k8s.io/docs/user/loadbalancer/)を参照してください。
+
+## kubectlコマンドのシェル補完の有効化
+
+tabキーで補完が効くように、kubectlコマンドのシェル補完を有効化します。
+
+```sh
+source <(kubectl completion bash)
+```
+
+次回以降もbash起動時にシェル補完を有効化する場合は下記のコマンドも実行しておきます。
+
+```sh
+echo 'source <(kubectl completion bash)' >>~/.bashrc
+```
 
 ## Kubernetesクラスターへの接続確認
 

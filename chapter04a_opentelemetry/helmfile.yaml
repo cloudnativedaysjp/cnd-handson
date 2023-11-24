@@ -11,18 +11,12 @@ releases:
     namespace: cert-manager
     chart: jetstack/cert-manager
     version: 1.13.2
-    set:
-    - name: installCRDs
-      value: true
     values:
       - cert-manager-values.yaml
   - name: opentelemetry-operator
     namespace: monitoring
     chart: open-telemetry/opentelemetry-operator
     version: 0.41.0
-    set:
-    - name: installCRDs
-      value: true
     disableValidation: true
     values:
       - opentelemetry-operator-values.yaml
@@ -30,9 +24,6 @@ releases:
     namespace: jaeger
     chart: jaegertracing/jaeger-operator
     version: 2.49.0
-    set:
-    - name: installCRDs
-      value: true
     disableValidation: true
     values:
       - jaeger-operator-values.yaml
