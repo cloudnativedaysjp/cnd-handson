@@ -251,7 +251,7 @@ values.yamlに記載した認証情報でログインできなかった場合は
 以下のコマンドを実行してパスワードを確認し、ログインしてください。
 
 ```bash
-kubectl get secrets -n prometheus kube-prometheus-stack-grafana -o json | jq -r .data[\"admin-password\"] | base64 -d
+kubectl get secrets -n prometheus kube-prometheus-stack-grafana -o json | jq -r .data[\"admin-password\"] | base64 -d; echo
 ```
 
 ## 実践: Prometheus Web UIを触ってみよう
