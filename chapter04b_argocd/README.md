@@ -243,8 +243,8 @@ GENERAL
 ブラウザで
 helm.argocd.example.com
 アクセスして確認してみてください。Helmを使ってデプロイが出来てる事が確認できます。
-## Argo CDのクリーンアップ
-### 作成したデモアプリを削除
+
+## 作成したデモアプリを削除
 各アプリのDELETEをクリックします
 
 Applications画面の場合は、一番右下の端に、
@@ -263,12 +263,7 @@ namespaceの削除を行います。
 ```
 kubectl delete namespace argocd-demo argocd-kustomize-dev argocd-kustomize-prd argocd-helm
 ```
-### Argo CDを削除
-chapter05b_argo-rolloutsをする場合は削除する必要はありません。
-```
-helmfile destroy -f  helm/helmfile.yaml
-kubectl delete namespace argo-cd
-```
+
 
 
 
