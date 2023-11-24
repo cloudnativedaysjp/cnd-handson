@@ -73,7 +73,7 @@ Grafanaでは手作業でDashboardを作成する以外に、
 まずは <http://grafana.example.com/dashboards> にアクセスし、 `New` ボタンのプルダウンメニューから `New folder` をクリックし、
 `ingress-nginx` というフォルダ名で作成します。
 
-![image](./images/dashboards.png)
+![image](./image/dashboards.png)
 
 次に、<http://grafana.example.com/dashboards> にもう一度アクセスし、 `New` ボタンのプルダウンメニューから `Import` をクリックします。
 
@@ -87,11 +87,11 @@ Grafana画面で `Upload dashboard JSON file` ボタンをクリックして、
 最後に、以下のような画面に遷移するので、
 スクリーンショットのように設定し、 `Import` ボタンをクリックします。
 
-![image](./images/import-dashboard.png)
+![image](./image/import-dashboard.png)
 
 インポートに成功すると、以下のようなダッシュボードが表示されるはずです。
 
-![image](./images/ingress-nginx.png)
+![image](./image/ingress-nginx.png)
 
 ## Datasourceについて
 
@@ -123,15 +123,15 @@ DashboardやGrafana Alertingでは、Dashboard Panelやアラートの内容文�
 Grafana側では <http://grafana.example.com/alerting/notifications> にアクセスして、
 右側の `Add contact point` ボタンをクリックします。
 
-![image](./images/notifications.png)
+![image](./image/notifications.png)
 
 画面が遷移したら、以下のような設定を入力して、 `Test` ボタンをクリックしてテストアラートを発行します。
 
-![image](./images/create-contact-point.png)
+![image](./image/create-contact-point.png)
 
 成功すると、以下のようなアラートが発砲されるはずです。
 
-![image](./images/sample-alert1.png)
+![image](./image/sample-alert1.png)
 
 テストアラートと異なり、実際のアラートルールを設定する場合はアラート発砲のトリガーを記述することになりますが、
 DatasourceがPrometheusの場合はPromQLを利用することができます。
