@@ -8,6 +8,9 @@ CILIUM_CLI_VERSION=v0.15.7
 HELM_VERSION="v3.12.3"
 HELMFILE_VERSION="0.156.0"
 
+sudo apt update -y && \
+sudo apt install -y jq
+
 # install kind
 #  see: https://kind.sigs.k8s.io/docs/user/quick-start/#installation
 curl -Lo ./kind https://kind.sigs.k8s.io/dl/${KIND_VERSION}/kind-linux-amd64
@@ -43,5 +46,15 @@ helm plugin install https://github.com/databus23/helm-diff
 #  see: https://github.com/helmfile/helmfile#installation
 wget "https://github.com/helmfile/helmfile/releases/download/v${HELMFILE_VERSION}/helmfile_$(echo ${HELMFILE_VERSION})_linux_amd64.tar.gz"
 tar -zxvf "helmfile_$(echo ${HELMFILE_VERSION})_linux_amd64.tar.gz"
-
 sudo mv helmfile /usr/local/bin/helmfile
+rm "helmfile_$(echo ${HELMFILE_VERSION})_linux_amd64.tar.gz"
+
+# install Docker
+sudo apt-get update
+sudo apt-get install -y curl vim git unzip gnupg lsb-release ca-certificates dstat
+curl -fsSL https://download.docker.com/linux/ubuntu/gpg | sudo gpg --dearmor -o /usr/share/keyrings/docker-archive-keyring.gpg
+echo "deb [arch=$(dpkg --print-architecture) signed-by=/usr/share/keyrings/docker-archive-keyring.gpg] https://download.docker.com/linux/ubuntu $(lsb_release -cs) stable" | sudo tee /etc/apt/sources.list.d/docker.list > /dev/null
+sudo apt-get update
+sudo apt-get install -y docker-ce docker-ce-cli containerd.io
+sudo systemctl enable --now docker
+sudo usermod -aG docker ubuntu
