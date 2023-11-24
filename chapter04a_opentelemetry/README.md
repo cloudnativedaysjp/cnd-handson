@@ -543,6 +543,7 @@ apiVersion: opentelemetry.io/v1alpha1
 kind: Instrumentation
 metadata:
   name: go-instrumentation
+  namespace: handson
 spec:
   exporter:
     endpoint: http://jaeger-collector.jaeger:4317
@@ -565,7 +566,9 @@ kubectl apply -f manifests/go-instrumentation.yaml
 ```yaml
 apiVersion: apps/v1
 kind: Deployment
-metadata: {...}
+metadata:
+  name: handson-blue
+  namespace: handson
 spec:
   template:
     metadata:
@@ -587,6 +590,7 @@ sample-app-blue-5fb8dc75fd-7cvxg   3/3     Ready    0          30s
 
 
 次に、実際にJaeger上からメトリクスを確認してみましょう。
+まず、`http://app.example.com/` に接続し、一定量のトレースデータを出力します。
 `https://jaeger.example.com/explore` に接続し、Service名に`sample-app-blue`を指定してみると、トレースデータが確認できます。
 今回は複雑なマイクロサービスではないため、シンプルな表示になっていますが、サービス間の通信がある場合はもう少し複雑なトレースデータを確認することができます。
 
