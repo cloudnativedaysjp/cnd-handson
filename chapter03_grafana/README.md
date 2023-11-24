@@ -68,7 +68,6 @@ Grafanaでは手作業でDashboardを作成する以外に、
 - <https://grafana.com/grafana/dashboards/16611-cilium-metrics/>
 - <https://grafana.com/grafana/dashboards/13539-hubble/>
 
-<http://grafana.example.com/dashboards>
 
 まずは <http://grafana.example.com/dashboards> にアクセスし、 `New` ボタンのプルダウンメニューから `New folder` をクリックし、
 `ingress-nginx` というフォルダ名で作成します。
