@@ -133,36 +133,7 @@ kube-prometheus-stackでは以下のようなコンポーネントをまとめ�
 - Node Exporter
 - Prometheus Operator
 
-導入のために、以下のようなhelmfileを用意します。
-
-```yaml
-# helmfile.yaml
-
-repositories:
-  - name: prometheus-community
-    url: https://prometheus-community.github.io/helm-charts
-
-releases:
-  - name: kube-prometheus-stack
-    namespace: prometheus
-    createNamespace: true
-    chart: prometheus-community/kube-prometheus-stack
-    version: 50.3.1
-    values:
-      - values.yaml
-```
-
-また、values.yamlを以下のように指定します。
-
-```yaml
-# values.yaml
-
-grafana:
-  adminUser: admin
-  adminPassword: handson_saiko!
-```
-
-これらのファイルをもとに、 `helmfile sync` を実行してreleaseをインストールしましょう。
+用意されているhelmfile.yamlおよびvalues.yamlを利用して、 `helmfile sync` を実行しreleaseをインストールしましょう。
 
 ```bash
 helmfile sync
@@ -266,6 +237,7 @@ PromQLの詳細な仕様についてはこちらを御覧ください。
 > https://prometheus.io/docs/prometheus/latest/querying/basics/
 
 <http://prometheus.example.com/graph> にアクセスして、PromQL入力欄に `go_goroutines` と入力してみます。
+その後、 `Graph` のタブをクリックすると、以下のようなグラフが見れるはずです。
 
 ![image](./image/go_goroutines.png)
 
@@ -329,16 +301,6 @@ kubectl apply -f manifests/ingress-nginx-servicemonitor.yaml
 ## PromQLチートシート
 
 TODO
-
-## kube-prometheus-stackのクリーンアップ
-
-ハンズオン中では実行しませんが、
-kube-prometheus-stackおよびIngressのクリーンアップをおこなう場合は以下のコマンドを実行してください。
-
-```zsh
-kubectl delete -f ingress.yaml
-helmfile destroy
-```
 
 ## 参考文献
 

@@ -83,8 +83,12 @@ Ingress NGINX Controllerはgrafana.comではなくGitHubでダッシュボード
 Grafana画面で `Upload dashboard JSON file` ボタンをクリックして、
 先程ダウンロードしたJSONファイルをアップロードします。
 
-最後に、以下のような画面に遷移するので、
-スクリーンショットのように設定し、 `Import` ボタンをクリックします。
+最後に、以下のような画面に遷移するので、次のように設定し、 `Import` をクリックします。
+
+
+- `Name` ... `NGINX Ingress controller`
+- `Folder` ... `ingress-nginx`
+- `Datasource` ... `Prometheus`
 
 ![image](./image/import-dashboard.png)
 
@@ -116,8 +120,21 @@ DashboardやGrafana Alertingでは、Dashboard Panelやアラートの内容文�
 実際にGrafana Alertingを試してみます。
 今回は、Slack Workspaceの特定channelにアラートを流してみましょう。
 
+### Contact Pointの追加
+
+**2023/12/8に実施されているハンズオンに参加される方はこのステップは不要です。**
+
 まずは、Slackに通知するためにWebhook URLを発行します。
-<https://api.slack.com/start/quickstart> にアクセスして、 ドキュメントの通りにすすめていけばWebhook URLを取得できます。
+<https://api.slack.com/start/quickstart> にアクセスして、 ドキュメント通りにIncoming Webhook URLを取得します。
+
+1. `1. Creating an app` にある `Go to Your Apps` をクリックする
+2. `Create New App` をクリックし、 `From scratch` を選択する
+3. アプリ名を `cndt2023-sample-grafana-alert`, ワークスペースを設定し `Create App` をクリックする
+4. `Add features and functionality` にある `Incoming Webhooks` をクリックする
+5. `Activate Incoming Webhooks` を有効にする
+6. `Add New Webhook to Workspace` をクリックする
+7. アラートを流すチャンネルを選択し、 `Allow` をクリックする
+8. `Webhook URL` をコピーする
 
 Grafana側では <http://grafana.example.com/alerting/notifications> にアクセスして、
 右側の `Add contact point` ボタンをクリックします。
@@ -126,11 +143,45 @@ Grafana側では <http://grafana.example.com/alerting/notifications> にアク�
 
 画面が遷移したら、以下のような設定を入力して、 `Test` ボタンをクリックしてテストアラートを発行します。
 
+
+- `Name` ... `sample-grafana-alerting`
+- `Integration` ... `Slack`
+- `Webhook URL` ... 先程コピーしたSlack AppのWebhook URL
+
 ![image](./image/create-contact-point.png)
 
 成功すると、以下のようなアラートが発砲されるはずです。
 
 ![image](./image/sample-alert1.png)
 
-テストアラートと異なり、実際のアラートルールを設定する場合はアラート発砲のトリガーを記述することになりますが、
-DatasourceがPrometheusの場合はPromQLを利用することができます。
+
+無事テストが成功したら、 `Save contact point` をクリックして保存します。
+
+### Notification Policyの追加
+
+Contact Pointを追加しただけでは新規にアラートを追加しても、先程のContact Pointに向けて発砲できません。
+それを実現するために、Notification Policyを作成する必要があります。
+
+<http://grafana.example.com/alerting/routes> にアクセスし、 `New nested policy` のボタンをクリックします。
+以下の設定を入力し、 `Save policy` ボタンをクリックします。
+
+- `Matching Labels` ... `alert-route = slack`
+- `Contact point` ... `sample-grafana-alerting`
+
+### サンプルアラートの作成
+
+最後に、具体的なアラートの作成を行います。
+<http://grafana.example.com/alerting/list> にアクセスし、 `New alert rule` のボタンをクリックします。
+以下の内容で設定し、右上の `Save rule` ボタンをクリックします。
+
+- `Rule name` ... `SampleGrafanaAlert1`
+- `Metric` ... `nginx_ingress_controller_requests`
+- `Label filter` ... `host = app.example.com`
+- `Operation` ... 以下を順に設定
+  - `Range Functions > Avg over time` をクリックし、 `Range` を `1m` に設定
+  - `Binary Operations > Less than` をクリックし、 `Value` を `10` に設定
+- `Summary` ... `app.example.com has not received requests over 10 times`
+- `Description` ... `app.example.com has not received {{ $labels.method }} requests 10 times`
+- `Custom Labels` ... `alert-route = slack`
+
+5分程度経過すると、アラートが発砲されると思います。

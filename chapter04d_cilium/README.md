@@ -65,10 +65,12 @@ kubectl get -n kube-system -l app.kubernetes.io/part-of=cilium ds,deploy
 
 ```shell
 NAME                    DESIRED   CURRENT   READY   UP-TO-DATE   AVAILABLE   NODE SELECTOR            AGE
-daemonset.apps/cilium   3         3         3       3            3           kubernetes.io/os=linux   11m
+daemonset.apps/cilium   3         3         3       3            3           kubernetes.io/os=linux   113m
 
 NAME                              READY   UP-TO-DATE   AVAILABLE   AGE
-deployment.apps/cilium-operator   2/2     2            2           11m
+deployment.apps/cilium-operator   2/2     2            2           113m
+deployment.apps/hubble-relay      1/1     1            1           113m
+deployment.apps/hubble-ui         1/1     1            1           113m
 ```
 
 次に、Cilium AgentにインストールされるClient CLIのバージョンを確認します。
@@ -233,7 +235,7 @@ Gateway APIの詳細は[Kubernetes Gateway API](https://gateway-api.sigs.k8s.io/
 また、yellowイメージとblueイメージのそれぞれにアクセスするためのServiceリソースを作成します。
 
 ```shell
-kubectl apply -Rf ../chapter-1_cluster-create/manifest/app -n handson -l color=yellow
+kubectl apply -Rf ../chapter01_cluster-create/manifest/app -n handson -l color=yellow
 kubectl apply -f manifest/service.yaml
 ```
 

@@ -70,7 +70,7 @@ GitHubのリポジトリの登録やPushはforkした自身のリポジトリを
 ### Argo CDのインストール
 helmファイルを利用してArgo CDをインストールします。
 ```
-helmfile apply -f helm/helmfile.yaml
+helmfile sync  -f helm/helmfile.yaml
 ```
 作成されるリソースは下記の通りです。
 ```
@@ -101,7 +101,7 @@ http://argocd.example.com/
 へアクセスします。下記のページにアクセス出来るか確認して下さい。
 * ユーザ名: admin
 * パスワード: 以下のコマンドをサーバ上で実行した値
-    * `kubectl -n argo-cd get secret argocd-initial-admin-secret -o jsonpath="{.data.password}" | base64 -d`
+    * `kubectl -n argo-cd get secret argocd-initial-admin-secret -o jsonpath="{.data.password}" | base64 -d` ; echo
 
 ![webui](./image/setup/access-webui.png)
 ### レポジトリの登録
@@ -243,8 +243,8 @@ GENERAL
 ブラウザで
 helm.argocd.example.com
 アクセスして確認してみてください。Helmを使ってデプロイが出来てる事が確認できます。
-## Argo CDのクリーンアップ
-### 作成したデモアプリを削除
+
+## 作成したデモアプリを削除
 各アプリのDELETEをクリックします
 
 Applications画面の場合は、一番右下の端に、
@@ -263,12 +263,7 @@ namespaceの削除を行います。
 ```
 kubectl delete namespace argocd-demo argocd-kustomize-dev argocd-kustomize-prd argocd-helm
 ```
-### Argo CDを削除
-chapter05b_argo-rolloutsをする場合は削除する必要はありません。
-```
-helmfile destroy -f  helm/helmfile.yaml
-kubectl delete namespace argo-cd
-```
+
 
 
 

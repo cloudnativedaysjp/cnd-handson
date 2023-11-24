@@ -52,8 +52,9 @@ Create fork をクリックします
 
 GitHubのリポジトリの登録やPushはforkした自身のリポジトリを利用して下さい
 
+
 ### Argo CDのセットアップ
-[chapter04ｂargocd](https://github.com/cloudnativedaysjp/cndt2023-handson/tree/main/chapter04b_argocd#argo-cd%E3%81%AE%E3%82%A4%E3%83%B3%E3%82%B9%E3%83%88%E3%83%BC%E3%83%AB)を参照してWebUIの確認とレポジトリの登録まで行って下さい。
+[chapter04ｂargocd](https://github.com/cloudnativedaysjp/cndt2023-handson/tree/main/chapter04b_argocd#argo-cd%E3%81%AE%E3%82%A4%E3%83%B3%E3%82%B9%E3%83%88%E3%83%BC%E3%83%AB)を参照してWebUIの確認とレポジトリのfork～登録まで行って下さい。
 
 今回のchapterでは更にArgo CDのプラグインである、rollout-extensionをインストールしてArgoCD上でrolloutの操作結果が確認できるようにします。
 ```sh
@@ -64,7 +65,7 @@ kubectl apply -n argo-cd \
 ### Argo Rolloutsのインストール
 helmファイルを利用してArgo CDをインストールします。
 ```sh
-helmfile apply -f ./helm/helmfile.yaml
+helmfile sync -f ./helm/helmfile.yaml
 ```
 作成されるリソースは下記の通りです。
 ```sh
@@ -138,7 +139,7 @@ Canary Releaseは、新旧混在状態を制御し、本番環境において限
     SYNC OPTIONS: AUTO CREATE NAMESPACE [v]
     SOURCE
       Repository URL: https://github.com/自身のアカウント名/cndt2023-handson
-      Revision: new_branch_name
+      Revision: main
       Path: chapter05b_argo-rollouts/app/blue-green
     DESTINATION
       Cluster URL: https://kubernetes.default.svc
@@ -155,12 +156,14 @@ Canary Releaseは、新旧混在状態を制御し、本番環境において限
 
 ここからは、実際にBlue/Green Deploymentyを行いその様子を見ていこうと思います。
 
- `app/blue-green/rollout.yaml`の編集を行います。
- imageのtagをblueから`green`に、変更し、差分をremoteのnew_branch_nameブランチ（argocdのappを作成する際に指定したブランチ）に取り込みます。
-
-  ```yaml
-  image: argoproj/rollouts-demo:green
-  ```
+ `app/blue-green/rollout.yaml`の編集を行います。 imageのtagをblueからgreenに変更します。
+```
+image: argoproj/rollouts-demo:green
+```
+差分をforkしたmainブランチ（appを作成する際に指定したブランチ）に取り込みます。
+```
+git push origin main
+```
 
  ArgoCDはデフォルトでは3分に一回の頻度でブランチを確認し、差分を検出しています。
  3分待てない場合には、ページ上部にある [REFRESH]をクリックします。下記のようにrolloutにおいて差分が検出されます。（黄色で表示されているOutOfSyncが差分があることを示しています）
@@ -214,7 +217,7 @@ Applications画面の場合は、一番右下の端に、
     SYNC OPTIONS: AUTO CREATE NAMESPACE [v]
     SOURCE
       Repository URL: https://github.com/自身のアカウント名/cndt2023-handson
-      Revision: new_branch_name
+      Revision: main
       Path: chapter05b_argo-rollouts/app/canary
     DESTINATION
       Cluster URL: https://kubernetes.default.svc
@@ -231,12 +234,14 @@ Applications画面の場合は、一番右下の端に、
 
 ここからは、実際に、Canary Releaseを行いその様子を見ていこうと思います。
 
- `app/canary/rollout.yaml`の編集を行います。
- imageのtagをblueから`green`に、変更し、差分をremoteのnew_branch_nameブランチ（argocdのappを作成する際に指定したブランチ）に取り込みます
-
-  ```yaml
-  image: argoproj/rollouts-demo:green 
-  ```
+ `app/canary/rollout.yaml`の編集を行います。imageのtagをblueからgreenに変更します。
+```
+image: argoproj/rollouts-demo:green
+```
+差分をforkしたmainブランチ（appを作成する際に指定したブランチ）に取り込みます。
+```
+git push origin main
+```
 
  ArgoCDはデフォルトでは3分に一回の頻度でブランチを確認し、差分を検出しています。3分待てない場合には、ページ上部にある [REFRESH]をクリックします。下記のようにrolloutにおいて差分が検出されます。（黄色で表示されているOutOfSyncが差分があることを示しています）
 ちなみにAppの設定において、SYNC POLICYをManualでなくAutoにしていた場合には、ここでOutOfSyncを検知すると自動でArgoCDがSyncを実行します。
@@ -302,7 +307,7 @@ Applicationsの画面において + NEW APPをクリックします
     SYNC OPTIONS: AUTO CREATE NAMESPACE [v]
     SOURCE
       Repository URL: https://github.com/自身のアカウント名/cndt2023-handson
-      Revision: new_branch_name
+      Revision: main
       Path: chapter05b_argo-rollouts/analysis/job
     DESTINATION
       Cluster URL: https://kubernetes.default.svc
@@ -314,9 +319,15 @@ Applicationsの画面において + NEW APPをクリックします
 
 ページ上部にある SYNC をクリックします
 ![create2](./image/analysis/Job-sync.png)
-analysis/job/rollout.yamlの編集を行います。imageのtagをblueからgreenに、変更し、差分をnew_branch_nameのブランチ（argocdのappを作成する際に指定したブランチ）に取り込みます。
+
+analysis/job/rollout.yamlの編集を行います。 imageのtagをblueからgreenに変更します。
+
 ```yaml
 image: argoproj/rollouts-demo:green
+```
+差分をforkしたmainブランチ（appを作成する際に指定したブランチ）に取り込みます。
+```
+git push origin main
 ```
 ArgoCDはデフォルトでは3分に一回の頻度でブランチを確認し、差分を検出しています。3分待てない場合には、ページ上部にある [REFRESH]をクリックします。下記のようにrolloutにおいて差分が検出されます。（黄色で表示されているOutOfSyncが差分があることを示しています）
 ちなみにAppの設定において、SYNC POLICYをManualでなくAutoにしていた場合には、ここでOutOfSyncを検知すると自動でArgoCDがSyncを実行します。
@@ -356,7 +367,7 @@ Applicationsの画面において + NEW APPをクリックします
     SYNC OPTIONS: AUTO CREATE NAMESPACE [v]
     SOURCE
       Repository URL: https://github.com/自身のアカウント名/cndt2023-handson
-      Revision: new_branch_name
+      Revision: main
       Path: chapter05b_argo-rollouts/analysis/web
     DESTINATION
       Cluster URL: https://kubernetes.default.svc
@@ -368,9 +379,16 @@ Applicationsの画面において + NEW APPをクリックします
 
 ページ上部にある SYNC をクリックします
 ![create](./image/analysis/web-sync.png)
-analysis/web/rollout.yamlの編集を行います。imageのtagをblueからgreenに、変更し、差分をremoteのnew_branch_nameブランチ（argocdのappを作成する際に指定したブランチ）に取り込みます。
+
+
+analysis/web/rollout.yamlの編集を行います。 imageのtagをblueからgreenに変更します。
+
 ```yaml
 image: argoproj/rollouts-demo:green
+```
+差分をforkしたmainブランチ（appを作成する際に指定したブランチ）に取り込みます。
+```
+git push origin main
 ```
 ArgoCDはデフォルトでは3分に一回の頻度でブランチを確認し、差分を検出しています。3分待てない場合には、ページ上部にある [REFRESH]をクリックします。下記のようにrolloutにおいて差分が検出されます。（黄色で表示されているOutOfSyncが差分があることを示しています）
 ちなみにAppの設定において、SYNC POLICYをManualでなくAutoにしていた場合には、ここでOutOfSyncを検知すると自動でArgoCDがSyncを実行します。
@@ -408,7 +426,7 @@ Applicationsの画面において + NEW APPをクリックします
     SYNC OPTIONS: AUTO CREATE NAMESPACE [v]
     SOURCE
       Repository URL: https://github.com/自身のアカウント名/cndt2023-handson
-      Revision: new_branch_name
+      Revision: main
       Path: chapter05b_argo-rollouts/analysis/prometheus
     DESTINATION
       Cluster URL: https://kubernetes.default.svc
@@ -420,15 +438,24 @@ Applicationsの画面において + NEW APPをクリックします
 
 ページ上部にある SYNC をクリックします
 ![create](./image/analysis/prometheus-sync.png)
-analysis/prometheus/rollout.yamlの編集を行います。imageのtagをblueからgreenに、変更し、差分をremoteのnew_branch_nameブランチ（argocdのappを作成する際に指定したブランチ）に取り込みます。
+
+
+analysis/prometheus/rollout.yamlの編集を行います。 imageのtagをblueからgreenに変更します。
+
 ```yaml
 image: argoproj/rollouts-demo:green
+```
+差分をforkしたmainブランチ（appを作成する際に指定したブランチ）に取り込みます。
+```
+git push origin main
 ```
 ArgoCDはデフォルトでは3分に一回の頻度でブランチを確認し、差分を検出しています。3分待てない場合には、ページ上部にある [REFRESH]をクリックします。下記のようにrolloutにおいて差分が検出されます。（黄色で表示されているOutOfSyncが差分があることを示しています）
 ちなみにAppの設定において、SYNC POLICYをManualでなくAutoにしていた場合には、ここでOutOfSyncを検知すると自動でArgoCDがSyncを実行します。
 ![sync](./image/analysis/prometheus-refresh.png)
 rolloutを手動でSyncすると、アプリケーションのpodと新たにAnalysisrunが生成されます。
-![update](./image/analysis/prometheus-updat1e.png)
+
+![update](./image/analysis/prometheus-update.png)
+
 Analysisrunの詳細をクリックし、Live Manifestを確認するとどういったレスポンスが帰ってきて、成功したのか失敗したのか確認できます。
 ![log](image/analysis/prometheus-log.png)
 Analysisrunが成功すると、自動的にCanary Releseが進んでいくのが分かります。
