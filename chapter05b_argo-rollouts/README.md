@@ -201,9 +201,16 @@ Canary Releaseは、新旧混在状態を制御し、本番環境において限
  このように、ArgoRolloutのBlue/Green Deploymentにおいては、一旦greenに当たるサービスが、previewServiceとして登録され、プロモートすることで、activeServiceに昇格するような動きをして、Blue/Green Deploymentを実現します。  
  
  
- rollout-extensionを使用した場合、rolloutを選択しmoreのタブが出現します。moreのタブを選ぶとこのようにblueとgreenがどうなっているか一目で確認できるようになります。
+rollout-extensionを使用した場合、rolloutを選択しmoreのタブが出現します。moreのタブを選ぶとこのようにblueとgreenがどうなっているか一目で確認できるようになります。
   ![rollout-extension](imgs/BG/rollout-extension.png)
 
+最後にアプリケーションの削除を行います。 Deleteをクリック
+
+Applications画面の場合
+![delete-app]()
+
+詳細表示画面の場合 
+![delete-discribe]()
 ### Canary Release
  Applicationsの画面において + NEW APPをクリック![Applications](./imgs/analysis/application.png)
  上の画面上で各項目を次のように設定します。
