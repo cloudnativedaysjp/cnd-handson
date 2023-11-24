@@ -101,7 +101,7 @@ http://argocd.example.com/
 へアクセスします。下記のページにアクセス出来るか確認して下さい。
 * ユーザ名: admin
 * パスワード: 以下のコマンドをサーバ上で実行した値
-    * `kubectl -n argo-cd get secret argocd-initial-admin-secret -o jsonpath="{.data.password}" | base64 -d`
+    * `kubectl -n argo-cd get secret argocd-initial-admin-secret -o jsonpath="{.data.password}" | base64 -d` ; echo
 
 ![webui](./image/setup/access-webui.png)
 ### レポジトリの登録
