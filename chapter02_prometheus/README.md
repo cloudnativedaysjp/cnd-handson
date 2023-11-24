@@ -191,8 +191,7 @@ prometheus-kube-prometheus-stack-prometheus-0               2/2     Running   0 
 
 続いて、PrometheusやGrafana等の各UIをIngressで公開していきます。
 すでにIngress NGINX Controllerがデプロイされていると思うので、以下のような設定でIngressをデプロイして公開します。
-ここで、仮のドメインとして `example.com` を使用します。
-このドメインには、 `/etc/hosts` (Windowsの場合 `C:\Windows\System32\drivers\etc\hosts`) を編集してアクセスします。
+す。
 
 ```yaml
 ---
@@ -245,7 +244,7 @@ kubectl apply -f ingress.yaml
 ```
 
 実際にそれぞれのUIが公開されているか確認してみましょう。
-hostsファイルを書き換えた状態で、ブラウザで `prometheus.example.com` と `grafana.example.com` にアクセスしてみてください。
+ブラウザで `prometheus.example.com` と `grafana.example.com` にアクセスしてみてください。
 
 Grafanaではユーザログインが必要ですが、先程設定したvalues.yamlの内容でログインできます( `username: admin, password: handson_saiko!` )
 values.yamlに記載した認証情報でログインできなかった場合は、

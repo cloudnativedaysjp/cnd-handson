@@ -54,26 +54,6 @@ HelmやKustomizeなどのコードから生成されたマニフェストをキ�
 #### Sync
 Kubernetes clusterをGitの状態に同期させるため、マニュフェストの反映（デプロイ）をします。
 
-## セットアップ
-### hostsファイルの準備(ローカル環境)
-今回デプロイするWEBサービスのドメインは登録していないため、WEBサービスを利用する際にはハンズオンで利用する端末のhostsファイルを書き込む必要があります。
-
-hostsファイルのpathはOSによって様々なので環境によって変わりますが主要なpathは下記の通りです
-
-MacやLinuxの場合
-```/etc/hosts```
-
-Windowsの場合
-```C:\Windows\System32\drivers\etc\hosts```
-
-この章で利用するドメインは下記の通りになります。
-
-* argocd.example.com
-* app.argocd.example.com
-* dev.kustomize.argocd.example.com
-* prd.kustomize.argocd.example.com
-* helm.argocd.example.com
-
 ### Gitリポジトリの準備(ローカル環境)
 Argo CDを利用する上では、GitHubへのPush等の変更が必要不可欠になります。そのため、このハンズオンのリポジトリをforkして操作する為の準備をします。
 
