@@ -162,7 +162,7 @@ To further debug and diagnose cluster problems, use 'kubectl cluster-info dump'.
 ## アプリケーションのデプロイ
 次章以降で使用する動作確認用アプリケーションとして、[Argo Rollouts Demo Application](https://github.com/argoproj/rollouts-demo)をデプロイします。
 
-```sh
+```shell
 kubectl create namespace handson
 kubectl apply -f manifest/app/serviceaccount.yaml -n handson -l color=blue
 kubectl apply -f manifest/app/deployment.yaml -n handson -l color=blue
@@ -172,10 +172,10 @@ kubectl apply -f manifest/app/ingress.yaml -n handson
 
 作成されるリソースは下記のとおりです。
 
-```sh
+```shell
 kubectl get services,deployments,ingresses -n handson
 ```
-```sh
+```shell
 # 実行結果
 NAME              TYPE        CLUSTER-IP     EXTERNAL-IP   PORT(S)    AGE
 service/handson   ClusterIP   10.96.82.202   <none>        8080/TCP   3m33s
