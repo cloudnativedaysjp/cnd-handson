@@ -41,7 +41,7 @@ HelmはKubernetes用のパッケージマネージャーであり、Helmfileを�
 >
 > また、設定の永続化を行うためには、下記のコマンドを実行する必要があります。
 > ```shell
-> cat << EOF >> /etc/sysctl.conf
+> cat << EOF | sudo tee /etc/sysctl.conf >/dev/null
 > fs.inotify.max_user_watches = 524288
 > fs.inotify.max_user_instances = 512
 > EOF

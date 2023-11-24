@@ -85,6 +85,7 @@ Grafana画面で `Upload dashboard JSON file` ボタンをクリックして、
 
 最後に、以下のような画面に遷移するので、次のように設定し、 `Import` をクリックします。
 
+
 - `Name` ... `NGINX Ingress controller`
 - `Folder` ... `ingress-nginx`
 - `Datasource` ... `Prometheus`
@@ -142,6 +143,7 @@ Grafana側では <http://grafana.example.com/alerting/notifications> にアク�
 
 画面が遷移したら、以下のような設定を入力して、 `Test` ボタンをクリックしてテストアラートを発行します。
 
+
 - `Name` ... `sample-grafana-alerting`
 - `Integration` ... `Slack`
 - `Webhook URL` ... 先程コピーしたSlack AppのWebhook URL
@@ -151,6 +153,7 @@ Grafana側では <http://grafana.example.com/alerting/notifications> にアク�
 成功すると、以下のようなアラートが発砲されるはずです。
 
 ![image](./image/sample-alert1.png)
+
 
 無事テストが成功したら、 `Save contact point` をクリックして保存します。
 

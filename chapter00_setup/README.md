@@ -2,19 +2,6 @@
 
 **12/8に実施されているハンズオンに参加される方はこのステップは不要です。**
 
-## VM のセットアップ
-
-演習で利用するVMに最低限のパッケージをインストールします。
-
-```
-sudo apt-get update
-sudo apt-get install -y curl vim git unzip gnupg lsb-release ca-certificates dstat
-curl -fsSL https://download.docker.com/linux/ubuntu/gpg | sudo gpg --dearmor -o /usr/share/keyrings/docker-archive-keyring.gpg
-echo "deb [arch=$(dpkg --print-architecture) signed-by=/usr/share/keyrings/docker-archive-keyring.gpg] https://download.docker.com/linux/ubuntu $(lsb_release -cs) stable" | sudo tee /etc/apt/sources.list.d/docker.list > /dev/null
-sudo apt-get update
-sudo apt-get install -y docker-ce docker-ce-cli containerd.io
-```
-
 ## 名前解決の設定
 
 今回の演習では、ローカル端末のhostsファイルを利用して名前解決を行います。
