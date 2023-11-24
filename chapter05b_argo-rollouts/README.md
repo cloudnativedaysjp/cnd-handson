@@ -57,7 +57,7 @@ Windowsの場合
 ### Gitリポジトリの準備(ローカル環境)
 Argo CDを利用する上では、GitHubへのPush等の変更が必要不可欠になります。そのため、このハンズオンのリポジトリをforkして操作する為の準備をします。
 
-[このハンズオン](https://github.com/自身のアカウント名/cndt2023-handson)にアクセスし、forkをクリックします
+[このハンズオン](https://github.com/cloudnativedaysjp/cndt2023-handson)にアクセスし、forkをクリックします
 ![fork1](../chapter04b_argocd/imgs/setup/fork-1.png)
 
 Create fork をクリックします
@@ -69,7 +69,7 @@ Create fork をクリックします
 GitHubのリポジトリの登録やPushはforkした自身のリポジトリを利用して下さい
 
 ### Argo CDのセットアップ
-[chapter04ｂargocd](https://github.com/自身のアカウント名/cndt2023-handson/tree/main/chapter04b_argocd#argo-cd%E3%81%AE%E3%82%A4%E3%83%B3%E3%82%B9%E3%83%88%E3%83%BC%E3%83%AB)を参照してWebUIの確認とレポジトリの登録まで行って下さい。
+[chapter04ｂargocd](https://github.com/cloudnativedaysjp/cndt2023-handson/tree/main/chapter04b_argocd#argo-cd%E3%81%AE%E3%82%A4%E3%83%B3%E3%82%B9%E3%83%88%E3%83%BC%E3%83%AB)を参照してWebUIの確認とレポジトリの登録まで行って下さい。
 
 今回のchapterでは更にArgo CDのプラグインである、rollout-extensionをインストールしてArgoCD上でrolloutの操作結果が確認できるようにします。
 ```sh
@@ -144,7 +144,7 @@ Blue/Green Deploymentでは、新バージョンを事前に用意しネット�
 Canary Releaseは、新旧混在状態を制御し、本番環境において限られたユーザーグループやトラフィックに対して新しいバージョンを段階的に展開するアップデート方法です。
 
 ### Blue/Green Deployment
- Applicationsの画面において + NEW APPをクリック![Applications](./imgs/analysis/application.png)
+ Applicationsの画面において + NEW APPをクリックします![Applications](./imgs/analysis/application.png)
 上の画面上で各項目を次のように設定します。
   ```
   GENERAL
@@ -201,11 +201,12 @@ Canary Releaseは、新旧混在状態を制御し、本番環境において限
  このように、ArgoRolloutのBlue/Green Deploymentにおいては、一旦greenに当たるサービスが、previewServiceとして登録され、プロモートすることで、activeServiceに昇格するような動きをして、Blue/Green Deploymentを実現します。  
  
  
- rollout-extensionを使用した場合、rolloutを選択しmoreのタブが出現します。moreのタブを選ぶとこのようにblueとgreenがどうなっているか一目で確認できるようになります。
+rollout-extensionを使用した場合、rolloutを選択しmoreのタブが出現します。moreのタブを選ぶとこのようにblueとgreenがどうなっているか一目で確認できるようになります。
   ![rollout-extension](imgs/BG/rollout-extension.png)
 
+
 ### Canary Release
- Applicationsの画面において + NEW APPをクリック![Applications](./imgs/analysis/application.png)
+ Applicationsの画面において + NEW APPをクリックします![Applications](./imgs/analysis/application.png)
  上の画面上で各項目を次のように設定します。
   ```
   GENERAL
@@ -250,6 +251,18 @@ Canary Releaseは、新旧混在状態を制御し、本番環境において限
   ![demoapp](imgs/canary/demoapp.png)
  rollout-extensionを使用した場合、rolloutを選択しmoreのタブが出現します。moreのタブを選ぶと、アプリケーションの動作を確認せずとも自動で決められたStepを動いているのが一目で確認できるようになります。
   ![rollout-extension](imgs/canary/extended.png)
+
+最後にアプリケーションの削除を行います。 Deleteをクリックします。
+
+
+Applications画面の場合は、一番右下の端に、
+![delete](../chapter04b_argocd/imgs/demoapp/Delete-1.png)
+
+詳細画面の場合は、右上の2番目にあります。
+![delete](../chapter04b_argocd/imgs/demoapp/Delete-2.png)
+
+削除する際にアプリケーション名の入力があるので「canary」と入力してOKをクリックします。
+![delete](../chapter04b_argocd/imgs/demoapp/Delete-3.png)
 
 
 ## Analysis Metrics
@@ -307,6 +320,19 @@ ArgoCDはデフォルトでは3分に一回の頻度でブランチを確認し�
 rolloutを手動でSyncすると、アプリケーションのpodと新たにAnalysisrunが生成され、jobが発行されたのが確認できます。
 ![update](./imgs/analysis/job-update.png)
 jobが成功すると、自動的にBlue/Green Deployが進んでいくのが分かります。
+
+最後にアプリケーションの削除を行います。 Deleteをクリックします
+
+
+Applications画面の場合は、一番右下の端に、
+![delete](../chapter04b_argocd/imgs/demoapp/Delete-1.png)
+
+詳細画面の場合は、右上の2番目にあります。
+![delete](../chapter04b_argocd/imgs/demoapp/Delete-2.png)
+
+削除する際にアプリケーション名の入力があるので「job」と入力してOKをクリックします。
+![delete](../chapter04b_argocd/imgs/demoapp/Delete-3.png)
+
 ### Web metrics (Blue/Green Deploy)
 Analysis実行時にリクエストを送信し、レスポンスの内容にてよってPromoteするかどうかを判断します
   * Json形式のレスポンスの場合Jsonの中身を見て判断します
@@ -347,6 +373,17 @@ rolloutを手動でSyncすると、アプリケーションのpodと新たにAna
 Analysisrunの詳細をクリックし、Live Manifestを確認するとどういったレスポンスが帰ってきて、成功したのか失敗したのか確認できます。
 ![log](imgs/analysis/web-log.png)
 正常なレスポンスが到達すると、自動的にBlue/Green Deployが進んでいくのが分かります。
+
+最後にアプリケーションの削除を行います。 Deleteをクリックします。
+
+Applications画面の場合は、一番右下の端に、
+![delete](../chapter04b_argocd/imgs/demoapp/Delete-1.png)
+
+詳細画面の場合は、右上の2番目にあります。
+![delete](../chapter04b_argocd/imgs/demoapp/Delete-2.png)
+
+削除する際にアプリケーション名の入力があるので「web」と入力してOKをクリックします。
+![delete](../chapter04b_argocd/imgs/demoapp/Delete-3.png)
 ### Prometheus metrics (Canary Release)
 Analysis実行時にPrometheusにPromQLを送信し、その結果によってPromoteするかどうかを判断します
 
@@ -385,17 +422,28 @@ rolloutを手動でSyncすると、アプリケーションのpodと新たにAna
 Analysisrunの詳細をクリックし、Live Manifestを確認するとどういったレスポンスが帰ってきて、成功したのか失敗したのか確認できます。
 ![log](imgs/analysis/prometheus-log.png)
 Analysisrunが成功すると、自動的にCanary Releseが進んでいくのが分かります。
+最後にアプリケーションの削除を行います。 Deleteをクリックします
+
+
+Applications画面の場合は、一番右下の端に、
+![delete](../chapter04b_argocd/imgs/demoapp/Delete-1.png)
+
+詳細画面の場合は、右上の2番目にあります。
+![delete](../chapter04b_argocd/imgs/demoapp/Delete-2.png)
+
+削除する際にアプリケーション名の入力があるので「prometheus」と入力してOKをクリックします。
+![delete](../chapter04b_argocd/imgs/demoapp/Delete-3.png)
 
 ## Argo Rolloutsのクリーンアップ
-### 作成したデモアプリを削除
-Applicationsの画面の各アプリのDELETEをクリック
 ### Argo CDを削除
 ```
 helmfile destroy -f  ../chapter04b_argocd/helm/helmfile.yaml
 kubectl delete -n argo-cd \
     -f https://raw.githubusercontent.com/argoproj-labs/rollout-extension/v0.2.1/manifests/install.yaml
+kubectl delete namespace argo-cd
 ```
 ### Argo Rolloutsを削除
 ```
 helmfile destroy -f  ./helm/helmfile.yaml
+kubectl delete namespace argo-rollouts
 ```

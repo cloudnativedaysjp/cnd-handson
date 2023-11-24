@@ -5,7 +5,7 @@ metadata:
   labels:
     app: handson
 spec:
-  replicas: 3
+  replicas: 10
   revisionHistoryLimit: 1
   selector:
     matchLabels:

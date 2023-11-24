@@ -77,7 +77,7 @@ Windowsの場合
 ### Gitリポジトリの準備(ローカル環境)
 Argo CDを利用する上では、GitHubへのPush等の変更が必要不可欠になります。そのため、このハンズオンのリポジトリをforkして操作する為の準備をします。
 
-[このハンズオン](https://github.com/自身のアカウント名/cndt2023-handson)にアクセスし、forkをクリックします
+[このハンズオン](https://github.com/cloudnativedaysjp/cndt2023-handson)にアクセスし、forkをクリックします
 ![fork1](imgs/setup/fork-1.png)
 
 Create fork をクリックします
