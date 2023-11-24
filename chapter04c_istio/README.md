@@ -40,8 +40,8 @@ Istioサービスメッシュは大きく2つのコンポーネントで構成�
 - データプレーン: サイドカーとしてdeployされるenvoyベースのプロキシです。マイクロサービス間のすべてのネットワーク通信を制御し、メッシュトラフィック全体に関するテレメトリの収集を行います。
 
 ## 始める前に
-- Handson用のアプリケーションがdeployされていること(まだの場合は[こちら](../chapter01.5_demo-deploy/))
-- Prometheusがインストールされていること(まだの場合は[こちら](../chapter02_prometheus/))
+- Handson用のアプリケーションがdeployされていること(まだの場合は[こちら](../chapter01_cluster-create/README.md#アプリケーションのデプロイ))
+- Prometheusがインストールされていること(まだの場合は[こちら](../chapter02_prometheus/README.md#実践-kube-prometheus-stackのインストール))
 
 ## セットアップ
 ### Istioのインストール
@@ -51,7 +51,7 @@ helmfile sync -f helm/helmfile.d/istio.yaml
 
 作成されるリソースは下記のとおりです。
 ```sh
-kubectl -n istio-system get service,deployment
+kubectl get services,deployments -n istio-system
 ```
 ```sh
 NAME                           TYPE        CLUSTER-IP      EXTERNAL-IP   PORT(S)                                 AGE
@@ -63,10 +63,9 @@ deployment.apps/istio-ingressgateway   1/1     1            1           95s
 deployment.apps/istiod                 1/1     1            1           114s
 ```
 
-`istiod`がコントロールプレーンです。データプレーンはアプリケーションpodにサイドカーとして注入されるため、この段階ではまだ確認をすることはできません。
+`istiod`がコントロールプレーンです。データプレーンはアプリケーションpodにサイドカーとして注入されるため、この段階ではまだリソースとして確認をすることはできません。
 
-### アプリケーションのサービスメッシュへの追加
-Envoy sidecar proxyをアプリケーションpodに自動注入するようIstioに指示するために、deploy先のKubernetes namespaceにラベルを追加します。
+それでは、Envoy sidecar proxyをアプリケーションpodに自動注入するようIstioに指示するために、デプロイ先のKubernetes namespaceにラベルを追加します。
 ```sh
 kubectl label namespace handson istio-injection=enabled
 ```
@@ -80,15 +79,21 @@ NAME      STATUS   AGE    LABELS
 handson   Active   175m   istio-injection=enabled,kubernetes.io/metadata.name=handson
 ```
 
-Handson用のアプリケーション(以下、アプリケーション)を再起動してpodにサイドカーとしてenvoy proxyが注入されるようにします。
+Handson用のワークロードを再起動し、podにサイドカーとしてenvoy proxyが注入されるようにします。
 ```sh
 kubectl rollout restart deployment/handson-blue -n handson
 ```
 
-アプリケーション再起動、またはdeploy完了後のリソースは下記の通りです。Podが`Running`状態になった後に、アプリケーションpod内でcontainerが2つ動作していることを確認してください。
+再起動のリソースは下記の通りです。Podが`Running`状態になった後、コンテナが2つ動作していることを確認してください。
+
 ```sh
-kubectl get service,pod -n handson -l app=handson
+kubectl get services,pods -n handson -l app=handson
 ```
+
+> **Note**
+>
+> chapter04a_opentelemetryで[traceをopentelemetryで管理する例](../chapter04a_opentelemetry/README.md#trace-をopentelemetryで管理する例)を実装している場合はコンテナ数は3になります。
+
 ```sh
 ＃ 実行結果
 NAME              TYPE        CLUSTER-IP      EXTERNAL-IP   PORT(S)   AGE
@@ -107,7 +112,7 @@ kubectl get pods -n handson -l app=handson -o jsonpath={.items..spec..containers
 docker.io/istio/proxyv2:1.19.0
 argoproj/rollouts-demo:blue
 ```
-`proxyv2`のイメージで動作しているコンテナがデータプレーンです。
+`docker.io/istio/proxyv2`のイメージで動作しているコンテナがデータプレーンです。
 
 ### メッシュ外からのアクセス
 Istioメッシュ外からのアクセスをIstioメッシュ内のアプリケーションにルーティングできるようするためにIstio gateway/virtual serviceを作成します。
@@ -118,8 +123,13 @@ kubectl apply -f networking/simple-routing.yaml
 ```
 
 作成されるリソースは下記のとおりです。
+
+> **Note**
+>
+> Kubernetes Gateway APIの`gateway`リソースがデプロイされている場合、`kubectl get gateways`はKubernetes Gateway APIのgatewayリソースが優先されてIstioが管理するgatewayリソースが表示されなくなるため、Istio gatewayリソースaliasの`gw`を使用しています。
+
 ```sh
-kubectl get gateway,virtualservice -n handson
+kubectl get gw,virtualservices -n handson
 ```
 ```sh
 # 実行結果
@@ -130,12 +140,12 @@ NAME                                                GATEWAYS      HOSTS         
 virtualservice.networking.istio.io/simple-routing   ["handson"]   ["app.example.com"]   25s
 ```
 
-これでメッシュ外からのアクセスをアプリケーションにルーティングする準備ができました。ブラウザから`http://app.example.com:18080/`にアクセスしてアプリケーションが表示されることを確認してください。
+これでメッシュ外からのアクセスをアプリケーションにルーティングする準備ができました。ブラウザから`http://app.example.com:18080`にアクセスしてアプリケーションが表示されることを確認してください。
 
 ![image](./imgs/app-simple-routing.png)
 
-### Kialiのdeploy
-Istioサービスメッシュ内のトラフィックを可視化するために、[Kiali](https://kiali.io/)をdeployします。KialiはIstioサービスメッシュ用のコンソールであり、Kialiが提供するダッシュボードから、サービスメッシュの構造の確認、トラフィックフローの監視、および、サービスメッシュ設定の確認、変更をすることが可能です。
+### Kialiのデプロイ
+Istioサービスメッシュ内のトラフィックを可視化するために、[Kiali](https://kiali.io)をデプロイします。KialiはIstioサービスメッシュ用のコンソールであり、Kialiが提供するダッシュボードから、サービスメッシュの構造の確認、トラフィックフローの監視、および、サービスメッシュ設定の確認、変更をすることが可能です。
 
 helmfileを使ってKialiをインストールします。
 ```sh
@@ -144,7 +154,7 @@ helmfile sync -f helm/helmfile.d/kiali.yaml
 
 作成されるリソースは下記の通りです。
 ```sh
-kubectl -n istio-system get service,pod -l app=kiali
+kubectl get services,pods -n istio-system -l app=kiali
 ```
 ```sh
 # 実行結果
@@ -162,7 +172,7 @@ kubectl apply -f ingress/kiali-ingress.yaml
 
 しばらくすると、ingressリソースにIPが付与されます。
 ```sh
-kubectl -n istio-system get ingress -l app=kiali
+kubectl get ingresses -n istio-system -l app=kiali
 ```
 ```sh
 # 実行結果
@@ -195,7 +205,7 @@ Istio Virtual Service/Destination Ruleを用いて加重ルーティングを実
 ### 追加アプリケーションのdeploy
 現在動作中のアプリケーションは下記のとおりです。
 ```sh
-kubectl get pod -n handson -l app=handson
+kubectl get pods -n handson -l app=handson
 ```
 ```sh
 # 実行結果
@@ -203,14 +213,14 @@ NAME                            READY   STATUS    RESTARTS   AGE
 handson-blue-6c4f4c9c57-597dx   2/2     Running   0          5m
 ```
 
-加重ルーティング実装のための追加アプリケーションをdeployします。
+加重ルーティング実装のための追加アプリケーションをデプロイします。
 ```sh
 kubectl apply -f app/handson-yellow.yaml
 ```
 
-2つのワークロードが稼働していることを確認してください。
+2つのワークロードが`handson` namespaceで稼働していることを確認してください。
 ```sh
-kubectl get pod -n handson -l app=handson
+kubectl get pods -n handson -l app=handson
 ```
 ```sh
 # 実行結果
@@ -228,7 +238,7 @@ kubectl apply -f networking/weight-based-routing.yaml
 
 作成されるリソースは下記のとおりです。
 ```sh
-kubectl get virtualservice,destinationrule -n handson
+kubectl get virtualservices,destinationrules -n handson
 ```
 ```sh
 # 実行結果
@@ -247,14 +257,9 @@ while :; do curl -s -o /dev/null -w '%{http_code}\n' http://app.example.com:1808
 しばらくすると、グラフが表示されます(なかなか表示されない場合は、Kialiダッシュボード右上の青い`Refresh`ボタンを押して状態を更新してください)。しばらくすると、トラフィックが均等(約±5%)にルーティングされていることを確認してください。
 ![image](./imgs/kiali-graph-weigh-based-routing-50-50.png)
 
-それでは、リクエストを一旦停止し、新しいアプリケーションにトラフィックが100%ルーティングされるように設定を変更します。
+それでは、新しいアプリケーションにトラフィックが100%ルーティングされるように設定を変更します。ローカル環境から実施しているリクエストは継続して行なってください。
 ```sh
 kubectl patch virtualservice weight-based-routing -n handson --type merge --patch-file networking/weight-based-routing-patch.yaml
-```
-
-再度**ローカル端末から**リクエストを流します。
-```sh
-while :; do curl -s -o /dev/null -w '%{http_code}\n' http://app.example.com:18080;sleep 1;done
 ```
 
 しばらくすると、新しいアプリケーションにトラッフィックが100%ルーティングされていることが確認できます(変化が見られない場合は、Kialiダッシュボード右上の青い`Refresh`ボタンを押して状態を更新してください)。
@@ -278,7 +283,7 @@ L4レベルのトラフィックに対し、Istio Authorization Policyを作成�
 ### 追加アプリケーションdeploy
 現在動作中のアプリケーションは下記のとおりです。
 ```sh
-kubectl get pod -n handson -l app=handson
+kubectl get pods -n handson -l app=handson
 ```
 ```sh
 # 実行結果
@@ -293,7 +298,7 @@ kubectl apply -f app/curl-allow.yaml,app/curl-deny.yaml
 
 作成されるリソースは下記の通りです。
 ```sh
-kubectl get po -n handson -l content=layer4-authz
+kubectl get pods -n handson -l content=layer4-authz
 ```
 ```sh
 # 実行結果
@@ -332,7 +337,7 @@ Kiali dashboardからも確認してみましょう。リクエストを流し�
 
 ![image](./imgs/kiali-L4-authz-autholizationpolicy-notapplied.png)
 
-リクエストを一旦停止してください。
+確認ができたら、リクエストを一旦停止してください。
 
 ### Istio Authorization Policy適用
 それでは、Istio Authorization Policyを作成して、`curl-deny` ワークロードからのport 8080宛に対するリクエストを拒否する設定を追加します。
@@ -342,7 +347,7 @@ kubectl apply -f networking/L4-authorization-policy.yaml
 
 作成されるリソースは下記の通りです。
 ```sh
-kubectl get authorizationpolicy -n handson -l content=layer4-authz
+kubectl get authorizationpolicies -n handson -l content=layer4-authz
 ```
 ```sh
 # 実行結果
@@ -395,14 +400,14 @@ kubectl delete -f app/curl-allow.yaml,app/curl-deny.yaml
 ```
 
 ## L7アクセス管理
-Istio Authorization Policyを用いてL7レベルのアクセス管理を実装します。Istioメッシュ内において、あるワークロードに対して特定のワークロードからのL7レベルでのアクセスを制御したい時がユースケースとして挙げられます。本ケースでは`handson-blue`ワークロードにアクセスをするワークロードを1つ用意し、GETメソッドのみ許可するケースを想定します。
+Istio Authorization Policyを用いてL7レベルのアクセス管理を実装します。Istioメッシュ内において、あるワークロードに対して特定のワークロードからのL7レベルでのアクセスを制御したい時がユースケースとして挙げられます。本ケースでは`handson-blue`ワークロードにアクセスをするワークロードを1つ用意し、GETメソッドのみ許可(削除、更新系のメソッドは拒否)をするケースを想定します。
 
 [セットアップ](#セットアップ)が完了していることを前提とします。
 
 ### 追加アプリケーションdeploy
 現在動作中のアプリケーションは下記のとおりです。
 ```sh
-kubectl get pod -n handson -l app=handson
+kubectl get pods -n handson -l app=handson
 ```
 ```sh
 # 実行結果
@@ -417,7 +422,7 @@ kubectl apply -f app/curl.yaml
 
 作成されるリソースは下記のとおりです。
 ```sh
-kubectl get po -n handson -l content=layer7-authz
+kubectl get pods -n handson -l content=layer7-authz
 ```
 ```sh
 # 実行結果
@@ -445,17 +450,17 @@ Kiali dashboardからも確認してみましょう。リクエストを流し�
 
 ![image](./imgs/kiali-L7-authz-autholizationpolicy-notapplied.png)
 
-リクエストを一旦停止してください。
+確認ができたら、リクエストを一旦停止してください。
 
 ### Istio Authorization Policy適用
-それでは、Istio Authorization Policyを適用して、`curl` ワークロードからのGETリクエストのみを許可し、それ以外は拒否します。
+それでは、Istio Authorization Policyを適用して、`curl` ワークロードからのGETリクエストのみを許可し、削除、更新系のメソッドを拒否します。
 ```sh
 kubectl apply -f networking/L7-authorization-policy.yaml
 ```
 
 作成されたリソースは下記の通りです。
 ```sh
-kubectl get authorizationpolicy -n handson -l content=layer7-authz
+kubectl get authorizationpolicies -n handson -l content=layer7-authz
 ```
 ```sh
 # 実行結果
@@ -463,9 +468,9 @@ NAME           AGE
 layer7-authz   2m24s
 ```
 
-まずは確認のためにGETリクエストをします。
+まずは確認のためにGETリクエストをします(明示的にGETを指定しています)。
 ```sh
-while :; do kubectl exec curl -n handson -- curl -s -o /dev/null -w '%{http_code}\n' handson:8080;sleep 1;done
+while :; do kubectl exec curl -n handson -- curl -s -X GET -o /dev/null -w '%{http_code}\n' handson:8080;sleep 1;done
 ```
 
 先ほどと同じく、リクエストが成功していることを確認してください。
@@ -499,11 +504,27 @@ while :; do kubectl exec curl -n handson -- curl -X POST -s -o /dev/null -d '{}'
 .
 ```
 
-改めてKiali dashboardから確認してみましょう。ブラウザから`http://kiali.example.com`にアクセスをしてください。しばらくすると、`curl` ワークロードからのPOSTリクエストは拒否されていることが確認できます(変化が見られない場合は、Kialiダッシュボード右上の青い`Refresh`ボタンを押して状態を更新してください)。
+Kiali dashboardから確認してみましょう。ブラウザから`http://kiali.example.com`にアクセスをしてください。しばらくすると、`curl` ワークロードからのPOSTリクエストは拒否されていることが確認できます(変化が見られない場合は、Kialiダッシュボード右上の青い`Refresh`ボタンを押して状態を更新してください)。
 
 ![image](./imgs/kiali-L7-authz-autholizationpolicy-applied.png)
 
 確認ができたらリクエストを停止してください。
+
+最後にDELETEメソッドも期待通り拒否されるか確認してみましょう。`handson-blue`ワークロードにDELETEメソッドは実装されていないので、dummy IDを削除することとします。
+```sh
+while :; do kubectl exec curl -n handson -- curl -X DELETE -s -o /dev/null -w '%{http_code}\n' handson:8080/id/dummy;sleep 1;done
+```
+
+こちらも、403にて拒否されることを確認してください。
+```sh
+# 実行結果
+403
+403
+403
+.
+.
+.
+```
 
 Istio Authorization Policyを使用して、Istioメッシュ内のL7レベルのアクセス管理を実装しました。Istioの機能を利用することで、アプリケーション側にロジックを追加することなく、L7レベルのアクセス管理を実現することができます。
 
@@ -519,7 +540,19 @@ kubectl delete -f app/curl.yaml
 ## クリーンアップ
 Istio, Kialiを削除します。
 ```sh
-helmfile destroy -f helm/helmfile.d/
-kubectl delete customresourcedefinitions -l release=istio
-kubectl delete namespace istio-system
+helmfile destroy -f helm/helmfile.d/ && \
+kubectl delete customresourcedefinitions -l release=istio && \
+kubectl delete namespace istio-system && \
+kubectl label namespace handson istio-injection- && \
+kubectl rollout restart deployment/handson-blue -n handson
+```
+
+`handson-blue` podのコンテナが1つだけになっていることを確認してください。
+```sh
+kubectl get pods -l app=handson -n handson
+```
+```sh
+# 実行結果
+NAME                           READY   STATUS    RESTARTS   AGE
+handson-blue-89879f65f-scwxg   1/1     Running   0          2m39s
 ```
