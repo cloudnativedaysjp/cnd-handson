@@ -22,12 +22,12 @@ chapter04とchapter05はそれぞれ独立しているため、順番に進め�
 
 - OpenTelemetryに関するchapter
   ```plain text
-  chapter01 -> chater02 -> chapter03 -> chapter04a
+    chapter01 -> chater02 -> chapter03 -> chapter04a
   ```
 
 - Argo CD/Rolloutsに関するchapter
   ```plain text
-  chapter01 -> chater02 -> chapter03 -> chapter04b -> chapter05b
+    chapter01 -> chater02 -> chapter03 -> chapter04b -> chapter05b
   ```
 
 - Istio/Istio ambient meshに関するするchapter
