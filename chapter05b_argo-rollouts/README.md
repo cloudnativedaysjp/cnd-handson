@@ -474,5 +474,5 @@ kubectl delete namespace argo-cd
 ### Argo Rolloutsを削除
 ```
 helmfile destroy -f  ./helm/helmfile.yaml
-kubectl delete namespace argo-rollouts
+kubectl delete namespace argo-rollouts blue-green canary job-analysis prometheus-analysis web-analysis
 ```
