@@ -1,5 +1,5 @@
-# CNDT Co-located Hands-on Event 2023
-CNDT Co-located ハンズオンイベント2023のドキュメントです。
+# Co-located Hands-on Event by CNDT2023 Committee
+『一日で学ぶクラウドネイティブ技術実践ハンズオン』by CloudNative Days Tokyo 2023 実行委員会のドキュメントです。
 
 ## Chapter
 全10chapterから構成されています。
