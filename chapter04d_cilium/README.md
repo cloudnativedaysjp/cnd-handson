@@ -229,7 +229,15 @@ CiliumはGatweay APIをサポートしており、Gatway APIを利用するこ�
 この節ではGateway APIを利用したトラフックの分割を行います。
 Gateway APIの詳細は[Kubernetes Gateway API](https://gateway-api.sigs.k8s.io/)を参照してください。
 
-今回は下記のようにトラフィックを9:1に分割してみます。
+まず、デモのために第1章でデプロイした`blue`イメージに加えて、`yellow`イメージをデプロイします。
+また、yellowイメージとblueイメージのそれぞれにアクセスするためのServiceリソースを作成します。
+
+```shell
+kubectl apply -Rf ../chapter-1_cluster-create/manifest/app -n handson -l color=yellow
+kubectl apply -f manifest/service.yaml
+```
+
+次に、トラフィック分割機能を利用して下記のように9:1にトラフィックを分割してみます。
 
 ![](image/ch4-2.png)
 
@@ -306,4 +314,11 @@ for in in {1..10}; do \
 kubectl exec -n handson curl-allow -- /bin/sh -c "echo -n 'curl-allow: Color is ';curl -s handson:8080/color -w '\n'"
 sleep 0.1
 done
+```
+
+確認が終わったら本章でデプロイしたリソースを削除しておきます。
+
+```shell
+kubectl delete -Rf ../chapter-1_cluster-create/manifest/app -n handson -l color=yellow
+kubectl delete -f manifest/service.yaml
 ```
