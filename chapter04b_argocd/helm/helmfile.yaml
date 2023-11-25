@@ -1,12 +1,11 @@
 repositories:
-  - name: argo
-    url: https://argoproj.github.io/argo-helm
+- name: argo
+  url: https://argoproj.github.io/argo-helm
 
 releases:
-  - name: argo-cd
-    namespace: argo-cd
-    chart: argo/argo-cd
-    version: 5.35.0
-    values:
-      - values.yaml
-  
+- name: argo-cd
+  namespace: argo-cd
+  chart: argo/argo-cd
+  version: 5.35.0
+  values:
+  - values.yaml
