@@ -88,7 +88,7 @@ Grafana画面で `Upload dashboard JSON file` ボタンをクリックして、
 
 - `Name` ... `NGINX Ingress controller`
 - `Folder` ... `ingress-nginx`
-- `Datasource` ... `Prometheus`
+- `Prometheus Datasource` ... `Prometheus`
 
 ![image](./image/import-dashboard.png)
 
