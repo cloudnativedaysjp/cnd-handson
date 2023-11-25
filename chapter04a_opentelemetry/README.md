@@ -536,7 +536,7 @@ OpenTelemetry Operatorには、各種アプリケーションのトレースデ�
 トレースデータを計装する場合には、[SDKを利用してアプリケーションに手動インスツルメンテーション](https://opentelemetry.io/docs/instrumentation/)するか、[サイドカーとしてコンテナをデプロイして自動インスツルメンテーション](https://opentelemetry.io/docs/kubernetes/operator/automatic/)するかの2通りの方法があります。
 今回は、アプリケーションに手を加えなくて利用可能な自動インスツルメンテーションを利用します。
 
-自動インスツルメンテーションを行う場合には、`Instrumentation`リソースで設定を行います。今回はデータを取得し、先ほど作成したJaegerのOLTP用のgRPCエンドポイント `jaeger-collector.jaeger:14250` に対してデータを転送する設定を行います。
+自動インスツルメンテーションを行う場合には、`Instrumentation`リソースで設定を行います。今回はデータを取得し、先ほど作成したJaegerのOTLP用のgRPCエンドポイント `jaeger-collector.jaeger:14250` に対してデータを転送する設定を行います。
 
 ```yaml
 apiVersion: opentelemetry.io/v1alpha1
