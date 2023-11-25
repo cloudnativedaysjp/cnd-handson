@@ -580,7 +580,7 @@ spec:
 作成されたPodを確認すると、Podにサイドカーとして`opentelemetry-auto-instrumentation`コンテナが含まれた形で作成されていることが確認できます。
 
 ```bash
-kubectl get pods
+kubectl -n handson get pods
 ```
 ```bash
 # 実行結果
