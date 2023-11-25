@@ -1,6 +1,8 @@
 repositories:
 - name: istio-official
   url:  https://istio-release.storage.googleapis.com/charts
+- name: kiali
+  url: https://kiali.org/helm-charts
 
 releases:
 - name: istio-base
@@ -9,7 +11,7 @@ releases:
 
 - name: istio-misc
   namespace: istio-system
-  chart: ../charts/istio-misc
+  chart: charts/istio-misc
   disableValidation: true
   needs:
     - /istio-base
@@ -20,7 +22,7 @@ releases:
   version: 1.19.0
   wait: true
   values:
-    - ../values/istiod.values.yaml
+    - values/istiod.values.yaml
 
 - name: istio-ingressgateway
   namespace: istio-system
@@ -29,4 +31,16 @@ releases:
   needs:
     - istio-system/istiod
   values:
-    - ../values/ingressgateway.values.yaml
+    - values/ingressgateway.values.yaml
+
+# - name: istio-prometheus-monitors
+#   namespace: prometheus
+#   chart: ../charts/prometheus-monitor
+
+- name: kiali-server
+  namespace: istio-system
+  createNamespace: true
+  chart: kiali/kiali-server
+  version: 1.74.0
+  values:
+  - values/kiali.values.yaml
