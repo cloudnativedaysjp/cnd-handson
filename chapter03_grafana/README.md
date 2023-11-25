@@ -14,7 +14,7 @@ chapter02で導入したkube-prometheus-stackによって、すでにGrafanaは�
 基本的なモニタリングをすぐに開始することができます。
 
 実際にどのようなDashboardがあるか見てみましょう。
-お使いのブラウザで `grafana.example.com` にアクセスしてみてください。
+お使いのブラウザで <http://grafana.example.com/dashboards> にアクセスしてみてください。
 以下のようなDashboardが用意されているはずです。
 
 - AlertManager Overview ... AlertManagerに関する基本的な情報
