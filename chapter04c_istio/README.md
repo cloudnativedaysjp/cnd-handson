@@ -44,9 +44,9 @@ Istioサービスメッシュは大きく2つのコンポーネントで構成�
 - Prometheusがインストールされていること(まだの場合は[こちら](../chapter02_prometheus/README.md#実践-kube-prometheus-stackのインストール))
 
 ## セットアップ
-### Istioのインストール
+### インストール
 ```sh
-helmfile sync -f helm/helmfile.d/istio.yaml
+helmfile sync -f helm/helmfile.yaml
 ```
 
 作成されるリソースは下記のとおりです。
@@ -54,15 +54,17 @@ helmfile sync -f helm/helmfile.d/istio.yaml
 kubectl get services,deployments -n istio-system
 ```
 ```sh
+# 実行結果
 NAME                           TYPE        CLUSTER-IP      EXTERNAL-IP   PORT(S)                                 AGE
-service/istio-ingressgateway   NodePort    10.96.152.203   <none>        18080:32080/TCP,443:32443/TCP           95s
-service/istiod                 ClusterIP   10.96.249.249   <none>        15010/TCP,15012/TCP,443/TCP,15014/TCP   115s
+service/istio-ingressgateway   NodePort    10.96.73.231    <none>        18080:32080/TCP,18443:32443/TCP         55m
+service/istiod                 ClusterIP   10.96.238.211   <none>        15010/TCP,15012/TCP,443/TCP,15014/TCP   55m
+service/kiali                  ClusterIP   10.96.160.114   <none>        20001/TCP                               55m
 
 NAME                                   READY   UP-TO-DATE   AVAILABLE   AGE
-deployment.apps/istio-ingressgateway   1/1     1            1           95s
-deployment.apps/istiod                 1/1     1            1           114s
+deployment.apps/istio-ingressgateway   1/1     1            1           55m
+deployment.apps/istiod                 1/1     1            1           55m
+deployment.apps/kiali                  1/1     1            1           55m
 ```
-
 `istiod`がコントロールプレーンです。データプレーンはアプリケーションpodにサイドカーとして注入されるため、この段階ではまだリソースとして確認をすることはできません。
 
 それでは、Envoy sidecar proxyをアプリケーションpodに自動注入するようIstioに指示するために、デプロイ先のKubernetes namespaceにラベルを追加します。
@@ -111,6 +113,9 @@ kubectl get pods -n handson -l app=handson -o jsonpath={.items..spec..containers
 # 実行結果
 docker.io/istio/proxyv2:1.19.0
 argoproj/rollouts-demo:blue
+
+# Tracingをopentelemetry管理している場合は下記も併せて表示されます。
+ghcr.io/open-telemetry/opentelemetry-go-instrumentation/autoinstrumentation-go:v0.7.0-alpha
 ```
 `docker.io/istio/proxyv2`のイメージで動作しているコンテナがデータプレーンです。
 
@@ -144,28 +149,10 @@ virtualservice.networking.istio.io/simple-routing   ["handson"]   ["app.example.
 
 ![image](./image/app-simple-routing.png)
 
-### Kialiのデプロイ
-Istioサービスメッシュ内のトラフィックを可視化するために、[Kiali](https://kiali.io)をデプロイします。KialiはIstioサービスメッシュ用のコンソールであり、Kialiが提供するダッシュボードから、サービスメッシュの構造の確認、トラフィックフローの監視、および、サービスメッシュ設定の確認、変更をすることが可能です。
+### メッシュの可視化
+[Kiali](https://kiali.io)を用いてIstioサービスメッシュ内のトラフィックを見てみましょう。KialiはIstioサービスメッシュ用のコンソールであり、Kialiが提供するダッシュボードから、サービスメッシュの構造の確認、トラフィックフローの監視、および、サービスメッシュ設定の確認、変更をすることが可能です。
 
-helmfileを使ってKialiをインストールします。
-```sh
-helmfile sync -f helm/helmfile.d/kiali.yaml
-```
-
-作成されるリソースは下記の通りです。
-```sh
-kubectl get services,pods -n istio-system -l app=kiali
-```
-```sh
-# 実行結果
-NAME            TYPE        CLUSTER-IP      EXTERNAL-IP   PORT(S)     AGE
-service/kiali   ClusterIP   10.96.221.215   <none>        20001/TCP   44s
-
-NAME                        READY   STATUS    RESTARTS   AGE
-pod/kiali-6d68c8469-2wbcn   1/1     Running   0          43s
-```
-
-外部(インターネット)からKialiにアクセスできるようにするためにIngressリソースを作成します。
+Kialiは[インストール](#インストール)でインストール済みなので、外部(インターネット)からアクセスできるようにするためにIngressリソースを作成します。
 ```sh
 kubectl apply -f ingress/kiali-ingress.yaml
 ```
