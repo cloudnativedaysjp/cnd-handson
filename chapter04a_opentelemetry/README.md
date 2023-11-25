@@ -71,7 +71,7 @@ OpenTelemetry Operatorをインストールすることで、OpenTelemetry Colle
 ValidatingWebhookの兼ね合いで`helmfile sync`が失敗することがあるため、失敗した場合は再度実行してください。
 
 ```sh
-helmfile sync
+helmfile sync -f helm/helmfile.yaml
 ```
 
 monitoring NamespaceにデプロイされたOpenTelemetry OperatorのPodが起動していれば成功です。
