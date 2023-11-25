@@ -16,7 +16,7 @@ OpenTelemetryプロジェクトの代表的なプロダクトは以下のとお�
   * メトリクス、ログ、トレースなどの各種テレメトリの送受信やデータ処理を行うコンポーネント
   * 様々なプロバイダーに対応するためにプラグイン方式を採用している
 
-このハンズオンでは、OpenTelemetry Collectorでメトリクス・ログ・トレースを扱う方法と、OpentelemetrySDKを用いて分散トレースを行う方法について実際に体験します。
+このハンズオンでは、OpenTelemetry Collectorでメトリクス・ログ・トレースを扱う方法と、OpenTelemetry SDKを用いて分散トレースを行う方法について実際に体験します。
 
 ### Open Telemetry Collectorのコンポーネント
 
