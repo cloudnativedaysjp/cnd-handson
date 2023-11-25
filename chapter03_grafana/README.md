@@ -68,7 +68,6 @@ Grafanaでは手作業でDashboardを作成する以外に、
 - <https://grafana.com/grafana/dashboards/16611-cilium-metrics/>
 - <https://grafana.com/grafana/dashboards/13539-hubble/>
 
-
 まずは <http://grafana.example.com/dashboards> にアクセスし、 `New` ボタンのプルダウンメニューから `New folder` をクリックし、
 `ingress-nginx` というフォルダ名で作成します。
 
@@ -84,7 +83,6 @@ Grafana画面で `Upload dashboard JSON file` ボタンをクリックして、
 先程ダウンロードしたJSONファイルをアップロードします。
 
 最後に、以下のような画面に遷移するので、次のように設定し、 `Import` をクリックします。
-
 
 - `Name` ... `NGINX Ingress controller`
 - `Folder` ... `ingress-nginx`
@@ -141,8 +139,7 @@ Grafana側では <http://grafana.example.com/alerting/notifications> にアク�
 
 ![image](./image/notifications.png)
 
-画面が遷移したら、以下のような設定を入力して、 `Test` ボタンをクリックしてテストアラートを発行します。
-
+画面が遷移したら、以下のような設定を入力して、 `Test` ボタンをクリックしてテストアラートを発報します。
 
 - `Name` ... `sample-grafana-alerting`
 - `Integration` ... `Slack`
@@ -150,16 +147,15 @@ Grafana側では <http://grafana.example.com/alerting/notifications> にアク�
 
 ![image](./image/create-contact-point.png)
 
-成功すると、以下のようなアラートが発砲されるはずです。
+成功すると、以下のようなアラートが発報されるはずです。
 
 ![image](./image/sample-alert1.png)
-
 
 無事テストが成功したら、 `Save contact point` をクリックして保存します。
 
 ### Notification Policyの追加
 
-Contact Pointを追加しただけでは新規にアラートを追加しても、先程のContact Pointに向けて発砲できません。
+Contact Pointを追加しただけでは新規にアラートを追加しても、先程のContact Pointに向けて発報できません。
 それを実現するために、Notification Policyを作成する必要があります。
 
 <http://grafana.example.com/alerting/routes> にアクセスし、 `New nested policy` のボタンをクリックします。
@@ -183,5 +179,8 @@ Contact Pointを追加しただけでは新規にアラートを追加しても�
 - `Summary` ... `app.example.com has not received requests over 10 times`
 - `Description` ... `app.example.com has not received {{ $labels.method }} requests 10 times`
 - `Custom Labels` ... `alert-route = slack`
+- `Folder` ... `ingress-nginx`
+- `Evaluation group` ... `New evaluation group` をクリックし、 `Evaluation group name` を `sample-grafana-alert-1`, `Evaluation Interval` を `5m` に設定
 
-5分程度経過すると、アラートが発砲されると思います。
+このアラートは、1分間隔で取得した、 `app.example.com` に対するリクエスト数が10以上でなければアラートを発報するというルールになっています。
+5分程度経過すると、無事にアラートが発報されると思います。
