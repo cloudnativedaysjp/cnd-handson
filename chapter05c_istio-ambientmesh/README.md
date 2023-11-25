@@ -66,7 +66,7 @@ istio-ambient-worker          Ready    <none>          56m   v1.27.3
 
 ### Istio ambientのインストール
 ```sh
-helmfile sync -f helm/helmfile.d/istio-ambient.yaml
+helmfile sync -f helm/helmfile.yaml
 ```
 
 作成されるリソースは下記のとおりです。
@@ -75,15 +75,17 @@ kubectl get services,daemonsets,deployments -n istio-system
 ```
 ```sh
 # 実行結果
-NAME             TYPE        CLUSTER-IP     EXTERNAL-IP   PORT(S)                                 AGE
-service/istiod   ClusterIP   10.96.87.196   <none>        15010/TCP,15012/TCP,443/TCP,15014/TCP   92s
+NAME             TYPE        CLUSTER-IP      EXTERNAL-IP   PORT(S)                                 AGE
+service/istiod   ClusterIP   10.96.130.209   <none>        15010/TCP,15012/TCP,443/TCP,15014/TCP   105s
+service/kiali    NodePort    10.96.31.119    <none>        28080:30811/TCP                         51s
 
 NAME                            DESIRED   CURRENT   READY   UP-TO-DATE   AVAILABLE   NODE SELECTOR            AGE
-daemonset.apps/istio-cni-node   2         2         2       2            2           kubernetes.io/os=linux   72s
-daemonset.apps/ztunnel          2         2         2       2            2           <none>                   72s
+daemonset.apps/istio-cni-node   2         2         2       2            2           kubernetes.io/os=linux   49s
+daemonset.apps/ztunnel          2         2         2       2            2           <none>                   49s
 
 NAME                     READY   UP-TO-DATE   AVAILABLE   AGE
-deployment.apps/istiod   1/1     1            1           92s
+deployment.apps/istiod   1/1     1            1           105s
+deployment.apps/kiali    1/1     1            1           51s
 ```
 
 ### アプリケーションのデプロイ
@@ -150,28 +152,10 @@ jobs
 kill %1
 ```
 
-## Kialiのデプロイ
-Istioサービスメッシュ内のトラフィックを可視化するために、[Kiali](https://kiali.io/)をdeployします。KialiはIstioサービスメッシュ用のコンソールであり、Kialiが提供するダッシュボードから、サービスメッシュの構造の確認、トラフィックフローの監視、および、サービスメッシュ設定の確認、変更をすることが可能です。
+## メッシュの可視化
+[Kiali](https://kiali.io)を用いてIstioサービスメッシュ内のトラフィックを見てみましょう。KialiはIstioサービスメッシュ用のコンソールであり、Kialiが提供するダッシュボードから、サービスメッシュの構造の確認、トラフィックフローの監視、および、サービスメッシュ設定の確認、変更をすることが可能です。
 
-helmfileを使ってKialiをインストールします。Kialiダッシュボード表示に必要なPrometheusも一緒にインストールされます。
-```sh
-helmfile sync -f helm/helmfile.d/kiali.yaml
-```
-
-作成されるリソースは下記の通りです。
-```sh
-kubectl -n istio-system get services,deployments -l app=kiali
-```
-```sh
-# 実行結果
-NAME            TYPE       CLUSTER-IP      EXTERNAL-IP   PORT(S)           AGE
-service/kiali   NodePort   10.96.140.207   <none>        28080:30448/TCP   3m16s
-
-NAME                    READY   UP-TO-DATE   AVAILABLE   AGE
-deployment.apps/kiali   1/1     1            1           3m16s
-```
-
-Kialiに外部からアクセスできるようにするため、Kiali serviceのnode portを32767に変更します(KindでKubernetes clusterを作成する際に、host port 28080をcontainer port 32766にマッピングする設定をしているためです)。
+Kialiは[インストール](#インストール)でインストール済みなので、外部からアクセスできるようにするため、Kiali serviceのnode portを32767に変更します(KindでKubernetes clusterを作成する際に、host port 28080をcontainer port 32766にマッピングする設定をしているためです)。
 ```sh
 kubectl patch service kiali -n istio-system \
 --patch '{"spec": { "type": "NodePort", "ports": [{ "nodePort": 32766, "port": 28080 }]}}'
