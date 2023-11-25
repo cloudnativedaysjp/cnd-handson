@@ -31,6 +31,9 @@ HelmはKubernetes用のパッケージマネージャーであり、Helmfileを�
 ./install-tools.sh
 ```
 
+インストールスクリプトの中で、ログインユーザを docker グループに所属させる設定を入れています。
+一旦ログアウトしてログインし直してください。
+
 > **Warning**  
 > [Known Issue#Pod errors due to "too many open files"](https://kind.sigs.k8s.io/docs/user/known-issues/#pod-errors-due-to-too-many-open-files)に記載があるように、kindではホストのinotifyリソースが不足しているとエラーが発生します。
 > ハンズオン環境ではinotifyリソースが不足しているため、sysctlを利用してカーネルパラメータを修正する必要があります。
