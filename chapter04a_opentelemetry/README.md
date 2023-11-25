@@ -607,7 +607,7 @@ sample-app-blue-5fb8dc75fd-7cvxg   3/3     Ready    0          30s
 ## 中央集権的にデータを扱う
 
 OpenTelemetryでは、OpenTelemetry Protocol（OTLP）を利用して、OpenTelemetry CollectorからOpenTelemetry Collectorへテレメトリデータを転送することもできます。
-複数のノードからデータを取得し、サンプリングするAggregator層を挟んむなど、処理を中継させたりすることなども可能です。
+複数のノードからデータを取得し、サンプリングするAggregator層を挟むなど、処理を中継させたりすることなども可能です。
 
 ![](./image/collector-pipeline.png)
 
