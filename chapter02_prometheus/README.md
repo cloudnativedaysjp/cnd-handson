@@ -162,7 +162,6 @@ prometheus-kube-prometheus-stack-prometheus-0               2/2     Running   0 
 
 続いて、PrometheusやGrafana等の各UIをIngressで公開していきます。
 すでにIngress NGINX Controllerがデプロイされていると思うので、以下のような設定でIngressをデプロイして公開します。
-す。
 
 ```yaml
 ---
