@@ -128,7 +128,7 @@ DashboardやGrafana Alertingでは、Dashboard Panelやアラートの内容文�
 <https://api.slack.com/start/quickstart> にアクセスして、 ドキュメント通りにIncoming Webhook URLを取得します。
 
 1. `1. Creating an app` にある `Go to Your Apps` をクリックする
-2. `Create New App` をクリックし、 `From scratch` を選択する
+2. `Create an App` をクリックし、 `From scratch` を選択する
 3. アプリ名を `cndt2023-sample-grafana-alert`, ワークスペースを設定し `Create App` をクリックする
 4. `Add features and functionality` にある `Incoming Webhooks` をクリックする
 5. `Activate Incoming Webhooks` を有効にする
