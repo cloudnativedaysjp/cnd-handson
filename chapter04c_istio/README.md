@@ -140,7 +140,7 @@ NAME                                                GATEWAYS      HOSTS         
 virtualservice.networking.istio.io/simple-routing   ["handson"]   ["app.example.com"]   25s
 ```
 
-これでメッシュ外からのアクセスをアプリケーションにルーティングする準備ができました。ブラウザから`http://app.example.com:18080`にアクセスしてアプリケーションが表示されることを確認してください。
+これでメッシュ外からのアクセスをアプリケーションにルーティングする準備ができました。ブラウザから<http://app.example.com:18080>にアクセスしてアプリケーションが表示されることを確認してください。
 
 ![image](./image/app-simple-routing.png)
 
@@ -180,7 +180,7 @@ NAME             CLASS   HOSTS               ADDRESS        PORTS   AGE
 kiali-by-nginx   nginx   kiali.example.com   10.96.88.164   80      2m5s
 ```
 
-ブラウザから`http://kiali.example.com`にアクセスをしてKialiダッシュボードが表示されることを確認してください。
+ブラウザから<http://kiali.example.com>にアクセスをしてKialiダッシュボードが表示されることを確認してください。
 
 ![image](./image/kiali-overview.png)
 
@@ -335,7 +335,7 @@ curl-deny:  200
 .
 ```
 
-Kiali dashboardからも確認してみましょう。リクエストを流した状態でブラウザから`http://kiali.example.com`にアクセスをしてください。`curl-allow`, `curl-deny` 双方のワークロードが`handson-blue`ワークロードにアクセス出来ていることが確認できます。グラフが表示されない場合は、Kialiダッシュボード右上の青い`Refresh`ボタンを押して状態を更新してください。
+Kiali dashboardからも確認してみましょう。リクエストを流した状態でブラウザから<http://kiali.example.com>にアクセスをしてください。`curl-allow`, `curl-deny` 双方のワークロードが`handson-blue`ワークロードにアクセス出来ていることが確認できます。グラフが表示されない場合は、Kialiダッシュボード右上の青い`Refresh`ボタンを押して状態を更新してください。
 
 ![image](./image/kiali-L4-authz-autholizationpolicy-notapplied.png)
 
@@ -387,7 +387,7 @@ curl-deny:  403
 .
 ```
 
-改めてKiali dashboardから確認してみましょう。ブラウザから`http://kiali.example.com`にアクセスをしてください。しばらくすると、`curl-allow` ワークロードからのリクエストは許可されている一方で、`curl-deny` ワークロードからのリクエストは拒否されていることが確認できます(変化が見られない場合は、Kialiダッシュボード右上の青い`Refresh`ボタンを押して状態を更新してください)。
+改めてKiali dashboardから確認してみましょう。ブラウザから<http://kiali.example.com>にアクセスをしてください。しばらくすると、`curl-allow` ワークロードからのリクエストは許可されている一方で、`curl-deny` ワークロードからのリクエストは拒否されていることが確認できます(変化が見られない場合は、Kialiダッシュボード右上の青い`Refresh`ボタンを押して状態を更新してください)。
 
 ![image](./image/kiali-L4-authz-autholizationpolicy-applied.png)
 
@@ -448,7 +448,7 @@ while :; do kubectl exec curl -n handson -- curl -s -o /dev/null -w '%{http_code
 .
 ```
 
-Kiali dashboardからも確認してみましょう。リクエストを流した状態でブラウザから`http://kiali.example.com`にアクセスをしてください。`curl` ワークロードから`handson-blue`ワークロードにアクセス出来ていることが確認できます(なかなか表示されない場合は、Kialiダッシュボード右上の青い`Refresh`ボタンを押して状態を更新してください)。
+Kiali dashboardからも確認してみましょう。リクエストを流した状態でブラウザから<http://kiali.example.com>にアクセスをしてください。`curl` ワークロードから`handson-blue`ワークロードにアクセス出来ていることが確認できます(なかなか表示されない場合は、Kialiダッシュボード右上の青い`Refresh`ボタンを押して状態を更新してください)。
 
 ![image](./image/kiali-L7-authz-autholizationpolicy-notapplied.png)
 
@@ -506,7 +506,7 @@ while :; do kubectl exec curl -n handson -- curl -X POST -s -o /dev/null -d '{}'
 .
 ```
 
-Kiali dashboardから確認してみましょう。ブラウザから`http://kiali.example.com`にアクセスをしてください。しばらくすると、`curl` ワークロードからのPOSTリクエストは拒否されていることが確認できます(変化が見られない場合は、Kialiダッシュボード右上の青い`Refresh`ボタンを押して状態を更新してください)。
+Kiali dashboardから確認してみましょう。ブラウザから<http://kiali.example.com>にアクセスをしてください。しばらくすると、`curl` ワークロードからのPOSTリクエストは拒否されていることが確認できます(変化が見られない場合は、Kialiダッシュボード右上の青い`Refresh`ボタンを押して状態を更新してください)。
 
 ![image](./image/kiali-L7-authz-autholizationpolicy-applied.png)
 
