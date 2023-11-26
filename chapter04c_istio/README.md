@@ -518,7 +518,7 @@ Kiali dashboardから確認してみましょう。ブラウザから<http://kia
 
 最後にDELETEメソッドも期待通り拒否されるか確認してみましょう。`handson-blue`ワークロードにDELETEメソッドは実装されていないので、dummy IDを削除することとします。
 ```sh
-while :; do kubectl exec curl -n handson -- curl -X DELETE -s -o /dev/null -w '%{http_code}\n' handson:8080/id/dummy;sleep 1;done
+while :; do kubectl exec curl -n handson -- curl -X DELETE -s -o /dev/null -w '%{http_code}\n' handson:8080/id/123;sleep 1;done
 ```
 
 こちらも、403にて拒否されることを確認してください。
