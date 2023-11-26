@@ -531,6 +531,7 @@ while :; do kubectl exec curl -n handson -- curl -X DELETE -s -o /dev/null -w '%
 .
 .
 ```
+確認ができたらリクエストを停止してください。
 
 Istio Authorization Policyを使用して、Istioメッシュ内のL7レベルのアクセス管理を実装しました。Istioの機能を利用することで、アプリケーション側にロジックを追加することなく、L7レベルのアクセス管理を実現することができます。
 
