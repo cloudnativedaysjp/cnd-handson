@@ -8,7 +8,7 @@
 - [L4アクセス管理](#l4アクセス管理)
 - [L7アクセス管理](#l7アクセス管理)
 - [まとめ](#まとめ)
-- [クリーンアップ](#クリーンアップ)
+- [最終クリーンアップ](#最終クリーンアップ)
 
 ## 概要
 ### Istioとは
@@ -531,7 +531,7 @@ kubectl delete -f app/curl.yaml
 ## まとめ
 サービスメッシュを提供するIstioを使用することで、アプリケーションレイヤーではなくインフラレイヤーでサービス間のトラフィック管理を、またKialiを使用することでサービスメッシュの可視化をすることができます。本chapterではVirtual Service, Destination Ruleを使用したルーティング制御、Authorization Policyを使用した認可処理しか紹介していませんが、Istioには他にも[沢山の機能](https://istio.io/latest/docs/tasks/)がありますので、是非確認してみてください。
 
-## クリーンアップ
+## 最終クリーンアップ
 `handson` namespaceをIstioサービスメッシュ管理から外します。
 ```sh
 kubectl label namespace handson istio-injection-
