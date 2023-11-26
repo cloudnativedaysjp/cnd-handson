@@ -7,7 +7,7 @@
 - [l4アクセス管理](#l4アクセス管理)
 - [l7アクセス管理](#l7アクセス管理)
 - [まとめ](#まとめ)
-- [クリーンアップ](#クリーンアップ)
+- [最終クリーンアップ](#最終クリーンアップ)
 
 ## 概要
 ### Istio ambient meshとは
@@ -644,7 +644,7 @@ kubectl delete -f app/curl.yaml
 
 Istio ambient meshに関するGitHub Issue: https://github.com/istio/istio/labels/area%2Fambient
 
-## クリーンアップ
+## 最終クリーンアップ
 本chapter用に作成したKubernetes clusterを削除します。
 ```sh
 kind delete cluster --name istio-ambient
