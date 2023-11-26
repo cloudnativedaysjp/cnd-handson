@@ -29,9 +29,6 @@ releases:
   - istio-system/istiod
   values:
   - values/ingressgateway.values.yaml
-# - name: istio-prometheus-monitors
-#   namespace: prometheus
-#   chart: ../charts/prometheus-monitor
 - name: kiali-server
   namespace: istio-system
   createNamespace: true
