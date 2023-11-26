@@ -45,6 +45,12 @@ Istioサービスメッシュは大きく2つのコンポーネントで構成�
 
 ## セットアップ
 ### インストール
+Istioコンポーネントと併せて、Kialiをインストールします。
+
+> [!NOTE]
+>
+> KialiはIstioサービスメッシュ用のコンソールであり、Kialiが提供するダッシュボードから、サービスメッシュの構造の確認、トラフィックフローの監視、および、サービスメッシュ設定の確認、変更をすることが可能です。本chapterでは説明は省略していますので、詳細は[こちら](https://kiali.io)をご確認ください。
+
 ```sh
 helmfile sync -f helm/helmfile.yaml
 ```
@@ -150,9 +156,7 @@ virtualservice.networking.istio.io/simple-routing   ["handson"]   ["app.example.
 ![image](./image/app-simple-routing.png)
 
 ### メッシュの可視化
-[Kiali](https://kiali.io)を用いてIstioサービスメッシュ内のトラフィックを見てみましょう。KialiはIstioサービスメッシュ用のコンソールであり、Kialiが提供するダッシュボードから、サービスメッシュの構造の確認、トラフィックフローの監視、および、サービスメッシュ設定の確認、変更をすることが可能です。
-
-Kialiは[インストール](#インストール)でインストール済みなので、外部(インターネット)からアクセスできるようにするためにIngressリソースを作成します。
+Kialiを用いてIstioサービスメッシュ内のトラフィックを見てみましょう。Kialiは[インストール](#インストール)でインストール済みなので、外部(インターネット)からアクセスできるようにするためにIngressリソースを作成します。
 ```sh
 kubectl apply -f ingress/kiali-ingress.yaml
 ```
