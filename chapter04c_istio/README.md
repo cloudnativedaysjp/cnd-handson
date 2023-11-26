@@ -98,7 +98,7 @@ kubectl rollout restart deployment/handson-blue -n handson
 kubectl get services,pods -n handson -l app=handson
 ```
 
-> **Note**
+> [!NOTE]
 >
 > chapter04a_opentelemetryで[traceをopentelemetryで管理する例](../chapter04a_opentelemetry/README.md#trace-をopentelemetryで管理する例)を実装している場合はコンテナ数は3になります。
 
@@ -135,7 +135,7 @@ kubectl apply -f networking/simple-routing.yaml
 
 作成されるリソースは下記のとおりです。
 
-> **Note**
+> [!NOTE]
 >
 > Kubernetes Gateway APIの`gateway`リソースがデプロイされている場合、`kubectl get gateways`はKubernetes Gateway APIのgatewayリソースが優先されてIstioが管理するgatewayリソースが表示されなくなるため、Istio gatewayリソースaliasの`gw`を使用しています。
 
