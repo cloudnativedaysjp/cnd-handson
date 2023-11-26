@@ -3,10 +3,6 @@ repositories:
   url: https://kiali.org/helm-charts
 
 releases:
-- name: istio-prometheus-monitors
-  namespace: prometheus
-  chart: ../charts/prometheus-monitor
-
 - name: kiali-server
   namespace: istio-system
   createNamespace: true
