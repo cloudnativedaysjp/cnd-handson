@@ -83,7 +83,7 @@ Istio ambientコンポーネントと併せて、Kiali, Prometheusをインス�
 helmfile sync -f helm/helmfile.yaml
 ```
 
-作成されるリソースは下記のとおりです(Prometheusコンポーネントは省略しています。)
+作成されるリソースは下記のとおりです(Prometheusコンポーネントは省略しています)。
 ```sh
 kubectl get services,daemonsets,deployments -n istio-system
 ```
@@ -210,6 +210,9 @@ TCPトラフィックの状態を確認するために、TOP画面左のサイ�
 
 ![image](./image/kiali-graph-workload.png)
 
+- グラフ更新期間を`Every 1m`から`Every 10s`に変更
+
+![image](./image/kiali-graph-refresh-interval.png)
 
 ### 追加アプリケーションのデプロイ
 `handson-blue`ワークロードにアクセスする追加のワークロード2つをデプロイします。
@@ -391,7 +394,7 @@ waypoint proxyによって管理されるL7レベルのトラフィックに対�
 [セットアップ](#セットアップ)が完了していることを前提とします。
 
 ### Kialiグラフ設定
-HTTPトラフィックの状態を確認するために、TOP画面左のサイドメニューのGraphをクリックし、下記のとおり設定してください。
+HTTPトラフィックの状態を確認するために、TOP画面左のサイドメニューのGraphをクリックし、下記のとおり設定してください(設定済みの項目はスキップしてください)。
 - `Namespace`の`default`にチェック
 
 ![image](./image/kiali-graph-namespace.png)
@@ -403,6 +406,10 @@ HTTPトラフィックの状態を確認するために、TOP画面左のサイ�
 - `Versioned app graph`から`Workload graph`に変更
 
 ![image](./image/kiali-graph-workload.png)
+
+- グラフ更新期間を`Every 1m`から`Every 10s`に変更
+
+![image](./image/kiali-graph-refresh-interval.png)
 
 ### Waypoint proxyのデプロイ
 Waypoint proxyを有効にするにはKubernetes Gateway APIの`gateway`リソースが必要になるため、まずはKubernetes Gateway CRDをインストールします。
