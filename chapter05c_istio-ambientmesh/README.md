@@ -1,6 +1,14 @@
 # Istio Amebient Mesh
 本chapterではIstio ambient meshを使用して、サービスメッシュ内のトラフィック管理、可視化をどのように実現するのか体験します。
 
+## 目次
+- [概要](#概要)
+- [セットアップ](#セットアップ)
+- [l4アクセス管理](#l4アクセス管理)
+- [l7アクセス管理](#l7アクセス管理)
+- [まとめ](#まとめ)
+- [クリーンアップ](#クリーンアップ)
+
 ## 概要
 ### Istio ambient meshとは
 2023年2月に[main branchにマージ](https://github.com/istio/istio/pull/43422)された(2023年11月現在はαステータス)、サイドカーを使用しない新しいIstioデータプレーンモードです。従来のサイドカーモードのIstioは多くの本番運用実績がありますが、データプレーンとアプリケーションの分離ができず、結果下記のような課題があげられています。
@@ -158,7 +166,7 @@ jobs
 kill %1
 ```
 
-## メッシュの可視化
+### メッシュの可視化
 Kialiを用いてIstioサービスメッシュ内のトラフィックを見てみましょう。Kialiは[インストール](#インストール)でインストール済みなので、外部からアクセスできるようにするため、Kiali serviceのnode portを32766に変更します(KindでKubernetes clusterを作成する際に、host port 28080をcontainer port 32766にマッピングする設定をしているためです)。
 ```sh
 kubectl patch service kiali -n istio-system \
