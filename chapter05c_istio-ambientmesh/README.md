@@ -64,12 +64,18 @@ istio-ambient-control-plane   Ready    control-plane   57m   v1.27.3
 istio-ambient-worker          Ready    <none>          56m   v1.27.3
 ```
 
-### Istio ambientのインストール
+### インストール
+Istio ambientコンポーネントと併せて、Kiali, Prometheusをインストールします。PrometheusはKialiでグラフを表示するために必要となります。
+
+> **Note**
+>
+> KialiはIstioサービスメッシュ用のコンソールであり、Kialiが提供するダッシュボードから、サービスメッシュの構造の確認、トラフィックフローの監視、および、サービスメッシュ設定の確認、変更をすることが可能です。本chapterでは説明は省略していますので、詳細は[こちら](https://kiali.io)をご確認ください。
+
 ```sh
 helmfile sync -f helm/helmfile.yaml
 ```
 
-作成されるリソースは下記のとおりです。
+作成されるリソースは下記のとおりです(Prometheusコンポーネントは省略しています。)
 ```sh
 kubectl get services,daemonsets,deployments -n istio-system
 ```
@@ -153,9 +159,7 @@ kill %1
 ```
 
 ## メッシュの可視化
-[Kiali](https://kiali.io)を用いてIstioサービスメッシュ内のトラフィックを見てみましょう。KialiはIstioサービスメッシュ用のコンソールであり、Kialiが提供するダッシュボードから、サービスメッシュの構造の確認、トラフィックフローの監視、および、サービスメッシュ設定の確認、変更をすることが可能です。
-
-Kialiは[インストール](#インストール)でインストール済みなので、外部からアクセスできるようにするため、Kiali serviceのnode portを32767に変更します(KindでKubernetes clusterを作成する際に、host port 28080をcontainer port 32766にマッピングする設定をしているためです)。
+Kialiを用いてIstioサービスメッシュ内のトラフィックを見てみましょう。Kialiは[インストール](#インストール)でインストール済みなので、外部からアクセスできるようにするため、Kiali serviceのnode portを32766に変更します(KindでKubernetes clusterを作成する際に、host port 28080をcontainer port 32766にマッピングする設定をしているためです)。
 ```sh
 kubectl patch service kiali -n istio-system \
 --patch '{"spec": { "type": "NodePort", "ports": [{ "nodePort": 32766, "port": 28080 }]}}'
