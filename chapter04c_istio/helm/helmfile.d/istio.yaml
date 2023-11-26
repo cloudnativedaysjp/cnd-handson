@@ -10,7 +10,6 @@ releases:
 - name: istio-misc
   namespace: istio-system
   chart: ../charts/istio-misc
-  disableValidation: true
   needs:
     - /istio-base
 
