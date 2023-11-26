@@ -197,6 +197,10 @@ Kialiダッシュボードのグラフ表示の設定を変更します。TOP画
 
 ![image](./image/kiali-graph-traffic-distribution.png)
 
+- グラフ更新期間を`Every 1m`から`Every 10s`に変更
+
+![image](./image/kiali-graph-refresh-interval.png)
+
 ## 加重ルーティング
 Istio Virtual Service/Destination Ruleを用いて加重ルーティングを実装します。旧バージョンから新バージョンへのアプリケーションの段階的な移行がユースケースとして挙げられます。本ケースでは、現在稼働しているアプリケーションとコンテナイメージタグが異なる追加のアプリケーションをdeployし、トラフィックを50%ずつ振り分けて、最終的に新しいアプリケーションに移行するシナリオを想定します。
 
