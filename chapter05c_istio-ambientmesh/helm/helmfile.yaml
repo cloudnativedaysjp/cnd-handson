@@ -10,7 +10,6 @@ releases:
 - name: istio-base
   chart: istio-official/base
   version: 1.19.0-alpha.1
-
 - name: istiod
   namespace: istio-system
   chart: istio-official/istiod
@@ -18,7 +17,6 @@ releases:
   wait: true
   values:
   - values/istiod.values.yaml
-
 - name: istio-ztunnel
   namespace: istio-system
   chart: istio-official/ztunnel
@@ -28,7 +26,6 @@ releases:
   - istio-system/istiod
   values:
   - values/ztunnel.values.yaml
-
 - name: istio-cni
   namespace: istio-system
   chart: istio-official/cni
@@ -38,7 +35,6 @@ releases:
   - istio-system/istiod
   values:
   - values/istio-cni.values.yaml
-
 - name: kube-prometheus-stack
   namespace: prometheus
   createNamespace: true
@@ -47,7 +43,6 @@ releases:
   wait: true
   values:
   - values/prometheus-stack.values.yaml
-
 - name: kiali-server
   namespace: istio-system
   createNamespace: true
