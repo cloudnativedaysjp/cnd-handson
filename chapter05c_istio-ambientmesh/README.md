@@ -19,8 +19,7 @@
 
 Istio ambient meshはこれらの問題を解決する目的で、Google, Solo.ioによって開発が始まりました。
 
-> **Important**
->
+> [!IMPORTANT]
 >  Istio ambient meshは2023年11月末時点ではαステータスです。本番環境への導入は控え、検証用途でのみ使用してください。
 
 ### Istio ambient mesh構成
@@ -43,7 +42,7 @@ ZtunnelはKubernetesクラスタ上でDaemonSetとしてデプロイされます
 1)HTTPプロトコル、2)L7レベルの認可、3)HTTPメトリクス、ログ収集等のL7の管理をする層です。Waypoint proxyの実態はenvoyイメージを使用した[Kubernetes Gateway API](https://gateway-api.sigs.k8s.io/)のGatewayリソースが作成、管理するpodです。Ztunnelによるsecure overlay layer作成後にKubernetes namespaceごとにwaypoint proxyを作成することで、Istioが提供するL7機能を使用することができます。また、waypoint proxyはワークロード、service account単位でも作成することができます。Waypoint proxyが作成されると、ztunnelによって作成されたsecure overlay layerはトラフィックをそのwaypoint proxyにルーティングすることでL7機能が使えるようになります。
 
 ## セットアップ
-> **Note**
+> [!NOTE]
 >
 > Istio ambientではCNIとしてCiliumを使用することが現在できません。[chapter01_cluster-create](https://github.com/cloudnativedaysjp/cndt2023-handson/tree/main/chapter01_cluster-create)はCNIとしてCiliumを使用しているため、本chapter用に新たにKubernetes clusterを作成します。
 
@@ -79,7 +78,7 @@ istio-ambient-worker          Ready    <none>          56m   v1.27.3
 ### インストール
 Istio ambientコンポーネントと併せて、Kiali, Prometheusをインストールします。PrometheusはKialiでグラフを表示するために必要となります。
 
-> **Note**
+> [!NOTE]
 >
 > KialiはIstioサービスメッシュ用のコンソールであり、Kialiが提供するダッシュボードから、サービスメッシュの構造の確認、トラフィックフローの監視、および、サービスメッシュ設定の確認、変更をすることが可能です。本chapterでは説明は省略していますので、詳細は[こちら](https://kiali.io)をご確認ください。
 
@@ -187,7 +186,7 @@ NAME    TYPE       CLUSTER-IP      EXTERNAL-IP   PORT(S)           AGE
 kiali   NodePort   10.96.140.207   <none>        28080:32766/TCP   30m
 ```
 
-> **Note**
+> [!NOTE]
 >
 > KialiのHelm chartではnode portを指定することができないため、このようなアドホックな設定にしています。実ケースでKialiを使用する場合はingressリソース、loadBalancerタイプのKubernetes service等を用いてください。
 
@@ -380,7 +379,7 @@ WARN outbound{id=1cbfb371a22e54d86493a16d7ab89636}: ztunnel::proxy::outbound: fa
 
 ログの2行目を見ると、ztunnelは`curl-deny` pod(IP: 10.244.1.14)からのリクエストを`handson-blue`pod(IP: 10.244.1.5)にproxyしようしていますが(`using node local fast path`は同node内通信という意味です)、次の行では`curl-deny` podから`handson-blue` podへSPIFFEを用いたアクセスはRBAC(先に設定したIstio Authorization Policy)によって拒否され、結果401が返却されていることが分かります。
 
-> **Note**
+> [!NOTE]
 >
 > SPIFFEはCNCFのgratuatedプロジェクトで、アプリケーションサービス間の通信を識別し、保護するためのフレームワークと標準セットを定義しています。本chapterでは説明は省略していますので、詳細は[こちら](https://spiffe.io/docs/latest/spiffe-about/overview/)をご確認ください。
 
@@ -422,7 +421,7 @@ Waypoint proxyを有効にするにはKubernetes Gateway APIの`gateway`リソ�
 kubectl apply -f https://github.com/kubernetes-sigs/gateway-api/releases/download/v1.0.0/standard-install.yaml
 ```
 
-> **Note**
+> [!NOTE]
 >
 > Kubernetes Gateway APIは[SIG-Network](https://github.com/kubernetes/community/tree/master/sig-network)コミニティによって開発が行われている、Kubernetesサービスを外部公開するために用いられる新しいAPIリソースです。本chapterでは説明は省略していますので、詳細は[こちら](https://gateway-api.sigs.k8s.io/)をご確認ください。
 
