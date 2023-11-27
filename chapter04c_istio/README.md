@@ -156,7 +156,13 @@ virtualservice.networking.istio.io/simple-routing   ["handson"]   ["app.example.
 ![image](./image/app-simple-routing.png)
 
 ### メッシュの可視化
+<<<<<<< HEAD
+[Kiali](https://kiali.io)を用いてIstioサービスメッシュ内のトラフィックを見てみましょう。KialiはIstioサービスメッシュ用のコンソールであり、Kialiが提供するダッシュボードから、サービスメッシュの構造の確認、トラフィックフローの監視、および、サービスメッシュ設定の確認、変更をすることが可能です。
+
+Kialiは[インストール](#インストール)でインストール済みなので、外部(インターネット)からアクセスできるようにするためにIngressリソースを作成します。
+=======
 Kialiを用いてIstioサービスメッシュ内のトラフィックを見てみましょう。Kialiは[インストール](#インストール)でインストール済みなので、外部(インターネット)からアクセスできるようにするためにIngressリソースを作成します。
+>>>>>>> refact/219/istio-rev4
 ```sh
 kubectl apply -f ingress/kiali-ingress.yaml
 ```

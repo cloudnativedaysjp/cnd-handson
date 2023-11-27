@@ -171,6 +171,7 @@ kill %1
 
 ### メッシュの可視化
 Kialiを用いてIstioサービスメッシュ内のトラフィックを見てみましょう。Kialiは[インストール](#インストール)でインストール済みなので、外部からアクセスできるようにするため、Kiali serviceのnode portを32766に変更します(KindでKubernetes clusterを作成する際に、host port 28080をcontainer port 32766にマッピングする設定をしているためです)。
+
 ```sh
 kubectl patch service kiali -n istio-system \
 --patch '{"spec": { "type": "NodePort", "ports": [{ "nodePort": 32766, "port": 28080 }]}}'

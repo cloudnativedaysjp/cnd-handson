@@ -136,7 +136,7 @@ kube-prometheus-stackでは以下のようなコンポーネントをまとめ�
 用意されているhelmfile.yamlおよびvalues.yamlを利用して、 `helmfile sync` を実行しreleaseをインストールしましょう。
 
 ```bash
-helmfile sync
+helmfile sync -f helm/helmfile.yaml
 ```
 
 実際に各種サービスが起動しているか確認してみましょう。

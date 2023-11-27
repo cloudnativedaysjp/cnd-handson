@@ -121,7 +121,7 @@ kubectl apply -f https://raw.githubusercontent.com/kubernetes-sigs/gateway-api/v
 Gateway API以外のコンポーネントはhelmfileコマンドを利用することでデプロイできます。
 
 ```shell
-helmfile sync -f helm
+helmfile sync -f helm/helmfile.yaml
 ```
 
 > **Info**  

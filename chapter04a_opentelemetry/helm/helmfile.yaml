@@ -1,0 +1,29 @@
+repositories:
+- name: open-telemetry
+  url: https://open-telemetry.github.io/opentelemetry-helm-charts
+- name: jetstack
+  url: https://charts.jetstack.io
+- name: jaegertracing
+  url: https://jaegertracing.github.io/helm-charts
+
+releases:
+- name: cert-manager
+  namespace: cert-manager
+  chart: jetstack/cert-manager
+  version: 1.13.2
+  values:
+  - values/cert-manager.values.yaml
+- name: opentelemetry-operator
+  namespace: monitoring
+  chart: open-telemetry/opentelemetry-operator
+  version: 0.41.0
+  disableValidation: true
+  values:
+  - values/opentelemetry-operator.values.yaml
+- name: jaeger-operator
+  namespace: jaeger
+  chart: jaegertracing/jaeger-operator
+  version: 2.49.0
+  disableValidation: true
+  values:
+  - values/jaeger-operator.values.yaml

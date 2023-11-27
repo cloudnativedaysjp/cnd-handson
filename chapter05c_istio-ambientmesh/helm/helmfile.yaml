@@ -1,0 +1,55 @@
+repositories:
+- name: istio-official
+  url: https://istio-release.storage.googleapis.com/charts
+- name: kiali
+  url: https://kiali.org/helm-charts
+- name: prometheus-community
+  url: https://prometheus-community.github.io/helm-charts
+
+releases:
+- name: istio-base
+  chart: istio-official/base
+  version: 1.19.0-alpha.1
+- name: istiod
+  namespace: istio-system
+  chart: istio-official/istiod
+  version: 1.19.0-alpha.1
+  wait: true
+  values:
+  - values/istiod.values.yaml
+- name: istio-ztunnel
+  namespace: istio-system
+  chart: istio-official/ztunnel
+  version: 1.19.0-alpha.1
+  wait: true
+  needs:
+  - istio-system/istiod
+  values:
+  - values/ztunnel.values.yaml
+- name: istio-cni
+  namespace: istio-system
+  chart: istio-official/cni
+  version: 1.19.0-alpha.1
+  wait: true
+  needs:
+  - istio-system/istiod
+  values:
+  - values/istio-cni.values.yaml
+- name: kube-prometheus-stack
+  namespace: prometheus
+  createNamespace: true
+  chart: prometheus-community/kube-prometheus-stack
+  version: 50.3.1
+  wait: true
+  values:
+  - values/prometheus-stack.values.yaml
+- name: kiali-server
+  namespace: istio-system
+  createNamespace: true
+  chart: kiali/kiali-server
+  version: 1.74.0
+  wait: true
+  needs:
+  - prometheus/kube-prometheus-stack
+  values:
+  - values/kiali.values.yaml
