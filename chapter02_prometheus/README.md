@@ -162,7 +162,6 @@ prometheus-kube-prometheus-stack-prometheus-0               2/2     Running   0 
 
 続いて、PrometheusやGrafana等の各UIをIngressで公開していきます。
 すでにIngress NGINX Controllerがデプロイされていると思うので、以下のような設定でIngressをデプロイして公開します。
-す。
 
 ```yaml
 ---
@@ -295,6 +294,8 @@ spec:
 ```shell
 kubectl apply -f manifests/ingress-nginx-servicemonitor.yaml
 ```
+
+<http://prometheus.example.com/graph> を開き (またはリロードして)、PromQL入力欄に ngi と入力し、nginx のメトリクスが追加されているのを確認しましょう。
 
 ![image](https://github.com/kubernetes/ingress-nginx/blob/main/docs/images/prometheus-dashboard1.png)
 

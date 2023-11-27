@@ -11,7 +11,7 @@ GitOpsは、CI/CDを実現するための手法の一つで、Gitのリポジト
 
 
 ## Argo CDについて 
-Kubrnetes用のGitOpsツールで、Gitリポジトリに格納されたマニフェストをデプロイすることができる。WEB GUIとCLIの両方で操作することができ、アプリケーションやKuberenetesのリソースの状態を可視化し簡単に管理する事が可能になっています。
+Kubrnetes用のGitOpsツールで、Gitリポジトリに格納されたマニフェストをデプロイすることができます。WEB GUIとCLIの両方で操作することができ、アプリケーションやKuberenetesのリソースの状態を可視化し簡単に管理する事が可能になっています。
 ArgoCDはGitHub等からのWebhookを受け取り、Gitリポジトリに格納されたマニフェストをデプロイすることができるため、開発者のコードPushやPRをトリガーにデプロイまで実行することができます。
 
 
@@ -44,15 +44,15 @@ Gitリポジトリとアプリケーションの状態が一致し、アプリ�
 アプリケーションやサービスが現在、新しいリクエストやデプロイメントなどの操作を処理していることを示し"Healthy" または "Degraded" の状態に変わります。
 
 ## Refresh/Hard Refresh/Sync の違いについて
-これらの三つの処理は、GitレポジトリとArgo CDの状態を同期させるための処理ですが細かな違い存在します。
+これらの三つの処理は、GitレポジトリとArgo CDの状態を同期させるための処理ですが細かな違いが存在します。
 #### Refresh
-最新のGit上のマニュフェストとRepository Server内にあるマニュフェストを比較し、差分を反映します。
+最新のGit上のマニフェストとRepository Server内にあるマニフェストを比較し、差分を反映します。
 通常の更新はデフォルトで3分ごとに行われます。
 #### HardRefresh
 HelmやKustomizeなどのコードから生成されたマニフェストをキャッシュしているマニフェストキャッシュをクリアし、新たにRefresh処理を行う操作です。これにより、マニフェストの変更の有無にかかわらず、マニフェストを再生成できます。
-デフォルトで24時間ごとに、マニフェストキャッシュの有効期限が切れたときに行われる。
+デフォルトで24時間ごとに、マニフェストキャッシュの有効期限が切れたときに行われます。
 #### Sync
-Kubernetes clusterをGitの状態に同期させるため、マニュフェストの反映（デプロイ）をします。
+Kubernetes clusterをGitの状態に同期させるため、マニフェストの反映（デプロイ）をします。
 
 ### Gitリポジトリの準備(ローカル環境)
 Argo CDを利用する上では、GitHubへのPush等の変更が必要不可欠になります。そのため、このハンズオンのリポジトリをforkして操作する為の準備をします。
@@ -101,7 +101,7 @@ http://argocd.example.com/
 へアクセスします。下記のページにアクセス出来るか確認して下さい。
 * ユーザ名: admin
 * パスワード: 以下のコマンドをサーバ上で実行した値
-    * `kubectl -n argo-cd get secret argocd-initial-admin-secret -o jsonpath="{.data.password}" | base64 -d` ; echo
+    * `kubectl -n argo-cd get secret argocd-initial-admin-secret -o jsonpath="{.data.password}" | base64 -d ; echo`
 
 ![webui](./image/setup/access-webui.png)
 ### レポジトリの登録
@@ -112,7 +112,7 @@ Settings - > Repositories と進み CONEECT REPOをクリックします　
 ![CONEECT REPO](./image/setup/add-repo-setting.png)
 上の画面上で各項目を次のように設定
 ```
-Choose you connection method: VIA HTTPS
+Choose your connection method: VIA HTTPS
 Type: git
 Project: default
 Repository URL: https://github.com/自身のアカウント名/cndt2023-handson
@@ -157,7 +157,7 @@ http://app.argocd.example.com
 
 ![demo app](./image/demoapp/demo-app.png)
 
-上記の手順でGitに保存しているマニュフェストを参照して、アプリケーションのデプロイを行いました。次にGitの変更にKubernetes Clusterを同期させます。
+上記の手順でGitに保存しているマニフェストを参照して、アプリケーションのデプロイを行いました。次にGitの変更にKubernetes Clusterを同期させます。
 
 app/default/deployment.yamlの編集を行います。 imageのtagをblueからgreenに変更します。
 ```
@@ -175,10 +175,11 @@ http://app.argocd.example.com
 へアクセスして確認するとタイルが青から緑に変わったことが確認できます。
 ![blue2green](image/demoapp/blue2green-demoapp.png)
 ## Kustomizeを使ったデプロイ
-ArgoCD上でマニュフェストの管理ツールである「Kustomize」を利用した、開発環境と本番環境の2つのマニュフェスト管理を行います。
+ArgoCD上でマニフェストの管理ツールである「Kustomize」を利用した、開発環境と本番環境の2つのマニフェスト管理を行います。
 
-Applicationsの画面において + NEW APPをクリックします![Applications](./image/demoapp/new-app.png)
-上の画面上で各項目を次のように設定します。(開発環境と本番環境はここのPathだけ変更になります)
+Applicationsの画面において + NEW APPをクリックし、本番環境・開発環境それぞれのアプリケーションを作成します。
+[Applications](./image/demoapp/new-app.png)
+上の画面上で各項目を次のように設定します。(開発環境と本番環境で分けて表示してある項目は、それぞれ設定してください)
 ```
 GENERAL
   Application Name: 
@@ -242,7 +243,7 @@ GENERAL
 ![helm-sync](./image/demoapp/helm-sync.png)
 ブラウザで
 helm.argocd.example.com
-アクセスして確認してみてください。Helmを使ってデプロイが出来てる事が確認できます。
+アクセスして確認してみてください。Helmを使ってデプロイが出来ている事が確認できます。
 
 ## 作成したデモアプリを削除
 各アプリのDELETEをクリックします

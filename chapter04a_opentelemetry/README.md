@@ -16,7 +16,7 @@ OpenTelemetryプロジェクトの代表的なプロダクトは以下のとお�
   * メトリクス、ログ、トレースなどの各種テレメトリの送受信やデータ処理を行うコンポーネント
   * 様々なプロバイダーに対応するためにプラグイン方式を採用している
 
-このハンズオンでは、OpenTelemetry Collectorでメトリクス・ログ・トレースを扱う方法と、OpentelemetrySDKを用いて分散トレースを行う方法について実際に体験します。
+このハンズオンでは、OpenTelemetry Collectorでメトリクス・ログ・トレースを扱う方法と、OpenTelemetry SDKを用いて分散トレースを行う方法について実際に体験します。
 
 ### Open Telemetry Collectorのコンポーネント
 
@@ -536,7 +536,7 @@ OpenTelemetry Operatorには、各種アプリケーションのトレースデ�
 トレースデータを計装する場合には、[SDKを利用してアプリケーションに手動インスツルメンテーション](https://opentelemetry.io/docs/instrumentation/)するか、[サイドカーとしてコンテナをデプロイして自動インスツルメンテーション](https://opentelemetry.io/docs/kubernetes/operator/automatic/)するかの2通りの方法があります。
 今回は、アプリケーションに手を加えなくて利用可能な自動インスツルメンテーションを利用します。
 
-自動インスツルメンテーションを行う場合には、`Instrumentation`リソースで設定を行います。今回はデータを取得し、先ほど作成したJaegerのOLTP用のgRPCエンドポイント `jaeger-collector.jaeger:14250` に対してデータを転送する設定を行います。
+自動インスツルメンテーションを行う場合には、`Instrumentation`リソースで設定を行います。今回はデータを取得し、先ほど作成したJaegerのOTLP用のgRPCエンドポイント `jaeger-collector.jaeger:14250` に対してデータを転送する設定を行います。
 
 ```yaml
 apiVersion: opentelemetry.io/v1alpha1
@@ -580,7 +580,7 @@ spec:
 作成されたPodを確認すると、Podにサイドカーとして`opentelemetry-auto-instrumentation`コンテナが含まれた形で作成されていることが確認できます。
 
 ```bash
-kubectl get pods
+kubectl -n handson get pods
 ```
 ```bash
 # 実行結果
@@ -607,7 +607,7 @@ sample-app-blue-5fb8dc75fd-7cvxg   3/3     Ready    0          30s
 ## 中央集権的にデータを扱う
 
 OpenTelemetryでは、OpenTelemetry Protocol（OTLP）を利用して、OpenTelemetry CollectorからOpenTelemetry Collectorへテレメトリデータを転送することもできます。
-複数のノードからデータを取得し、サンプリングするAggregator層を挟んむなど、処理を中継させたりすることなども可能です。
+複数のノードからデータを取得し、サンプリングするAggregator層を挟むなど、処理を中継させたりすることなども可能です。
 
 ![](./image/collector-pipeline.png)
 
