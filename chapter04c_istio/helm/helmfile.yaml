@@ -10,7 +10,7 @@ releases:
   version: 1.19.0
 - name: istio-misc
   namespace: istio-system
-  chart: ../charts/istio-misc
+  chart: charts/istio-misc
   needs:
   - /istio-base
 - name: istiod
