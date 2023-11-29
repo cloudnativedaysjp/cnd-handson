@@ -143,8 +143,8 @@ kubectl run curl-deny  -n handson --image=curlimages/curl --labels="app=curl-den
 
 ```shell
 kubectl exec -n handson curl-allow -- /bin/sh -c "echo -n 'curl-allow -> /     : ';curl -s -o /dev/null handson:8080 -w '%{http_code}\n'"
-kubectl exec -n handson curl-deny  -- /bin/sh -c "echo -n 'curl-deny  -> /     : ';curl -s -o /dev/null handson:8080 -w '%{http_code}\n'"
 kubectl exec -n handson curl-allow -- /bin/sh -c "echo -n 'curl-allow -> /color: ';curl -s -o /dev/null handson:8080/color -w '%{http_code}\n'"
+kubectl exec -n handson curl-deny  -- /bin/sh -c "echo -n 'curl-deny  -> /     : ';curl -s -o /dev/null handson:8080 -w '%{http_code}\n'"
 kubectl exec -n handson curl-deny  -- /bin/sh -c "echo -n 'curl-deny  -> /color: ';curl -s -o /dev/null handson:8080/color -w '%{http_code}\n'"
 ```
 
@@ -152,14 +152,13 @@ kubectl exec -n handson curl-deny  -- /bin/sh -c "echo -n 'curl-deny  -> /color:
 
 ```shell
 curl-allow -> /     : 200
-curl-deny  -> /     : 200
 curl-allow -> /color: 200
+curl-deny  -> /     : 200
 curl-deny  -> /color: 200
 ```
 
 動作確認として下記設定の`CiliumNetworkPolicy`をデプロイしてみます。
 - `/`へは`curl-allow`からのみアクセス可能
-  - つまり、`curl-deny`から`/`への通信は拒否される
 - `/color`へは`curl-allow`と`curl-deny`の両方からアクセスが可能
 
 ```shell
@@ -170,19 +169,23 @@ kubectl apply -f manifest/cnp.yaml
 
 ```sh
 kubectl exec -n handson curl-allow -- /bin/sh -c "echo -n 'curl-allow -> /     : ';curl -s -o /dev/null handson:8080 -w '%{http_code}\n'"
-kubectl exec -n handson curl-deny  -- /bin/sh -c "echo -n 'curl-deny  -> /     : ';curl -s -o /dev/null handson:8080 -w '%{http_code}\n'"
 kubectl exec -n handson curl-allow -- /bin/sh -c "echo -n 'curl-allow -> /color: ';curl -s -o /dev/null handson:8080/color -w '%{http_code}\n'"
+kubectl exec -n handson curl-deny  -- /bin/sh -c "echo -n 'curl-deny  -> /     : ';curl -s -o /dev/null handson:8080 -w '%{http_code}\n'"
 kubectl exec -n handson curl-deny  -- /bin/sh -c "echo -n 'curl-deny  -> /color: ';curl -s -o /dev/null handson:8080/color -w '%{http_code}\n'"
 ```
 
-下記のように、`/`にアクセスしたcurl-denyのみHTTPステータスコード403が返ってくることを確認します。
+期待通り、`/`にアクセスしたcurl-denyのみHTTPステータスコード403が返ってくることを確認します。
 
 ```shell
 curl-allow -> /     : 200
-curl-deny  -> /     : 403
 curl-allow -> /color: 200
+curl-deny  -> /     : 403
 curl-deny  -> /color: 200
 ```
+
+> **Info**  
+> L3/L4のポリシーとL7のポリシーでルール違反の際の挙動が変わります。
+> L3/L4のポリシーに違反した場合は、パケットがDropされますが、L7のポリシー違反の場合は、HTTP 403 access deniedが返されます。
 
 次節へ行く前に、作成したCiliumNetworkPolicyリソースを削除しておきます。
 
@@ -206,7 +209,7 @@ Ingressリソースを利用するためには、`ingressClassName`フィール�
 kubectl apply -f manifest/ingress.yaml
 ```
 
-curlコマンドでHTTPステータスコード200が返ってくることを確認します。
+`app.cilium.example.com`の名前解決が可能な端末から、curlコマンドでHTTPステータスコード200が返ってくることを確認します。
 
 ```shell
 curl -I app.cilium.example.com:8080
@@ -241,7 +244,7 @@ kubectl apply -f manifest/service.yaml
 
 次に、トラフィック分割機能を利用して下記のように9:1にトラフィックを分割してみます。
 
-![](images/ch4-2.png)
+![](image/ch4-2.png)
 
 トラフィックを分割するためにGatewayリソースとHTTPRouteリソースをデプロイします。
 
@@ -249,18 +252,24 @@ kubectl apply -f manifest/service.yaml
 kubectl apply -n handson  -f manifest/gateway_api.yaml
 ```
 
-上記をデプロイすると、Serviceリソースの`Type:Loadbalancer`が作成されます。
+上記をデプロイすると、GatewayリソースとHTTPRouteリソース、そしてGatewayリソースに紐付くServiceリソースの`Type:Loadbalancer`が作成されます。
 
 ```shell
-kubectl get svc -n handson
+kubectl get gateway,httproute,svc -n handson
 ```
 
 ```shell
-NAME                      TYPE           CLUSTER-IP      EXTERNAL-IP      PORT(S)        AGE
-cilium-gateway-color-gw   LoadBalancer   10.96.196.114   172.24.255.200   80:30485/TCP   97s
-handson                   ClusterIP      10.96.172.207   <none>           80/TCP         19m
-handson-blue              ClusterIP      10.96.232.207   <none>           80/TCP         19m
-handson-yellow            ClusterIP      10.96.62.8      <none>           80/TCP         19m
+NAME                                         CLASS    ADDRESS        PROGRAMMED   AGE
+gateway.gateway.networking.k8s.io/color-gw   cilium   172.24.0.200   True         52s
+
+NAME                                                HOSTNAMES   AGE
+httproute.gateway.networking.k8s.io/color-route-1               52s
+
+NAME                              TYPE           CLUSTER-IP      EXTERNAL-IP    PORT(S)        AGE
+service/cilium-gateway-color-gw   LoadBalancer   10.96.50.28     172.24.0.200   80:32720/TCP   52s
+service/handson                   ClusterIP      10.96.131.226   <none>         8080/TCP       24m
+service/handson-blue              ClusterIP      10.96.164.242   <none>         8080/TCP       113s
+service/handson-yellow            ClusterIP      10.96.189.95    <none>         8080/TCP       113s
 ```
 
 作成されたServiceリソースのIPアドレスを取得します。
@@ -269,10 +278,15 @@ handson-yellow            ClusterIP      10.96.62.8      <none>           80/TCP
 LB_IP=$(kubectl get -n handson svc -l io.cilium.gateway/owning-gateway=color-gw -o=jsonpath='{.items[0].status.loadBalancer.ingress[0].ip}')
 ```
 
+> **Warning**  
+> LB_IPは第1章で導入したIPAddressPoolのspec.addressesのアドレスになります。
+> 今回のハンズオンでは、docker network kindのIP帯を設定しているため、dockerを起動しているホストからのみアクセスすることが可能です。
+
 LBのIPアドレス宛に10回ほどアクセスし、おおよそ9:1に分散していることを確認します。
 
 ```shell
 for in in {1..10}; do \
+echo -n "Color is "
 curl ${LB_IP}/color;echo
 sleep 0.1
 done
@@ -291,12 +305,12 @@ kubectl delete -f manifest/gateway_api.yaml
 ### Traffic Management
 
 Ciliumでは、CRDとして定義された`CiliumEnvoyConfig`と`CiliumCllusterwideEnvoyConfig`を利用したL7トラフィック制御も可能です。
-これらのリソースを使用することで、Cilium Agent内のEnvoyに対して設定を行えます。
+これらのリソースを使用し、Cilium Agent内のEnvoyに設定を行います。
 詳細は[L7-Aware Traffic Management](https://docs.cilium.io/en/latest/network/servicemesh/l7-traffic-management/)を参照してください。
 
 Envoyの[Supported API versions](https://www.envoyproxy.io/docs/envoy/latest/api/api_supported_versions)にも記載がありますが、Envoy APIにはv1/v2/v3の3種類が存在します。
 このうちCiliumでは、Envoy API v3のみをサポートしています。
-また、Envoy Extension Resource Typeへの対応状況は[Envoy extensions configuration file](https://github.com/cilium/proxy/blob/main/envoy_build_config/extensions_build_config.bzl)を確認してください。
+なお、Envoy Extension Resource Typeへの対応状況に関しては[Envoy extensions configuration file](https://github.com/cilium/proxy/blob/main/envoy_build_config/extensions_build_config.bzl)を確認してください。
 
 この節では、`envoy.filters.http.router`を利用したトラフィックシフトを行います。
 
@@ -321,6 +335,9 @@ done
 確認が終わったら本章でデプロイしたリソースを削除しておきます。
 
 ```shell
+kubectl delete -f manifest/cec.yaml
 kubectl delete -Rf ../chapter01_cluster-create/manifest/app -n handson -l color=yellow
 kubectl delete -f manifest/service.yaml
+kubectl delete -n handson pod curl-allow --force
+kubectl delete -n handson pod curl-deny  --force
 ```
