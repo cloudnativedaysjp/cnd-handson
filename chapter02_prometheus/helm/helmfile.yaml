@@ -9,4 +9,4 @@ releases:
   chart: prometheus-community/kube-prometheus-stack
   version: 50.3.1
   values:
-  - values.yaml
+  - prometheus-values.yaml

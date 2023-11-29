@@ -30,6 +30,7 @@ grafana:
 
 prometheus:
   prometheusSpec:
+    enableRemoteWriteReceiver: true
     podMonitorSelectorNilUsesHelmValues: false
     serviceMonitorSelectorNilUsesHelmValues: false
     additionalScrapeConfigs:
