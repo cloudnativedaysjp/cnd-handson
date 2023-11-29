@@ -34,6 +34,7 @@ aws ec2 run-instances \
   --image-id ami-09a81b370b76de6a2 \
   --count 1 \
   --instance-type t2.xlarge \
+  --block-device-mappings '[{"DeviceName":"/dev/sda1","Ebs":{"VolumeSize":50}}]' \
   --key-name cndt2023-handson-key \
   --security-group-ids ${SECGROUP_ID} \
   --tag-specifications 'ResourceType=instance,Tags=[{Key=Name,Value=cndt2023-handson-vm}]'
