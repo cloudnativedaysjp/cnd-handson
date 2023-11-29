@@ -572,9 +572,17 @@ metadata:
 spec:
   template:
     metadata:
-      instrumentation.opentelemetry.io/inject-go: go-instrumentation
-      instrumentation.opentelemetry.io/otel-go-auto-target-exe: "/rollouts-demo"
+      annotations:
+        instrumentation.opentelemetry.io/inject-go: go-instrumentation
+        instrumentation.opentelemetry.io/otel-go-auto-target-exe: "/rollouts-demo"
     spec: {...}
+```
+
+今回はすでにデプロイされている`handson-blue` Deploymentに対して設定を行います。kubectl patchコマンドを利用してこれらのアノテーションを付与します。
+
+```shell
+kubectl -n handson patch deployment handson-blue -p '{"spec":{"template":{"metadata":{"annotations":{"instrumentation.opentelemetry.io/inject-go": "go-instrumentation"}}}}}'
+kubectl -n handson patch deployment handson-blue -p '{"spec":{"template":{"metadata":{"annotations":{"instrumentation.opentelemetry.io/otel-go-auto-target-exe": "/rollouts-demo"}}}}}'
 ```
 
 作成されたPodを確認すると、Podにサイドカーとして`opentelemetry-auto-instrumentation`コンテナが含まれた形で作成されていることが確認できます。
@@ -596,6 +604,12 @@ sample-app-blue-5fb8dc75fd-7cvxg   3/3     Ready    0          30s
 
 ![](./image/jaeger.png)
 
+最後にこの章でアプリケーションに加えた変更をクリーンアップしておきます。
+
+```shell
+kubectl -n handson patch deployment handson-blue -p '{"spec":{"template":{"metadata":{"annotations":{"instrumentation.opentelemetry.io/inject-go": null}}}}}'
+kubectl -n handson patch deployment handson-blue -p '{"spec":{"template":{"metadata":{"annotations":{"instrumentation.opentelemetry.io/otel-go-auto-target-exe": null}}}}}'
+```
 
 * 利用しているReceiver
   * [otlp](https://github.com/open-telemetry/opentelemetry-collector/blob/main/receiver/otlpreceiver)
