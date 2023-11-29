@@ -36,25 +36,15 @@ Argo Rolloutsは、Kubernetesコントローラおよび一連のカスタムリ
 
 Argo CDとの連携が可能で、簡単に既存のGit Opsでプログレッシブデリバリーができる
 ## セットアップ
-今回のハンズオンでは、Argo CDからArgo Rolloutsを利用します。
+今回のハンズオンでは、PrometheusとArgo CD、Argo Rolloutsを利用します。
 
-### Gitリポジトリの準備(ローカル環境)
-Argo CDを利用する上では、GitHubへのPush等の変更が必要不可欠になります。そのため、このハンズオンのリポジトリをforkして操作する為の準備をします。
+また、GitHubのリポジトリの登録やPushは、forkした自身のリポジトリを利用して下さい。
 
-[このハンズオン](https://github.com/cloudnativedaysjp/cndt2023-handson)にアクセスし、forkをクリックします
-![fork1](../chapter04b_argocd/image/setup/fork-1.png)
-
-Create fork をクリックします
-![fork2](../chapter04b_argocd/image/setup/fork-2.png)
-
-自身のアカウントでforkされていることが確認できます
-![fork2](../chapter04b_argocd/image/setup/fork-3.png)
-
-GitHubのリポジトリの登録やPushはforkした自身のリポジトリを利用して下さい
-
+### Prometheusのセットアップ
+[chapter02_prometheus](https://github.com/cloudnativedaysjp/cndt2023-handson/tree/main/chapter02_prometheus#%E5%AE%9F%E8%B7%B5-ingress-nginx-controller%E3%81%8B%E3%82%89%E3%83%A1%E3%83%88%E3%83%AA%E3%82%AF%E3%82%B9%E3%82%92%E5%8F%8E%E9%9B%86%E3%81%99%E3%82%8B)を参照して、kube-prometheus-stackのインストールからNginx Ingressのメトリクスを外部公開できていることを確認まで行って下さい。
 
 ### Argo CDのセットアップ
-[chapter04ｂargocd](https://github.com/cloudnativedaysjp/cndt2023-handson/tree/main/chapter04b_argocd#argo-cd%E3%81%AE%E3%82%A4%E3%83%B3%E3%82%B9%E3%83%88%E3%83%BC%E3%83%AB)を参照してWebUIの確認とレポジトリのfork～登録まで行って下さい。
+[chapter04b_argocd](https://github.com/cloudnativedaysjp/cndt2023-handson/tree/main/chapter04b_argocd#argo-cd%E3%81%AE%E3%82%A4%E3%83%B3%E3%82%B9%E3%83%88%E3%83%BC%E3%83%AB)を参照してArgo CDのインストールからWebUIの確認とレポジトリのforkから登録まで行って下さい。
 
 今回のchapterでは更にArgo CDのプラグインである、rollout-extensionをインストールしてArgoCD上でrolloutの操作結果が確認できるようにします。
 ```sh
@@ -62,8 +52,10 @@ kubectl apply -n argo-cd \
     -f https://raw.githubusercontent.com/argoproj-labs/rollout-extension/v0.2.1/manifests/install.yaml
 ```
 
+
+
 ### Argo Rolloutsのインストール
-helmファイルを利用してArgo CDをインストールします。
+helmファイルを利用してArgo Rolloutsをインストールします。
 ```sh
 helmfile sync -f ./helm/helmfile.yaml
 ```
