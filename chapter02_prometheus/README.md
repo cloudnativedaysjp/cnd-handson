@@ -299,9 +299,39 @@ kubectl apply -f manifests/ingress-nginx-servicemonitor.yaml
 
 ![image](https://github.com/kubernetes/ingress-nginx/blob/main/docs/images/prometheus-dashboard1.png)
 
-## PromQLチートシート
+## PromQL実例集
 
-TODO
+ここでは、 <https://prometheus.io/docs/prometheus/latest/querying/basics/> の内容をもとに、
+PromQLでよく使われる表現をいくつか見ていきたいと思います。
+
+より包括的なチートシートとしては、 <https://promlabs.com/promql-cheat-sheet/> も参考になります。
+
+```text
+# Instant Vector(http_requests_totalにおける、サンプリングデータの集合)
+http_requests_total
+
+# Instant Vector with Selector(http_requests_totalのうち、指定したラベルを持つデータの集合)
+http_requests_total{job="prometheus",group="canary"}
+
+# Instant Vector with Matching Expression
+http_requests_total{environment=~"staging|testing|development",method!="GET"}
+
+# Range Vector(過去5分間における、http_requests_totalのデータ)
+http_requests_total{job="prometheus"}[5m]
+
+# Built-in function with Range Vector(過去5分間における、http_requests_totalの平均)
+# 各組み込み関数のシグネチャはこちら https://prometheus.io/docs/prometheus/latest/querying/functions/#aggregation_over_time
+avg_over_time(http_requests_total{job="prometheus"}[5m])
+
+# Aggregation Operators(application, groupごとに集計したhttp_requests_totalの合計)
+ sum by (application, group) (http_requests_total)
+
+# 実例1(利用可能になっているKubernetes Nodeの数)
+sum(kube_node_status_condition{condition="Ready", status="true"}==1)
+
+# 実例2(Namespaceごとに集計した、準備可能になっていないPodの数)
+sum by (kube_namespace_name) (kube_pod_status_ready{condition="false"})
+```
 
 ## 参考文献
 
