@@ -100,7 +100,7 @@ kubectl get services,pods -n handson -l app=handson
 
 > [!NOTE]
 >
-> chapter04a_opentelemetryで[traceをopentelemetryで管理する例](../chapter04a_opentelemetry/README.md#trace-をopentelemetryで管理する例)を実装している場合はコンテナ数は3になります。
+> chapter04_opentelemetryで[traceをopentelemetryで管理する例](../chapter04_opentelemetry/README.md#trace-をopentelemetryで管理する例)を実装している場合はコンテナ数は3になります。
 
 ```sh
 ＃ 実行結果
@@ -156,13 +156,8 @@ virtualservice.networking.istio.io/simple-routing   ["handson"]   ["app.example.
 ![image](./image/app-simple-routing.png)
 
 ### メッシュの可視化
-<<<<<<< HEAD
-[Kiali](https://kiali.io)を用いてIstioサービスメッシュ内のトラフィックを見てみましょう。KialiはIstioサービスメッシュ用のコンソールであり、Kialiが提供するダッシュボードから、サービスメッシュの構造の確認、トラフィックフローの監視、および、サービスメッシュ設定の確認、変更をすることが可能です。
-
-Kialiは[インストール](#インストール)でインストール済みなので、外部(インターネット)からアクセスできるようにするためにIngressリソースを作成します。
-=======
 Kialiを用いてIstioサービスメッシュ内のトラフィックを見てみましょう。Kialiは[インストール](#インストール)でインストール済みなので、外部(インターネット)からアクセスできるようにするためにIngressリソースを作成します。
->>>>>>> refact/219/istio-rev4
+
 ```sh
 kubectl apply -f ingress/kiali-ingress.yaml
 ```
@@ -542,7 +537,7 @@ kubectl delete -f app/curl.yaml
 サービスメッシュを提供するIstioを使用することで、アプリケーションレイヤーではなくインフラレイヤーでサービス間のトラフィック管理を、またKialiを使用することでサービスメッシュの可視化をすることができます。本chapterではVirtual Service, Destination Ruleを使用したルーティング制御、Authorization Policyを使用した認可処理しか紹介していませんが、Istioには他にも[沢山の機能](https://istio.io/latest/docs/tasks/)がありますので、是非確認してみてください。
 
 ## 最終クリーンアップ
-`handson` namespaceをIstioサービスメッシュ管理から外します。
+`handson` namespaceをIstioサービスメッシュの管理外にします。
 ```sh
 kubectl label namespace handson istio-injection-
 ```

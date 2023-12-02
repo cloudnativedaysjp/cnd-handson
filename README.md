@@ -7,38 +7,49 @@
 - [chapter01_cluster-create](./chapter01_cluster-create/)
 - [chapter02_prometheus](./chapter02_prometheus/)
 - [chapter03_grafana](./chapter03_grafana/)
-- [chapter04a_opentelemetry](./chapter04a_opentelemetry/)
-- [chapter04b_argocd](./chapter04b_argocd/)
-- [chapter04c_istio](./chapter04c_istio/)
-- [chapter04d_cilium](./chapter04d_cilium/)
-- [chapter05b_argo-rollouts](./chapter05b_argo-rollouts/)
-- [chapter05c_istio-ambientmesh](./chapter05c_istio-ambientmesh/)
-- [chapter05d_hubble](./chapter05d_hubble/)
+- [chapter04_opentelemetry](./chapter04_opentelemetry/)
+- [chapter05_argocd](./chapter05_argocd/)
+- [chapter06_istio](./chapter06_istio/)
+- [chapter07_cilium](./chapter07_cilium/)
+- [chapter08_argo-rollouts](./chapter08_argo-rollouts/)
+- [chapter09_istio-ambientmesh](./chapter09_istio-ambientmesh/)
+- [chapter10_hubble](./chapter10_hubble/)
 
 ### 進め方
-最初にchapter00を実施してください。<br>
-その後、chapter01、chapter02、chapter03を順に実施してください。<br>
-chapter04とchapter05はそれぞれ独立しているため、順番に進めることはもちろん、お好きなchapterだけを実施いただくことも可能です。また、下記のように、気になる技術に焦点を当てたchapterを進めることもできます。
+まずは、chapter00, chapter01を実施してhandsonを進めるための環境を構築してください。<br>
+その後は、順番にchapterを進めることはもちろん、下記フローチャートのように、気になる技術に焦点を当てたchapterを進めることもできます。
 
-- OpenTelemetryに関するchapter
-  ```plain text
-    chapter01 -> chater02 -> chapter03 -> chapter04a
-  ```
+```mermaid
+flowchart TD
+    setup[chapter00_setup]
+    cluster[chapter01_cluster-create]
+    prom[chapter02_prometheus]
+    grafana[chapter03_grafana]
+    otel[chapter04_opentelemetry]
+    argocd[chapter05_argocd]
+    istio[chapter06_istio]
+    cilium[chapter07_cilium]
+    argorollouts[chapter08_argo-rollouts]
+    istioambient[chapter09_istio-ambientmesh]
+    hubble[chapter10_hubble]
 
-- Argo CD/Rolloutsに関するchapter
-  ```plain text
-    chapter01 -> chater02 -> chapter03 -> chapter04b -> chapter05b
-  ```
+    setup-->cluster
 
-- Istio/Istio ambient meshに関するするchapter
-  ```plain text
-    chapter01 -> chater02 -> chapter03 -> chapter04c -> chapter05c
-  ```
+    cluster-->prom
+    cluster-->argocd
 
-- Cilium/Hubbleに関するchapter
-  ```plain text
-    chapter01 -> chater02 -> chapter03 -> chapter04d -> chapter05d
-  ```
+    prom-->grafana
+    prom-->argorollouts
+    prom-->istio
+    argocd-->prom
+
+    grafana-->otel
+    grafana-->cilium
+
+    cilium-->hubble
+
+    istio-->istioambient
+```
 
 ## 免責事項
 本ドキュメントに掲載された内容によって生じた損害等の一切の責任を負いかねます。
