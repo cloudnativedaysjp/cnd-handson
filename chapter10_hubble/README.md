@@ -89,7 +89,8 @@ Hubble CLIを利用してHubble Relayにアクセスします。
 cilium hubble port-forward
 ```
 
-> **Info**  
+> [!NOTE]
+> 
 > cilium hubble port-forwardコマンドを実行しても何も表示されません。
 > 別ターミナルを開き、以降を進めてください。
 
@@ -105,7 +106,8 @@ Flows/s: 33.34
 Connected Nodes: 3/3
 ```
 
-> **Info**  
+> [!NOTE]
+>   
 > ciliumコマンドではなく、下記のようなkubectlコマンドを実行することでもReachabilityを確保可能です。
 > ```shell
 > kubectl port-forward -n kube-system deploy/hubble-relay 4245 4245
@@ -142,7 +144,8 @@ kubectl apply -f manifest/ingress.yaml
 デフォルトではL3/L4のプロトコルのみ可視化の対象となっています。
 L7プロトコルを可視化の対象とするためには、CiliumNetworkPolicyリソースを作成しルールに一致させる必要があります。
 
-> **Info**  
+> [!NOTE]
+> 
 > L7プロトコルを可視化する方法として、Podのannotationを利用する方法もありましたが、2023/11時点の最新のドキュメントではCiliumNetworkPolicyを利用する方法が推奨されています。  
 > see: https://github.com/cilium/cilium/blob/82dbff8e5a5f7ced99e96cd85997fae90e035aac/Documentation/observability/visibility.rst
 

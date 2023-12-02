@@ -104,7 +104,8 @@ ServiceMeshでは、まずCiliumのIngressClassを設定したIngressリソー�
 - [Kubernetes Gateway API: Getting started with Gateway API](https://gateway-api.sigs.k8s.io/guides/#getting-started-with-gateway-api)
 - [Cilium: L7-Aware Traffic Management/Examples](https://docs.cilium.io/en/stable/network/servicemesh/l7-traffic-management/#examples)
 
-> **Info**
+> [!NOTE]
+> 
 > Observabilityについては[chapter10_hubble](../chapter10_hubble/)にて説明します。
 
 ## Networking
@@ -183,7 +184,8 @@ curl-deny  -> /     : 403
 curl-deny  -> /color: 200
 ```
 
-> **Info**  
+> [!NOTE]
+> 
 > L3/L4のポリシーとL7のポリシーでルール違反の際の挙動が変わります。
 > L3/L4のポリシーに違反した場合は、パケットがDropされますが、L7のポリシー違反の場合は、HTTP 403 access deniedが返されます。
 
@@ -278,7 +280,8 @@ service/handson-yellow            ClusterIP      10.96.189.95    <none>         
 LB_IP=$(kubectl get -n handson svc -l io.cilium.gateway/owning-gateway=color-gw -o=jsonpath='{.items[0].status.loadBalancer.ingress[0].ip}')
 ```
 
-> **Warning**  
+> [!WARNIGN]
+> 
 > LB_IPは第1章で導入したIPAddressPoolのspec.addressesのアドレスになります。
 > 今回のハンズオンでは、docker network kindのIP帯を設定しているため、dockerを起動しているホストからのみアクセスすることが可能です。
 
@@ -298,7 +301,8 @@ done
 kubectl delete -f manifest/gateway_api.yaml
 ```
 
-> **Info** 
+> [!NOTE]
+> 
 > 今回のようなルーティング機能はCilium Service Meshの機能を利用しても提供することができます。
 > Cilium Service Meshを利用したトラフィック分割のデモを次節で説明します。
 
