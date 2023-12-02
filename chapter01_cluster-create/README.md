@@ -105,7 +105,7 @@ Not sure what to do next? 😅  Check out https://kind.sigs.k8s.io/docs/user/qui
 Gateway APIはKubernetesクラスター外からKubernetesクラスター内のServiceへのトラフィックを管理するためのものです。
 Ciliumについては[chapter07_cilium](../chapter07_cilium/)で説明するのでそちらを参照してください。
 MetallbはKind上のクラスターでServiceリソースのType:LoadBalancerを利用するためにインストールします。
-Ingress NGINX Controllerはインターネットからのkind上のServiceリソースへ通信をルーティングするためにインストールします。
+Ingress NGINX Controllerはインターネットからkind上のServiceリソースへ通信をルーティングするためにインストールします。
 各コンポーネントの詳細については上記リンクをご参照ください。
 
 まず、最初にGateway APIのCRDをデプロイします。
@@ -134,7 +134,7 @@ Metallbに関しては、追加で`IPAddressPool`と`L2Advertisement`をデプ�
 kubectl apply -f manifest/metallb.yaml
 ```
 
-> **Info**  
+> **Warning**  
 > manifest/metallb.yamlでデプロイしたIPAddressPoolリソースの`spec.addresses`に設定する値は、docker kindネットワークのアドレス帯から選択する必要があります。
 > 今回は`manifest/metallb.yaml`既に設定済みのため意識する必要はありせんが、別環境でMetallbを設定するときには注意してください。
 > 詳細は[Loadbalancer](https://kind.sigs.k8s.io/docs/user/loadbalancer/)を参照してください。

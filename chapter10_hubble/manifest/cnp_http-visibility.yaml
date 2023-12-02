@@ -1,0 +1,23 @@
+---
+apiVersion: cilium.io/v2
+kind: CiliumNetworkPolicy
+metadata:
+  name: http-ingress-visibility
+  namespace: handson
+spec:
+  endpointSelector:
+    matchLabels: {}
+  egress:
+    - toEntities:
+        - all
+    - toPorts:
+        - ports:
+            - port: "80"
+              protocol: "TCP"
+            - port: "8080"
+              protocol: "TCP"
+            - port: "8081"
+              protocol: "TCP"
+          rules:
+            http:
+              - {}

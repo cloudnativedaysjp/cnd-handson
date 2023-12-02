@@ -7,7 +7,7 @@
 ## Hubbleの概要
 
 HubbleはCiliumのために開発されたネットワークとセキュリティのObservabilityプラットフォームであり、
-[Cilium Hubble Series (Part 1): Re-introducing Hubble](https://isovalent.com/blog/post/hubble-series-re-introducing-hubble/)で説明されるように下記のコンポーネントで構成されます。
+[Cilium Hubble Series (Part 1): Re-introducing Hubble](https://isovalent.com/blog/post/hubble-series-re-introducing-hubble/)で説明されるように、下記のコンポーネントで構成されます。
 
 ![](image/ch05_hubble-components_01.png)
 
@@ -25,8 +25,7 @@ HubbleはCiliumのために開発されたネットワークとセキュリテ�
 
 ## 構築
 
-Hubble RelayとHubble UIのステータスを確認します。
-ステータスはciliumコマンドからも確認可能です。
+Hubble RelayとHubble UIのステータスはciliumコマンドから確認可能です。
 
 ```shell
 cilium status
@@ -57,43 +56,16 @@ Image versions         cilium             quay.io/cilium/cilium:v1.14.2@sha256:6
                        hubble-relay       quay.io/cilium/hubble-relay:v1.14.2@sha256:a89030b31f333e8fb1c10d2473250399a1a537c27d022cd8becc1a65d1bef1d6: 1
 ```
 
-設定自体はすでに[chapter01 cluster-create](../chapter01_cluster-create/)で行っているため、Hubble-uiおよびHubble-relayが動作しています。
-Hubble RelayとHubble UIのデプロイはそれぞれ`hubble.relay.enabled=true`と`hubble.ui.enabled=true`で設定可能です。
-また、Ciliumが管理するKubernetes Podのネットワークを監視するために、Hubbleのメトリクスを有効化しています。
+設定自体はすでに[Chapter1 Cluster Create](./../chapter01_cluster-create)で行っているため、Hubble-uiとHubble-relayが動作しています。
+Helmを利用してアプライする場合、Hubble RelayとHubble UIのデプロイはそれぞれ`hubble.relay.enabled=true`と`hubble.ui.enabled=true`で設定可能です。
+また、Ciliumが管理するKubernetes Podのネットワークを監視するために、Hubbleのメトリクスを有効化する設定を入れています。
 使用可能なメトリクスに関しては、[Hubble Exported Metrics](https://docs.cilium.io/en/stable/observability/metrics/#hubble-exported-metrics)を参照ください。
-
-具体的な設定は以下のようなモノになります。
-
-```yaml
-hubble:
-  enabled: true
-  relay:
-    enabled: true
-  ui:
-    enabled: true
-    podAnnotations:
-      policy.cilium.io/proxy-visibility: "<Ingress/8081/TCP/HTTP>"
-  metrics:
-    enableOpenMetrics: true
-    # see: https://docs.cilium.io/en/stable/observability/metrics/#hubble-metrics
-    enabled:
-      - dns
-      - drop
-      - tcp
-      - flow
-      - port-distribution
-      - icmp
-      - httpV2:exemplars=true;labelsContext=source_ip,source_namespace,source_workload,destination_ip,destination_namespace,destination_workload,traffic_direction
-```
-
-Hubble UIに関しては、L7トラフィックの可視化を行うためにannotationに`policy.cilium.io/proxy-visibility: "<Ingress/8081/TCP/HTTP>"`を設定します。
-こちらについては後述します。
 
 ## 動作確認
 
 ### Hubble Relayへのアクセス
 
-概要で説明した通り、Hubble Relayへアクセスする方法として、下記の2種類の方法があります。
+概要で説明した通り、Hubble Relayへアクセスする方法として下記の2種類の方法があります。
 
 - Hubble CLIを利用する方法
 - Hubble UIを利用する方法
@@ -117,6 +89,10 @@ Hubble CLIを利用してHubble Relayにアクセスします。
 cilium hubble port-forward
 ```
 
+> **Info**  
+> cilium hubble port-forwardコマンドを実行しても何も表示されません。
+> 別ターミナルを開き、以降を進めてください。
+
 下記コマンドでStatusを確認し、HealthcheckがOKとなっていることを確認します。
 
 ```shell
@@ -130,7 +106,7 @@ Connected Nodes: 3/3
 ```
 
 > **Info**  
-> ciliumコマンドではなく、下記のようなkubectlコマンドを実行することでも、Reachabilityを確保可能です。
+> ciliumコマンドではなく、下記のようなkubectlコマンドを実行することでもReachabilityを確保可能です。
 > ```shell
 > kubectl port-forward -n kube-system deploy/hubble-relay 4245 4245
 > ```
@@ -161,36 +137,97 @@ kubectl apply -f manifest/ingress.yaml
 
 ![](./image/ch05_hubble-ui_01.png)
 
-### Layer 7プロトコルの可視化
+### Layer 7のイベントを可視化する
 
-[Layer 7 Protocol Visibility](https://docs.cilium.io/en/latest/observability/visibility/#layer-7-protocol-visibility)に記載があるように、L7プロトコルの可視化を行うことも可能です。L7プロトコルの可視化はannotationで設定します。
-たとえば、Hubble-UIの8081ポートへのIngress方向のHTTP通信の可視化を行う場合、下記のannotationをHubble-UIのPodに設定します。
-
-```yaml
-policy.cilium.io/proxy-visibility: "<Ingress/8081/TCP/HTTP>"
-```
-
-また、CiliumEndpointsを確認することで、Visibility Policyのステータスを確認することが可能です。
-
-```shell
-kubectl get cep -n kube-system
-```
-```shell
-# 実行結果
-NAME                            ENDPOINT ID   IDENTITY ID   INGRESS ENFORCEMENT   EGRESS ENFORCEMENT   VISIBILITY POLICY   ENDPOINT STATE   IPV4         IPV6
-coredns-5d78c9869d-99cjz        2133          63980         non-enforcing         non-enforcing                            ready            10.0.1.202
-coredns-5d78c9869d-nn2bc        2155          63980         non-enforcing         non-enforcing                            ready            10.0.1.159
-hubble-relay-645b6cb9f8-tjdjw   2710          21510         non-enforcing         non-enforcing                            ready            10.0.2.12
-hubble-ui-5f7b57789f-jrmt8      2931          3711          non-enforcing         non-enforcing        OK                  ready            10.0.2.189
-```
+デフォルトではL3/L4のプロトコルのみ可視化の対象となっています。
+L7プロトコルを可視化の対象とするためには、CiliumNetworkPolicyリソースを作成しルールに一致させる必要があります。
 
 > **Info**  
-> 下記コマンドでannotationを削除することで、Visibility Policyを無効化できます。
-> ```
-> kubectl annotate -n kube-system pod -l app.kubernetes.io/name=hubble-ui policy.cilium.io/proxy-visibility-
-> ```
+> L7プロトコルを可視化する方法として、Podのannotationを利用する方法もありましたが、2023/11時点の最新のドキュメントではCiliumNetworkPolicyを利用する方法が推奨されています。  
+> see: https://github.com/cilium/cilium/blob/82dbff8e5a5f7ced99e96cd85997fae90e035aac/Documentation/observability/visibility.rst
 
-annotationで可視化の設定を行うことで、Hubble-UIからL7プロトコルの情報を確認できます。
+確認用にcurlを実行可能なクラアントを立てます。
+
+```shell
+kubectl run curl -n handson --image=curlimages/curl --command -- sleep infinity
+```
+
+別ターミナルを開き、hubbleで観測したイベントを流しておきます。
+
+```shell
+hubble observe flows --from-pod handson/curl -f
+```
+
+先ほど立てたクライアントからhandson:8080にアクセスしてみます。
+
+```shell
+kubectl exec -n handson curl -- /bin/sh -c "curl -s -o /dev/null handson:8080 -w '%{http_code}\n'"
+```
+
+するとhubble側では下記のような情報が出力されます。
+
+![](./image/ch5-hubble-observe-01.png)
+
+
+デフォルトではL3/L4のイベントのみ可視化の対象となっているので、ドメイン名やリクエストパスなどのL7の情報は表示されていません。  
+L7の情報を可視化の対象とするために、下記のCiliumNetworkPolicyを適用します。
+
+```shell
+kubectl apply -f manifest/cnp_http-visibility.yaml
+```
+
+先ほどと同様にクライアントからhandson:8080にアクセスしてみます。
+
+```shell
+kubectl exec -n handson curl -- /bin/sh -c "curl -s -o /dev/null handson:8080 -w '%{http_code}\n'"
+```
+
+すると上記の通信がCiliumNetworkPolicyの対象となるため、hubble側でL7の情報が確認できるようになります。
+
+![](./image/ch5-hubble-observe-02.png)
+
+### 外部ドメインを可視化する
+
+クラスター外のドメインはkube-dnsやCoreDNSといったクラスター内のDNSサーバで解決されます。
+DNSサーバへの通信を可視化の対象とすることで、通信が発生した外部ドメインを確認することが可能になります。
+
+まず、現在の状態でクラスター外のドメイン`event.cloudnativedays.jp`にアクセスしてみます。
+
+```shell
+kubectl exec -n handson curl -- /bin/sh -c "curl -s -o /dev/null https://event.cloudnativedays.jp/ -w '%{http_code}\n'"
+```
+
+すると、下記のIPアドレスにアクセスがあることが分かります。
+
+![](./image/ch5-hubble-observe-03.png)
+
+次に下記のManifestをアプライしてkube-dnsへの通信をCiliumNetworkPolicyの対象に設定します。
+
+```shell
+kubectl apply -f manifest/cnp_dns-visibility
+```
+
+再度、クラスター外のドメイン`event.cloudnativedays.jp`にアクセスしてみます。
+
+```shell
+kubectl exec -n handson curl -- /bin/sh -c "curl -s -o /dev/null https://event.cloudnativedays.jp/ -w '%{http_code}\n'"
+```
+
+すると、DNSクエリが可視化の対象となり、IPアドレスではなく、どのドメインにアクセスしたのかが分かるようになります。
+
+![](./image/ch5-hubble-observe-04.png)
+
+また、上記の情報はHubble-UIからも確認することが可能です。
+
+![](./image/ch5-hubble-curl-01.png)
+
+
+確認が終わったら本章でデプロイしたリソースを削除しておきます。
+
+```shell
+kubectl delete -Rf manifest
+kubectl delete -n handson pod curl --force
+```
 
 ## Grafanaを利用した可視化について
 
@@ -199,6 +236,6 @@ CiliumとHubbleから取得したメトリクスはGrafanaのダッシュボー�
 Ciliumからはcilium-agentやcilium-envoy、cilium-operatorに関するCilium自身のメトリクスを取得でき、
 HubbleからはCiliumが管理するPodのネットワーク動作に関するメトリクスを取得できます。
 
-Grafanaのダッシュボードにアクセスすると以下のようなダッシュボードが確認できます。
+第2章でCilium/Hubbleに関するGrafanaダッシュボードも設定しているため、アクセスして確認してみてください。
 
 ![](./image/ch05_hubble-grafana_01.png)
