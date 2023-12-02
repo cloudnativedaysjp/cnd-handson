@@ -1,4 +1,4 @@
-# chapter04b_argocd
+# Argo CD
 この章では、Kubernetes上でGitOpsを可能とするCDツールであるArgo CDについて紹介し、導入します。
 
 ## GitOpsとCI/CDについて
@@ -139,7 +139,7 @@ GENERAL
   SOURCE
     Repository URL: https://github.com/自身のアカウント名/cndt2023-handson
     Revision: main
-    Path: chapter04b_argocd/app/default
+    Path: chapter05_argocd/app/default
   DESTINATION
     Cluster URL: https://kubernetes.default.svc
     Namespace: argocd-demo
@@ -192,8 +192,8 @@ GENERAL
     Repository URL: https://github.com/自身のアカウント名/cndt2023-handson
     Revision: main
     Path:
-      開発環境: chapter04b_argocd/app/Kustomize/overlays/dev
-      本番環境: chapter04b_argocd/app/Kustomize/overlays/prd
+      開発環境: chapter05_argocd/app/Kustomize/overlays/dev
+      本番環境: chapter05_argocd/app/Kustomize/overlays/prd
   DESTINATION
     Cluster URL: https://kubernetes.default.svc
     Namespace: 
@@ -231,7 +231,7 @@ GENERAL
   SOURCE
     Repository URL: https://github.com/自身のアカウント名/cndt2023-handson
     Revision: main
-    Path: chapter04b_argocd/app/Helm/rollouts-demo
+    Path: chapter05_argocd/app/Helm/rollouts-demo
   DESTINATION
     Cluster URL: https://kubernetes.default.svc
     Namespace: argocd-helm

@@ -1,4 +1,4 @@
-# chapter05b_argo-rollouts
+# Argo Rollouts
 この章では、Kubernetes上でプログレッシブデリバリーを可能とするデプロイツールであるArgo Rolloutsについて紹介し、導入します。
 
 ## プログレッシブデリバリーについて
@@ -41,10 +41,10 @@ Argo CDとの連携が可能で、簡単に既存のGit Opsでプログレッシ
 また、GitHubのリポジトリの登録やPushは、forkした自身のリポジトリを利用して下さい。
 
 ### Prometheusのセットアップ
-[chapter02_prometheus](https://github.com/cloudnativedaysjp/cndt2023-handson/tree/main/chapter02_prometheus#%E5%AE%9F%E8%B7%B5-ingress-nginx-controller%E3%81%8B%E3%82%89%E3%83%A1%E3%83%88%E3%83%AA%E3%82%AF%E3%82%B9%E3%82%92%E5%8F%8E%E9%9B%86%E3%81%99%E3%82%8B)を参照して、kube-prometheus-stackのインストールからNginx Ingressのメトリクスを外部公開できていることを確認まで行って下さい。
+[chapter02_prometheus](../chapter02_prometheus/README.md#実践-ingress-nginx-controllerからメトリクスを収集する)を参照して、kube-prometheus-stackのインストールからNginx Ingressのメトリクスを外部公開できていることを確認まで行って下さい。
 
 ### Argo CDのセットアップ
-[chapter04b_argocd](https://github.com/cloudnativedaysjp/cndt2023-handson/tree/main/chapter04b_argocd#argo-cd%E3%81%AE%E3%82%A4%E3%83%B3%E3%82%B9%E3%83%88%E3%83%BC%E3%83%AB)を参照してArgo CDのインストールからWebUIの確認とレポジトリのforkから登録まで行って下さい。
+[chapter05_argocd](../chapter05_argocd/README.md#argo-cdのインストール)を参照してArgo CDのインストールからWebUIの確認とレポジトリのforkから登録まで行って下さい。
 
 今回のchapterでは更にArgo CDのプラグインである、rollout-extensionをインストールしてArgoCD上でrolloutの操作結果が確認できるようにします。
 ```sh
@@ -132,7 +132,7 @@ Canary Releaseは、新旧混在状態を制御し、本番環境において限
     SOURCE
       Repository URL: https://github.com/自身のアカウント名/cndt2023-handson
       Revision: main
-      Path: chapter05b_argo-rollouts/app/blue-green
+      Path: chapter08_argo-rollouts/app/blue-green
     DESTINATION
       Cluster URL: https://kubernetes.default.svc
       Namespace: blue-green
@@ -189,11 +189,11 @@ Applications画面の場合は、一番右下の端に、
 
 
 
-![delete](../chapter04b_argocd/image/demoapp/Delete-1.png)
+![delete](../chapter05_argocd/image/demoapp/Delete-1.png)
 
 詳細画面の場合は、右上の2番目にあります。
 
-![delete](../chapter04b_argocd/image/demoapp/Delete-2.png)
+![delete](../chapter05_argocd/image/demoapp/Delete-2.png)
 
 削除する際にアプリケーション名の入力があるので「blue-green」と入力してOKをクリックします。
 ![delete](image/BG/blue-green-delete.png)
@@ -210,7 +210,7 @@ Applications画面の場合は、一番右下の端に、
     SOURCE
       Repository URL: https://github.com/自身のアカウント名/cndt2023-handson
       Revision: main
-      Path: chapter05b_argo-rollouts/app/canary
+      Path: chapter08_argo-rollouts/app/canary
     DESTINATION
       Cluster URL: https://kubernetes.default.svc
       Namespace: canary
@@ -257,10 +257,10 @@ rollout-extensionを使用した場合、rolloutを選択しmoreのタブが出�
 Applications画面の場合は、一番右下の端に、
 
 
-![delete](../chapter04b_argocd/image/demoapp/Delete-1.png)
+![delete](../chapter05_argocd/image/demoapp/Delete-1.png)
 
 詳細画面の場合は、右上の2番目にあります。
-![delete](../chapter04b_argocd/image/demoapp/Delete-2.png)
+![delete](../chapter05_argocd/image/demoapp/Delete-2.png)
 
 削除する際にアプリケーション名の入力があるので「canary」と入力してOKをクリックします。
 ![delete](image/canary/canary-delete.png)
@@ -300,7 +300,7 @@ Applicationsの画面において + NEW APPをクリックします
     SOURCE
       Repository URL: https://github.com/自身のアカウント名/cndt2023-handson
       Revision: main
-      Path: chapter05b_argo-rollouts/analysis/job
+      Path: chapter08_argo-rollouts/analysis/job
     DESTINATION
       Cluster URL: https://kubernetes.default.svc
       Namespace: job-analysis
@@ -335,13 +335,13 @@ Applications画面の場合は、一番右下の端に、
 
 
 
-![delete](../chapter04b_argocd/image/demoapp/Delete-1.png)
+![delete](../chapter05_argocd/image/demoapp/Delete-1.png)
 
 詳細画面の場合は、右上の2番目にあります。
-![delete](../chapter04b_argocd/image/demoapp/Delete-2.png)
+![delete](../chapter05_argocd/image/demoapp/Delete-2.png)
 
 削除する際にアプリケーション名の入力があるので「job」と入力してOKをクリックします。
-![delete](../chapter04b_argocd/image/demoapp/Delete-3.png)
+![delete](../chapter05_argocd/image/demoapp/Delete-3.png)
 
 ### Web metrics (Blue/Green Deploy)
 Analysis実行時にリクエストを送信し、レスポンスの内容にてよってPromoteするかどうかを判断します
@@ -360,7 +360,7 @@ Applicationsの画面において + NEW APPをクリックします
     SOURCE
       Repository URL: https://github.com/自身のアカウント名/cndt2023-handson
       Revision: main
-      Path: chapter05b_argo-rollouts/analysis/web
+      Path: chapter08_argo-rollouts/analysis/web
     DESTINATION
       Cluster URL: https://kubernetes.default.svc
       Namespace: web-analysis
@@ -397,13 +397,13 @@ Applications画面の場合は、一番右下の端に、
 
 
 
-![delete](../chapter04b_argocd/image/demoapp/Delete-1.png)
+![delete](../chapter05_argocd/image/demoapp/Delete-1.png)
 
 詳細画面の場合は、右上の2番目にあります。
-![delete](../chapter04b_argocd/image/demoapp/Delete-2.png)
+![delete](../chapter05_argocd/image/demoapp/Delete-2.png)
 
 削除する際にアプリケーション名の入力があるので「web」と入力してOKをクリックします。
-![delete](../chapter04b_argocd/image/demoapp/Delete-3.png)
+![delete](../chapter05_argocd/image/demoapp/Delete-3.png)
 ### Prometheus metrics (Canary Release)
 Analysis実行時にPrometheusにPromQLを送信し、その結果によってPromoteするかどうかを判断します
 
@@ -419,7 +419,7 @@ Applicationsの画面において + NEW APPをクリックします
     SOURCE
       Repository URL: https://github.com/自身のアカウント名/cndt2023-handson
       Revision: main
-      Path: chapter05b_argo-rollouts/analysis/prometheus
+      Path: chapter08_argo-rollouts/analysis/prometheus
     DESTINATION
       Cluster URL: https://kubernetes.default.svc
       Namespace: prometheus-analysis
@@ -458,18 +458,18 @@ Applications画面の場合は、一番右下の端に、
 
 
 
-![delete](../chapter04b_argocd/image/demoapp/Delete-1.png)
+![delete](../chapter05_argocd/image/demoapp/Delete-1.png)
 
 詳細画面の場合は、右上の2番目にあります。
-![delete](../chapter04b_argocd/image/demoapp/Delete-2.png)
+![delete](../chapter05_argocd/image/demoapp/Delete-2.png)
 
 削除する際にアプリケーション名の入力があるので「prometheus」と入力してOKをクリックします。
-![delete](../chapter04b_argocd/image/demoapp/Delete-3.png)
+![delete](../chapter05_argocd/image/demoapp/Delete-3.png)
 
 ## Argo Rolloutsのクリーンアップ
 ### Argo CDを削除
 ```
-helmfile destroy -f  ../chapter04b_argocd/helm/helmfile.yaml
+helmfile destroy -f  ../chapter05_argocd/helm/helmfile.yaml
 kubectl delete -n argo-cd \
     -f https://raw.githubusercontent.com/argoproj-labs/rollout-extension/v0.2.1/manifests/install.yaml
 kubectl delete namespace argo-cd

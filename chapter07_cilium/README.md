@@ -1,4 +1,4 @@
-# Chapter 04d Cilium
+# Cilium
 
 [What is Cilium](https://cilium.io/get-started/)で説明されるように、CiliumはKubernetesクラスターやその他のクラウドネイティブ環境にネットワーキング、セキュリティ、可観測性を提供するオープンソースプロジェクトです。
 Ciliumの基盤となっているのは、eBPFと呼ばれるLinuxカーネルの技術であり、セキュリティや可視性、ネットワーク制御ロジックをLinuxカーネルに動的に挿入することが可能です。
@@ -104,8 +104,8 @@ ServiceMeshでは、まずCiliumのIngressClassを設定したIngressリソー�
 - [Kubernetes Gateway API: Getting started with Gateway API](https://gateway-api.sigs.k8s.io/guides/#getting-started-with-gateway-api)
 - [Cilium: L7-Aware Traffic Management/Examples](https://docs.cilium.io/en/stable/network/servicemesh/l7-traffic-management/#examples)
 
-> **Info**  
-> Observabilityについては[Chapter5d Hubble](./../chapter05d_hubble/)にて説明します。
+> **Info**
+> Observabilityについては[chapter10_hubble](../chapter10_hubble/)にて説明します。
 
 ## Networking
 
@@ -125,7 +125,7 @@ Ciliumでは3種類のリソースでNetwork Policyを定義できます。
 
 この節では`CiliumNetworkPolicy`の動作確認を行います。
 
-動作確認は[Chapter1 Cluster Create](./../chapter01_cluster-create)でデプロイしたアプリケーションを利用します。
+動作確認は[chapter01_cluster-create](../chapter01_cluster-create/README.md#アプリケーションのデプロイ)でデプロイしたアプリケーションを利用します。
 また、このアプリケーションに接続するためのクライアントを2種類デプロイします。
 
 ```shell
@@ -196,7 +196,7 @@ kubectl delete -f manifest/cnp.yaml
 
 CiliumはIngressリソースのサポートをしており、第1章でIngress NGINX Controllerをデプロイしましたが、Ingress NGINX Controllerを使わずともCilium単体でIngressリソースを利用できます。
 Ingressリソースを利用するためには、CiliumのHelm Chartで`ingressController.enabled: true`を指定する必要があります。
-この設定はすでに[Chapter1 Cluster Create](./../chapter01_cluster-create)で行っており、現時点でIngressリソースは利用できる状態になっています。
+この設定はすでに[chapter01_cluster-create](../chapter01_cluster-create/)で行っており、現時点でIngressリソースは利用できる状態になっています。
 詳細については[Kubernetes Ingress Support](https://docs.cilium.io/en/stable/network/servicemesh/ingress/)を参照ください。
 
 この節では、IngressClassとしてCiliumを利用したトラフィックルーティングのデモを行います。
@@ -284,7 +284,7 @@ done
 kubectl delete -f manifest/gateway_api.yaml
 ```
 
-> **Info**  
+> **Info** 
 > 今回のようなルーティング機能はCilium Service Meshの機能を利用しても提供することができます。
 > Cilium Service Meshを利用したトラフィック分割のデモを次節で説明します。
 
@@ -321,6 +321,6 @@ done
 確認が終わったら本章でデプロイしたリソースを削除しておきます。
 
 ```shell
-kubectl delete -Rf ../chapter-1_cluster-create/manifest/app -n handson -l color=yellow
+kubectl delete -Rf ../chapter01_cluster-create/manifest/app -n handson -l color=yellow
 kubectl delete -f manifest/service.yaml
 ```

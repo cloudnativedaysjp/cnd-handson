@@ -1,4 +1,4 @@
-# chapter03_grafana
+# Grafana
 
 この章では、Prometheusと併用して使われることが多いGrafanaについて、機能をかんたんに紹介します。
 

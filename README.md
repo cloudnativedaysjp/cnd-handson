@@ -19,7 +19,6 @@
 まずは、chapter00, chapter01を実施してhandsonを進めるための環境を構築してください。<br>
 その後は、順番にchapterを進めることはもちろん、下記フローチャートのように、気になる技術に焦点を当てたchapterを進めることもできます。
 
----
 ```mermaid
 flowchart TD
     setup[chapter00_setup]

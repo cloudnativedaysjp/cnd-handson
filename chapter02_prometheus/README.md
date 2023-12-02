@@ -1,4 +1,4 @@
-# chapter02_prometheus
+# Prometheus
 
 この章では、Kubernetes上での様々なメトリクスの基盤としてPrometheusを紹介し、実際に導入してみます。
 
