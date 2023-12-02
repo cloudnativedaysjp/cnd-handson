@@ -34,7 +34,8 @@ HelmはKubernetes用のパッケージマネージャーであり、Helmfileを�
 インストールスクリプトの中で、ログインユーザを docker グループに所属させる設定を入れています。
 一旦ログアウトしてログインし直してください。
 
-> **Warning**  
+> [!WARNING]
+>
 > [Known Issue#Pod errors due to "too many open files"](https://kind.sigs.k8s.io/docs/user/known-issues/#pod-errors-due-to-too-many-open-files)に記載があるように、kindではホストのinotifyリソースが不足しているとエラーが発生します。
 > ハンズオン環境ではinotifyリソースが不足しているため、sysctlを利用してカーネルパラメータを修正する必要があります。
 > ```shell
@@ -86,7 +87,8 @@ kubectl cluster-info --context kind-kind
 Not sure what to do next? 😅  Check out https://kind.sigs.k8s.io/docs/user/quick-start/
 ```
 
-> **Info**  
+> [!NOTE]
+> 
 > kubectlコマンドの実行時には、Kubernetesクラスターに接続するための認証情報などが必要になります。
 > それらの情報は、kindでクラスターを作成した際に保存され、デフォルトで`~/.kube/config`に格納されます。
 > このファイルに格納される情報は、kindコマンドを利用しても取得することが可能です
@@ -124,7 +126,8 @@ Gateway API以外のコンポーネントはhelmfileコマンドを利用する�
 helmfile sync -f helm/helmfile.yaml
 ```
 
-> **Info**  
+> [!NOTE]
+> 
 > Kubernetesのイングレスコントローラーとして、Ingress NGINX Controllerをインストールしていますが、Cilium自体もKubernetes Ingressリソースをサポートしています。
 > こちらに関しては、[chapter07_cilium](../chapter07_cilium/)にて説明します。
 
@@ -134,7 +137,8 @@ Metallbに関しては、追加で`IPAddressPool`と`L2Advertisement`をデプ�
 kubectl apply -f manifest/metallb.yaml
 ```
 
-> **Warning**  
+> [!WARNING]
+>
 > manifest/metallb.yamlでデプロイしたIPAddressPoolリソースの`spec.addresses`に設定する値は、docker kindネットワークのアドレス帯から選択する必要があります。
 > 今回は`manifest/metallb.yaml`既に設定済みのため意識する必要はありせんが、別環境でMetallbを設定するときには注意してください。
 > 詳細は[Loadbalancer](https://kind.sigs.k8s.io/docs/user/loadbalancer/)を参照してください。
@@ -170,7 +174,8 @@ CoreDNS is running at https://127.0.0.1:44707/api/v1/namespaces/kube-system/serv
 To further debug and diagnose cluster problems, use 'kubectl cluster-info dump'.
 ```
 
-> **Info**  
+> [!NOTE]
+> 
 > [End-To-End Connectivity Testing](https://docs.cilium.io/en/stable/contributing/testing/e2e/#end-to-end-connectivity-testing)に記載があるように、Cilium CLIを利用することでEnd-To-Endのテストを行うこともできます。このテストは10分ほどかかります。
 > ```shell
 > cilium connectivity test
