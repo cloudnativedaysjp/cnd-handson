@@ -61,7 +61,7 @@ Chapter01 Cluster Createで導入したCiliumに対して、上記のコンポ�
 kubectl get -n kube-system -l app.kubernetes.io/part-of=cilium ds,deploy
 ```
 
-下記のような出力になるはずです。
+下記のような出力になるはずです。hubble-relayやhubble-uiに関しては[chapter10_hubble](../chapter10_hubble/)にて説明します。
 
 ```shell
 NAME                    DESIRED   CURRENT   READY   UP-TO-DATE   AVAILABLE   NODE SELECTOR            AGE
@@ -96,7 +96,7 @@ Daemon: 1.14.2 a6748946 2023-09-09T20:59:33+00:00 go version go1.20.8 linux/amd6
   - Traffic Management
 
 Networkingに関しては、Netowrk Policyを利用した特定のPodに対するL7のトラフィック制御を行います。
-ServiceMeshでは、まずCiliumのIngressClassを設定したIngressリソースを利用するデモを行います。
+ServiceMeshに関しては、まず初めに、CiliumのIngressClassを設定したIngressリソースを利用するデモを行います。
 次に、トラフィックを9:1に分割するデモをGateway APIとCiliumのEnvoy Configを利用した2パターン説明します。
 今回はトラフィック分割のデモのみですが、他にもヘッダー変更、URLの書き換えなど行うことができます。
 その他の例については下記のページをご参照ください。
@@ -187,7 +187,8 @@ curl-deny  -> /color: 200
 > [!NOTE]
 > 
 > L3/L4のポリシーとL7のポリシーでルール違反の際の挙動が変わります。
-> L3/L4のポリシーに違反した場合は、パケットがDropされますが、L7のポリシー違反の場合は、HTTP 403 access deniedが返されます。
+> L3/L4のポリシーに違反した場合は、パケットがDropされますが、L7のポリシー違反の場合は、HTTP 403 Access Deniedが返されます。
+> 上記の例ではパスベースの制御が行われており、L7ポリシーのルール違反になるため、HTTP 403 Access Deniedとなります。
 
 次節へ行く前に、作成したCiliumNetworkPolicyリソースを削除しておきます。
 
@@ -280,7 +281,7 @@ service/handson-yellow            ClusterIP      10.96.189.95    <none>         
 LB_IP=$(kubectl get -n handson svc -l io.cilium.gateway/owning-gateway=color-gw -o=jsonpath='{.items[0].status.loadBalancer.ingress[0].ip}')
 ```
 
-> [!WARNIGN]
+> [!WARNING]
 > 
 > LB_IPは第1章で導入したIPAddressPoolのspec.addressesのアドレスになります。
 > 今回のハンズオンでは、docker network kindのIP帯を設定しているため、dockerを起動しているホストからのみアクセスすることが可能です。
@@ -304,12 +305,12 @@ kubectl delete -f manifest/gateway_api.yaml
 > [!NOTE]
 > 
 > 今回のようなルーティング機能はCilium Service Meshの機能を利用しても提供することができます。
-> Cilium Service Meshを利用したトラフィック分割のデモを次節で説明します。
+> 次節でCilium Service Meshを利用したトラフィック分割のデモを説明します。
 
 ### Traffic Management
 
 Ciliumでは、CRDとして定義された`CiliumEnvoyConfig`と`CiliumCllusterwideEnvoyConfig`を利用したL7トラフィック制御も可能です。
-これらのリソースを使用し、Cilium Agent内のEnvoyに設定を行います。
+これらのリソースを使用することで、Cilium Agent内のEnvoyの設定が可能になります。
 詳細は[L7-Aware Traffic Management](https://docs.cilium.io/en/latest/network/servicemesh/l7-traffic-management/)を参照してください。
 
 Envoyの[Supported API versions](https://www.envoyproxy.io/docs/envoy/latest/api/api_supported_versions)にも記載がありますが、Envoy APIにはv1/v2/v3の3種類が存在します。
