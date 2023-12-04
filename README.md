@@ -1,6 +1,10 @@
 # Co-located Hands-on Event by CNDT2023 Committee
 『一日で学ぶクラウドネイティブ技術実践ハンズオン』by CloudNative Days Tokyo 2023 実行委員会のドキュメントです。
 
+このハンズオンでは、Prometheus・Grafana・OpenTelemetry・Argo CD・Argo Rollouts・Istio・Cilium・Hubble といったよく利用されるクラウドネイティブな OSS について触れることができるハンズオンです。
+これらの OSS についての第一歩を学び、これから先の学習のきっかけにしてください。
+
+
 ## Chapter
 準備用chapter1＋全10chapterから構成されています。
 - [chapter00_setup](./chapter00_setup/)
