@@ -66,7 +66,7 @@ HelmはKubernetes用のパッケージマネージャーであり、Helmfileを�
 configオプションで`kind-config.yaml`を指定してKubernetesクラスターを作成します。
 
 ```shell
-kind create cluster --config=kind-config.yaml
+sudo kind create cluster --config=kind-config.yaml
 ```
 
 コマンドを実行すると以下のような情報が出力されます。
@@ -95,6 +95,10 @@ Not sure what to do next? 😅  Check out https://kind.sigs.k8s.io/docs/user/qui
 >
 > ```shell
 > kind get kubeconfig
+>
+> # ubuntu ユーザー（一般ユーザー）で実行する場合
+> mkdir ~/.kube
+> sudo kind get kubeconfig > ~/.kube/config
 > ```
 
 最後に、下記のコンポーネントをデプロイします。
