@@ -175,7 +175,7 @@ metadata:
 spec:
   ingressClassName: nginx
   rules:
-    - host: grafana.example.com
+    - host: grafana.vmXX.handson.cloudnativedays.jp
       http:
         paths:
           - path: /
@@ -197,7 +197,7 @@ metadata:
 spec:
   ingressClassName: nginx
   rules:
-    - host: prometheus.example.com
+    - host: prometheus.vmXX.handson.cloudnativedays.jp
       http:
         paths:
           - path: /
@@ -214,7 +214,7 @@ kubectl apply -f ingress.yaml
 ```
 
 実際にそれぞれのUIが公開されているか確認してみましょう。
-ブラウザで `prometheus.example.com` と `grafana.example.com` にアクセスしてみてください。
+ブラウザで `prometheus.vmXX.handson.cloudnativedays.jp` と `grafana.vmXX.handson.cloudnativedays.jp` にアクセスしてみてください。
 
 Grafanaではユーザログインが必要ですが、先程設定したvalues.yamlの内容でログインできます( `username: admin, password: handson_saiko!` )
 values.yamlに記載した認証情報でログインできなかった場合は、
@@ -235,7 +235,7 @@ PromQLの詳細な仕様についてはこちらを御覧ください。
 
 > https://prometheus.io/docs/prometheus/latest/querying/basics/
 
-<http://prometheus.example.com/graph> にアクセスして、PromQL入力欄に `go_goroutines` と入力してみます。
+<http://prometheus.vmXX.handson.cloudnativedays.jp/graph> にアクセスして、PromQL入力欄に `go_goroutines` と入力してみます。
 その後、 `Graph` のタブをクリックすると、以下のようなグラフが見れるはずです。
 
 ![image](./image/go_goroutines.png)
@@ -248,7 +248,7 @@ PromQLの詳細な仕様についてはこちらを御覧ください。
 
 kube-prometheus-stackでデフォルトで導入されているアラートルールを確認することができます。
 
-<http://prometheus.example.com/alerts>
+<http://prometheus.vmXX.handson.cloudnativedays.jp/alerts>
 
 ![image](./image/alerts.png)
 
@@ -257,7 +257,7 @@ kube-prometheus-stackでデフォルトで導入されているアラートル�
 現在稼働しているPrometheusの状態確認がおこなえます。
 以下のスクリーンショットでは、scrape_configに設定されたexporterに対するスクレイプが正しくおこなえているかどうか等の情報が表示されています。
 
-<http://prometheus.example.com/targets>
+<http://prometheus.vmXX.handson.cloudnativedays.jp/targets>
 
 ![image](./image/targets.png)
 
@@ -295,7 +295,7 @@ spec:
 kubectl apply -f manifests/ingress-nginx-servicemonitor.yaml
 ```
 
-<http://prometheus.example.com/graph> を開き (またはリロードして)、PromQL入力欄に ngi と入力し、nginx のメトリクスが追加されているのを確認しましょう。
+<http://prometheus.vmXX.handson.cloudnativedays.jp/graph> を開き (またはリロードして)、PromQL入力欄に ngi と入力し、nginx のメトリクスが追加されているのを確認しましょう。
 
 ![image](https://github.com/kubernetes/ingress-nginx/blob/main/docs/images/prometheus-dashboard1.png)
 

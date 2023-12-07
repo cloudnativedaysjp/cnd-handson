@@ -382,7 +382,7 @@ kubectl logs -l app.kubernetes.io/name=metrics-collector-collector -f
 ```
 
 次に、実際にGrafana上からメトリクスを確認してみましょう。
-`https://grafana.example.com/explore` に接続し、`system_cpu_time_seconds_total`のメトリクスを確認してみます。
+`https://grafana.vmXX.handson.cloudnativedays.jp/explore` に接続し、`system_cpu_time_seconds_total`のメトリクスを確認してみます。
 今回利用している`hostmetrics` Receiverで取得しているメトリクスには[Host Metrics Receiver](https://github.com/open-telemetry/opentelemetry-collector-contrib/blob/main/receiver/hostmetricsreceiver/internal/scraper/cpuscraper/documentation.md)のページから確認することができます。
 `exporters.prometheusremotewrite.external_labels`の設定で`oteltest=cndt2023`のラベルを付与しているため、ラベルの指定をすることでOpenTelemetry Colelctorが出力したメトリクスのみに絞ることも可能です。
 
@@ -429,7 +429,7 @@ spec:
   ingress:
     enabled: true
     hosts:
-    - jaeger.example.com
+    - jaeger.vmXX.handson.cloudnativedays.jp
     ingressClassName: nginx
     annotations:
       nginx.ingress.kubernetes.io/ssl-redirect: "false"
@@ -453,7 +453,7 @@ NAME     STATUS    VERSION   STRATEGY   STORAGE   AGE
 jaeger   Running   1.49.0    allinone   memory    10m
 ```
 
-デプロイされたJaegerのUIは、`https://jaeger.example.com/search`から確認することができます。
+デプロイされたJaegerのUIは、`https://jaeger.vmXX.handson.cloudnativedays.jp/search`から確認することができます。
 
 
 今回は、`otlp` Receiverを利用し、OpenTelemetry Protocol（OTLP）を利用してトレースデータを受け取ります。そしてそのデータを`otlp` Exporterを利用してJaegerに対して保存、`debug` Exporterを利用して標準出力にもデバッグログを出力します。
@@ -598,8 +598,8 @@ sample-app-blue-5fb8dc75fd-7cvxg   3/3     Ready    0          30s
 
 
 次に、実際にJaeger上からメトリクスを確認してみましょう。
-まず、`http://app.example.com/` に接続し、一定量のトレースデータを出力します。
-`https://jaeger.example.com/explore` に接続し、Service名に`sample-app-blue`を指定してみると、トレースデータが確認できます。
+まず、`http://app.vmXX.handson.cloudnativedays.jp/` に接続し、一定量のトレースデータを出力します。
+`https://jaeger.vmXX.handson.cloudnativedays.jp/explore` に接続し、Service名に`sample-app-blue`を指定してみると、トレースデータが確認できます。
 今回は複雑なマイクロサービスではないため、シンプルな表示になっていますが、サービス間の通信がある場合はもう少し複雑なトレースデータを確認することができます。
 
 ![](./image/jaeger.png)

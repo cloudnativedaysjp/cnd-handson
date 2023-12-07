@@ -8,7 +8,7 @@ metadata:
     content: weight-based-routing
 spec:
   hosts:
-  - app.example.com
+  - app.vmXX.handson.cloudnativedays.jp
   gateways:
   - handson
   http:

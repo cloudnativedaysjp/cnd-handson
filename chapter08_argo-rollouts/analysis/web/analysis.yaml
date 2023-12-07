@@ -9,5 +9,5 @@ spec:
     failureLimit: 3
     provider:
       web:
-        url: "http://app-preview.argocd.example.com/color"
+        url: "http://app-preview.argocd.vmXX.handson.cloudnativedays.jp/color"
         insecure: true
