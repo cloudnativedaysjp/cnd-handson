@@ -82,7 +82,6 @@ YOUR_VM_IP_ADDRESS    app.argocd.example.com
 YOUR_VM_IP_ADDRESS    dev.kustomize.argocd.example.com
 YOUR_VM_IP_ADDRESS    prd.kustomize.argocd.example.com
 YOUR_VM_IP_ADDRESS    helm.argocd.example.com
-YOUR_VM_IP_ADDRESS    app.argocd.example.com
 YOUR_VM_IP_ADDRESS    app-preview.argocd.example.com
 YOUR_VM_IP_ADDRESS    kiali.example.com
 YOUR_VM_IP_ADDRESS    app.cilium.example.com
