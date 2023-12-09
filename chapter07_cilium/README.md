@@ -309,8 +309,43 @@ kubectl delete -f manifest/gateway_api.yaml
 
 ### Traffic Management
 
-Ciliumでは、CRDとして定義された`CiliumEnvoyConfig`と`CiliumCllusterwideEnvoyConfig`を利用したL7トラフィック制御も可能です。
-これらのリソースを使用することで、Cilium Agent内のEnvoyの設定が可能になります。
+Ciliumでは、Network Policyで定義されたL7トラフィックなどの処理にEnvoyを利用します。
+デフォルトでEnvoyはCiliumのAgentに埋め込まれていますが、Deploymentリソースとして外だしすることも可能です。
+`cilium status`コマンドを実行することで、現在どちらのモードで動作しているか確認することが可能です。
+
+```shell
+cilium status
+```
+
+Envoy DaemonSetがdisabledであれば、Cilium AgentにEnvoyが埋め込まれて動作しています。
+
+
+```shell
+    /¯¯\
+ /¯¯\__/¯¯\    Cilium:             OK
+ \__/¯¯\__/    Operator:           OK
+ /¯¯\__/¯¯\    Envoy DaemonSet:    disabled (using embedded mode)
+ \__/¯¯\__/    Hubble Relay:       OK
+    \__/       ClusterMesh:        disabled
+
+Deployment             hubble-relay       Desired: 1, Ready: 1/1, Available: 1/1
+Deployment             cilium-operator    Desired: 2, Ready: 2/2, Available: 2/2
+DaemonSet              cilium             Desired: 3, Ready: 3/3, Available: 3/3
+Deployment             hubble-ui          Desired: 1, Ready: 1/1, Available: 1/1
+Containers:            cilium-operator    Running: 2
+                       hubble-ui          Running: 1
+                       hubble-relay       Running: 1
+                       cilium             Running: 3
+Cluster Pods:          12/12 managed by Cilium
+Helm chart version:    1.14.2
+Image versions         cilium             quay.io/cilium/cilium:v1.14.2@sha256:6263f3a3d5d63b267b538298dbeb5ae87da3efacf09a2c620446c873ba807d35: 3
+                       cilium-operator    quay.io/cilium/operator-generic:v1.14.2@sha256:52f70250dea22e506959439a7c4ea31b10fe8375db62f5c27ab746e3a2af866d: 2
+                       hubble-ui          quay.io/cilium/hubble-ui-backend:v0.12.0@sha256:8a79a1aad4fc9c2aa2b3e4379af0af872a89fcec9d99e117188190671c66fc2e: 1
+                       hubble-ui          quay.io/cilium/hubble-ui:v0.12.0@sha256:1c876cfa1d5e35bc91e1025c9314f922041592a88b03313c22c1f97a5d2ba88f: 1
+                       hubble-relay       quay.io/cilium/hubble-relay:v1.14.2@sha256:a89030b31f333e8fb1c10d2473250399a1a537c27d022cd8becc1a65d1bef1d6: 1
+```
+
+Envoyの設定は、CRDとして定義された`CiliumEnvoyConfig`と`CiliumCllusterwideEnvoyConfig`を利用することで、L7トラフィック制御が可能です。
 詳細は[L7-Aware Traffic Management](https://docs.cilium.io/en/latest/network/servicemesh/l7-traffic-management/)を参照してください。
 
 Envoyの[Supported API versions](https://www.envoyproxy.io/docs/envoy/latest/api/api_supported_versions)にも記載がありますが、Envoy APIにはv1/v2/v3の3種類が存在します。
