@@ -241,7 +241,7 @@ git push origin main
 rolloutを手動でSyncします
   ![rollout-sync](image/canary/canary-sync2.png)
 syncされた結果安定バージョンと新バージョンの両方のreplicasetが確認できます。
-  ![update](image/canary/update.png)
+  ![update](image/canary/canary-ver2.png)
 ingressにアクセスすると下記のように、安定バージョンであるBlueから新バージョンであるGreenのタイルが少しづつ増えて行っているのが確認できます。
   ![demoapp](image/canary/demoapp.png)
 rollout-extensionを使用した場合、rolloutを選択しmoreのタブが出現します。moreのタブを選ぶと、アプリケーションの動作を確認せずともどこのStepを動いているのが一目で確認できるようになります。
