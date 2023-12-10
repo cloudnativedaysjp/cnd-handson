@@ -35,7 +35,6 @@ spec:
         args:
         - name: ingress
           value: app-ingress-by-nginx
-      canaryService: handson-preview
       steps:
       - setWeight: 40
       - pause: 
