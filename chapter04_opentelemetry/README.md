@@ -222,13 +222,13 @@ pod/log-collector-collector-gsd8a   1/1     Running   0          18h
 今回はホスト上の`/var/log/cndt-*.json`のログをまとめてくれるようになっているため、試しに下記の通り書き込んでみます。
 
 ```bash
-docker exec -it kind-worker sh -c "echo '{\"key1\": \"value1\", \"key2\": \"value2\"}' >> /tmp/cndt-1.json"
+sudo docker exec -it kind-worker sh -c "echo '{\"key1\": \"value1\", \"key2\": \"value2\"}' >> /tmp/cndt-1.json"
 ```
 
 その後、`file` Exporterによって出力されたファイルを見てみると、確かにReceiverで受け取ったログがExporterで出力されていることが確認できます。
 
 ```sh
-docker exec -it kind-worker sh -c "cat /tmp/all.json  | jq ."
+sudo docker exec -it kind-worker sh -c "cat /tmp/all.json  | jq ."
 ```
 
 ```json
@@ -593,7 +593,7 @@ kubectl -n handson get pods
 ```bash
 # 実行結果
 NAME                               READY   STATUS   RESTARTS   AGE
-sample-app-blue-5fb8dc75fd-7cvxg   3/3     Ready    0          30s
+sample-app-blue-5fb8dc75fd-7cvxg   2/2     Ready    0          30s
 ```
 
 

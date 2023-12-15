@@ -207,7 +207,7 @@ kubectl exec -n handson curl -- /bin/sh -c "curl -s -o /dev/null https://event.c
 次に下記のManifestをアプライしてkube-dnsへの通信をCiliumNetworkPolicyのルールに含めます。
 
 ```shell
-kubectl apply -f manifest/cnp_dns-visibility
+kubectl apply -f manifest/cnp_dns-visibility.yaml
 ```
 
 再度、クラスター外のドメイン`event.cloudnativedays.jp`にアクセスしてみます。
