@@ -22,7 +22,7 @@ Istioが提供する主な機能は下記のとおりです。
 - Istioサービスメッシュへの/からの出入口を含むすべてのトラフィックの自動メトリクス、ログ、トレース
 
 ### サービスメッシュとは
-サービスメッシュとは、サービス間通信を処理するための専用インフラストラクチャレイヤーです。これにより、透過的に観測性、トラフィック管理、セキュリティなどの機能をアプリケーションに組み込むことなく利用することが可能です。特にcloud nativeアプリケーションにおいてはKubernetesのようなオーケストレーターによって動的にワークロードがスケジューリングされるため、サービス間通信が複雑になります。この管理をアプリケーションではなくサービスメッシュが行うことにより、アプリケーションの管理、運用を容易にすることができます。
+サービスメッシュとは、サービス間通信を処理するための専用インフラストラクチャレイヤーです。これにより、透過的に観測性、トラフィック管理、セキュリティなどの機能をアプリケーションに組み込むことなく利用することが可能です。特にcloud nativeアプリケーションにおいてはKubernetesのようなオーケストレーターによって動的にワークロードがスケジューリングされるため、サービス間通信が複雑になります。この管理をアプリケーションではなくサービスメッシュが行うことにより、アプリケーションの管理、運用を容易にできます。
 
 ### Istioアーキテクチャ
 ![image](./image/istio-architecture.png)
@@ -195,7 +195,7 @@ Kialiダッシュボードのグラフ表示の設定を変更します。TOP画
 ## ルーティング制御
 
 IstioのVirtual Serviceを利用する事でL7レベルでトラフィックを制御する事ができます。
-本章ではBlue/Green Deployment, Canary Deploymentでも利用される加重ルーティング、そして特定のリクエストだけを異なるアプリケーションにルーティングさせるL7レベルでのトラフィック制御についてご紹介させていただきます。
+本章ではBlue/Green Deployment, Canary Deploymentでも利用される加重ルーティング、そして特定のリクエストだけを異なるアプリケーションにルーティングさせるL7レベルでのトラフィック制御についてご紹介いたします。
 
 ### 加重ルーティング
 Istio Virtual Service/Destination Ruleを用いて加重ルーティングを実装します。旧バージョンから新バージョンへのアプリケーションの段階的な移行がユースケースとして挙げられます。本ケースでは、現在稼働しているアプリケーションとコンテナイメージタグが異なる追加のアプリケーションをdeployし、トラフィックを50%ずつ振り分けて、最終的に新しいアプリケーションに移行するシナリオを想定します。
@@ -268,7 +268,7 @@ kubectl patch virtualservice weight-based-routing -n handson --type merge --patc
 
 確認ができたらリクエストを停止してください。
 
-Istio Virtual Service/Destination Ruleを使用して、加重ルーティングを実装しました。Istioの機能を利用することで、アプリケーション側にロジックを追加することなく複数アプリケーション間のトラフィック移行を実現することができます。
+Istio Virtual Service/Destination Ruleを使用して、加重ルーティングを実装しました。Istioの機能を利用することで、アプリケーション側にロジックを追加することなく複数アプリケーション間のトラフィック移行を実現できます。
 
 ### HTTPリクエストベースでのルーティング
 
@@ -296,7 +296,7 @@ NAME                                                             HOST      AGE
 destinationrule.networking.istio.io/http-request-based-routing   handson   31s
 ```
 
-`"handson: alpha1" `ヘッダを持つ、リクエストを流してみましょう。**ローカル端末から**下記コマンドを実行してください。
+`"handson: alpha1" `ヘッダー持つ、リクエストを流してみましょう。**ローカル端末から**下記コマンドを実行してください。
 
 ```sh
 while :; do curl -s -w '\t%{http_code}\n' http://app.example.com:18080/color -H 'handson: alpha1';sleep 1;done
@@ -315,7 +315,7 @@ Kialiでトラフィックを確認すると、`handson-yellow` トラフィッ�
 
 ![image](./image/kiali-graph-http-request-based-routing-alpha1.png)
 
-それでは、一旦リクエストを停止し、次のリクエストを流してみましょう。先ほどとの違いはヘッダの値が `beta1` となっていることです。
+それでは、いったんリクエストを停止し、次のリクエストを流してみましょう。先ほどとの違いはヘッダーの値が `beta1` となっていることです。
 
 ```sh
 while :; do curl -s -w '\t%{http_code}\n' http://app.example.com:18080/color -H 'handson: beta1';sleep 1;done
@@ -333,7 +333,7 @@ Kialiでトラフィックを確認すると、`handson-blue` トラフィック
 
 ![image](./image/kiali-graph-http-request-based-routing-beta1.png)
 
-最後に、ヘッダを何もつけない場合どのようになるのか確認してみましょう。
+最後に、ヘッダーを何もつけない場合どのようになるのか確認してみましょう。
 
 ```sh
 while :; do curl -s -w '%header{location}\t%{http_code}\n' http://app.example.com:18080/color ;sleep 1;done
@@ -354,7 +354,7 @@ Kialiでトラフィックを確認すると、workload側にはトラフィッ�
 
 確認ができたらリクエストを停止してください。
 
-Istio Virtual Service/Destination Ruleを使用して、特定のバージョンのアプリケーションに特定のユーザーからのアクセスを流すこと、また一時的にリダイレクトなどを行うことを実現できます。<br>
+Istio Virtual Service/Destination Ruleを使用して、特定のバージョンのアプリケーションに特定のユーザーからのアクセスを流すこと、一時的にリダイレクトなどを行うことを実現できます。<br>
 また、[HTTPDirectResponse](https://istio.io/latest/docs/reference/config/networking/virtual-service/#HTTPDirectResponse)を使うことで、Workloadにトラフィックを流す、直接特定のHTTPレスポンス情報を返すことも可能です。
 
 
@@ -364,7 +364,7 @@ Fault Injectionを利用することで、特定のリクエストに対して�
 
 Fault Injectionは、HTTPS(TLS)通信を対象には機能しないことに注意してください。暗号化されていない通信のみを対象として挿入する事ができます。
 
-それでは一旦ルーティング設定を一番シンプルな[simple-routing.yaml](./networking/simple-routing.yaml)に戻します。また、追加アプリケーションとしてデプロイした `handson-yellow` を削除しておきます。
+それではいったnルーティング設定を一番シンプルな[simple-routing.yaml](./networking/simple-routing.yaml)に戻します。また、追加アプリケーションとしてデプロイした `handson-yellow` を削除しておきます。
 
 ```sh
 kubectl delete -f networking/http-request-based-routing.yaml
@@ -417,7 +417,7 @@ KialiでトラフィックのResponse Timeを確認してみましょう。P99(9
 
 ![image](./image/kiali-graph-fault-injection-delay.png)
 
-確認する事ができましたら、一旦リクエストを停止してください。
+確認する事ができましたら、いったんリクエストを停止してください。
 
 
 #### HTTPレスポンスエラーの挿入
@@ -444,7 +444,7 @@ curlコマンドを流しているコンソールでは、下記のように表�
 200     0.027895
 ```
 
-確認する事ができましたら、一旦リクエストを停止してください。
+確認する事ができましたら、いったんリクエストを停止してください。
 
 ### メッシュ外へのアクセス
 
@@ -539,7 +539,7 @@ while :; do kubectl exec curl -n handson -- curl -s -o /dev/null -w '%{http_code
 200     0.632720
 ```
 
-Kiali dashboardからも確認してみましょう。リクエストを流した状態でブラウザから<http://kiali.example.com>にアクセスをしてください。`curl` のワークロードから `event.cloudnativedays.jp` Serviceにアクセス出来ていることが確認できます。グラフが表示されない場合は、Kialiダッシュボード右上の青い`Refresh`ボタンを押して状態を更新してください。
+Kiali dashboardからも確認してみましょう。リクエストを流した状態でブラウザから<http://kiali.example.com>にアクセスをしてください。`curl` のワークロードから `event.cloudnativedays.jp` Serviceにアクセスできていることが確認できます。グラフが表示されない場合は、Kialiダッシュボード右上の青い`Refresh`ボタンを押して状態を更新してください。
 
 ![image](./image/kiali-graph-service-entry.png)
 
@@ -615,11 +615,11 @@ curl-deny:  200
 .
 ```
 
-Kiali dashboardからも確認してみましょう。リクエストを流した状態でブラウザから<http://kiali.example.com>にアクセスをしてください。`curl-allow`, `curl-deny` 双方のワークロードが`handson-blue`ワークロードにアクセス出来ていることが確認できます。グラフが表示されない場合は、Kialiダッシュボード右上の青い`Refresh`ボタンを押して状態を更新してください。
+Kiali dashboardからも確認してみましょう。リクエストを流した状態でブラウザから<http://kiali.example.com>にアクセスをしてください。`curl-allow`, `curl-deny` 双方のワークロードが`handson-blue`ワークロードにアクセスできていることが確認できます。グラフが表示されない場合は、Kialiダッシュボード右上の青い`Refresh`ボタンを押して状態を更新してください。
 
 ![image](./image/kiali-L4-authz-autholizationpolicy-notapplied.png)
 
-確認ができたら、リクエストを一旦停止してください。
+確認ができたら、リクエストをいったん停止してください。
 
 #### Istio Authorization Policy適用
 それでは、Istio Authorization Policyを作成して、`curl-deny` ワークロードからのport 8080宛に対するリクエストを拒否する設定を追加します。
@@ -673,7 +673,7 @@ curl-deny:  403
 
 確認ができたら、リクエストを停止してください。
 
-Istio Authorization Policyを使用して、Istioメッシュ内のL4レベルのアクセス管理を実装しました。Istioの機能を利用することで、アプリケーション側にロジックを追加することなくL4レベルのアクセス管理を実現することができます。
+Istio Authorization Policyを使用して、Istioメッシュ内のL4レベルのアクセス管理を実装しました。Istioの機能を利用することで、アプリケーション側にロジックを追加することなくL4レベルのアクセス管理を実現できます。
 
 #### クリーンアップ
 ```sh
@@ -728,11 +728,11 @@ while :; do kubectl exec curl -n handson -- curl -s -o /dev/null -w '%{http_code
 .
 ```
 
-Kiali dashboardからも確認してみましょう。リクエストを流した状態でブラウザから<http://kiali.example.com>にアクセスをしてください。`curl` ワークロードから`handson-blue`ワークロードにアクセス出来ていることが確認できます(なかなか表示されない場合は、Kialiダッシュボード右上の青い`Refresh`ボタンを押して状態を更新してください)。
+Kiali dashboardからも確認してみましょう。リクエストを流した状態でブラウザから<http://kiali.example.com>にアクセスをしてください。`curl` ワークロードから`handson-blue`ワークロードにアクセスできていることが確認できます(なかなか表示されない場合は、Kialiダッシュボード右上の青い`Refresh`ボタンを押して状態を更新してください)。
 
 ![image](./image/kiali-L7-authz-autholizationpolicy-notapplied.png)
 
-確認ができたら、リクエストを一旦停止してください。
+確認ができたら、リクエストをいったん停止してください。
 
 #### Istio Authorization Policy適用
 それでは、Istio Authorization Policyを適用して、`curl` ワークロードからのGETリクエストのみを許可し、削除、更新系のメソッドを拒否します。
@@ -766,7 +766,7 @@ while :; do kubectl exec curl -n handson -- curl -s -X GET -o /dev/null -w '%{ht
 .
 ```
 
-リクエストを一旦停止してください。
+リクエストをいったん停止してください。
 
 それでは、POSTメソッドでリクエストをしてみましょう。`handson-blue`ワークロードにPOSTメソッドは実装されていないので、空データを使用します。
 ```sh
@@ -809,7 +809,7 @@ while :; do kubectl exec curl -n handson -- curl -X DELETE -s -o /dev/null -w '%
 ```
 確認ができたらリクエストを停止してください。
 
-Istio Authorization Policyを使用して、Istioメッシュ内のL7レベルのアクセス管理を実装しました。Istioの機能を利用することで、アプリケーション側にロジックを追加することなく、L7レベルのアクセス管理を実現することができます。
+Istio Authorization Policyを使用して、Istioメッシュ内のL7レベルのアクセス管理を実装しました。Istioの機能を利用することで、アプリケーション側にロジックを追加することなく、L7レベルのアクセス管理を実現できます。
 
 #### クリーンアップ
 ```sh
@@ -818,7 +818,7 @@ kubectl delete -f app/curl.yaml
 ```
 
 ## まとめ
-サービスメッシュを提供するIstioを使用することで、アプリケーションレイヤーではなくインフラレイヤーでサービス間のトラフィック管理を、またKialiを使用することでサービスメッシュの可視化をすることができます。本chapterではVirtual Service, Destination Ruleを使用したルーティング制御、Authorization Policyを使用した認可処理しか紹介していませんが、Istioには他にも[沢山の機能](https://istio.io/latest/docs/tasks/)がありますので、是非確認してみてください。
+サービスメッシュを提供するIstioを使用することで、アプリケーションレイヤーではなくインフラレイヤーでサービス間のトラフィック管理を、またKialiを使用することでサービスメッシュの可視化をできます。本chapterではVirtual Service, Destination Ruleを使用したルーティング制御、Authorization Policyを使用した認可処理しか紹介していませんが、Istioには他にも[沢山の機能](https://istio.io/latest/docs/tasks/)がありますので、是非確認してみてください。
 
 ## 最終クリーンアップ
 `handson` namespaceをIstioサービスメッシュの管理外にします。
