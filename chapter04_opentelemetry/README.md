@@ -14,7 +14,7 @@ OpenTelemetryプロジェクトの代表的なプロダクトは以下のとお�
   * アプリケーションにインストルメンテーションされたSDK、各種エージェント、OpenTelemetry Collectorとの間でテレメトリを転送するために利用
 * OpenTelemetry Collector
   * メトリクス、ログ、トレースなどの各種テレメトリの送受信やデータ処理を行うコンポーネント
-  * 様々なプロバイダーに対応するためにプラグイン方式を採用している
+  * さまざまなプロバイダーに対応するためにプラグイン方式を採用している
 
 このハンズオンでは、OpenTelemetry Collectorでメトリクス・ログ・トレースを扱う方法と、OpenTelemetry SDKを用いて分散トレースを行う方法について実際に体験します。
 
@@ -37,7 +37,7 @@ OpenTelemetry Collectorは、内部的には4つのコンポーネントで構�
 ### CoreプラグインとContribプラグイン
 
 これらのコンポーネントはプラガブルな仕組みになっています。
-例えば、`Receiver` ではPrometheusからメトリクスデータを取得するプラグイン・ローカルのJSONファイルからログデータを取得するプラグインなどがあったり、`Exporter` ではPrometheusのRemote Write Endpointにメトリクスデータを出力するプラグイン・Lokiにログデータを出力するプラグイン・Datadogにデータを出力するプラグインなどがあります。
+たとえば、`Receiver` ではPrometheusからメトリクスデータを取得するプラグイン・ローカルのJSONファイルからログデータを取得するプラグインなどがあったり、`Exporter` ではPrometheusのRemote Write Endpointにメトリクスデータを出力するプラグイン・Lokiにログデータを出力するプラグイン・Datadogにデータを出力するプラグインなどがあります。
 
 多岐にわたるプラグインは、主要なプラグインだけを含んでいるCoreディストリビューションと、さまざまなプラグインを含んでいるContribディストリビューションが用意されています。他にも、各ベンダーが提供しているカスタムディストリビューションも存在します。
 
@@ -67,7 +67,7 @@ OpenTelemetry Collectorは、内部的には4つのコンポーネントで構�
 ### OpenTelemetry Operatorのインストール
 
 helmfileを使用してOpenTelemetry Operatorをインストールします。
-OpenTelemetry Operatorをインストールすることで、OpenTelemetry CollectorなどをKubernetesのリソースで管理することができます。
+OpenTelemetry Operatorをインストールすることで、OpenTelemetry CollectorなどをKubernetesのリソースで管理できます。
 ValidatingWebhookの兼ね合いで`helmfile sync`が失敗することがあるため、失敗した場合は再度実行してください。
 
 ```sh
@@ -286,7 +286,7 @@ sudo docker exec -it kind-worker sh -c "cat /tmp/all.json  | jq ."
   * [debugexporter](https://github.com/open-telemetry/opentelemetry-collector/tree/main/exporter/debugexporter)
   * [fileexporter](https://github.com/open-telemetry/opentelemetry-collector-contrib/tree/main/exporter/fileexporter)
 
-今回は簡単な例でしたが、syslogやFluentdなどさまざまなデータを受け取ってフィルタリングやラベルの追加処理を実施後、Lokiに転送しつつ、S3にgzip圧縮して送るといった複雑なユースケースにも対応することができます。
+今回は簡単な例でしたが、syslogやFluentdなどさまざまなデータを受け取ってフィルタリングやラベルの追加処理を実施後、Lokiに転送しつつ、S3にgzip圧縮して送るといった複雑なユースケースにも対応できます。
 
 ![](image/log-collector-example.png)
 
@@ -299,7 +299,6 @@ sudo docker exec -it kind-worker sh -c "cat /tmp/all.json  | jq ."
 ![](image/metrics-collector.png)
 
 ログの時と同様に、OpenTelemetryCollectorリソースを利用してKubernetesにデプロイします。
-今回はホスト上のメトリクスを取得するエージェントとして動作させる想定なため、`.spec.mode`にはdaemonsetを指定し、DaemonSetとして起動します。
 最後に、OpenTelemetry Collectorの設定を`.spec.config`に行っておきます。
 
 ```yaml
@@ -368,7 +367,7 @@ pod/metrics-collector-collector-mzd9j   2/2     Running   0          3m24s
 
 まずは`debug` Exporterが出力しているログを確認してみます。
 下記のようにログを確認すると、2つのメトリクスで合計166個のデータポイントが取得されていることが確認できます。
-メトリクス名まで確認したい場合には、OpenTelemetryCollectorの`spec.config`の`exporters.debug.verbosity`を`detailed`に設定することで確認することができます。
+メトリクス名まで確認したい場合には、OpenTelemetryCollectorの`spec.config`の`exporters.debug.verbosity`を`detailed`に設定することで確認できます。
 
 ```sh
 kubectl logs -l app.kubernetes.io/name=metrics-collector-collector -f
@@ -383,7 +382,7 @@ kubectl logs -l app.kubernetes.io/name=metrics-collector-collector -f
 
 次に、実際にGrafana上からメトリクスを確認してみましょう。
 `https://grafana.example.com/explore` に接続し、`system_cpu_time_seconds_total`のメトリクスを確認してみます。
-今回利用している`hostmetrics` Receiverで取得しているメトリクスには[Host Metrics Receiver](https://github.com/open-telemetry/opentelemetry-collector-contrib/blob/main/receiver/hostmetricsreceiver/internal/scraper/cpuscraper/documentation.md)のページから確認することができます。
+今回利用している`hostmetrics` Receiverで取得しているメトリクスには[Host Metrics Receiver](https://github.com/open-telemetry/opentelemetry-collector-contrib/blob/main/receiver/hostmetricsreceiver/internal/scraper/cpuscraper/documentation.md)のページから確認できます。
 `exporters.prometheusremotewrite.external_labels`の設定で`oteltest=cndt2023`のラベルを付与しているため、ラベルの指定をすることでOpenTelemetry Colelctorが出力したメトリクスのみに絞ることも可能です。
 
 ![](./image/grafana-metrics-collector-setting.png)
@@ -398,7 +397,7 @@ kubectl logs -l app.kubernetes.io/name=metrics-collector-collector -f
   * [debugexporter](https://github.com/open-telemetry/opentelemetry-collector/tree/main/exporter/debugexporter)
   * [prometheusremotewrite](https://github.com/open-telemetry/opentelemetry-collector-contrib/tree/main/exporter/prometheusremotewriteexporter)
 
-今回は簡単な例でしたが、OpenMetrics互換のエンドポイントからデータを取得し、Prometheus・Datadog・PubSubにデータをそれぞれ転送するといったユースケースにも対応することができます。
+今回は簡単な例でしたが、OpenMetrics互換のエンドポイントからデータを取得し、Prometheus・Datadog・PubSubにデータをそれぞれ転送するといったユースケースにも対応できます。
 また、ScrapeしてRemote Writeするといったユースケースでは、Prometheusの代替にするために`prometheusreceiver`といったプラグインを利用することもできます。
 
 ![](image/metrics-collector-example.png)
@@ -453,7 +452,7 @@ NAME     STATUS    VERSION   STRATEGY   STORAGE   AGE
 jaeger   Running   1.52.0    allinone   memory    10m
 ```
 
-デプロイされたJaegerのUIは、`https://jaeger.example.com/search`から確認することができます。
+デプロイされたJaegerのUIは、`https://jaeger.example.com/search`から確認できます。
 
 
 今回は、`otlp` Receiverを利用し、OpenTelemetry Protocol（OTLP）を利用してトレースデータを受け取ります。そしてそのデータを`otlp` Exporterを利用してJaegerに対して保存、`debug` Exporterを利用して標準出力にもデバッグログを出力します。
@@ -504,7 +503,7 @@ kubectl apply -f manifests/trace-collector.yaml
 ```
 ```sh
 # 実行結果
-opentelemetrycollector/metrics-collector created
+opentelemetrycollector.opentelemetry.io/trace-collector created
 ```
 
 ```sh
@@ -585,7 +584,7 @@ kubectl -n handson patch deployment handson-blue -p '{"spec":{"template":{"metad
 kubectl -n handson patch deployment handson-blue -p '{"spec":{"template":{"metadata":{"annotations":{"instrumentation.opentelemetry.io/otel-go-auto-target-exe": "/rollouts-demo"}}}}}'
 ```
 
-作成されたPodを確認すると、Podにサイドカーとして`opentelemetry-auto-instrumentation`コンテナが含まれた形で作成されていることが確認できます。
+作成されたPodを確認すると、Podにサイドカーとして`opentelemetry-auto-instrumentation`コンテナーが含まれた形で作成されていることが確認できます。
 
 ```bash
 kubectl -n handson get pods
@@ -600,7 +599,7 @@ sample-app-blue-5fb8dc75fd-7cvxg   2/2     Ready    0          30s
 次に、実際にJaeger上からメトリクスを確認してみましょう。
 まず、`http://app.example.com/` に接続し、一定量のトレースデータを出力します。
 `https://jaeger.example.com/explore` に接続し、Service名に`sample-app-blue`を指定してみると、トレースデータが確認できます。
-今回は複雑なマイクロサービスではないため、シンプルな表示になっていますが、サービス間の通信がある場合はもう少し複雑なトレースデータを確認することができます。
+今回は複雑なマイクロサービスではないため、シンプルな表示になっていますが、サービス間の通信がある場合はもう少し複雑なトレースデータを確認できます。
 
 ![](./image/jaeger.png)
 
@@ -628,7 +627,7 @@ OpenTelemetryでは、OpenTelemetry Protocol（OTLP）を利用して、OpenTele
 ## 推奨される Processor
 
 今回の例ではProcessorは利用しませんでしたが、Processorも非常に重要なコンポーネントの1つです。
-例えば、大規模な環境で多くのテレメトリデータが出力される場合、それらのデータを適切に処理するにはProcessorが必要不可欠です。
+たとえば、大規模な環境で多くのテレメトリデータが出力される場合、それらのデータを適切に処理するにはProcessorが必要不可欠です。
 Prosessorではメモリ制限・サンプリング・バッチ処理などを行うこともできるため、そうした処理を間に挟むことで負荷を削減することもできます。
 
 [推奨されるProcessor](https://github.com/open-telemetry/opentelemetry-collector/tree/main/processor#recommended-processors)については、Docsを確認してください。
