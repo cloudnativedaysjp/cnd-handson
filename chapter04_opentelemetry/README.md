@@ -202,7 +202,7 @@ kubectl get opentelemetrycollector
 ```sh
 # 実行結果
 NAME                MODE         VERSION   READY   AGE     IMAGE                                         MANAGEMENT
-log-collector       daemonset    0.87.0    1/1     18h     otel/opentelemetry-collector-contrib:0.87.0   managed
+log-collector       daemonset    0.98.0    1/1     18h     otel/opentelemetry-collector-contrib:0.98.0   managed
 ```
 
 ```sh
@@ -350,7 +350,7 @@ kubectl get opentelemetrycollector metrics-collector
 ```sh
 # 実行結果
 NAME                MODE        VERSION   READY   AGE   IMAGE                                         MANAGEMENT
-metrics-collector   daemonset   0.87.0    1/1     44m   otel/opentelemetry-collector-contrib:0.87.0   managed
+metrics-collector   daemonset   0.98.0    1/1     44m   otel/opentelemetry-collector-contrib:0.98.0   managed
 ```
 
 ```sh
@@ -450,7 +450,7 @@ kubectl -n jaeger get jaeger
 ```sh
 # 実行結果
 NAME     STATUS    VERSION   STRATEGY   STORAGE   AGE
-jaeger   Running   1.49.0    allinone   memory    10m
+jaeger   Running   1.52.0    allinone   memory    10m
 ```
 
 デプロイされたJaegerのUIは、`https://jaeger.example.com/search`から確認することができます。
@@ -513,7 +513,7 @@ kubectl get opentelemetrycollector trace-collector
 ```sh
 # 実行結果
 NAME              MODE         VERSION   READY   AGE   IMAGE                                         MANAGEMENT
-trace-collector   deployment   0.87.0    1/1     10m   otel/opentelemetry-collector-contrib:0.87.0   managed
+trace-collector   deployment   0.98.0    1/1     10m   otel/opentelemetry-collector-contrib:0.98.0   managed
 ```
 ```sh
 kubectl get deployments,pods,services -l app.kubernetes.io/name=trace-collector-collector
