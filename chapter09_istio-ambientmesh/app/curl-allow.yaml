@@ -4,6 +4,7 @@ kind: ServiceAccount
 automountServiceAccountToken: false
 metadata:
   name: curl-allow
+  namespace: handson
 ---
 apiVersion: v1
 kind: Pod
@@ -12,8 +13,8 @@ metadata:
     app: curl-allow
     version: v1
     content: layer4-authz
-    prometheus-monitor-ignore: ""
   name: curl-allow
+  namespace: handson
 spec:
   serviceAccountName: curl-allow
   terminationGracePeriodSeconds: 0
@@ -21,8 +22,8 @@ spec:
   - name: curl
     image: curlimages/curl
     command:
-      - "/bin/sleep"
-      - "1d"
+    - "/bin/sleep"
+    - "1d"
     imagePullPolicy: IfNotPresent
     resources:
       requests:

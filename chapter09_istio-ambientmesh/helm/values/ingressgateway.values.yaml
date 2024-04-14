@@ -1,0 +1,24 @@
+name: istio-ingressgateway
+imagePullPolicy: IfNotPresent
+autoscaling:
+  enabled: false
+labels:
+  app.kubernetes.io/part-of: istio
+resources:
+  limits:
+    cpu: 100m
+    memory: 128Mi
+service:
+  type: NodePort
+  ports:
+    # For port numbers, see https://github.com/cloudnativedaysjp/cndt2023-handson/blob/main/chapter01_cluster-create/kind-config.yaml.
+  - port: 18080
+    targetPort: 18080
+    nodePort: 32080
+    name: http-app
+    protocol: TCP
+  - port: 18443
+    targetPort: 18443
+    nodePort: 32443
+    name: https
+    protocol: TCP
