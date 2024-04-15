@@ -214,7 +214,7 @@ kubectl apply -f ingress.yaml
 ```
 
 実際にそれぞれのUIが公開されているか確認してみましょう。
-ブラウザで `prometheus.example.com` と `grafana.example.com` にアクセスしてみてください。
+ブラウザで  <http://prometheus.example.com> と <http://grafana.example.com> にアクセスしてみてください。
 
 Grafanaではユーザログインが必要ですが、先程設定したvalues.yamlの内容でログインできます( `username: admin, password: handson_saiko!` )
 values.yamlに記載した認証情報でログインできなかった場合は、
