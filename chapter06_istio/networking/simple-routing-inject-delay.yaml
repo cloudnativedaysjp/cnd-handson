@@ -1,0 +1,23 @@
+apiVersion: networking.istio.io/v1beta1
+kind: VirtualService
+metadata:
+  name: simple-routing
+  namespace: handson
+  labels:
+    content: simple-routing
+spec:
+  hosts:
+  - app.example.com
+  gateways:
+  - handson
+  http:
+  - fault:
+      delay:
+        fixedDelay: 5s
+        percentage:
+          value: 50
+    route:
+    - destination:
+        host: handson
+        port:
+          number: 8080
