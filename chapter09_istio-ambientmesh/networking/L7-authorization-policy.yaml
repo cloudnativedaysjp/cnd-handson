@@ -3,6 +3,7 @@ apiVersion: security.istio.io/v1beta1
 kind: AuthorizationPolicy
 metadata:
   name: layer7-authz
+  namespace: handson
   labels:
     content: layer7-authz
 spec:
@@ -14,7 +15,7 @@ spec:
   - from:
     - source:
         principals:
-        - cluster.local/ns/default/sa/curl
+        - cluster.local/ns/handson/sa/curl
     to:
     - operation:
         methods:
