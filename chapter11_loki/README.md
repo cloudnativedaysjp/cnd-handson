@@ -1,0 +1,269 @@
+# Grafana Loki
+
+本章では[Grafana Loki](https://github.com/grafana/loki)（以降、Loki）について紹介します。
+下記の流れで説明します。
+
+- Lokiの概要
+- アーキテクチャについて
+- Lokiのデプロイモード
+- 実践
+  - Lokiの構築
+  - Grafanaを利用したログの検索
+  - アラートの設定
+
+## 概要
+
+LokiはPrometheusを参考に作成されたログ集約システムです。
+LokiをベースにしたLogging Stackの利用イメージは下記の図になります。
+LokiはPull型ではなくPush型でを採用しており、ログを取得しLokiに送付するAgentが必要になります。
+Agentとしては、[Promtail](https://grafana.com/docs/loki/latest/send-data/promtail/)や[fluentbit](https://fluentbit.io/)、[OpenTelemetry](https://opentelemetry.io/)などがあげられます。
+また、集約したログは[Grafana](https://github.com/grafana/grafana)や[LogCLI](https://grafana.com/docs/loki/latest/query/logcli/)のようなツールで参照します。
+
+![](https://raw.githubusercontent.com/grafana/loki/v3.0.0/docs/sources/get-started/loki-overview-2.png)
+
+
+Lokiの特徴として、ログに付与されたラベルに対してのみインデックスを作成することによる、ラベルを条件にしたログ参照の高速化があげられます。
+
+下記の図は簡単なログの格納処理になります。
+Lokiでは、ログのラベルのキーと値の組み合わせの数だけ、ログストリームと呼ばれるものが作成されます。
+Lokiで受け取ったログは、ラベルのキーと値をもとにログストリームへ振り分けられ、一定数たまると圧縮され、Chunkとしてオブジェクトストレージに格納されます。
+たとえば、下記の図であれば、Lokiはjobラベルの値としてAAAとBBBを認識しており、`{job="AAA"}`と`{job="BBB"}`の2種類のログストリームが定義されてます。
+Lokiがjobラベルの値が`AAA`であるログを受け取ると、`{job="AAA"}`のログストリームと判断され、まとめられます。
+
+<img src="image/ch11_grafana_loki_write.png" width=500>
+
+読み取り時は、タイムスタンプやログのラベルのキーと値をもとにログの位置を特定し、ログの読み込み処理が行われます。
+Lokiでは、ラベルに対しIndexを付与します。
+Indexの情報を参照し、Chunkからログ情報を取得します。
+
+<img src="image/ch11_grafana_loki_read.png" width=500>
+
+> [!WARNING]
+> とぢらも説明の簡易化のために、かなり処理を省いています。
+> より詳しい処理は[Select the chunks by inverted index](https://taisho6339.gitbook.io/grafana-loki-deep-dive/query-process/determine-the-chunks-to-fetch-using-inverted-indexes)を参照してください。
+
+## Loki Architecture
+
+Lokiのアーキテクチャについて説明します。
+Grafana Lokiは複数のマイクロサービスで構成されており、水平スケールが可能なシステムとして設計されています。
+各サービスをマイクロサービスのように個別にデプロイすることも可能ですし、1つのコンテナイメージとしてデプロイすることも可能な設計となっています。
+Loki自体はシングルバイナリとなっており、実行時に`-target`オプションを指定して動作を切り替えます。
+
+まずはGrafana Lokiのアーキテクチャを見てみましょう。
+以下がGrafana Lokiの簡単なアーキテクチャになります。
+
+<img src="https://grafana.com/docs/loki/latest/get-started/loki_architecture_components.svg" width=700>
+
+この図には以下のコンポーネントとストレージが図示されており、それぞれについて次節以降で説明します。
+
+- コンポーネント
+  - Distributor
+  - Ingester
+  - Querier
+  - Query Frontend
+  - Ruler
+  - Compactor
+  - Consul
+- ストレージ
+  - オブジェクトストレージ
+  - Memcached
+
+> [!NOTE]
+> 上記の図で示したコンポーネントは一部です。
+> たとえば、Loki v3.0.0からBloom CompactorとBloom Gatewayというコンポーネントが追加されました。
+> これはクエリの速度向上を目的に実装されたBloomフィルターを実現するためのコンポーネントです。
+> ここでの詳細は省きますが、この機能を利用することで、ログが格納されているChunkをより効果的に見つけることができます。
+> 詳細は[Query Acceleration with Blooms (Experimental)](https://grafana.com/docs/loki/latest/operations/query-acceleration-blooms/?pg=blog&plcmt=body-txt)を参照してください。
+
+### コンポーネント
+
+先ほどの図のコンポーネントについて説明します。
+
+- Distributor
+  - Agentからのログの書き込みリクエストを受信し、検証を行い、Ingesterにリクエストを回送するコンポーネントです
+    - 同じリクエストを複数のIngesterに送付し、冗長化を設定することも可能です
+    - 他にもログの前処理や、Ingesterを守るためのRate Limitなどの設定も可能です
+  - ステートレスなサービスです
+- Ingester
+  - Distributorからログの書き込みリクエストを受け取ると、オブジェクトストレージに格納します
+    - オブジェクトストレージへはログを圧縮し送付します
+      - 送付前にログを一時的に貯めておくことで、オブジェクトストレージの操作を削減します
+  - ログの読み取りリクエストを受け取ると、インメモリーのログデータを返却します
+- Querier
+  - Log Query Language(LogQL)の実行を担当するコンポーネントです
+  - Ingesterとオブジェクトストレージからログを取得します
+    - ログの冗長化設定が入っているとログの重複が発生する場合がありますが、その際には重複したログを削除します
+  - オプションでQuerier-frontend/Query-Schedulerと連携が可能です
+- Query-frontend
+  - ログのクエリ処理を高速化するためのオプションのコンポーネントです
+    - Querierの前段に配置し、キューやキャッシュの機構が実装されています
+- Ruler
+  - rule configurationで構成されたRuleや/またはAlertを評価し管理するコンポーネント
+  - rule configurationはオブジェクトストレージに格納され、Ruler APIを介すか、直接アップロードすることで管理します
+- Compactor
+  - オブジェクトストレージに格納された複数のIndexファイルをテナントや日ごとのファイルに圧縮します
+    - 定期的にオブジェクトストレージからファイルをダウンロードし、統合し、アップロードします
+  - また、ログの保持と削除も担当します
+- Consul
+  - 一部のコンポーネントで利用される情報を格納するためのKey-Value Storeです
+    - どのような情報がどのコンポーネントで利用されるかは[Hash Ring](https://grafana.com/docs/loki/latest/get-started/hash-rings/)をご参照ください
+  - 図ではConsulとなっていますが、ほかにもetcdやInmemoryなどがサポートされています
+
+> [!NOTE]
+> 上記のコンポーネントは一部になります。
+> Lokiがサポートしているコンポーネントの一覧は下記のコマンドで確認できます。
+> また、後述するDeploy Modeのグルーピングに関しても、こちらのコマンドで確認できます。
+>
+> ```shell
+> loki -config.file=/etc/loki/config/config.yaml -list-targets
+> ```
+
+### ストレージ
+
+次に、先ほどの図のストレージについて説明します。
+
+- オブジェクトストレージ
+  - IndexとChunkのデータを格納するために利用します
+  - オブジェクトストレージとして、S3やGCPなどが利用できます
+  - 図ではオブジェクトストレージとなっていますが、ローカルのファイルシステムも利用可能です
+- Memcached
+  - 各コンポーネントで利用されるキャッシュです
+  - 図ではMemcacedとなっていますが、他にもRedisなどが利用できます
+    - 詳細は[configure: cache config](https://grafana.com/docs/loki/latest/configure/#cache_config)を参照してください
+
+## Deploy Model
+
+前述したように、Lokiは多くのマイクロサービスで構成される分散システムであり、以下の3つのデプロイモードがあります。
+どれもメリット・デメリットがあり、運用者の要件に応じて使い分けることが大切です。
+
+- Microservice Mode
+- Simple Scalable Deployment
+- Monolithic Mode
+
+### Microservices mode
+
+このモードでは、Lokiの各コンポーネントを個々のマイクロサービスとして実行します。
+個々の要件に合わせたきめ細かな設定が可能になります。
+一方で、設定やメンテナンスの複雑度が一番高いモードになっており、非常に大規模なLokiクラスターや、スケーリングやオペレーションを正確に制御する必要がある場合にのみ推奨されるモードです。
+
+### Simple Scalable Deployment
+
+LokiのHelm Chartでデフォルトの設定です。
+Simple Scalable Deploymentを略してSSDと呼ばれることもあります。
+1日あたり数TBのログまでスケールアップが可能であり、これを大幅に超える場合にはMicroservices Modeを検討する必要があります。
+SSDでは各コンポーネントをWrite Target/Read Target/Backend Targetに分類されます。
+
+- Write Target
+  - Kubernetesリソース: StatefulSet
+  - 含まれるコンポーネント: Distributor、Ingester
+- Read Target
+  - Kubernetesリソース: Deployment
+  - 含まれるコンポーネント: Query front end、Queriers
+- Backend Target
+  - Kubernetesリソース: StatefulSet
+  - 含まれるコンポーネント: Compactor
+
+### Monolithic mode
+
+このモードはもっとも単純な動作モードであり、すべてのコンポーネントを単一バイナリ（またはコンテナイメージ）として単一のプロセス内で実行します。1日あたり約20GBまでの少量のRead/Writeが発生する場合や、動作確認のために起動する場合などで便利です。
+共有オブジェクトストレージを使用することで、水平スケールも可能です。
+
+## 実践
+
+### Lokiの構築
+
+まずはLokiをKubernetesクラスターに展開してみましょう。
+
+```shell
+helmfile sync -f helm/helmfile.yaml
+```
+
+> [!WARNING]
+> 今回、オブジェクトストレージとしてminIOを構築し利用する設定が入っています。
+> これはローカルで確認するために選定しており、推奨される設定ではないことに注意してください。
+> 詳細は[supported-chunks-stores-not-typically-recommended-for-production-use](https://grafana.com/docs/loki/latest/operations/storage/)を確認してください。
+
+次にLokiを利用するGrafanaのDatasourceの設定をしましょう。
+`http://grafana.example.com/connections/datasources`にアクセスしてください。
+
+![](image/ch11_grafana_connections_datasources.png)
+
+「Connections」-> 「Data sources」-> 「Add new data source」をクリックし、`Loki`を選択します。
+下記の設定値をいれて、「Save & test」をクリックしてください。
+
+- `URL`: `http://loki-gateway.monitoring.svc.cluster.local`
+- `Header`: `X-Scope-OrgID`
+- `value`: `tenant1`
+
+`URL`はGrafanaがアクセスするLokiのURLです。
+Lokiはマルチテナントにも対応しており、`Header`と`value`で使い分けられます。
+この値は、Lokiにログを送付するAgentに設定してあります。
+今回の場合、`manifest/log-collector.yaml`の`exporters.loki.headers`に設定している値と同じ値を`Header`と`value`として設定します。
+
+設定が完了すると、`http://grafana.example.com/connections/datasources`にLokiが表示されます。
+また、Grafana Exploreの画面でLokiが選択できるようになります。
+
+![](image/ch11_grafana_connections_datasources.png)
+
+> [!TIP]
+> 今回はDatasouceの設定をGUIから行いましたが、本来であれば設定はコードに起こして管理した方が良いでしょう。
+> たとえば、Helm Chartの[kube-prometheus-stack](https://artifacthub.io/packages/helm/prometheus-community/kube-prometheus-stack)でデプロイしたGrafanaのDatasourceに同様の設定をするのであれば、
+> 下記のような設定を`value.yaml`に記載することで、コード管理ができます。
+>
+> ```yaml
+> additionalDataSources:
+>   - name: loki
+>     access: proxy
+>     basicAuth: false
+>     editable: true
+>     jsonData:
+>       httpHeaderName1: "X-Scope-OrgID"
+>     secureJsonData:
+>       httpHeaderValue1: "tenant1"
+>     type: loki
+>     url: http://loki-gateway.monitoring.svc.cluster.local
+> ```
+
+### PodログをGrafanaで確認
+
+この節では、OpenTelemetry Collectorを利用して各Nodeのログを収集し、Lokiに格納する設定を行います。
+また、格納したログをGrafana経由で確認します。
+
+![](image/ch11_env.png)
+
+まずは、OpenTelemetry CollectorをアプライしてLokiにログを送付します。
+
+```shell
+kubectl apply -f manifest/log-collector.yaml
+```
+
+次にログを発生させます。
+サンプルアプリは`http://app.example.com/`にアクセスしてみてください。
+色がついたパネルが発生するたびに、バックエンドのアプリケーションにログが出力されます。
+
+それでは実際にGrafanaからログを確認してみましょう。
+`http://grafana.example.com/explore`にアクセスします。
+Label filtersに`exporter`と`OTLP`を設定して検索ボタンを押します。
+すると、`exporter`ラベルの値が`OTLP`ログの数や、内容を確認できます。
+
+![](image/ch11_grafana_explore.png)
+
+![](image/ch11_grafana_explore_logs_volume.png)
+
+![](image/ch11_grafana_explore_logs.png)
+
+### Grafana Explore: Kick start your query機能
+
+Grafana Exploreの画面からよく使われるクエリのパターンを確認することもできます。
+「Kick start your query」をクリックしてみてください。
+下記の2種類のグループが表示されると思います。
+
+- Log Query Starters
+- Metrics Query starters
+
+![](image/ch11_grafana_explore_kick_start_your_query.png)
+
+Log Query Startersには、特定の文字列でフィルターしたログをlogfmtで解析する例や、ラベルやログの内容の書き換えなどの例が確認できます。
+また、Metrics Query startersには、ログをもとにメトリクスを生成するパターンが紹介されています。
+たとえば、特定の文字列を持つログの数やラベルの数などのメトリクスに変換して視覚化できます。
+どのパターンもそのまま適用することはできませんが、クエリを書く際のヒントとして利用できます。
