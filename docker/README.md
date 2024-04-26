@@ -2,6 +2,9 @@
 
 
 このセクションでは、Dockerを使ってコンテナアプリケーションの基本的な作成方法やdockerコマンドの使用方法を学びます。
+尚、このセクションではご自身のDocker Hub及びプライベートリポジトリを利用します。
+未作成の方はサインアップ及びプライベートリポジトリの作成をお願いします。
+https://hub.docker.com/signup
 
 ## 1. コンテナ作成
 
@@ -23,6 +26,13 @@ docker -v
 
 ```
 Docker version 26.0.0, build 2ae903e
+```
+
+その後、自身のDocker Hubにログインを行います。
+
+
+```
+docker login
 ```
 
 
@@ -105,7 +115,6 @@ curl -I localhost:8888
 
 
 コンテナを停止するにはコンテナIDが必要なため
-
 以下のいづれかのコマンドで自身のコンテナIDを出力します。
 
 
@@ -146,18 +155,22 @@ docker buildコマンドではPush先のリポジトリを指定し、任意の�
 
 その際、タグ名はユニークなものを設定します。
 
-今回は予め用意してあるhands-onリポジトリにImageをPushするため、以下のような指定方法となります。
+
+KubernetesのセクションでプライベートリポジトリからImageをPullするシナリオがあります。
+
+
+Kubernetesのハンズオンを実施される方はプライベートリポジトリ名を指定してください。
 
 
 ```Bash
-docker build -t ryuichitakei/hands-on:<任意のタグ名> .
+docker build -t <DockerHubのユーザ名>/<リポジトリ名>:<任意のタグ名> .
 ```
 
 以下のコマンドで、作成したDocker Imageをコンテナアプリケーションとして起動します。
 
 
 ```Bash
-docker run -d -p 8888:80 ryuichitakei/hands-on:<任意のタグ名>
+docker run -d -p 8888:80 <DockerHubのユーザ名>/<リポジトリ名>:<任意のタグ名>
 ```
 
 
@@ -181,11 +194,9 @@ docker stop <container id>
 
 続いて、以下のコマンドでDocker HubにPushを行います。
 
-今回は予め用意したプライベートリポジトリにimageをpushします。
-
 
 ```Bash
-docker push ryuichitakei/hands-on:<任意のタグ名>
+docker push <DockerHubのユーザ名>/<リポジトリ名>:<任意のタグ名>
 ```
 
 ## 3. Dockerfileのベストプラクティス
