@@ -131,89 +131,16 @@ docker stop <container id>
 Imageの作成後は、DockerHubにPushを行います。
 
 
-まず、以下のコマンドで作業ディレクトリを作成します。
-
-ディレクトリ名は読み替えていただければ任意のもので構いません。
+まず、以下のコマンドで作業ディレクトリに移動します。
 
 
 ```Bash
-mkdir hands-on
 cd hands-on
 pwd
 ```
 
 
-続いて、任意のエディタでhtmlファイル作成します。
-
-このhtmlファイルをDocker Imageの中に取り込み、オリジナルのコンテンツを表示させることが目的です。
-
-以下はviを使用した例です。
-
-
-```Bash
-vi index.html
-```
-
-
-以下はサンプルコードです。
-このままコピペでも構いませんが、後続のセクションで自身のコンテナが動作していることを認知しやすくするため、カスタムすることをお勧めします。
-
-
-```HTML
-<!DOCTYPE html>
-<html lang="ja">
-  <style>
-    body {
-      margin: 0;
-    }
-
-    .center-me {
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      /*font-family: 'Saira Condensed', sans-serif;*/
-  font-family: 'Lobster', cursive;
-      font-size: 100px;
-      height: 100vh;
-    }
-  </style>  
-<head>
-    <meta charset="utf-8">
-      <title>Test</title>
-  </head>
-  <body>
-    <div class="center-me" >
-    <p>
-      <h1>Hello World!!🙂</h1>
-    </p>
-  </div>
-  </body>
-</html>
-```
-
-
-続いて、Dockerfileを作成します。
-
-タイトルは拡張子なし、先頭を大文字Dで作成します。
-
-
-```Bash
-vi Dockerfile
-```
-
-
-以下のようにファイルを編集します。
-FROMはイメージの取得先、COPYはファイルを指定したディレクトリにコピー、RUNは指定したコマンドを実行するための記述です。
-
-
-```Dockerfile
-FROM nginx:latest
-COPY index.html /usr/share/nginx/html/index.html
-RUN service nginx start
-```
-
-
-続いて、作成したDockerfileを使ってimage buildを行います。
+続いて、image buildを行います。
 
 docker buildコマンドではPush先のリポジトリを指定し、任意のタグをつけることができます。
 
@@ -271,122 +198,54 @@ https://docs.docker.jp/develop/develop-images/dockerfile_best-practices.html
 - 一時的なコンテナを作成
   コンテナは、可能な限り一時的（ephemeral）であるべきです。コンテナは停止と同時に破棄される一時的な環境とすることが求められます。これにより再現性を高めることに繋がります。(docker commitはNG)
   運用で必要となる永続的なデータやログなどはコンテナの外に保管するようにしましょう。
+
+  
 - .dockerignore で除外
   コンテナに不要なデータは.dockerignoreでイメージを作成する際の対象から除外することができます。特に機密情報(パスワードやAPIキーなど、認証情報)はコンテナに含まれないようにしましょう。
-- マルチステージドビルドを使う
+
+
+- マルチステージビルドを使う
   コンテナは最小のイメージとすることが望ましいです。マルチステージビルドを活用することで、ソースコードのコンパイル用ステージとコンパイル済みバイナリの実行用ステージなどを分けることができ、大幅にイメージサイズを縮小することができます。
+
+
 - 不要なパッケージのインストール禁止
 　脆弱性などの対象範囲を狭めることにもつながり、セキュリティが向上します。
+
+
 - アプリケーションを切り離す
   各コンテナはただ１つだけの用途を持つように作成しましょう。
+
 
 Docker公式では明記されていないものの、これまでのコンテナ利用実績からベストプラクティスをインターネット上で公開している企業もあります。Sysdig社のベストプラクティスは整理されていて参考としやすいため紹介します。
 https://sysdig.jp/blog/dockerfile-best-practices/
 
 その中でもいくつか重要と思われる項目について抜粋して、簡単に補足説明します。
 
+
 - 不要な特権を避ける
   rootで実行すると危険です。コンテナでプログラムをroot (UID 0) として実行しないようにしましょう。DockerfileでもUSERを設定して別ユーザでプロセスを起動させるように記載します。
+
+
 - 信頼できるベースイメージを使う
   信頼されていないイメージやメンテナンスされていないイメージの上にビルドすると、そのイメージの問題や脆弱性をすべてコンテナに継承してしまいます。
 
 
 ハンズオンとして、マルチステージビルドを実施してみましょう。
-以下の2つのファイルを作成し、それぞれbuildしてください。
+before、afterディレクトリ配下のアプリをそれぞれbuildしてください。
 
 
 ```bash
 cd ..
-mkdir -p multistaged/before/app ; cd multistaged/before 
-vi Dockerfile
-vi app/server.go
-docker build --network host -t multistaged:before .
+cd multistage/before 
+docker build --network host -t multistage:before .
 ```
 
-``` Dockerfile
-# Dockerfile (multistaged:before)
-FROM golang:1.19.3
 
-WORKDIR /app
-COPY ./app /app
-RUN go mod init server \
-        && go mod tidy \
-        && go build -o server server.go
-EXPOSE 1323
-CMD [ "/app/server" ]
-```
-
-```Go
-// app/server.go
-// https://echo.labstack.com/guide/
-package main
-
-import (
-	"net/http"
-	
-	"github.com/labstack/echo/v4"
-)
-
-func main() {
-	e := echo.New()
-	e.GET("/", func(c echo.Context) error {
-		return c.String(http.StatusOK, "Hello, World!")
-	})
-	e.Logger.Fatal(e.Start(":1323"))
-}
-```
 
 ```bash
 cd ..
-mkdir -p after/app ; cd after
-vi Dockerfile
-vi app/server.go
-docker build --network host -t multistaged:after .
-```
-
-``` Dockerfile
-# Dockerfile (multistaged:after)
-# 
-# Build
-# 
-FROM golang:1.19.3 AS stage
-
-WORKDIR /app
-COPY ./app /app
-RUN go mod init server \
-        && go mod tidy \
-        && go build -o server server.go
-
-# 
-# Deploy
-# 
-FROM gcr.io/distroless/base-debian11
-
-WORKDIR /app
-COPY --from=stage /app/server /app/server
-USER nonroot:nonroot
-EXPOSE 1323
-CMD [ "/app/server" ]
-```
-
-```Go
-// app/server.go
-// https://echo.labstack.com/guide/
-package main
-
-import (
-	"net/http"
-	
-	"github.com/labstack/echo/v4"
-)
-
-func main() {
-	e := echo.New()
-	e.GET("/", func(c echo.Context) error {
-		return c.String(http.StatusOK, "Hello, World!")
-	})
-	e.Logger.Fatal(e.Start(":1323"))
-}
+cd after
+docker build --network host -t multistage:after .
 ```
 
 それぞれのサイズを比較してみましょう。1GBほど縮小されていることがわかります。
