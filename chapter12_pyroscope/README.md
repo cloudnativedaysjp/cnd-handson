@@ -45,7 +45,7 @@ Performanceタブが開いたら、左上の再生ボタン（▶︎）をクリ
 2023/9 に v1.0.0 がリリースされています。
 
 ## Pyroscopeのアーキテクチャ（サーバー）
-Pyroscopeのアーキテクチャを説明します。後述するdistributorやingester等、Pyrocopeのアーキテクチャは、LokiやMimirなどのGrafanaLabsスタックでも用いられるので、知っておいて損はない
+Pyroscopeのアーキテクチャを説明します。後述するdistributorやingester等、Pyrocopeのアーキテクチャは、LokiやMimirなどのGrafanaLabsスタックでも用いられるので、知っておくと良いでしょう。
 
 ### Write（プロファイルの書き込み）
 
@@ -65,7 +65,7 @@ Pyroscopeのアーキテクチャを説明します。後述するdistributorや
 4. querierの参照先は、最近のデータからならingesterから、長期ストレージからならstore-gatewayからデータを取得します。
 
 ## Pyroscopeへのプロファイルの送信（クライアント）
-プロファイルをPyroscopeに送信する場合、各言語ごとのPyroscope SDKを使うか、Grafana Agentを使うかの2択となります。ただし、2024/04にGrafana Alloyという、OpenTelemetry Collector互換の新たなOSSが発表され、Grafana Agentは2025年にEOLとなり、Alloyへと生まれ変わります。
+プロファイルをPyroscopeに送信する場合、各言語ごとのPyroscope SDKを使うか、Grafana Agentを使うかの2択となります。しかし、2024/04にGrafana Alloyという、OpenTelemetry Collector互換の新たなOSSが発表されました。Grafana Agentは2025年にEOLとなり、Alloyへとプロジェクト移行されます。
 
 当ハンズオンでは、初期構築時にGrafana Agentがインストールされています。
 
