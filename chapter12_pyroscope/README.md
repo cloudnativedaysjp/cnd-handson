@@ -110,7 +110,7 @@ kubectl --namespace pyroscope port-forward svc/pyroscope 4040:4040
 
 
 ## 番外：マイクロサービスモードで動かしたいとき
-マイクロサービスモードで動かしたい場合、helmのvaluesを宣言した状態で、`helmfile sync`を実施してみてください。
+マイクロサービスモードで動かしたい場合、helmのvaluesを宣言した状態で、`helmfile sync`を実行してみてください。
 マイクロサービスモードでは、ストレージサービスの指定が必要で、ここではMinIOというオブジェクトストレージサーバが採用されます。
 
 ハンズオン用では、[values-micro-services.yaml](https://raw.githubusercontent.com/grafana/pyroscope/main/operations/pyroscope/helm/pyroscope/values-micro-services.yaml)を元に、要求リソースを小さくして作成しています。
