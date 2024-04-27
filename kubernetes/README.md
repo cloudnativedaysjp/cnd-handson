@@ -1101,6 +1101,7 @@ KubernetesにはPodが正常に起動したか、または正常に動作を続�
 
 今回はファイルの有無によって、Podの準備が出来ているかを判断するシナリオです。
 
+
 ```Bash
 kubectl apply -f readiness-pod.yaml
 ```
