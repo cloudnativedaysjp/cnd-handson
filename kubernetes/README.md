@@ -814,7 +814,7 @@ kubectl get pvc -n <自身のnamespace>
 ```
 
 ```
-kubectl exec -ti <pod名>-n <namespace名> -- tail /data/out1.txt
+kubectl exec -ti volume-pod -- tail /data/out1.txt
 ```
 
 ### 8. 複数コンテナが動作するPod
