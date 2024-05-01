@@ -799,33 +799,47 @@ kubectl get pvc -n <自身のnamespace>
 kubectl exec -ti volume-pod -- tail /data/out1.txt
 ```
 
-### 8. 複数コンテナが動作するPod
+### 8. Init Container
 
 
 PodはKubernetesにおける最小の単位ですが、その実態は複数(単独の場合もある)のコンテナで実行するリソースです。
 例えば、Serice Meshを実現するためにネットワークプロキシとなるコンテナAとサービスアプリケーションとなるコンテナBを1つのPodとして稼働させることで、ネットワーク周りの処理をコンテナBに任せてコンテナはサービスの提供に全てのリソースを割くといったことができます。
-以下のサンプルファイルを使って、複数コンテナのPodをデプロイしてみましょう。
+また、init containerと呼ばれる一時的な用途のコンテナを作成することも可能です。
 
-```Yaml
-  ---
-apiVersion: v1
-kind: Pod
-metadata:
-  name: multi-pod
-spec:
-  containers:
-  - image: nginx
-    name: alpha
-    env:
-    - name: name
-      value: alpha
-  - image: busybox
-    name: beta
-    command: ["sleep", "4800"]
-    env:
-    - name: name
-      value: beta
+今回はinit containerの動作を確認してみましょう。
+このシナリオでは、起動時に作成されるコンテナ(Init Container)が'CNDT2024!!'というメッセージを出力するコンテンツを作成しマウント先のボリュームに保存します。
+その後、nginxが起動しInit Containerが作成したコンテンツを参照することで、nginxにアクセスした際に上記メッセージが返却されます。
+
+まずは以下のManifestをapplyします。
+
 ```
+kubectl apply -f handson-init.yaml
+```
+
+続いて、動作確認のためPodのIPを確認します。
+
+```
+kubectl get pod -o wide | grep init
+```
+
+最後に一時的な確認Podを使ってcurlでのアクセス確認をしてみましょう。
+
+
+```
+kubectl run tmp --restart=Never --rm -i --image=nginx:alpine -- curl <PodのIP>
+```
+
+以下のように`CNDS2024!!`のメッセージが確認できます。
+
+
+```
+  % Total    % Received % Xferd  Average Speed   Time    Time     Time  Current
+                                 Dload  Upload   Total   Spent    Left  Speed
+CNDS2024!!
+100    11  100    11    0     0   8094      0 --:--:-- --:--:-- --:--:-- 11000
+pod "tmp" deleted
+```
+
 
 ### 9. ServiceAccountとUser Account
 
@@ -1018,14 +1032,21 @@ kubectl auth can-i update pods --as=<User名> --namespace=<ns名>
 ### 10. トラブルシュート
 
 これまで学習してきたことを活用して、トラブルシュートを行ってみましょう。
-各Namespaceに壊れたPodをデプロイしました。原因を調査し、Podをrunningステータスにしてください。
+以下のPodをデプロイします。
+
+```
+kubectl apply -f 
+
+
+原因を調査し、Podをrunningステータスにしてください。
+
 
 
 > ヒント
 
-- discribeコマンドを使う
-- logsコマンドを使う
-- editもしくは-o yamlをファイルに書き出して再デプロイ
+- discribeコマンド
+- logsコマンド
+- `-o yaml`サブコマンド
 
 
 ### 11. おまけ(jsonpath)
@@ -1194,8 +1215,29 @@ kubectl exec -it nginx-app3 -- curl -I <PodのIP>
 今回は`podSelector`を使用してポリシーを設定しています。
 
 ```
-kubectl apply -f 
+kubectl apply -f handson-policy.yaml
 ```
+
+設定後、`app1`と`app3`同士の通信のみが可能であることが確認できます。
+
+```
+kubectl exec -it nginx-app1 -- curl -I <PodのIP>
+kubectl exec -it nginx-app2 -- curl -I <PodのIP>
+kubectl exec -it nginx-app3 -- curl -I <PodのIP>
+```
+
+動作確認後、リソースを削除します。
+
+```
+kubectl delete networkpolicy default-deny-all
+kubectl delete networkpolicy app1-app3
+kubectl delete networkpolicy app3-app1
+kubectl delete pod nginx-app1
+kubectl delete pod nginx-app2
+kubectl delete pod nginx-app3
+```
+
+
 
 ## JobとCronJob
 
@@ -1263,10 +1305,10 @@ kubectl logs <Pod名>
 kubectl delete job handson-job
 ```
 
-### Cron　Job
+### CronJob
 
-Cron Jobは、リソース内のCronに従って、スケジュールされた時間にJobを実行します。
-Cron Jobは、先ほど実行したJobの上位リソースに当たります。
+CronJobは、リソース内のCronに従って、スケジュールされた時間にJobを実行します。
+CronJobは、先ほど実行したJobの上位リソースに当たります。
 
 今回は1分ごとにJobを動作させるシナリオです。
 それでは、前回のJobのシナリオ同様にManifestをapplyして動作を確認していきましょう。
