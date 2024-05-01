@@ -583,66 +583,15 @@ curl http://＊＊＊＊:32001
 </html>
 ```
 
-## 6. Podの更新(RollingUpdate)
+## 6. Ingressとアプリケーションの更新
 
-PodをRollingUpdateで更新する動作を確認してみましょう。
+このセクションでは、Podを外部公開するためのリソースであるIngressと、Kubernetesが持つPodの更新方法について紹介します。
 
-### 6.1. Updateの準備
+### 6.1. Rolling Update
 
-ここでは更新の様子を確認しやすくするために、Replicaの数を4に増やしておきます。以下のようにManifestを修正し、再度Manifestを登録しなおしてください。
+Kubernetesには、Podを別のイメージに変更したりバージョンを更新する際に、サービスに影響が出ないよう段階的に更新の動作を行うRolling Updateという機能があります。
 
-```yaml
-apiVersion: apps/v1
-kind: Deployment
-metadata:
-  annotations:
-    deployment.kubernetes.io/revision: "1"
-  labels:
-    app: hands-on-nginx
-  name: hands-on-nginx
-spec:
-  replicas: 4 # 6.で修正 2 -> 4
-  selector:
-    matchLabels:
-      app: hands-on-nginx
-  template:
-    spec:
-    metadata:
-      labels:
-        app: hands-on-nginx
-    spec:
-      containers:
-      - image: ryuichitakei/hands-on:hands-on-nginx 
-        name: hands-on-nginx
-        ports:
-        - containerPort: 80
-      imagePullSecrets:
-      - name: <secret名>
-```
-
-```Bash
-kubectl apply -f hands-on-nginx.yaml -n <namespace名>
-```
-
-Podが4つに増えていることを確認します。
-
-```Bash
-kubectl get pod -n <namespace名>
-```
-
-### 6.2. コンテナの更新
-
-前回のDockerハンズオンで作成したindexファイルの内容を更新して、docker Build/pushします。
-
-```Bash
-vi index.html
-docker build -t ryuichitakei/hands-on:<任意のタグ名2> .
-docker push ryuichitakei/hands-on:<任意のタグ名2>
-```
-
-### 6.3. RollingUpdateの動作確認
-
-それでは、RollingUpdateの更新動作を確認していきましょう。
+それでは、実際に更新動作を確認していきましょう。
 更新するときの処理はstrategy で指定します。デフォルトはRollingUpdateです。
 ローリングアップデートの処理をコントロールするためにmaxUnavailableとmaxSurgeを指定することができます。
 
@@ -653,7 +602,9 @@ docker push ryuichitakei/hands-on:<任意のタグ名2>
 - maxUnavailable
   更新処理において利用不可となる最大のPod数(割合でも設定可)
 
-コンテナが作られて直ぐに利用可能になるので、動作イメージをつかみやすくするためにminReadySecondsは10秒に設定しています。下記をManifestのspec:に追加しましょう。
+コンテナが作られて直ぐに利用可能になるので、動作イメージをつかみやすくするためにminReadySecondsは10秒に設定しています。
+
+動作確認用のManifestを適用しましょう。
 
 ```yaml
 spec:
