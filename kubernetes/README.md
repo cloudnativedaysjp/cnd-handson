@@ -1191,9 +1191,10 @@ kubectl exec -it nginx-app3 -- curl -I <PodのIP>
 ```
 
 続いて、`app1`と`app3`同士の通信のみが許可されるポリシーを適用していきます。
+今回は`podSelector`を使用してポリシーを設定しています。
 
 ```
-
+kubectl apply -f 
 ```
 
 ## JobとCronJob
