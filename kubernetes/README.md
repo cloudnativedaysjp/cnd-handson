@@ -1139,3 +1139,132 @@ kubectl exec -it nginx-app1 -- curl -I <PodのIP>
 
 ```
 
+## JobとCronJob
+
+### Job
+
+Jobは、ReplicaSetと同様、Podを管理するためのPodの上位リソースに該当します。
+Podを使って一時的な処理を行う際に利用するリソースで、処理を実行後にPodは自動的に削除されます。
+今回はechoでメッセージを出力する簡単なJobを実行します。
+
+Jobリソースは、並列動作や繰り返し動作に関するオプションのパラメータを設定することが可能です。
+
+
+- completion
+  指定した回数Podが正常終了したら、Jobが終了する
+- parallelism
+  指定した数値分Podを並列で起動する
+- backoffLimit
+  指定した回数分Podをリトライする。リトライ回数が上限に達するとエラー判定となる
+
+
+今回は以下のように設定しているため、計6回Jobが実行され
+2つのPodが並列で動作します。
+
+```
+completion: 6
+parallelism: 2
+```
+
+以下のManifestを適用します。
+
+```
+kubectl apply -f handson-job.yaml
+```
+
+動作確認は以下のコマンドで行います。
+
+```
+kubectl get job
+```
+
+以下のように、完了したJobは`COMPLETIONS`としてカウントされていきます。
+
+```
+NAME          COMPLETIONS   DURATION   AGE
+handson-job   6/6           15s        58s
+```
+
+また、Podの挙動を観察することで動作確認をすることも可能です。
+以下のコマンドで2つずつ並列でJobが実行されていくのが確認できます。
+
+```
+watch -n 1 kubectl get pod
+```
+
+実際のJobの実行結果はLogを確認します。
+
+```
+kubectl logs <Pod名>
+```
+
+確認が完了したらリソースを削除します。
+
+
+```
+kubectl delete job handson-job
+```
+
+### Cron　Job
+
+Cron Jobは、リソース内のCronに従って、スケジュールされた時間にJobを実行します。
+Cron Jobは、先ほど実行したJobの上位リソースに当たります。
+
+今回は1分ごとにJobを動作させるシナリオです。
+それでは、前回のJobのシナリオ同様にManifestをapplyして動作を確認していきましょう。
+
+```
+kubectl apply -f handson-cronjob.yaml
+```
+
+1分ごとにJobが増えていくのが確認できます。
+
+```
+watch -n 1 kubectl get pod
+```
+
+今回はdateコマンドを実行するJobなので、日付が出力されているはずです。
+
+```
+kubectl logs <Pod名>
+```
+
+以下のコマンドはCron Jobのステータスや詳細が確認できます。
+
+```
+kubectl get cronjob
+
+kubectl describe cronjob　handson-cronjob
+
+```
+
+Cron Jobを一時停止したい場合は、kubectl patchコマンドを使用します。
+リソース内の`spec.suspend`パラメータを`true`にすることで停止が可能です。
+
+`kubectl get cronjob`を実行すると、現在は`SUSPEND`が`False`になっていることが確認できます。
+
+```
+NAME              SCHEDULE      SUSPEND   ACTIVE   LAST SCHEDULE   AGE
+handson-cronjob   */1 * * * *   False     0        24s             7m24s
+```
+
+以下のコマンドを実行します。
+
+```
+kubectl patch cronjob handson-cronjob -p '{"spec":{"suspend":true}}'
+```
+
+実行後、以下のようにステータスが変更されていることが確認できます。
+
+```
+NAME              SCHEDULE      SUSPEND   ACTIVE   LAST SCHEDULE   AGE
+handson-cronjob   */1 * * * *   True      0        8s              13m
+```
+
+動作確認後、リソースを削除します。
+
+
+```
+kubectl delete cronjob handson-cronjob
+```
+
