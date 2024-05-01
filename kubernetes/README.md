@@ -602,47 +602,78 @@ Kubernetesには、Podを別のイメージに変更したりバージョンを�
 - maxUnavailable
   更新処理において利用不可となる最大のPod数(割合でも設定可)
 
-コンテナが作られて直ぐに利用可能になるので、動作イメージをつかみやすくするためにminReadySecondsは10秒に設定しています。
+
+今回は4つのReplica数に対して25%、つまり1つずつ更新がかかるような設定をしています。
+また、Podは作成後直ぐに利用可能になるので、動作イメージをつかみやすくするためにminReadySecondsは10秒に設定しています。
+
+
 
 動作確認用のManifestを適用しましょう。
 
-```yaml
-spec:
-  replicas: 4 # 6.で修正 2 -> 4
-  # RollingUpdate追加
-  minReadySeconds: 10
-  strategy:
-    type: RollingUpdate
-    rollingUpdate:
-      maxSurge: 25%
-      maxUnavailable: 0
-
-# ... 略...
-    spec:
-      containers:
-      - image: ryuichitakei/hands-on:<任意のタグ名2> # タグ名を自身の最新Imageのものに変更
-
-
+```
+kubectl apply -f rollout.yaml
 ```
 
+続いて、ブラウザで以下にアクセスを行います。
+
+```
+http://rollout.example.com
+```
+
+Pod更新前の状態では、`This app is Blue`の画面が表示がされていると思います。
 
 
-Deploymentを適用して、動作確認しましょう。
-25%のPod数(1個)ずつ追加されていく様子が確認できます。
+続いて、先ほどデプロイしたDeplpymentに対して、イメージの更新を行います。
+
+
+その際、Rolling Updateの機能が働き、25%のPod数(1個)ずつ追加されていく様子が確認できます。
 
 ```Bash
 # 適用
-kubectl apply -f hands-on-nginx.yaml -n <namespace名>
+kubectl set image deployment/rolling rolling-app=ryuichitakei/green-app:1.0
 
 # 確認
-kubectl rollout status deployment -n <namespace名> 
-kubectl rollout history deployment -n <namespace名> 
-kubectl get pod -n <namespace名>
-kubectl get deployment -n <namespace名>
-
-curl http://＊＊＊＊＊:32001
+kubectl rollout status deployment 
+kubectl rollout history deployment 
+kubectl get pod
+kubectl get deployment
 
 ```
+
+更新後、ブラウザで再度以下にアクセスを行うと`This app is Green`の表示に更新されていることが確認できます。
+
+```
+http://rollout.example.com
+```
+
+尚、ロールバックを行う場合は以下のコマンドで実行可能です。
+
+```Bash
+kubectl rollout undo deployment rolling
+```
+
+動作確認実施後、リソースの削除を行います。
+
+```Bash
+kubectl delete deployment rolling
+kubectl delete service rolling
+lubectl delete ingress rolling
+```
+
+### 6.2 Blue-Green Deployment
+
+
+古い環境と新しい環境を混在させ、ルーティングなどによってトラフィックを制御し、ダウンタイム無しで環境を切り替えます。
+今回はIngressのHost名によって、新旧どちらのアプリケーションにもアクセスできるような環境を用意しています。
+
+
+まずは、対象のManifestを適用します。
+
+```
+kubectl apply -f 
+```
+
+
 
 ## 7. データの永続化 (PVとPVC)
 
