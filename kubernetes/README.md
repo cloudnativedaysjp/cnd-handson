@@ -1153,3 +1153,7 @@ kubectl apply -f default-deny-all.yaml
 kubectl exec -it nginx-app1 -- curl -I <PodのIP>
 ```
 
+```
+
+```
+
