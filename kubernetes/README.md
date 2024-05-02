@@ -1368,3 +1368,30 @@ handson-cronjob   */1 * * * *   True      0        8s              13m
 kubectl delete cronjob handson-cronjob
 ```
 
+## ConfigMap
+
+
+```
+kubectl apply -f handson-configmap.yaml
+```
+
+
+```
+kubectl apply -f configmap-pod.yaml
+```
+
+
+```
+kubectl get pod -o wide
+```
+
+
+```
+kubectl run tmp --restart=Never --rm -i --image=nginx:alpine -- curl <PodのIPアドレス>
+```
+
+
+```
+kubectl delete pod configmap-pod
+kubectl delete pod handson-configmap
+```
