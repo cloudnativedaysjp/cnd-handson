@@ -1,0 +1,19 @@
+repositories:
+- name: prometheus-community
+  url: https://prometheus-community.github.io/helm-charts
+- name: grafana
+  url: https://grafana.github.io/helm-charts
+
+releases:
+- name: kube-prometheus-stack
+  namespace: prometheus
+  createNamespace: true
+  chart: prometheus-community/kube-prometheus-stack
+  version: 50.3.1
+  values:
+  - prometheus-values.yaml
+- name: grafana-tempo
+  namespace: monitoring
+  createNamespace: true
+  chart: grafana/tempo
+  version: 1.7.2
