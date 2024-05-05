@@ -1,0 +1,76 @@
+grafana:
+  adminUser: admin
+  adminPassword: handson_saiko!
+  dashboardProviders:
+    dashboardproviders.yaml:
+      apiVersion: 1
+      providers:
+      - name: 'default'
+        orgId: 1
+        folder: ''
+        type: file
+        disableDeletion: false
+        editable: true
+        options:
+          path: /var/lib/grafana/dashboards/default
+  dashboards:
+    default:
+      cilium-agent:
+        datasource: Prometheus
+        gnetId: 15513
+        revision: 1
+      cilium-operator:
+        datasource: Prometheus
+        gnetId: 15514
+        revision: 1
+      cilium-hubble:
+        datasource: Prometheus
+        gnetId: 16613
+        revision: 1
+
+prometheus:
+  prometheusSpec:
+    enableRemoteWriteReceiver: true
+    podMonitorSelectorNilUsesHelmValues: false
+    serviceMonitorSelectorNilUsesHelmValues: false
+    additionalScrapeConfigs:
+    # Cilium and Envoy metrics
+    #  see: https://docs.cilium.io/en/stable/observability/metrics/#cilium-metrics
+    - job_name: 'kubernetes-pods'
+      kubernetes_sd_configs:
+      - role: pod
+      relabel_configs:
+      - source_labels: [__meta_kubernetes_pod_annotation_prometheus_io_scrape]
+        action: keep
+        regex: true
+      - source_labels: [__address__, __meta_kubernetes_pod_annotation_prometheus_io_port]
+        action: replace
+        regex: (.+):(?:\d+);(\d+)
+        replacement: ${1}:${2}
+        target_label: __address__
+      # Cilium Agent Metricsダッシュボードでk8s_appラベルが必要なので追加
+      #   see: https://grafana.com/grafana/dashboards/15513-cilium-metrics/
+      - source_labels: [__meta_kubernetes_pod_label_k8s_app]
+        action: replace
+        target_label: k8s_app
+      # Cilium Operator Metricsダッシュボードでio_cilium_appラベルが必要なので追加
+      #   see: https://grafana.com/grafana/dashboards/15514-cilium-operator/
+      - source_labels: [__meta_kubernetes_pod_label_io_cilium_app]
+        action: replace
+        target_label: io_cilium_app
+    # Hubble metrics
+    #  see: https://docs.cilium.io/en/stable/observability/metrics/#hubble-metrics
+    - job_name: 'kubernetes-endpoints'
+      scrape_interval: 30s
+      kubernetes_sd_configs:
+      - role: endpoints
+      relabel_configs:
+      - source_labels: [__meta_kubernetes_service_annotation_prometheus_io_scrape]
+        action: keep
+        regex: true
+      - source_labels: [__address__, __meta_kubernetes_service_annotation_prometheus_io_port]
+        action: replace
+        target_label: __address__
+        regex: (.+)(?::\d+);(\d+)
+        replacement: $1:$2
+
