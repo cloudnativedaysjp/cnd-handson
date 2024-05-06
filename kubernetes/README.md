@@ -71,42 +71,24 @@ complete -F __start_kubectl k
 
 ## 2. アプリケーションデプロイ
 
-### 2.1. NameSpaceの作成
 
-まずは自身のNameSpaeを作成していきます。
-以下のコマンドを入力してください。
-
-```Bash
-kubectl create namespace <namespace名>
-```
-
-以下のコマンドでNameSpaceの一覧が確認できます。
-
-```Bash
-kubectl get namespace
-```
 
 ### 2.2 Deployment manifestファイル作成
 
 続いて、manifestファイルを作成します。
 manifestファイルはyaml形式もしくはjson形式がサポートされています。
-今回はyaml形式のmanifestを用意しています。
-
-
-### 2.3. Deploymentの適用
-
-続いて、作成したManifestを使ってPodをNode上に構築します。
+今回はyaml形式のmanifestを用意していますので、そのManifestを使ってPodをデプロイします。
 以下のコマンドを入力してください。
 
 ```Bash
 cd manifest
-kubectl apply -f test-deployment.yaml -n <namespace名>
+kubectl apply -f test-deployment.yaml
 ```
 
 以下のコマンドでPodの確認ができます。
 
 ```Bash
-kubectl get pods -n <namespace名>
+kubectl get pods
 ```
 
 ### 2.4. ポートフォワードと通信確認
@@ -140,37 +122,37 @@ curl http://localhost:8888
 以下のコマンドを入力してください。
 
 ```Bash
-kubectl delete pod <pod名> -n <namespace名>
+kubectl delete pod <pod名>
 ```
 
 Pod名、及び削除されたかどうかは以下で調べることができます。
 
 ```Bash
-kubectl get pod -n <namespace名>
+kubectl get pod
 ```
 
 上記の対応では、対象PodのRESTARTSのみがリセットされPodが削除できていないことがわかります。
-Kubernetesはあるべき状態をPodの上位概念のManifestが定義しています。
-このケースではPodを削除したことをトリガーにあるべき状態、つまり対象のPodが1つ存在する状態に戻そうとDeploymentが働きかけたことが原因です。
+Kubernetesはあるべき状態をManifestとして定義します。
+このケースではPodを削除したことをトリガーにあるべき状態、つまり対象のPodが1つ存在する状態に戻そうと、Podの上位リソースであるDeploymentが働きかけたことが原因です。
 このようなケースでPodを完全に削除したい場合はDeploymentごと削除する必要があります。
 
 まず、以下のコマンドでDeploymentの状態を確認します。
 
 ```Bash
-kubectl get deployments -n <namespace名>
+kubectl get deployments
 ```
 
 続いて、以下のコマンドで対象PodのDeploymentを削除します。
 
 ```Bash
-kubectl delete deployment test-deployment -n <namespace名>
+kubectl delete deployment test-deployment
 ```
 
 以下のコマンドでDeployment及びPodが削除されたことを確認します。
 
 ```Bash
-kubectl get deployments -n <namespace名>
-kubectl get pod -n <namespace名>
+kubectl get deployments
+kubectl get pod
 ```
 
 ### 2.6 Tips
@@ -494,7 +476,7 @@ hands-on-nginx-65f87b65fb-wlvvw   1/1     Running   0             8s
 では、ManifestファイルからServiceを作成していきます。
 
 ```Bash
-vi hands-on-nginx-service.yaml
+vi hello-world-service.yaml
 ```
 
 以下のサンプルコードを参考にyamlファイルを作成します。
@@ -978,7 +960,7 @@ openssl req -new -key handson.pem -out handson.csr -subj "/CN=<任意のCN>"
 > csrをbase64にエンコード
 
 ```
-cat hsndson.csr | base64 | tr -d '\n'
+cat handson.csr | base64 | tr -d '\n'
 ```
 
 > UserAccount作成
@@ -996,7 +978,7 @@ spec:
 ```
 
 ```Bash
-kubectl apply -f <manifest名> 
+kubectl apply -f handson-csr
 ```
 
 > CSRをApprove
@@ -1004,52 +986,52 @@ kubectl apply -f <manifest名>
 
 ```Bash
 kubectl get csr
-kubectl certificate approve <UserAccount名>
+kubectl certificate approve handson-user
 kubectl get csr
 ```
 
 > Role作成
 
 ```Bash
-kubectl get role -n <ns名>
-kubectl create role <role名> --resource=pods --verb=create,list,get,update,delete --namespace=<ns名>
-kubectl get role -n <ns名>
+kubectl get role
+kubectl create role handson-user-role --resource=pods --verb=create,list,get,update,delete
+kubectl get role
 ```
 
 > RoleBinding作成
 
 ```Bash
-kubectl get rolebinding -n <ns名>
-kubectl create rolebinding <rolebinding名> --role=<role名> --user=<user名> --namespace=<ns名>
-kubectl get rolebinding -n <ns名>
+kubectl get rolebinding
+kubectl create rolebinding handson-user-rolebinding --role=handson-user-role --user=handson-user
+kubectl get rolebinding
 ```
 > 動作確認
 
 リソース名などを変えてみて、yes or noの出力を確かめます。
 
+まずはPodの更新が可能かどうかを確かめます。
+Roleを作成した際に、PodのUpdateを許可しているので、`yes`を返すはずです。
+
 ```Bash
-kubectl auth can-i update pods --as=<User名> --namespace=<ns名>
+kubectl auth can-i update pods --as=handson-user
 ```
 
-### 10. トラブルシュート
+続いて、deploymentの作成が可能かを確かめます。
+deploymentに関する許可は行なっていないため`no`を返すはずです。
 
-これまで学習してきたことを活用して、トラブルシュートを行ってみましょう。
-以下のPodをデプロイします。
+```Bash
+kubectl auth can-i create deployment --as=handson-user
+```
+
+このように、対象のユーザがどのリソースの操作を許可するかを細かく設定することが可能です。
+
+動作確認後、リソースを削除します。
 
 ```
-kubectl apply -f 
-
-
-原因を調査し、Podをrunningステータスにしてください。
-
-
-
-> ヒント
-
-- discribeコマンド
-- logsコマンド
-- `-o yaml`サブコマンド
-
+kubectl delete rolebinding handson-user-rolebinding 
+kubectl delete role handson-user-role
+kubectl delete csr handson-user
+```
 
 ### 11. おまけ(jsonpath)
 
