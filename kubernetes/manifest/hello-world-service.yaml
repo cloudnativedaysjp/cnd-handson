@@ -4,7 +4,6 @@ metadata:
   labels:
     app: hello-world-service
   name: hello-world-service
-  namespace: <namespace名> 
 spec:
   ports:
   - nodePort: 32001 # Port番号を設定(重複しないように注意)
