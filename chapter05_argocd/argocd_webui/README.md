@@ -61,6 +61,7 @@ Argo CDを利用する上では、GitHubへのPush等の変更が必要不可欠
 ![fork1](../image/setup/fork-1-new.png)
 
 Create fork をクリックします
+<br>
 ![fork2](../image/setup/fork-2-new.png)
 
 自身のアカウントでforkされていることが確認できます
