@@ -94,5 +94,5 @@ YOUR_VM_IP_ADDRESS    hubble.cilium.example.com
 マニフェストなどをVMにも配置するために、VM上でリポジトリをCloneしておいてください。
 
 ```shell
-git clone https://github.com/cloudnativedaysjp/cndt2023-handson.git
+git clone https://github.com/cloudnativedaysjp/cnd-handson.git
 ```
