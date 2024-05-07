@@ -60,14 +60,14 @@ Kubernetes clusterをGitの状態に同期させるため、マニフェスト�
 Argo CDを利用する上では、GitHubへのPush等の変更が必要不可欠になります。そのため、このハンズオンのリポジトリをforkして操作する為の準備をします。
 
 [このハンズオン](https://github.com/cloudnativedaysjp/cnd-handson)にアクセスし、forkをクリックします
-![fork1](image/setup/fork-1-new.png)
+![fork1](../image/setup/fork-1-new.png)
 
 Create fork をクリックします
 <br>
-![fork2](image/setup/fork-2-new.png)
+![fork2](../image/setup/fork-2-new.png)
 <br>
 自身のアカウントでforkされていることが確認できます
-![fork3](image/setup/fork-3-new.png)
+![fork3](../image/setup/fork-3-new.png)
 
 GitHubのリポジトリの登録やPushはforkした自身のリポジトリを利用して下さい
 
@@ -166,7 +166,7 @@ Password: (上記kubectlを実行して返ってきた値)
 Context 'argocd.example.com' updated
 ```
 以下のように、WebUIでログインした状態と同じです。
-![webui](./image/setup/access-webui.png)
+![webui](../image/setup/access-webui.png)
 ### レポジトリの登録
 
 同期させるGitのレポジトリを登録します。
@@ -174,10 +174,10 @@ Context 'argocd.example.com' updated
 argocd repo add https://github.com/<自分のgithubアカウント>/cnd-handson
 ```
 以下のように、WebUIでSettings - > Repositories と進み CONEECT REPOをクリックした状態と同様。
-![CONNECT REPO](./image/setup/add-repo-setting_new.png)
+![CONNECT REPO](../image/setup/add-repo-setting_new.png)
 
 GUIでも、下記のように表示されていることをWebUI上でもRepositoryが登録されていることも確認してください。
-![CONNECT](./image/setup/add-repo-complete_new.png)
+![CONNECT](../image/setup/add-repo-complete_new.png)
 
 
 ## デモアプリのデプロイ
@@ -193,8 +193,8 @@ argocd app create argocd-demo --repo https://github.com/自身のアカウント
 ```
 
 アプリケーションが追加されたことをWebUI上でも確認ができます。
-![create](./image/demoapp/create.png)
-![create2](./image/demoapp/create2.png)
+![create](../image/demoapp/create.png)
+![create2](../image/demoapp/create2.png)
 
 SYNCして、無事デプロイされると下記のように表示されていることを確認して下さい。
 ```
@@ -228,12 +228,12 @@ networking.k8s.io  Ingress     argocd-demo  app-ingress-by-nginx  Synced   Healt
 ```
 
 
-![sync](./image/demoapp/sync.png)
+![sync](../image/demoapp/sync.png)
 ブラウザから
 http://app.argocd.example.com
 へアクセスして確認します。するとアプリケーションが表示され青い色のタイルが出てくるのが確認できます。
 
-![demo app](./image/demoapp/demo-app.png)
+![demo app](../image/demoapp/demo-app.png)
 
 上記の手順でGitに保存しているマニフェストを参照して、アプリケーションのデプロイを行いました。次にGitにあるmanifest変更Kubernetes Clusterを同期させます。
 
@@ -253,12 +253,12 @@ argocd app sync argocd-demo
 ```
 
 もちろん、WebUIから設定することも可能です。
-![blue2green](image/demoapp/blue2green.png)
+![blue2green](../image/demoapp/blue2green.png)
 Gitの変更をKubernetes Clusterに反映させるためにページ上部にあるSYNCをクリックして、下記のように表示されていることを確認して下さい。
-![blue2green](image/demoapp/blue2green-sync.png)
+![blue2green](../image/demoapp/blue2green-sync.png)
 http://app.argocd.example.com
 へアクセスして確認するとタイルが青から緑に変わったことが確認できます。
-![blue2green](image/demoapp/blue2green-demoapp.png)
+![blue2green](../image/demoapp/blue2green-demoapp.png)
 <br>
 ## Kustomizeを使ったデプロイ
 ArgoCD上でマニフェストの管理ツールである「Kustomize」を利用した、開発環境と本番環境の2つのマニフェスト管理を行います。
@@ -267,7 +267,7 @@ Kustomize とは、Kuberbets コミュニティの sig-cli が提供している
 
 
 Applicationsの画面において + NEW APPをクリックし、本番環境・開発環境それぞれのアプリケーションを作成します。
-[Applications](./image/demoapp/new-app.png)
+[Applications](../image/demoapp/new-app.png)
 上の画面上で各項目を次のように設定します。(開発環境と本番環境で分けて表示してある項目は、それぞれ設定してください)
 ```
 GENERAL
@@ -358,16 +358,16 @@ networking.k8s.io  Ingress     argocd-kustomize-prd  app-ingress-by-nginx  Synce
   * 本番環境: http://prd.kustomize.argocd.example.com
 
 WebUIでも確認してみると、argocd-kustomise-dev/argocd-kustomise-prdの２つのアプリケーションが追加されています。
-![Kustomize-create](image/demoapp/Kustomize-create.png)
+![Kustomize-create](../image/demoapp/Kustomize-create.png)
 ### 開発環境
-![Kustomize-create](image/demoapp/Kustomize-create2-dev.png)
+![Kustomize-create](../image/demoapp/Kustomize-create2-dev.png)
 ### 本番環境
-![Kustomize-create](image/demoapp/Kustomize-create2-prd.png)
+![Kustomize-create](../image/demoapp/Kustomize-create2-prd.png)
 ページ上部にある SYNCをクリックします(開発環境の場合はpodが1個、本番環境の場合はpodが2個出来るのが確認できます。)
 ### 開発環境
-![Kustomize-dev](image/demoapp/Kustomize-sync-dev.png)
+![Kustomize-dev](../image/demoapp/Kustomize-sync-dev.png)
 ### 本番環境
-![Kustomize-prd](image/demoapp/Kustomize-sync-prd.png)
+![Kustomize-prd](../image/demoapp/Kustomize-sync-prd.png)
 
 
 <br>
