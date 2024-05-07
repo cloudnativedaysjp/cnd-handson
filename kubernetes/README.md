@@ -951,6 +951,8 @@ User Accountは厳密にはK8sのリソースとして定義されておらず�
 
 > 秘密鍵とCSRの作成
 
+まずは秘密鍵とCSRの作成を行います。
+
 ```
 openssl genrsa -out handson.pem 2048
 openssl req -new -key handson.pem -out handson.csr -subj "/CN=<任意のCN>"
@@ -1387,10 +1389,191 @@ kubectl delete pod configmap-pod
 kubectl delete pod handson-configmap
 ```
 
-## 14. Resource Quota
+## 14. Resources
+
+KubernetesにはNamespace単位でリソースを制御することができるResource Quotaという機能があります。
+制御できる機能は以下です。
+
+- Compute Resource Quota
+- Storage Resource Quota
+- Object Count Quota
+
+今回はCompute Resource Quotaを使ってCPU/メモリに対して上限と下限を設定するシナリオを用意しています。
+
+まずは`resource-test`という名前のnamespaceを作成します。
 
 
+```
+kubectl create namespace resource-test
+```
 
+以下のようにnamespaceが作成されます。
+
+```
+NAME                 STATUS   AGE
+resource-test        Active   6s
+```
+
+続いて、作成したnamespaceにCompute Resource Quotaを設定します。
+
+```
+kubectl apply -f test-resource-quota.yaml 
+```
+
+以下のように作成されていることが確認できます。
+
+
+```
+kubectl get resourcequotas -n resource-test
+```
+
+> 出力例
+
+```
+NAME                  AGE   REQUEST   LIMIT
+test-resource-quota   14s             limits.cpu: 0/200m, limits.memory: 0/200Mi
+```
+
+続いて、テスト用Podのデプロイを試みます。
+今回はテスト用のDeployment Manifestを用意しています。
+
+```
+kubectl apply -f resource-test.yaml
+```
+
+
+動作確認をすると、Podが起動していないことが確認できます。
+
+```
+kubectl get pod -n resource-test
+```
+
+> 出力例
+
+```
+No resources found in resource-test namespace.
+```
+
+Deploymentも同様にREADYのPodが0であることが確認できます。
+
+```
+kubectl get deployment -n resource-test
+```
+
+> 出力例
+
+```
+NAME            READY   UP-TO-DATE   AVAILABLE   AGE
+resource-test   0/1     0            0           52s
+```
+
+この時、Replicasetの状態を確認するとCPUやMemoryなどQuotaで設定したリソースの制限は必須であるため、エラーになっていることが判ります。
+
+```
+kubectl describe -n resource-test replicasets.apps resource-test
+```
+
+> 出力例
+
+```Log
+Name:           resource-test-6cb9b54b4c
+Namespace:      resource-test
+Selector:       app=resource-test,pod-template-hash=6cb9b54b4c
+Labels:         app=resource-test
+                pod-template-hash=6cb9b54b4c
+Annotations:    deployment.kubernetes.io/desired-replicas: 1
+                deployment.kubernetes.io/max-replicas: 2
+                deployment.kubernetes.io/revision: 1
+Controlled By:  Deployment/resource-test
+Replicas:       0 current / 1 desired
+Pods Status:    0 Running / 0 Waiting / 0 Succeeded / 0 Failed
+Pod Template:
+  Labels:  app=resource-test
+           pod-template-hash=6cb9b54b4c
+  Containers:
+   nginx:
+    Image:        nginx:latest
+    Port:         <none>
+    Host Port:    <none>
+    Environment:  <none>
+    Mounts:       <none>
+  Volumes:        <none>
+Conditions:
+  Type             Status  Reason
+  ----             ------  ------
+  ReplicaFailure   True    FailedCreate
+Events:
+  Type     Reason        Age                  From                   Message
+  ----     ------        ----                 ----                   -------
+  Warning  FailedCreate  10m                  replicaset-controller  Error creating: pods "resource-test-6cb9b54b4c-s9m9f" is forbidden: failed quota: test-resource-quota: must specify limits.cpu for: nginx; limits.memory for: nginx
+  Warning  FailedCreate  10m                  replicaset-controller  Error creating: pods "resource-test-6cb9b54b4c-xchht" is forbidden: failed quota: test-resource-quota: must specify limits.cpu for: nginx; limits.memory for: nginx
+  Warning  FailedCreate  10m                  replicaset-controller  Error creating: pods "resource-test-6cb9b54b4c-hs6tz" is forbidden: failed quota: test-resource-quota: must specify limits.cpu for: nginx; limits.memory for: nginx
+  Warning  FailedCreate  10m                  replicaset-controller  Error creating: pods "resource-test-6cb9b54b4c-qdph7" is forbidden: failed quota: test-resource-quota: must specify limits.cpu for: nginx; limits.memory for: nginx
+  Warning  FailedCreate  10m                  replicaset-controller  Error creating: pods "resource-test-6cb9b54b4c-dxflr" is forbidden: failed quota: test-resource-quota: must specify limits.cpu for: nginx; limits.memory for: nginx
+  Warning  FailedCreate  10m                  replicaset-controller  Error creating: pods "resource-test-6cb9b54b4c-xfw8z" is forbidden: failed quota: test-resource-quota: must specify limits.cpu for: nginx; limits.memory for: nginx
+  Warning  FailedCreate  10m                  replicaset-controller  Error creating: pods "resource-test-6cb9b54b4c-465t2" is forbidden: failed quota: test-resource-quota: must specify limits.cpu for: nginx; limits.memory for: nginx
+  Warning  FailedCreate  10m                  replicaset-controller  Error creating: pods "resource-test-6cb9b54b4c-6ml62" is forbidden: failed quota: test-resource-quota: must specify limits.cpu for: nginx; limits.memory for: nginx
+  Warning  FailedCreate  10m                  replicaset-controller  Error creating: pods "resource-test-6cb9b54b4c-bvc5t" is forbidden: failed quota: test-resource-quota: must specify limits.cpu for: nginx; limits.memory for: nginx
+  Warning  FailedCreate  5m15s (x8 over 10m)  replicaset-controller  (combined from similar events): Error creating: pods "resource-test-6cb9b54b4c-z92sl" is forbidden: failed quota: test-resource-quota: must specify limits.cpu for: nginx; limits.memory for: nginx
+```
+
+では、先ほどのDeployment Manifestをvimなどのエディタを利用して編集し、リソースの上限と下限を割り当ててみましょう。
+
+```Yaml
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: resource-test
+  namespace: resource-test
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: resource-test
+  template:
+    metadata:
+      labels:
+        app: resource-test
+    spec:
+      containers:
+        - name: nginx
+          image: nginx:latest
+          resources:
+            requests:
+              memory: 100Mi
+              cpu: 100m
+            limits:
+              memory: 200Mi 
+              cpu: 200m 
+```
+
+
+再度Deployment Manifestをapplyします。
+
+```
+kubectl apply -f resource-test.yaml 
+```
+
+すると、Podが対象のnamespaceにデプロイされたことが確認できます。
+
+```
+kubectl get pod -n resource-test 
+```
+
+> 出力例
+
+```Log
+NAME                             READY   STATUS    RESTARTS   AGE
+resource-test-695d9849c7-6dg2v   1/1     Running   0          8s
+```
+
+動作確認後、リソースを削除します。
+
+```
+kubectl delete -n resource-test deployments.apps resource-test
+kubectl delete -n resource-test resourcequotas test-resource-quota
+kubectl delete namespaces resource-test
+```
 
 ### 15. おまけ(jsonpath)
 
