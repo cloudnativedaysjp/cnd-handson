@@ -58,7 +58,7 @@ Kubernetes clusterをGitの状態に同期させるため、マニフェスト�
 Argo CDを利用する上では、GitHubへのPush等の変更が必要不可欠になります。そのため、このハンズオンのリポジトリをforkして操作する為の準備をします。
 
 [このハンズオン](https://github.com/cloudnativedaysjp/cndt2023-handson)にアクセスし、forkをクリックします
-![fork1](image/setup/fork-1.png)
+![fork1](../image/setup/fork-1.png)
 
 Create fork をクリックします
 ![fork2](../image/setup/fork-2.png)
