@@ -6,6 +6,6 @@ releases:
 - name: argo-cd
   namespace: argo-cd
   chart: argo/argo-cd
-  version: 5.35.0
+  version: 6.7.17
   values:
   - values.yaml
