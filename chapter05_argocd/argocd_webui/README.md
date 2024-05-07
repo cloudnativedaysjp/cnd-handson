@@ -57,7 +57,7 @@ Kubernetes clusterをGitの状態に同期させるため、マニフェスト�
 ### Gitリポジトリの準備(ローカル環境)
 Argo CDを利用する上では、GitHubへのPush等の変更が必要不可欠になります。そのため、このハンズオンのリポジトリをforkして操作する為の準備をします。
 
-[このハンズオン](https://github.com/cloudnativedaysjp/cndt2023-handson)にアクセスし、forkをクリックします
+[このハンズオン](https://github.com/cloudnativedaysjp/cnd-handson)にアクセスし、forkをクリックします
 ![fork1](../image/setup/fork-1-new.png)
 
 Create fork をクリックします
@@ -116,7 +116,7 @@ Settings - > Repositories と進み CONEECT REPOをクリックします　
 Choose your connection method: VIA HTTPS
 Type: git
 Project: default
-Repository URL: https://github.com/自身のアカウント名/cndt2023-handson
+Repository URL: https://github.com/自身のアカウント名/cnd-handson
 ```
 CONNECTをクリックして、下記のように表示されていることを確認して下さい。
 ![CONNECT](../image/setup/add-repo-complete.png)
@@ -127,7 +127,7 @@ CONNECTをクリックして、下記のように表示されていることを�
 
 Argo CDに同期させるGitリポジトリをを準備します。
 ```bash
-git clone https://github.com/自身のアカウント名/cndt2023-handson.git
+git clone https://github.com/自身のアカウント名/cnd-handson.git
 ```
 Applicationsの画面において + NEW APPをクリックします![Applications](../image/demoapp/new-app.png)
 上の画面上で各項目を次のように設定します。
@@ -138,7 +138,7 @@ GENERAL
   SYNC POLICY: Manual
   SYNC OPTIONS: AUTO CREATE NAMESPACE [v]
   SOURCE
-    Repository URL: https://github.com/自身のアカウント名/cndt2023-handson
+    Repository URL: https://github.com/自身のアカウント名/cnd-handson
     Revision: main
     Path: chapter05_argocd/app/default
   DESTINATION
@@ -190,7 +190,7 @@ GENERAL
   SYNC POLICY: Manual
   SYNC OPTIONS: AUTO CREATE NAMESPACE [v]
   SOURCE
-    Repository URL: https://github.com/自身のアカウント名/cndt2023-handson
+    Repository URL: https://github.com/自身のアカウント名/cnd-handson
     Revision: main
     Path:
       開発環境: chapter05_argocd/app/Kustomize/overlays/dev
@@ -230,7 +230,7 @@ GENERAL
   SYNC POLICY: Manual
   SYNC OPTIONS: AUTO CREATE NAMESPACE [v]
   SOURCE
-    Repository URL: https://github.com/自身のアカウント名/cndt2023-handson
+    Repository URL: https://github.com/自身のアカウント名/cnd-handson
     Revision: main
     Path: chapter05_argocd/app/Helm/rollouts-demo
   DESTINATION
