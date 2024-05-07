@@ -325,7 +325,7 @@ No resources found in  default namespace.
 以下のコマンドでSecretを作成します。
 
 ```Bash
-kubectl create secret docker-registry dockerhub-secret --docker-username=<DockerHubのユーザ名> --docker-password=<Dockerhubのパスワード>
+kubectl create secret docker-registry dockerhub-secret --docker-username=<DockerHubのユーザ名> --docker-password='<Dockerhubのパスワード>'
 ```
 
 ### 3.4. SecretをDeploymentで利用
@@ -966,11 +966,15 @@ cat handson.csr | base64 | tr -d '\n'
 
 > UserAccount作成
 
+handson-csr.yamlを用意しています。
+その中に、先ほどエンコードした文字列を貼り付けます。
+
+
 ```Yaml
 apiVersion: certificates.k8s.io/v1
 kind: CertificateSigningRequest
 metadata:
-  name: <UserAccount名>
+  name: handson-user
 spec:
   signerName: kubernetes.io/kube-apiserver-client
   request: <base64でエンコードしたテキストを貼り付ける>
@@ -978,12 +982,15 @@ spec:
   - client auth
 ```
 
+その後、Manifestをapplyします。
+
 ```Bash
-kubectl apply -f handson-csr
+kubectl apply -f handson-csr.yaml
 ```
 
 > CSRをApprove
 
+続いて、作成したCSRをApploveします。
 
 ```Bash
 kubectl get csr
@@ -993,6 +1000,9 @@ kubectl get csr
 
 > Role作成
 
+`handson-user`に割り当てるroleを作成します。
+今回はPodに関する一連の操作のみを許可する設定です。
+
 ```Bash
 kubectl get role
 kubectl create role handson-user-role --resource=pods --verb=create,list,get,update,delete
@@ -1000,6 +1010,8 @@ kubectl get role
 ```
 
 > RoleBinding作成
+
+続いてRoleBindingを作成します。先ほど作成したRoleとhandson-userを実際に紐づける設定です。
 
 ```Bash
 kubectl get rolebinding
