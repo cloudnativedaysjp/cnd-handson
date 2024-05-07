@@ -65,7 +65,7 @@ Create fork をクリックします
 ![fork2](../image/setup/fork-2-new.png)
 
 自身のアカウントでforkされていることが確認できます
-![fork2](../image/setup/fork-3.png)
+![fork2](../image/setup/fork-3-new.png)
 
 GitHubのリポジトリの登録やPushはforkした自身のリポジトリを利用して下さい
 ### Argo CDのインストール
