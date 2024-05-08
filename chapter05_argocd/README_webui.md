@@ -113,6 +113,7 @@ Settings - > Repositories と進み CONEECT REPOをクリックします　
 ![CONEECT REPO](./image/setup/add-repo-setting.png)
 上の画面上で各項目を次のように設定
 ```
+GENERAL
 Choose your connection method: VIA HTTPS
 Type: git
 Project: default
