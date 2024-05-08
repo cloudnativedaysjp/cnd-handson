@@ -73,7 +73,7 @@ GitHubのリポジトリの登録やPushはforkした自身のリポジトリを
 
 
 ### argocd cliのインストール
-こちらはじしんの端末で実施してください。
+こちらは自身の端末で実施してください。
 https://argo-cd.readthedocs.io/en/stable/cli_installation/
 
 <details><summary><b>Linux User</b></summary> 
