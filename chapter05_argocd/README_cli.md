@@ -116,7 +116,7 @@ $version = (Invoke-RestMethod https://api.github.com/repos/argoproj/argo-cd/rele
 こちらのインストールは、VM上で実施します。
 helmファイルを利用してArgo CDをインストールします。
 ```
-helmfile sync  -f helm/helmfile.yaml
+helmfile sync -f helm/helmfile.yaml
 ```
 作成されるリソースは下記の通りです。
 ```
