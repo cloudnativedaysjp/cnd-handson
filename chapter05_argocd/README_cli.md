@@ -160,7 +160,7 @@ kubectl apply -f ingress/ingress.yaml
     * `kubectl -n argo-cd get secret argocd-initial-admin-secret -o jsonpath="{.data.password}" | base64 -d ; echo`
 
 ## argocdへログイン
-こちらはじしんの端末で実施してください。
+こちらは自身の端末で実施してください。
 ```
 argocd login --insecure argocd.example.com
 ```
