@@ -1,3 +1,4 @@
+sudo install -m 555 argocd-linux-amd64 /usr/local/bin/argocdor
 # Argo CD with Argocd CLI
 この章では、Kubernetes上でGitOpsを可能とするCDツールであるArgo CDについて紹介し、導入します。<br>
 Argocd CLIでの構築を想定しています。
@@ -86,8 +87,8 @@ brew install argocd
 
 or
 
-## Download with Curl
 ```
+## Download with Curl
 curl -sSL -o argocd-linux-amd64 https://github.com/argoproj/argo-cd/releases/latest/download/argocd-linux-amd64
 ```
 ```
