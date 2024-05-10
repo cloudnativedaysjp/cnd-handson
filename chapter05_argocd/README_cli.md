@@ -148,7 +148,7 @@ helmfile sync -f helm/helmfile.yaml
 ```
 作成されるリソースは下記の通りです。
 ```
-kubectl get service,deployment  -n argo-cd
+kubectl get service,deployment -n argo-cd
 ```
 ```
 # 実行結果
@@ -191,10 +191,8 @@ Password: (上記kubectlを実行して返ってきた値)
 Context 'argocd.example.com' updated
 ```
 以下のように、WebUIでログインした状態と同じです。
-<details>
-<summary><b>WebUIログイン画面</b></summary>
 ![webui](./image/setup/access-webui.png)
-</details>
+<br>
 ### レポジトリの登録
 
 同期させるGitのレポジトリを登録します。
