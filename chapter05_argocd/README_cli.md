@@ -490,7 +490,8 @@ ingress.networking.k8s.io/app-ingress-by-nginx   nginx   helm.argocd.example.com
 
 ブラウザで
 http://helm.argocd.example.com
-アクセスして青いタイルのアプリが動いていることが確認できます。こちらでHelmを使ってデプロイが出来ている事が確認できます。
+アクセスして青いタイルのアプリが動いていることが確認できます。<br>
+こちらでHelmを使ってデプロイが出来ている事が確認できます。
 
 ## 作成したデモアプリケーションを削除
 作成したアプリケーションを削除していきます。
