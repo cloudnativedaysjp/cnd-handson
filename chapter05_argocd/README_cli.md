@@ -140,7 +140,7 @@ $version = (Invoke-RestMethod https://api.github.com/repos/argoproj/argo-cd/rele
 ```
 </details>
 
-### Argo CDのインストール
+### Argo　CDのインストール
 こちらのインストールは、VM上で実施します。
 helmファイルを利用してArgo CDをインストールします。
 ```
