@@ -113,6 +113,12 @@ VERSION=$(curl --silent "https://api.github.com/repos/argoproj/argo-cd/releases/
 ```
 curl -sSL -o argocd-darwin-amd64 https://github.com/argoproj/argo-cd/releases/download/$VERSION/argocd-darwin-amd64
 ```
+```
+sudo install -m 555 argocd-darwin-arm64 /usr/local/bin/argocd
+```
+```
+rm argocd-darwin-arm64
+```
 </details>
 
 <details><summary><b>Windows User</b></summary> 
