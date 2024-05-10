@@ -1,5 +1,4 @@
-# こちらの手順では、ArgoCDをCLIから作成する流れになります。
-# WebUIでの作成については、別途README_webui.mdを参照ください。
+# こちらの手順では、ArgoCDをCLIから作成する流れになります。<br>WebUIでの作成については、別途README_webui.mdを参照ください。
 
 
 # Argo CD with Argocd CLI
