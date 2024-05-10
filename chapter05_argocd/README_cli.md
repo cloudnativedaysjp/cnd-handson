@@ -323,7 +323,7 @@ argocd app sync argocd-kustomize-dev
 argocd app get argocd-kustomize-dev
 ```
 ```
-# 実行結果
+# 実行結果例
 Name:               argocd/argocd-kustomize-dev
 Project:            default
 Server:             https://kubernetes.default.svc
@@ -342,6 +342,21 @@ GROUP              KIND        NAMESPACE             NAME                  STATU
 apps               Deployment  argocd-kustomize-dev  handson               Synced  Healthy            deployment.apps/handson unchanged
 networking.k8s.io  Ingress     argocd-kustomize-dev  app-ingress-by-nginx  Synced  Healthy            ingress.networking.k8s.io/app-ingress-by-nginx unchanged
 ```
+作成されるリソースは下記の通りです。
+```
+kubectl get service,deployment,ingress -n argocd-kustomize-dev
+```
+```
+# 実行結果例
+NAME              TYPE        CLUSTER-IP      EXTERNAL-IP   PORT(S)   AGE
+service/handson   ClusterIP   10.96.108.237   <none>        80/TCP    25m
+
+NAME                      READY   UP-TO-DATE   AVAILABLE   AGE
+deployment.apps/handson   1/1     1            1           25m
+
+NAME                                             CLASS   HOSTS                              ADDRESS        PORTS   AGE
+ingress.networking.k8s.io/app-ingress-by-nginx   nginx   dev.kustomize.argocd.example.com   10.96.185.74   80      25m
+```
 
 本番環境のアプリを作成します。
 ```
@@ -355,7 +370,7 @@ argocd app sync argocd-kustomize-prd
 argocd app get argocd-kustomize-prd
 ```
 ```
-# 実行結果
+# 実行結果例
 Name:               argocd/argocd-kustomize-prd
 Project:            default
 Server:             https://kubernetes.default.svc
@@ -374,6 +389,22 @@ GROUP              KIND        NAMESPACE             NAME                  STATU
 apps               Deployment  argocd-kustomize-prd  handson               Synced  Healthy            deployment.apps/handson unchanged
 networking.k8s.io  Ingress     argocd-kustomize-prd  app-ingress-by-nginx  Synced  Healthy            ingress.networking.k8s.io/app-ingress-by-nginx unchanged
 ```
+作成されるリソースは下記の通りです。
+```
+kubectl get service,deployment,ingress -n argocd-kustomize-prd
+```
+```
+# 実行結果例
+NAME              TYPE        CLUSTER-IP     EXTERNAL-IP   PORT(S)   AGE
+service/handson   ClusterIP   10.96.183.12   <none>        80/TCP    25m
+
+NAME                      READY   UP-TO-DATE   AVAILABLE   AGE
+deployment.apps/handson   2/2     2            2           25m
+
+NAME                                             CLASS   HOSTS                              ADDRESS        PORTS   AGE
+ingress.networking.k8s.io/app-ingress-by-nginx   nginx   prd.kustomize.argocd.example.com   10.96.185.74   80      25m
+```
+
 
 ブラウザで各環境へアクセスして確認してみてください。タイルの色が開発環境と本番環境で違う事が確認できます。
   * 開発環境: http://dev.kustomize.argocd.example.com
@@ -390,7 +421,6 @@ WebUIでも確認してみると、argocd-kustomise-dev/argocd-kustomise-prdの�
 ![Kustomize-dev](image/demoapp/Kustomize-sync-dev.png)
 ### 本番環境
 ![Kustomize-prd](image/demoapp/Kustomize-sync-prd.png)
-
 
 <br>
 ## Helmを使ったデプロイ
@@ -422,6 +452,7 @@ argocd app sync argocd-helm
 argocd app get argocd-helm
 ```
 ```
+# 実行結果例
 Name:               argocd/argocd-helm
 Project:            default
 Server:             https://kubernetes.default.svc
@@ -441,6 +472,22 @@ GROUP              KIND        NAMESPACE    NAME                  STATUS   HEALT
 apps               Deployment  argocd-helm  handson               Synced   Healthy            deployment.apps/handson created
 networking.k8s.io  Ingress     argocd-helm  app-ingress-by-nginx  Synced   Healthy            ingress.networking.k8s.io/app-ingress-by-nginx created
 ```
+作成されるリソースは下記の通りです。
+```
+kubectl get service,deployment,ingress -n argocd-helm
+```
+```
+# 実行結果例
+NAME              TYPE        CLUSTER-IP      EXTERNAL-IP   PORT(S)   AGE
+service/handson   ClusterIP   10.96.139.198   <none>        80/TCP    23m
+
+NAME                      READY   UP-TO-DATE   AVAILABLE   AGE
+deployment.apps/handson   1/1     1            1           23m
+
+NAME                                             CLASS   HOSTS                     ADDRESS        PORTS   AGE
+ingress.networking.k8s.io/app-ingress-by-nginx   nginx   helm.argocd.example.com   10.96.185.74   80      23m
+```
+
 ブラウザで
 http://helm.argocd.example.com
 アクセスして青いタイルのアプリが動いていることが確認できます。こちらでHelmを使ってデプロイが出来ている事が確認できます。
@@ -469,7 +516,4 @@ argocd app delete argocd-helm
 ```
 kubectl delete namespace argocd-demo argocd-kustomize-dev argocd-kustomize-prd argocd-helm
 ```
-
-
-<!-- tabs:end -->
 
