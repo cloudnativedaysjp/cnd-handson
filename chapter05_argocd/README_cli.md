@@ -101,6 +101,8 @@ curl -sSL -o argocd-darwin-arm64 https://github.com/argoproj/argo-cd/releases/do
 ```
 ```
 sudo install -m 555 argocd-darwin-arm64 /usr/local/bin/argocd
+```
+```
 rm argocd-darwin-arm64
 ```
 #### Mac
