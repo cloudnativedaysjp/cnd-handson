@@ -1,4 +1,4 @@
-# こちらの手順では、ArgoCDをWebUIから作成する流れになります。<br>ArgoCD　CLIで作成する場合は、別途README_cli.mdを参照ください。
+# こちらの手順では、ArgoCDをWebUIから作成する流れになります。<br>ArgoCD　CLIで作成する場合、別途README_cli.mdを参照ください。
 
 # Argo CD with WebUI
 この章では、Kubernetes上でGitOpsを可能とするCDツールであるArgo CDについて紹介し、導入します。<br>
