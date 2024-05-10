@@ -328,7 +328,7 @@ Name:               argocd/argocd-kustomize-dev
 Project:            default
 Server:             https://kubernetes.default.svc
 Namespace:          argocd-kustomize-dev
-URL:                https://dev.kustomize.argocd.example.com/applications/argocd-kustomize-dev
+URL:                https://argocd.example.com/applications/argocd-kustomize-dev
 Repo:               https://github.com/自身のアカウント/cnd-handson
 Target:
 Path:               chapter05_argocd/app/Kustomize/overlays/dev
@@ -360,7 +360,7 @@ Name:               argocd/argocd-kustomize-prd
 Project:            default
 Server:             https://kubernetes.default.svc
 Namespace:          argocd-kustomize-prd
-URL:                http://prd.kustomize.argocd.example.com/applications/argocd-kustomize-prd
+URL:                http://argocd.example.com/applications/argocd-kustomize-prd
 Repo:               https://github.com/自身のアカウント/cnd-handson
 Target:
 Path:               chapter05_argocd/app/Kustomize/overlays/prd
@@ -426,7 +426,7 @@ Name:               argocd/argocd-helm
 Project:            default
 Server:             https://kubernetes.default.svc
 Namespace:          argocd-helm
-URL:                http://helm.argocd.example.com/applications/argocd-helm
+URL:                http://argocd.argocd.example.com/applications/argocd-helm
 Repo:               https://github.com/akiran123/cnd-handson
 Target:
 Path:               chapter05_argocd/app/Helm/rollouts-demo
