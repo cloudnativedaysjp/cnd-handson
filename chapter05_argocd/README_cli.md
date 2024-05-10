@@ -160,7 +160,7 @@ deployment.apps/argo-cd-argocd-redis                       1/1     1            
 deployment.apps/argo-cd-argocd-repo-server                 1/1     1            1           26d
 deployment.apps/argo-cd-argocd-server                      1/1     1            1           26d
 ```
-ingressを作成し、Argo CDのWEB UIにアクセス出来るようにします。
+ingressを作成し、Argo CDのWEB UIにも、アクセス出来るようにします。
 ```
 kubectl apply -f ingress/ingress.yaml
 ```
