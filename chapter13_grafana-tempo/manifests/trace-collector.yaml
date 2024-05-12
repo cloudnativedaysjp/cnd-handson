@@ -15,7 +15,7 @@ spec:
     exporters:
       debug: {}
       otlp:
-        endpoint: tempo-grafana-distributor.monitoring.svc.cluster.local:4317
+        endpoint: tempo-grafana.monitoring.svc.cluster.local:4317
         tls:
           insecure: true
 

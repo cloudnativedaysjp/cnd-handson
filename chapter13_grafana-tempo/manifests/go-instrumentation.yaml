@@ -5,7 +5,7 @@ metadata:
   namespace: handson
 spec:
   exporter:
-    endpoint: http://tempo-grafana-distributor.monitoring.svc.cluster.local:4317
+    endpoint: http://tempo-grafana.monitoring.svc.cluster.local:4317
   propagators:
     - tracecontext
     - baggage
