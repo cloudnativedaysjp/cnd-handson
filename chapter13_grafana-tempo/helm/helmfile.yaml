@@ -6,7 +6,5 @@ releases:
 - name: grafana-tempo
   namespace: monitoring
   createNamespace: true
-  chart: grafana/tempo-distributed
-  version: 1.9.9
-  values:
-    - -values.yaml
+  chart: grafana/tempo
+  version: 1.7.2
