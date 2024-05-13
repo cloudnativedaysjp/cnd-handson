@@ -8,3 +8,5 @@ releases:
   createNamespace: true
   chart: grafana/tempo
   version: 1.7.2
+  values: 
+    - tempo-values.yaml

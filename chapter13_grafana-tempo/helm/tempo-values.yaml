@@ -1,0 +1,11 @@
+
+metrics_generator:
+  enabled: true
+  config:
+    storage:
+      path: "/tmp/tempo"
+      remote_write:
+        - url:http://kube-prometheus-stack-prometheus.prometheus:9090/api/v1/write
+overrides:
+  metrics_generator_processors:
+    - 'service-graphs'
