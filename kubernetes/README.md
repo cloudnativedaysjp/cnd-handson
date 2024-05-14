@@ -199,14 +199,12 @@ kubectl run <pod名> --image=<image名> --dry-run=client -o yaml > <ファイル
 続いて、前回DockerHubにPushしたオリジナルのImageを使い
 Podを作成していきます。
 
-オリジナルPod用のmanifestを作成します。
-manifest名は任意のもので構いません。
+まずはmanifestを編集します。
 
 ```Bash
-vi hands-on-nginx.yaml
+vi hello-world.yaml
 ```
 
-サンプルコードは以下です。
 
 ```yaml
 apiVersion: apps/v1
@@ -229,24 +227,31 @@ spec:
         app: hello-world
     spec:
       containers:
-      - image: <DockerHubのユーザ名>/<リポジトリ名>:<タグ名>
-        name: hands-on-nginx
+      - image: <DockerHubのユーザ名>/<リポジトリ名>:<タグ>
+        name: hello-world
         ports:
         - containerPort: 80
 ```
+
+以下を、ご自身のDockerHubのユーザ名、リポジトリ名、タグに変更してください。
+
+```
+      - image: <DockerHubのユーザ名>/<リポジトリ名>:<タグ名>
+```
+
 
 ### 3.2. Deploymentの適用
 
 デプロイを試みます。
 
 ```Bash
-kubectl apply -f <manifest名.yaml> -n <namespace名>
+kubectl apply -f hello-world.yaml
 ```
 
 以下のコマンドで確認すると、Podの作成が失敗していることがわかります。
 
 ```Bash
-kubectl get pod -n <namespace名>
+kubectl get pod
 ```
 
 ```Log
@@ -323,14 +328,14 @@ Events:
 この原因は、格納されているリポジトリがプライベート設定であることです。
 外部公開されていないイメージをPullしたい場合は、Secretと呼ばれる認証情報を格納するためのリソース指定が必要です。
 
-現状、それぞれのNameSpaceにはSecretリソースが存在しないことを確認します。
+現状、Default NameSpaceにはSecretリソースが存在しないことを確認します。
 
 ```Bash
-kubectl get secret -n <namespace名>
+kubectl get secret
 ```
 
 ```
-No resources found in  <namespace名> namespace.
+No resources found in  default namespace.
 ```
 
 今回はそれぞれのnamespaceにPodをデプロイする想定なので、namespace毎に認証情報が必要です。namespaceから外のリソースは互いに干渉しないため、それぞれのnamespace内でのみ認証情報の共有が有効となります。
@@ -340,7 +345,7 @@ No resources found in  <namespace名> namespace.
 以下のコマンドでSecretを作成します。
 
 ```Bash
-kubectl create secret docker-registry <secret名> --docker-username=<DockerHubのユーザ名> --docker-password=<Dockerhubのパスワード> -n <namespace名>
+kubectl create secret docker-registry dockerhub-secret --docker-username=<DockerHubのユーザ名> --docker-password=<Dockerhubのパスワード>
 ```
 
 ### 3.4. SecretをDeploymentで利用
@@ -348,7 +353,7 @@ kubectl create secret docker-registry <secret名> --docker-username=<DockerHub�
 先ほどのManifestに、Secretに関する指示を追記します。
 
 ```Bash
-vi hands-on-nginx.yaml
+vi hello-world.yaml
 ``` 
 
 ```yaml
@@ -377,7 +382,7 @@ spec:
         ports:
         - containerPort: 80
       imagePullSecrets: # 追記
-      - name: <secret名> # 追記
+      - name: dockerhub-secret # 追記
 ```
 
 先ほど作成したPodの設定を更新します。
@@ -670,10 +675,33 @@ lubectl delete ingress rolling
 まずは、対象のManifestを適用します。
 
 ```
-kubectl apply -f 
+kubectl apply -f blue-green.yaml
 ```
 
+続いて、Pod,Service,Ingressがそれぞれデプロイされているか確認を行います。
 
+
+```
+kubectl get pod,service,ingress
+```
+
+それぞれのリソースが正常に動作していることが確認できたら、ブラウザから以下のようにアクセスができるはずです。
+
+
+```
+http://blue.example.com → Blue App
+http://green.example.com → Green App
+```
+
+動作確認実施後、リソースの削除を行います。
+
+```Bash
+kubectl delete pod blue
+kubectl delete pod green
+kubectl delete service blue-service
+kubectl delete service green-service
+lubectl delete ingress blue-green
+```
 
 ## 7. データの永続化 (PVとPVC)
 
@@ -685,7 +713,7 @@ kubectl apply -f
 - データを自身で持たずエフェメラルな存在として扱う。
 
 上記の特性から、コンテナのデータをどう扱う(システムとしてどう設計する)かは非常に重要な観点です。
-このセクションでは、外部ストレージ(今回はEFS)にコンテナをマウントさせ、データの永続化が確認できるまでのテストを行います。
+このセクションでは、Nodeが持つストレージにPodをマウントさせ、データの永続化が確認できるまでのテストを行います。
 
 
 ### 7.1. PVの作成
