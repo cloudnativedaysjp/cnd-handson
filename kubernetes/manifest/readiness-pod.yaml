@@ -21,7 +21,7 @@ spec:
         - -c
         - cat /tmp/ready
       initialDelaySeconds: 5
-      periodSeconds: 10
-  dnsPolicy: ClusterFirst
-  restartPolicy: Always
-status: {}
+      periodSeconds: 5
+      timeoutSeconds: 1
+      successThreshold: 1
+      failureThreshold: 1
