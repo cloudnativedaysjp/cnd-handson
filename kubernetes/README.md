@@ -1066,16 +1066,33 @@ KubernetesにはPodが正常に起動したか、または正常に動作を続�
 そのPodの準備が出来ているかどうかを判断します。
 
 
-今回はファイルの有無によって、Podの準備が出来ているかを判断するシナリオです。
+今回は`/tmp/ready`ファイルの有無によって、Podの準備が出来ているかを判断するシナリオです。
+まずは対象のファイルを作成しない状態でPodをデプロイしてみます。
 
 
 ```Bash
 kubectl apply -f readiness-pod.yaml
 ```
 
+対象のファイルが作成されていない状態ではPodがReadyのステータスにならないことがわかります。
 
+```
+kubectl get pod
+```
 
 ```
 NAME                    READY   STATUS    RESTARTS      AGE
 readiness-pod           0/1     Running   0             7s
 ```
+
+
+続いてreadiness-pod.yamlを以下のように編集して、コンテナ内に対象のファイルを作成するようにします。
+
+
+```Yaml
+  - command:
+    - sh
+    - -c
+    - touch /tmp/ready && sleep 1d
+```
+
