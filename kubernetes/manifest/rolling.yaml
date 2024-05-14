@@ -4,7 +4,7 @@ metadata:
   annotations:
     deployment.kubernetes.io/revision: "1"
   labels:
-    app: 
+    name: rolling
   name: rolling
 spec:
   replicas: 4
