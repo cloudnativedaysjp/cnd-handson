@@ -237,36 +237,36 @@ kubectl get pod
 ```
 
 ```Log
-NAME                                  READY   STATUS         RESTARTS   AGE
-hands-on-nginx-8f5b8f48c-xb9kx     0/1     ErrImagePull       0                 14s
+NAME                           READY   STATUS         RESTARTS   AGE
+hello-world-69db5b6c68-xdktt   0/1     ErrImagePull   0          4s
 ```
 
 このようなエラーが起こった場合は、原因の解析にPodの詳細出力が役立つ場合があります。
 以下のコマンドを入力します。
 
 ```Bash
-kubectl describe pod <pod名> -n <namespace名>
+kubectl describe pod hello-world
 ```
 
 ```Log
-Name:             hands-on-nginx-8f5b8f48c-xb9kx
-Namespace:        test1
+Name:             hello-world-69db5b6c68-xdktt
+Namespace:        default
 Priority:         0
 Service Account:  default
-Node:             ip-192-168-34-191.ap-northeast-1.compute.internal/192.168.34.191
-Start Time:       Thu, 07 Dec 2023 05:08:14 +0000
-Labels:           app=hands-on-nginx
-                  pod-template-hash=8f5b8f48c
+Node:             kind-worker/172.18.0.2
+Start Time:       Tue, 07 May 2024 05:25:55 +0000
+Labels:           app=hello-world
+                  pod-template-hash=69db5b6c68
 Annotations:      <none>
 Status:           Pending
-IP:               192.168.49.0
+IP:               10.0.0.58
 IPs:
-  IP:           192.168.49.0
-Controlled By:  ReplicaSet/hands-on-nginx-8f5b8f48c
+  IP:           10.0.0.58
+Controlled By:  ReplicaSet/hello-world-69db5b6c68
 Containers:
-  hands-on-nginx:
+  hello-world:
     Container ID:   
-    Image:          ryuichitakei/hands-on:hands-on-nginx
+    Image:          ryuichitakei/hello-world:1.0
     Image ID:       
     Port:           80/TCP
     Host Port:      0/TCP
@@ -276,7 +276,7 @@ Containers:
     Restart Count:  0
     Environment:    <none>
     Mounts:
-      /var/run/secrets/kubernetes.io/serviceaccount from kube-api-access-4wdf2 (ro)
+      /var/run/secrets/kubernetes.io/serviceaccount from kube-api-access-5hq2z (ro)
 Conditions:
   Type              Status
   Initialized       True 
@@ -284,7 +284,7 @@ Conditions:
   ContainersReady   False 
   PodScheduled      True 
 Volumes:
-  kube-api-access-4wdf2:
+  kube-api-access-5hq2z:
     Type:                    Projected (a volume that contains injected data from multiple sources)
     TokenExpirationSeconds:  3607
     ConfigMapName:           kube-root-ca.crt
@@ -295,14 +295,14 @@ Node-Selectors:              <none>
 Tolerations:                 node.kubernetes.io/not-ready:NoExecute op=Exists for 300s
                              node.kubernetes.io/unreachable:NoExecute op=Exists for 300s
 Events:
-  Type     Reason     Age                  From               Message
-  ----     ------     ----                 ----               -------
-  Normal   Scheduled  2m23s                default-scheduler  Successfully assigned test1/hands-on-nginx-8f5b8f48c-xb9kx to ip-192-168-34-191.ap-northeast-1.compute.internal
-  Normal   Pulling    52s (x4 over 2m22s)  kubelet            Pulling image "ryuichitakei/hands-on:hands-on-nginx"
-  Warning  Failed     51s (x4 over 2m21s)  kubelet            Failed to pull image "ryuichitakei/hands-on:hands-on-nginx": rpc error: code = Unknown desc = failed to pull and unpack image "docker.io/ryuichitakei/hands-on:hands-on-nginx": failed to resolve reference "docker.io/ryuichitakei/hands-on:hands-on-nginx": pull access denied, repository does not exist or may require authorization: server message: insufficient_scope: authorization failed
-  Warning  Failed     51s (x4 over 2m21s)  kubelet            Error: ErrImagePull
-  Warning  Failed     37s (x6 over 2m20s)  kubelet            Error: ImagePullBackOff
-  Normal   BackOff    25s (x7 over 2m20s)  kubelet            Back-off pulling image "ryuichitakei/hands-on:hands-on-nginx"
+  Type     Reason     Age                From               Message
+  ----     ------     ----               ----               -------
+  Normal   Scheduled  93s                default-scheduler  Successfully assigned default/hello-world-69db5b6c68-xdktt to kind-worker
+  Normal   BackOff    22s (x4 over 91s)  kubelet            Back-off pulling image "ryuichitakei/hello-world:1.0"
+  Warning  Failed     22s (x4 over 91s)  kubelet            Error: ImagePullBackOff
+  Normal   Pulling    8s (x4 over 93s)   kubelet            Pulling image "ryuichitakei/hello-world:1.0"
+  Warning  Failed     7s (x4 over 91s)   kubelet            Failed to pull image "ryuichitakei/hello-world:1.0": rpc error: code = Unknown desc = failed to pull and unpack image "docker.io/ryuichitakei/hello-world:1.0": failed to resolve reference "docker.io/ryuichitakei/hello-world:1.0": pull access denied, repository does not exist or may require authorization: server message: insufficient_scope: authorization failed
+  Warning  Failed     7s (x4 over 91s)   kubelet            Error: ErrImagePull
 ```
 ### 3.3. Secretの追加
 
@@ -322,7 +322,7 @@ No resources found in  default namespace.
 
 今回はそれぞれのnamespaceにPodをデプロイする想定なので、namespace毎に認証情報が必要です。namespaceから外のリソースは互いに干渉しないため、それぞれのnamespace内でのみ認証情報の共有が有効となります。
 今回のケースでは、ImageをPullする際にこのSecretを使うようManifestに指示を書くことでプライベートリポジトリからもImageのPullが可能になります。
-
+では、`dockerhub-secret`という名前のsecretリソースを作成してみましょう。
 
 以下のコマンドでSecretを作成します。
 
@@ -370,13 +370,13 @@ spec:
 先ほど作成したPodの設定を更新します。
 
 ```Bash
-kubectl apply -f hands-on-nginx.yaml -n <namespace名>
+kubectl apply -f hello-world.yaml
 ```
 
 ImageのPullが成功し、Podが起動しているはずです。
 
 ```Bash
-kubectl get pod -n <namespace名>
+kubectl get pod
 ```
 
 ## 4. ReplicaSetの仕組み
@@ -425,154 +425,159 @@ metadata:
   annotations:
     deployment.kubernetes.io/revision: "1"
   labels:
-    app: hands-on-nginx
-  name: hands-on-nginx
+    app: hello-world
+  name: hello-world
 spec:
   replicas: 2 # 修正
   selector:
     matchLabels:
-      app: hands-on-nginx
+      app: hello-world
   template:
     spec:
     metadata:
       labels:
-        app: hands-on-nginx
+        app: hello-world
     spec:
       containers:
-      - image: ryuichitakei/hands-on:hands-on-nginx 
-        name: hands-on-nginx
+      - image: ryuichitakei/hello-world:1.0
+        name: hello-world
         ports:
         - containerPort: 80
       imagePullSecrets:
-      - name: <secret名>
+      - name: dockerhub-secret
 ```
 
 ```Bash
-kubectl apply -f hands-on-nginx.yaml -n <namespace名>
+kubectl apply -f hello-world.yaml
 ```
 
 Podが2つに増えているか確認します。
 
 ```Bash
-kubectl get pod -n <namespace名>
+kubectl get pod
 ```
 
 > 出力例
 
 ```Log
-NAME                              READY   STATUS    RESTARTS      AGE
-hands-on-nginx-65f87b65fb-mx7n8   1/1     Running   0             9s
-hands-on-nginx-65f87b65fb-wlvvw   1/1     Running   0             8s
+NAME                           READY   STATUS    RESTARTS   AGE
+hello-world-5b48b68bb6-bh27l   1/1     Running   0          2m12s
+hello-world-5b48b68bb6-ftwtz   1/1     Running   0          23s
 ```
 
 ## 5. Podの外部公開
 
 続いて、Podの外部公開の方法を紹介します。
 前回のセッションではPortForwardを使ってPodのアクセスを行いましたが
+本セクション以降はIngressというリソースを使って外部公開を行います。
 
 
-### 5.1. Service Manifestの作成
+### 5.1. Service/Ingressリソースの作成
 
-では、ManifestファイルからServiceを作成していきます。
+では、Serviceを作成していきます。
 
-```Bash
-vi hello-world-service.yaml
-```
 
-以下のサンプルコードを参考にyamlファイルを作成します。
+以下のManifestが配置されていますので、それをapplyします。
 
 ```yaml
 apiVersion: v1
 kind: Service
 metadata:
+  creationTimestamp: null
   labels:
-    app: hands-on-nginx-service
-  name: hands-on-nginx-service
-  namespace: <namespace名> 
+    app: hello-world
+  name: hello-world-service
 spec:
   ports:
-  - nodePort: 32001 # Port番号を設定(重複しないように注意)
-    port: 80
+  - port: 80
     protocol: TCP
     targetPort: 80
   selector:
-    app: hands-on-nginx # 公開したいPodのラベル名
-  sessionAffinity: None
-  type: NodePort # ServiceTypeをNodePortにする
+    app: hello-world
+  type: ClusterIP
+status:
+  loadBalancer: {}
 ```
 
-設定したラベルについては以下で確認が可能です。
-
 ```Bash
-kubectl get pod -n <namespace名> --show-labels
+kubectl apply -f hello-world-service.yaml
 ```
 
-### 5.2. Service Manifestの適用
-
-作成したManifestを使ってServiceを作成します。
+Serviceについては以下で確認が可能です。
 
 ```Bash
-kubectl apply -f hands-on-nginx-service.yaml -n <namespace名>
-```
-
-作成したServiceは以下で確認が可能です。
-
-```Bash
-kubectl get service -n <namespace名>
+kubectl get service
 ```
 
 > 出力例
 
 ```Log
-NAME                     TYPE       CLUSTER-IP    EXTERNAL-IP   PORT(S)        AGE
-hands-on-nginx-service   NodePort   10.100.108.144   <none>        80:32001/TCP   44m
+NAME                  TYPE        CLUSTER-IP     EXTERNAL-IP   PORT(S)   AGE
+hello-world-service   ClusterIP   10.96.110.56   <none>        80/TCP    16m
 ```
 
-### 5.3. Service 通信確認
+続いてIngressリソースを作成します。
+Serviceリソース同様、予め用意されているManifestを使用します。
 
-続いて、NodeのグローバルIP＋設定したNodePortのポート番号でアクセス確認を行います。
 
-現在、２つのNodeに振り分けられてるIPをお伝えします。
-
-どちらのIPで接続しても、ポート番号が正しければ適切なPodに通信を割り振ってくれるので
-自身が作成したHTMLコンテンツが表示されるはずです。
+```Yaml
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: hello-world-ingress
+spec:
+  ingressClassName: nginx
+  rules:
+  - host: hello-world.example.com
+    http:
+      paths:
+      - pathType: Prefix
+        path: "/"
+        backend:
+          service:
+            name: hello-world-service
+            port:
+              number: 80
+```
 
 ```Bash
-curl http://＊＊＊＊:32001
-<!DOCTYPE html>
-<html lang="ja">
-  <style>
-    body {
-      margin: 0;
-    }
-
-    .center-me {
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      /*font-family: 'Saira Condensed', sans-serif;*/
-  font-family: 'Lobster', cursive;
-      font-size: 100px;
-      height: 100vh;
-    }
-  </style>  
-<head>
-    <meta charset="utf-8">
-      <title>Test</title>
-  </head>
-  <body>
-    <div class="center-me" >
-    <p>
-      <h1>Hello World!!🙂</h1>
-    </p>
-  </div>
-  </body>
-</html>
+kubectl apply -f hello-world-ingress.yaml 
 ```
 
-## 6. Ingressとアプリケーションの更新
+作成したServiceは以下で確認が可能です。
 
-このセクションでは、Podを外部公開するためのリソースであるIngressと、Kubernetesが持つPodの更新方法について紹介します。
+```Bash
+kubectl get ingress
+```
+
+> 出力例
+
+```Log
+NAME                  CLASS   HOSTS                     ADDRESS        PORTS   AGE
+hello-world-ingress   nginx   hello-world.example.com   10.96.246.72   80      17m
+```
+
+### 5.2. 動作確認
+
+続いて、ブラウザでアクセス確認を行います。
+Hello Worldの文字が表示されたら成功です。
+
+```
+ hello-world.example.com
+```
+
+動作確認後、リソースを削除します。
+
+```
+kubectl delete ingress hello-world-ingress
+kubectl delete service hello-world-service
+kubectl deelete deployment hello-world
+kubectl delete secret dockerhub-secret
+```
+
+## 6. アプリケーションの更新
+
+このセクションでは、Kubernetesが持つPodの更新方法について紹介します。
 
 ### 6.1. Rolling Update
 
