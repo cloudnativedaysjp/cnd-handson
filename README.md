@@ -9,15 +9,17 @@
 準備用chapter1＋全10chapterから構成されています。
 - [chapter00_setup](./chapter00_setup/)
 - [chapter01_cluster-create](./chapter01_cluster-create/)
-- [chapter02_prometheus](./chapter02_prometheus/)
-- [chapter03_grafana](./chapter03_grafana/)
-- [chapter04_opentelemetry](./chapter04_opentelemetry/)
-- [chapter05_argocd](./chapter05_argocd/)
-- [chapter06_istio](./chapter06_istio/)
-- [chapter07_cilium](./chapter07_cilium/)
-- [chapter08_argo-rollouts](./chapter08_argo-rollouts/)
-- [chapter09_istio-ambientmesh](./chapter09_istio-ambientmesh/)
-- [chapter10_hubble](./chapter10_hubble/)
+- [chapter02_docker](./chapter02_docker/)
+- [chapter03_kubernetes](./chapter03_kubernetes/)
+- [chapter04_prometheus](./chapter04_prometheus/)
+- [chapter05_grafana](./chapter05_grafana/)
+- [chapter06_opentelemetry](./chapter06_opentelemetry/)
+- [chapter07_argocd](./chapter07_argocd/)
+- [chapter08_istio](./chapter08_istio/)
+- [chapter09_cilium](./chapter09_cilium/)
+- [chapter10_argo-rollouts](./chapter10_argo-rollouts/)
+- [chapter11_istio-ambientmesh](./chapter11_istio-ambientmesh/)
+- [chapter12_hubble](./chapter12_hubble/)
 
 ### 進め方
 まずは、chapter00, chapter01を実施してhandsonを進めるための環境を構築してください。<br>
