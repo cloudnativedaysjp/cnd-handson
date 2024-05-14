@@ -1090,6 +1090,11 @@ readiness-pod           0/1     Running   0             7s
     - touch /tmp/ready && sleep 1d
 ```
 
+vimなどでファイルを編集し、以下のコマンドでPodを入れ替えてみましょう。
+
+```
+kubectl replace -f readiness-pod.yaml --force
+```
 
 再度Podの状態を確認すると、状態がReadyになっていることが確認できます。
 
@@ -1099,41 +1104,93 @@ NAME                    READY   STATUS    RESTARTS      AGE
 readiness-pod           1/1     Running   0             7s
 ```
 
+動作確認後、リソースを削除します。
 
+```
+kubecttl delete pod readiness-pod
+```
 
 ### 12.2 Liveness Probe
 
 
 続いて、Liveness Probeの動作確認を行います。
+Readiness Probe同様、ファイルの有無によってPodの正常性を確認します。
+このシナリオでは`/tmp/healthy`ファイルが自動的に削除されます。
+そのため、ヘルスチェックに失敗したPodは自動的にリスタートを行います。
 
+以下のコマンドでPodの挙動が確認できます。
+Pod作成からしばらく経つと、`RESTARTS`のカウンタが上昇していくのが確認できます。
 
+```
+watch -n 1 kubectl get pod
+```
 
+動作確認後、リソースを削除します。
 
-
-
+```
+kubectl delete pod liveness-pod
+```
 
 ## 13. Network Policy
 
+Network PolicyはPod同士の通信を制御し、特定のPodやプロトコルを許可/拒否させることができるリソースです。
+
+前提として、以下のCNIを使ってクラスタを構築している必要があります。
+
+- Calico
+- Cilium
+- Kube-router
+- Romana
+- Weave Net
+
+尚、今回はCiliumを使用しています。
+
+設定方法として、以下を意識する必要があります。
+
+- 通信の方向
+  - Ingress：　あるPodからの通信（インバウンド）
+  - Egress：　あるPodへの通信（アウトバウンド）
+- Policy
+  - podSelector: あるPodから、もしくはPodへの通信可否
+  - namespaceSelector: あるNamespaceから、もしくはNamespaceへの通信可否
+  - ipBlock: あるIPアドレスから、もしくはIPアドレスへの通信可否
+
+今回は3つのテスト用のPodをデプロイし、curlを使って通信確認を行なっていきます。
 
 ```
 kubectl apply -f netpol-pod.yaml
 ```
 
+通信確認を行うためにPodに付与されているIPアドレスを確認します。
+
 ```
 kubectl get pod -o wide -L app | grep app
 ```
 
+以下のように、curlを使ってPod同士の通信確認をそれぞれ行なっていきます。
+
 ```
 kubectl exec -it nginx-app1 -- curl -I <PodのIP>
+kubectl exec -it nginx-app2 -- curl -I <PodのIP>
+kubectl exec -it nginx-app3 -- curl -I <PodのIP>
 ```
+
+続いて、すべての通信を拒否するNetwork Policyを適用します。
+
 
 ```
 kubectl apply -f default-deny-all.yaml
 ```
 
+先ほどと同じようにcurlを投げても、タイムアウトになることが確認できます。
+
 ```
 kubectl exec -it nginx-app1 -- curl -I <PodのIP>
+kubectl exec -it nginx-app2 -- curl -I <PodのIP>
+kubectl exec -it nginx-app3 -- curl -I <PodのIP>
 ```
+
+続いて、`app1`と`app3`同士の通信のみが許可されるポリシーを適用していきます。
 
 ```
 
