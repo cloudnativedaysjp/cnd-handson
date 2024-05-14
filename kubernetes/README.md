@@ -1106,6 +1106,8 @@ kubectl apply -f readiness-pod.yaml
 ```
 
 
+
+```
 NAME                    READY   STATUS    RESTARTS      AGE
 readiness-pod           0/1     Running   0             7s
-
+```
