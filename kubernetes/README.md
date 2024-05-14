@@ -716,31 +716,25 @@ lubectl delete ingress blue-green
 このセクションでは、Nodeが持つストレージにPodをマウントさせ、データの永続化が確認できるまでのテストを行います。
 
 
-### 7.1. PVの作成
-
 PV(Persistent Volume)は外部ストレージとの接続を司るリソースです。
 以下がPVを作成するためのサンプルコードです。
-claimRef以下のnamespaceとnameに関しては6.2で作成するPVCの情報を入力します。
+
 
 ```yaml
 apiVersion: v1
 kind: PersistentVolume
 metadata:
-  name: <任意の名前>
+  name: handson-pv 
 spec:
   capacity:
-    storage: 5Gi
+    storage: 1Gi
   volumeMode: Filesystem
   accessModes:
     - ReadWriteMany
   persistentVolumeReclaimPolicy: Retain
-  claimRef:
-    namespace: <自身のNamespace>
-    name: <自身のPVC名>
-  storageClassName: efs-sc
-  csi:
-    driver: efs.csi.aws.com
-    volumeHandle: fs-086edefd664db607d
+  storageClassName: standard
+  hostPath:
+    path: /tmp
 ```
 
 ### 7.2. PVCの作成
@@ -751,15 +745,14 @@ PVC(Persistent Volume Claim)は、PodのVolumeに関する要求事項を定義�
 apiVersion: v1
 kind: PersistentVolumeClaim
 metadata:
-  name: <任意の名前>
-  namespace: <自身のnamespace>
+  name: handson-pvc
 spec:
   accessModes:
     - ReadWriteMany
-  storageClassName: efs-sc
+  storageClassName: standard
   resources:
     requests:
-      storage: 5Gi
+      storage: 1Gi
 ```
 
 ### 7.3. Podの作成
@@ -770,21 +763,20 @@ spec:
 apiVersion: v1
 kind: Pod
 metadata:
-  name: <任意の名前>
-  namespace: <自身のnamespace>
+  name: volume-pod
 spec:
   containers:
-  - name: app1
+  - name: volume-app
     image: busybox
     command: ["/bin/sh"]
-    args: ["-c", "while true; do echo $(date -u) >> /data/out1.txt; sleep 5; done"]
+    args: ["-c","while true; do echo $(date -u) >> /data/out1.txt; sleep 5; done"]
     volumeMounts:
     - name: persistent-storage
       mountPath: /data
   volumes:
   - name: persistent-storage
     persistentVolumeClaim:
-      claimName: <自身のPVC名>
+      claimName: handson-pvc
 ```
 
 ### 7.4. リソースの作成と動作確認
