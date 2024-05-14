@@ -90,50 +90,17 @@ kubectl get namespace
 
 続いて、manifestファイルを作成します。
 manifestファイルはyaml形式もしくはjson形式がサポートされています。
-今回はyaml形式で記載します。
+今回はyaml形式のmanifestを用意しています。
 
-```Bash
-vi test-deployment.yaml
-```
-
-サンプルコードは以下です。
-testと記載のある部分は自由に変更いただいて構いません。
-
-```yaml
-apiVersion: apps/v1
-kind: Deployment
-metadata:
-  annotations:
-    deployment.kubernetes.io/revision: "1"
-  labels:
-    app: test
-  name: test
-spec:
-  replicas: 1
-  selector:
-    matchLabels:
-      app: test
-  template:
-    spec:
-      restartPolicy: OnFailure
-    metadata:
-      labels:
-        app: test
-    spec:
-      containers:
-      - image: nginx:latest
-        name: test
-        ports:
-        - containerPort: 80
-```
 
 ### 2.3. Deploymentの適用
 
-続いて、作成したManifestを使ってPodをWorker Node上に構築します。
+続いて、作成したManifestを使ってPodをNode上に構築します。
 以下のコマンドを入力してください。
 
 ```Bash
-kubectl apply -f <manifest名.yaml> -n <namespace名>
+cd manifest
+kubectl apply -f test-deployment.yaml -n <namespace名>
 ```
 
 以下のコマンドでPodの確認ができます。
@@ -196,7 +163,7 @@ kubectl get deployments -n <namespace名>
 続いて、以下のコマンドで対象PodのDeploymentを削除します。
 
 ```Bash
-kubectl delete deployment <deployment名> -n <namespace名>
+kubectl delete deployment test-deployment -n <namespace名>
 ```
 
 以下のコマンドでDeployment及びPodが削除されたことを確認します。
@@ -248,21 +215,21 @@ metadata:
   annotations:
     deployment.kubernetes.io/revision: "1"
   labels:
-    app: hands-on-nginx
-  name: hands-on-nginx
+    app: hello-world
+  name: hello-world
 spec:
   replicas: 1
   selector:
     matchLabels:
-      app: hands-on-nginx
+      app: hello-world
   template:
     spec:
     metadata:
       labels:
-        app: hands-on-nginx
+        app: hello-world
     spec:
       containers:
-      - image: ryuichitakei/hands-on:hands-on-nginx # タグ名を自身のImageのものに変更
+      - image: <DockerHubのユーザ名>/<リポジトリ名>:<タグ名>
         name: hands-on-nginx
         ports:
         - containerPort: 80
