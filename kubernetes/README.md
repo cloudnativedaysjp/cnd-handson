@@ -1055,12 +1055,28 @@ jsonpathでNodeの内部IPのみをファイルに書き出してみましょう
 kubectl get nodes -o jsonpath='{.items[*].status.addresses[?(@.type=="InternalIP")].address}' > <ファイルのPathとファイル名>
 ```
 
-### 12. Readiness Probe
+## 12. Readiness/Liveness Probe
 
 KubernetesにはPodが正常に起動したか、または正常に動作を続けているかを監視する機能が存在します。
-このセクションで取り扱うReadiness Probeは、コマンドの実行結果やTCP・HTTPリクエストなどのリターンコードによって
-そのPodの準備が出来ているかどうかを判断します。
+このセクションで取り扱うReadiness/Liveness Probeは、コマンドの実行結果やTCP・HTTPリクエストなどのリターンコードによって
+そのPodの準備が出来ているかどうか、または正常に動作しているかどうかを判断します。
 
+
+以下はヘルスチェックのオプションです。
+
+
+- initialDelaySeconds
+  初回ヘルスチェックまでの遅延時間（秒）
+- periodSeconds
+  Probeが実行される間隔（秒）
+- timeoutSeconds
+  タイムアウトまでの時間（秒）
+- successThreshold
+  成功と判断する最小連続成功数（回数）
+- failureThreshold
+  失敗と判断する試行回数（回数）
+
+### 12.1 Readiness Probe
 
 今回は`/tmp/ready`ファイルの有無によって、Podの準備が出来ているかを判断するシナリオです。
 まずは対象のファイルを作成しない状態でPodをデプロイしてみます。
@@ -1092,3 +1108,39 @@ readiness-pod           0/1     Running   0             7s
     - touch /tmp/ready && sleep 1d
 ```
 
+
+再度Podの状態を確認すると、状態がReadyになっていることが確認できます。
+
+
+```
+NAME                    READY   STATUS    RESTARTS      AGE
+readiness-pod           1/1     Running   0             7s
+```
+
+
+
+### 12.2 Liveness Probe
+
+
+続いて、Liveness Probeの動作確認を行います。
+
+
+
+
+
+
+
+## 13. Network Policy
+
+
+```
+kubectl apply -f netpol-pod.yaml
+```
+
+```
+kubectl get pod -o wide -L app | grep app
+```
+
+```
+kubectl exec -it nginx-app1 -- curl -I <PodのIP>
+```
