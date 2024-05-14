@@ -894,50 +894,29 @@ kubectl create rolebinding handson-rolebinding --role=handson-role --serviceacco
 kubectl get rolebinding
 ```
 
-> Pod作成
-
-```Yaml
-apiVersion: v1
-kind: Pod
-metadata:
-  name: kubectl-pod
-spec:
-  containers:
-  - image: bitnami/kubectl
-    name: kubectl
-    command:
-    - sh
-    - -c
-    - |
-      while true
-      do
-        kubectl get pod
-        sleep 30
-      done
-  serviceAccountName: handson-sa
-```
-
 > Podデプロイ
 
 ```Bash
 
-kubectl apply -f kubectl-pod.yaml -n <ns名>
+kubectl apply -f kubectl-pod.yaml
 
 ```
 
 > ログからコマンドを実行していることを確認
 
 ```Bash
-kubectl logs kubectl-pod -n <ns名>
+kubectl logs kubectl-pod
 ```
 
 > 一度Podを削除し、コマンドを変更して再デプロイ
 
 ```Bash
 
-kubectl delete pod kubectl-pod -n <ns名>
+kubectl delete pod kubectl-pod
 
 ```
+
+vimなどのエディタを使って、Pod名で実行するコマンドを変更します。
 
 ```Yaml
 apiVersion: v1
@@ -962,20 +941,22 @@ spec:
 
 ```Bash
 
-kubectl apply -f kubectl-pod.yaml -n <ns名>
+kubectl apply -f kubectl-pod.yaml
 
 ```
 
 > ログからコマンドが弾かれていることを確認
 
 ```Bash
-kubectl logs kubectl-pod -n <ns名>
+kubectl logs kubectl-pod
 ```
 
 >確認できたらPodを削除
+>
+>
 ```Bash
 
-kubectl delete pod kubectl-pod -n <ns名>
+kubectl delete pod kubectl-pod
 
 ```
 
@@ -990,14 +971,14 @@ User Accountは厳密にはK8sのリソースとして定義されておらず�
 > 秘密鍵とCSRの作成
 
 ```
-openssl genrsa -out <pem名>.pem 2048
-openssl req -new -key <pem名>.pem -out <csr名>.csr -subj "/CN=<任意のCN>"
+openssl genrsa -out handson.pem 2048
+openssl req -new -key handson.pem -out handson.csr -subj "/CN=<任意のCN>"
 ```
 
 > csrをbase64にエンコード
 
 ```
-cat <csr名>.csr | base64 | tr -d '\n'
+cat hsndson.csr | base64 | tr -d '\n'
 ```
 
 > UserAccount作成
