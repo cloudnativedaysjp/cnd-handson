@@ -21,10 +21,8 @@ docker -v
 ```
 
 
-> 出力結果例
-
-
 ```
+# 実行結果
 Docker version 26.0.0, build 2ae903e
 ```
 
@@ -46,10 +44,8 @@ docker pull docker/getting-started
 ```
 
 
-> 出力結果例
-
-
 ```
+# 実行結果
 Using default tag: latest
 latest: Pulling from docker/getting-started
 df9b9388f04a: Pull complete 
@@ -76,10 +72,8 @@ docker images
 ```
 
 
-> 出力結果例
-
-
 ```
+# 実行結果
 docker/getting-started                                  latest    cb90f98fd791   4 months ago    28.8MB
 ```
 
@@ -93,10 +87,9 @@ docker/getting-started                                  latest    cb90f98fd791  
 docker run -d -p 8888:80 docker/getting-started
 ```
 
-> 出力結果例
-
 
 ```
+# 実行結果
 fe5facdead0cc4645abf79f477c44d8a5d99690e4478942e9c56cb7959fc5201
 ```
 
@@ -126,7 +119,7 @@ docker ps | grep getting-atarted
 
 以下のコマンドでコンテナを停止します。
 
-```
+```Bash
 docker stop <container id> 
 ```
 
@@ -245,7 +238,7 @@ https://sysdig.jp/blog/dockerfile-best-practices/
 before、afterディレクトリ配下のアプリをそれぞれbuildしてください。
 
 
-```bash
+```Bash
 cd ..
 cd multistage/before 
 docker build --network host -t multistage:before .
@@ -253,7 +246,7 @@ docker build --network host -t multistage:before .
 
 
 
-```bash
+```Bash
 cd ..
 cd after
 docker build --network host -t multistage:after .
@@ -261,21 +254,21 @@ docker build --network host -t multistage:after .
 
 それぞれのサイズを比較してみましょう。1GBほど縮小されていることがわかります。
 
-```bash
+```Bash
 docker images | grep multistaged
 ```
 
 
 コンテナにアクセスしてどちらのアプリも応答することを確認してみましょう。
 
-```bash
+```Bash
 docker run --rm --name echo-after -p 1323:1323 -dit multistaged:after
 
 curl http://localhost:1323/
 ```
 
 コンテナを停止して、削除されたことを確認しましょう。
-```bash
+```Bash
 docker stop echo-after
 docker ps -a
 ```
