@@ -783,40 +783,35 @@ spec:
 
 以下のコマンドで各リソースの作成を行います。
 
-#### 7.4.1 PVの作成
 
 ```Bash
-kubectl apply -f <pvのManifest>
-```
-
-#### 7.4.2 PVCの作成
-
-```Bash
-kubectl apply -f <pvcのManifest>
-```
-
-#### 7.4.3 Podの作成
-
-```Bash
-kubectl apply -f <podのManifest>
+kubectl apply -f handson-volume.yaml
 ```
 
 #### 7.4.4 動作確認
 
-```
-kubectl get pv
-```
+以下のコマンドで各リソースの確認を行います。
 
 ```
-kubectl describe pv <pv名>
+kubectl get pv,pvc,pod
+kubectl describe pv handson-pv
+kubectl describe pvc handson-pvc
 ```
 
-```
-kubectl get pvc -n <自身のnamespace>
-```
+今回のシナリオでは、5秒ごとにdateコマンドで日付をマウント先のファイル`/data/out1.txt`に書き込むPodを作成しています。
+以下のコマンドで動作確認が行えます。
 
 ```
 kubectl exec -ti volume-pod -- tail /data/out1.txt
+```
+
+動作確認後、リソースの削除を行います。
+
+
+```
+kubectl delete pod volume-pod
+kubectl delete pvc handson-pvc
+kubectl delete pv handson-pv
 ```
 
 ### 8. Init Container
@@ -860,11 +855,17 @@ CNDS2024!!
 pod "tmp" deleted
 ```
 
+動作確認後、リソースを削除します。
+
+```
+kubectl delete deployment handson-init-container
+```
+
 
 ### 9. ServiceAccountとUser Account
 
 KubernetesにはPodにマッピングされるServiceAccountと、管理者もしくは開発者のkubectlの適用範囲を司るUser Accountの概念が存在します。
-まずは、ServiceAccountを作成してPodが実行することができるコマンドの範囲が制御できることを確認してみましょう。
+まずは、`handson-sa`という名前のServiceAccountを作成してPodが実行することができるコマンドの範囲が制御できることを確認してみましょう。
 
 
 #### Service Accountの作成と動作確認
@@ -872,25 +873,25 @@ KubernetesにはPodにマッピングされるServiceAccountと、管理者も�
 > ServiceAccount作成
 
 ```Bash
-kubectl get serviceaccounts -n <ns名>
-kubectl create serviceaccount <sa名> -n <ns名>
-kubectl get serviceaccounts -n <ns名>
+kubectl get serviceaccounts
+kubectl create serviceaccount handson-sa
+kubectl get serviceaccounts
 ```
 
 > Role作成
 
 ```Bash
-kubectl get role -n <ns名>
-kubectl create role <role名> --resource=pods --verb=get,watch,list -n <ns名>
-kubectl get role -n <ns名>
+kubectl get role
+kubectl create role handson-role --resource=pods --verb=get,watch,list
+kubectl get role
 ```
 
 > RoleBinding作成
 
 ```Bash
-kubectl get rolebinding -n <ns名>
-kubectl create rolebinding <rolebinding名> --role=<role名> --serviceaccount=<ns名>:<sa名> -n <ns名>
-kubectl get rolebinding -n <ns名>
+kubectl get rolebinding
+kubectl create rolebinding handson-rolebinding --role=handson-role --serviceaccount=default:handson-sa
+kubectl get rolebinding
 ```
 
 > Pod作成
@@ -913,7 +914,7 @@ spec:
         kubectl get pod
         sleep 30
       done
-  serviceAccountName: <sa名>
+  serviceAccountName: handson-sa
 ```
 
 > Podデプロイ
