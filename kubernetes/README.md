@@ -1038,16 +1038,9 @@ kubectl delete role handson-user-role
 kubectl delete csr handson-user
 ```
 
-### 11. おまけ(jsonpath)
 
-jsonpathは、ワンライナーで欲しい情報のみを引き抜く際に便利な機能です。
-jsonpathでNodeの内部IPのみをファイルに書き出してみましょう。
 
-```Bash
-kubectl get nodes -o jsonpath='{.items[*].status.addresses[?(@.type=="InternalIP")].address}' > <ファイルのPathとファイル名>
-```
-
-## 12. Readiness/Liveness Probe
+## 11. Readiness/Liveness Probe
 
 KubernetesにはPodが正常に起動したか、または正常に動作を続けているかを監視する機能が存在します。
 このセクションで取り扱うReadiness/Liveness Probeは、コマンドの実行結果やTCP・HTTPリクエストなどのリターンコードによって
@@ -1068,7 +1061,7 @@ KubernetesにはPodが正常に起動したか、または正常に動作を続�
 - failureThreshold
   失敗と判断する試行回数（回数）
 
-### 12.1 Readiness Probe
+### 11.1 Readiness Probe
 
 今回は`/tmp/ready`ファイルの有無によって、Podの準備が出来ているかを判断するシナリオです。
 まずは対象のファイルを作成しない状態でPodをデプロイしてみます。
@@ -1120,7 +1113,7 @@ readiness-pod           1/1     Running   0             7s
 kubecttl delete pod readiness-pod
 ```
 
-### 12.2 Liveness Probe
+### 11.2 Liveness Probe
 
 
 続いて、Liveness Probeの動作確認を行います。
@@ -1141,7 +1134,7 @@ watch -n 1 kubectl get pod
 kubectl delete pod liveness-pod
 ```
 
-## 13. Network Policy
+## 12. Network Policy
 
 Network PolicyはPod同士の通信を制御し、特定のPodやプロトコルを許可/拒否させることができるリソースです。
 
@@ -1228,9 +1221,9 @@ kubectl delete pod nginx-app3
 
 
 
-## JobとCronJob
+## 13. JobとCronJob
 
-### Job
+### 13.1. Job
 
 Jobは、ReplicaSetと同様、Podを管理するためのPodの上位リソースに該当します。
 Podを使って一時的な処理を行う際に利用するリソースで、処理を実行後にPodは自動的に削除されます。
@@ -1294,7 +1287,7 @@ kubectl logs <Pod名>
 kubectl delete job handson-job
 ```
 
-### CronJob
+### 13.2. CronJob
 
 CronJobは、リソース内のCronに従って、スケジュールされた時間にJobを実行します。
 CronJobは、先ほど実行したJobの上位リソースに当たります。
@@ -1357,30 +1350,59 @@ handson-cronjob   */1 * * * *   True      0        8s              13m
 kubectl delete cronjob handson-cronjob
 ```
 
-## ConfigMap
+## 13. ConfigMap
 
+ConfigMapは、機密性のないデータをキーと値のペアで保存するために使用されるリソースです。
+環境固有の設定などをコンテナイメージから分離できるため、アプリケーションを簡単に移植できるようになります。
+
+但し、機密性や暗号化の機能を持たないため保存したいデータが機密情報である場合はSecretやサードパーティツールを使用する必要があります。
+今回は` CNDS2024 ConfigMap Handson`というHTML形式のデータをConfigMapに保存し、Podにマウントさせています。
+クライアントからのリクエストはマウントされたConfigMapのHTMLデータを参照するため、` CNDS2024 ConfigMap Handson`という文字列が返却されるはずです。
+
+
+
+まずは、ConfigMapを作成します。
 
 ```
 kubectl apply -f handson-configmap.yaml
 ```
 
+続いてPodを作成します。
 
 ```
 kubectl apply -f configmap-pod.yaml
 ```
 
+次に、PodにアクセスするためIPアドレスを調べます。以下のコマンドでPodに紐づくIPアドレスが判ります。
 
 ```
 kubectl get pod -o wide
 ```
 
+最後にテンポラリのPodを作成し、curlでアクセスを試みます。
+` CNDS2024 ConfigMap Handson`という文字列が返却されると成功です。
 
 ```
 kubectl run tmp --restart=Never --rm -i --image=nginx:alpine -- curl <PodのIPアドレス>
 ```
 
+動作確認後、リソースを削除します。
 
 ```
 kubectl delete pod configmap-pod
 kubectl delete pod handson-configmap
+```
+
+## 14. Resource Quota
+
+
+
+
+### 15. おまけ(jsonpath)
+
+jsonpathは、ワンライナーで欲しい情報のみを引き抜く際に便利な機能です。
+jsonpathでNodeの内部IPのみをファイルに書き出してみましょう。
+
+```Bash
+kubectl get nodes -o jsonpath='{.items[*].status.addresses[?(@.type=="InternalIP")].address}' > <ファイルのPathとファイル名>
 ```
