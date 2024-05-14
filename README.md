@@ -43,7 +43,7 @@ flowchart TD
 
     setup-->cluster
     cluster-->docker
-    cluster-->k8s
+    docker-->k8s
     cluster-->prom
     cluster-->argocd
 
