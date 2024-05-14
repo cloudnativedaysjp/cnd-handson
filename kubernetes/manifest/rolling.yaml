@@ -19,6 +19,6 @@ spec:
     spec:
       containers:
       - image: ryuichitakei/blue-app:1.0
-        name: blue-app
+        name: rolling-app
         ports:
         - containerPort: 80
