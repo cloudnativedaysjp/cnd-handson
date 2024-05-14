@@ -917,7 +917,7 @@ spec:
         kubectl get deployment # 変更箇所
         sleep 30
       done
-  serviceAccountName: <sa名>
+  serviceAccountName: handson-sa
 ```
 
 ```Bash
