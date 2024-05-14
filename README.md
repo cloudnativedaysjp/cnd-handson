@@ -29,18 +29,21 @@
 flowchart TD
     setup[chapter00_setup]
     cluster[chapter01_cluster-create]
-    prom[chapter02_prometheus]
-    grafana[chapter03_grafana]
-    otel[chapter04_opentelemetry]
-    argocd[chapter05_argocd]
-    istio[chapter06_istio]
-    cilium[chapter07_cilium]
-    argorollouts[chapter08_argo-rollouts]
-    istioambient[chapter09_istio-ambientmesh]
-    hubble[chapter10_hubble]
+    docker[chapter02_docker]
+    k8s[chapter03_kubernetes]
+    prom[chapter04_prometheus]
+    grafana[chapter05_grafana]
+    otel[chapter06_opentelemetry]
+    argocd[chapter07_argocd]
+    istio[chapter08_istio]
+    cilium[chapter09_cilium]
+    argorollouts[chapter10_argo-rollouts]
+    istioambient[chapter11_istio-ambientmesh]
+    hubble[chapter12_hubble]
 
     setup-->cluster
-
+    cluster-->docker
+    cluster-->k8s
     cluster-->prom
     cluster-->argocd
 
