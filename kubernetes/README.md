@@ -186,7 +186,7 @@ vi hello-world.yaml
 ```
 
 
-```yaml
+```Yaml
 apiVersion: apps/v1
 kind: Deployment
 metadata:
@@ -336,7 +336,7 @@ kubectl create secret docker-registry dockerhub-secret --docker-username=<Docker
 vi hello-world.yaml
 ``` 
 
-```yaml
+```Yaml
 apiVersion: apps/v1
 kind: Deployment
 metadata:
@@ -385,7 +385,7 @@ ReplicaSetは稼働しているPod数を明示的に指定し、それを維持�
 現在、みなさんのManifestにはReplica数1が設定されています。
 そのため、起動しているPodも1つになっているはずです。
 
-```yaml
+```Yaml
 apiVersion: apps/v1
 kind: Deployment
 metadata:
@@ -416,7 +416,7 @@ spec:
 
 では以下のようにManifestを修正し、再度Manifestを登録しなおしてみます。
 
-```yaml
+```Yaml
 apiVersion: apps/v1
 kind: Deployment
 metadata:
