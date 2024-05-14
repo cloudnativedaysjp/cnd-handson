@@ -185,7 +185,7 @@ kubectl get pod -n <namespace名>
 上記の対応では、対象PodのRESTARTSのみがリセットされPodが削除できていないことがわかります。
 Kubernetesはあるべき状態をPodの上位概念のManifestが定義しています。
 このケースではPodを削除したことをトリガーにあるべき状態、つまり対象のPodが1つ存在する状態に戻そうとDeploymentが働きかけたことが原因です。
-そのため、Podを完全に削除したい場合はDeploymentごと削除する必要があります。
+このようなケースでPodを完全に削除したい場合はDeploymentごと削除する必要があります。
 
 まず、以下のコマンドでDeploymentの状態を確認します。
 
@@ -1098,4 +1098,14 @@ KubernetesにはPodが正常に起動したか、または正常に動作を続�
 このセクションで取り扱うReadiness Probeは、コマンドの実行結果やTCP・HTTPリクエストなどのリターンコードによって
 そのPodの準備が出来ているかどうかを判断します。
 
+
+今回はファイルの有無によって、Podの準備が出来ているかを判断するシナリオです。
+
+```Bash
+kubectl apply -f readiness-pod.yaml
+```
+
+
+NAME                    READY   STATUS    RESTARTS      AGE
+readiness-pod           0/1     Running   0             7s
 
