@@ -478,17 +478,11 @@ hands-on-nginx-65f87b65fb-mx7n8   1/1     Running   0             9s
 hands-on-nginx-65f87b65fb-wlvvw   1/1     Running   0             8s
 ```
 
-## 5. Podの外部公開(NodePort)
+## 5. Podの外部公開
 
 続いて、Podの外部公開の方法を紹介します。
 前回のセッションではPortForwardを使ってPodのアクセスを行いましたが
-NodePortというServiceを用いた外部公開の手法があります。
-NodePortとは、Kubernetes Nodeのグローバルアドレス＋任意のポート番号(30000-32767)で外部公開を行うServiceです。今回は、セキュリティグループの設定の関係で以下のポート番号の範囲で設定していただきます。
-※他の受講者と重複しないようご注意ください。
 
-```text
-32001 - 32010
-```
 
 ### 5.1. Service Manifestの作成
 
@@ -679,6 +673,8 @@ spec:
 
 
 ```
+
+
 
 Deploymentを適用して、動作確認しましょう。
 25%のPod数(1個)ずつ追加されていく様子が確認できます。
