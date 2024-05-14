@@ -72,10 +72,8 @@ complete -F __start_kubectl k
 ## 2. アプリケーションデプロイ
 
 
-
-### 2.2 Deployment manifestファイル作成
-
-続いて、manifestファイルを作成します。
+続いて、簡単なテスト用Podをデプロイします。
+Kubernetesでは、Manifestと呼ばれるファイルによって各リソースの状態が定義されます。
 manifestファイルはyaml形式もしくはjson形式がサポートされています。
 今回はyaml形式のmanifestを用意していますので、そのManifestを使ってPodをデプロイします。
 以下のコマンドを入力してください。
@@ -724,7 +722,6 @@ spec:
     path: /tmp
 ```
 
-### 7.2. PVCの作成
 
 PVC(Persistent Volume Claim)は、PodのVolumeに関する要求事項を定義するためのリソースです。
 
@@ -742,7 +739,6 @@ spec:
       storage: 1Gi
 ```
 
-### 7.3. Podの作成
 
 データの永続化を行うPodは、volumes属性に使いたいPVCの名前を書くことで作成できます。
 
@@ -766,7 +762,6 @@ spec:
       claimName: handson-pvc
 ```
 
-### 7.4. リソースの作成と動作確認
 
 以下のコマンドで各リソースの作成を行います。
 
@@ -775,7 +770,6 @@ spec:
 kubectl apply -f handson-volume.yaml
 ```
 
-#### 7.4.4 動作確認
 
 以下のコマンドで各リソースの確認を行います。
 
