@@ -74,11 +74,11 @@ sudo kind create cluster --config=kind-config.yaml
 ```shell
 Creating cluster "kind" ...
  ✓ Ensuring node image (kindest/node:v1.27.3) 🖼
- ✓ Preparing nodes 📦 📦 📦  
- ✓ Writing configuration 📜 
- ✓ Starting control-plane 🕹️ 
- ✓ Installing StorageClass 💾 
- ✓ Joining worker nodes 🚜 
+ ✓ Preparing nodes 📦 📦 📦
+ ✓ Writing configuration 📜
+ ✓ Starting control-plane 🕹️
+ ✓ Installing StorageClass 💾
+ ✓ Joining worker nodes 🚜
 Set kubectl context to "kind-kind"
 You can now use your cluster with:
 
@@ -88,7 +88,7 @@ Not sure what to do next? 😅  Check out https://kind.sigs.k8s.io/docs/user/qui
 ```
 
 > [!NOTE]
-> 
+>
 > kubectlコマンドの実行時には、Kubernetesクラスターに接続するための認証情報などが必要になります。
 > それらの情報は、kindでクラスターを作成した際に保存され、デフォルトで`~/.kube/config`に格納されます。
 > このファイルに格納される情報は、kindコマンドを利用しても取得することが可能です
@@ -131,7 +131,7 @@ helmfile sync -f helm/helmfile.yaml
 ```
 
 > [!NOTE]
-> 
+>
 > Kubernetesのイングレスコントローラーとして、Ingress NGINX Controllerをインストールしていますが、Cilium自体もKubernetes Ingressリソースをサポートしています。
 > こちらに関しては、[chapter07_cilium](../chapter07_cilium/)にて説明します。
 
@@ -179,7 +179,7 @@ To further debug and diagnose cluster problems, use 'kubectl cluster-info dump'.
 ```
 
 > [!NOTE]
-> 
+>
 > [End-To-End Connectivity Testing](https://docs.cilium.io/en/stable/contributing/testing/e2e/#end-to-end-connectivity-testing)に記載があるように、Cilium CLIを利用することでEnd-To-Endのテストを行うこともできます。このテストは10分ほどかかります。
 > ```shell
 > cilium connectivity test
