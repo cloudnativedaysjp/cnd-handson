@@ -1,7 +1,7 @@
-# Co-located Hands-on Event by CNDT2023 Committee
-『一日で学ぶクラウドネイティブ技術実践ハンズオン』by CloudNative Days Tokyo 2023 実行委員会のドキュメントです。
+# Co-located Hands-on Event by CNDS2024 Committee
+『一日で学ぶクラウドネイティブ技術実践ハンズオン』by CloudNative Days Summer 2024 実行委員会のドキュメントです。
 
-このハンズオンでは、Prometheus・Grafana・OpenTelemetry・Argo CD・Argo Rollouts・Istio・Cilium・Hubble といったよく利用されるクラウドネイティブな OSS について触れることができるハンズオンです。
+このハンズオンでは、Docker・Kubernetes・Prometheus・Grafana・OpenTelemetry・Argo CD・Argo Rollouts・Istio・Cilium・Hubble といったよく利用されるクラウドネイティブな OSS について触れることができるハンズオンです。
 これらの OSS についての第一歩を学び、これから先の学習のきっかけにしてください。
 
 
@@ -9,15 +9,17 @@
 準備用chapter1＋全10chapterから構成されています。
 - [chapter00_setup](./chapter00_setup/)
 - [chapter01_cluster-create](./chapter01_cluster-create/)
-- [chapter02_prometheus](./chapter02_prometheus/)
-- [chapter03_grafana](./chapter03_grafana/)
-- [chapter04_opentelemetry](./chapter04_opentelemetry/)
-- [chapter05_argocd](./chapter05_argocd/)
-- [chapter06_istio](./chapter06_istio/)
-- [chapter07_cilium](./chapter07_cilium/)
-- [chapter08_argo-rollouts](./chapter08_argo-rollouts/)
-- [chapter09_istio-ambientmesh](./chapter09_istio-ambientmesh/)
-- [chapter10_hubble](./chapter10_hubble/)
+- [chapter02_docker](./chapter02_docker/)
+- [chapter03_kubernetes](./chapter03_kubernetes/)
+- [chapter04_prometheus](./chapter04_prometheus/)
+- [chapter05_grafana](./chapter05_grafana/)
+- [chapter06_opentelemetry](./chapter06_opentelemetry/)
+- [chapter07_argocd](./chapter07_argocd/)
+- [chapter08_istio](./chapter08_istio/)
+- [chapter09_cilium](./chapter09_cilium/)
+- [chapter10_argo-rollouts](./chapter10_argo-rollouts/)
+- [chapter11_istio-ambientmesh](./chapter11_istio-ambientmesh/)
+- [chapter12_hubble](./chapter12_hubble/)
 
 ### 進め方
 まずは、chapter00, chapter01を実施してhandsonを進めるための環境を構築してください。<br>
@@ -27,18 +29,21 @@
 flowchart TD
     setup[chapter00_setup]
     cluster[chapter01_cluster-create]
-    prom[chapter02_prometheus]
-    grafana[chapter03_grafana]
-    otel[chapter04_opentelemetry]
-    argocd[chapter05_argocd]
-    istio[chapter06_istio]
-    cilium[chapter07_cilium]
-    argorollouts[chapter08_argo-rollouts]
-    istioambient[chapter09_istio-ambientmesh]
-    hubble[chapter10_hubble]
+    docker[chapter02_docker]
+    k8s[chapter03_kubernetes]
+    prom[chapter04_prometheus]
+    grafana[chapter05_grafana]
+    otel[chapter06_opentelemetry]
+    argocd[chapter07_argocd]
+    istio[chapter08_istio]
+    cilium[chapter09_cilium]
+    argorollouts[chapter10_argo-rollouts]
+    istioambient[chapter11_istio-ambientmesh]
+    hubble[chapter12_hubble]
 
     setup-->cluster
-
+    cluster-->docker
+    docker-->k8s
     cluster-->prom
     cluster-->argocd
 

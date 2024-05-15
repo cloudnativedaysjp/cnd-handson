@@ -73,6 +73,10 @@ sudo apt-get install -y docker-ce docker-ce-cli containerd.io
 hostsファイルには、この演習を通して利用するIPアドレスとドメインの紐付けを設定してください。YOUR_VM_IP_ADDRESSはこの演習で利用するマシンのIPアドレスを指定してください。
 
 ```
+YOUR_VM_IP_ADDRESS    hello-world.example.com
+YOUR_VM_IP_ADDRESS    rollout.example.com
+YOUR_VM_IP_ADDRESS    blue.example.com
+YOUR_VM_IP_ADDRESS    green.example.com
 YOUR_VM_IP_ADDRESS    app.example.com
 YOUR_VM_IP_ADDRESS    prometheus.example.com
 YOUR_VM_IP_ADDRESS    grafana.example.com
