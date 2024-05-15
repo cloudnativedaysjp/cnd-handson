@@ -1,8 +1,7 @@
 tempo:
   metricsGenerator:
     enabled: true
-    remote_write:
-      - url:http://kube-prometheus-stack-prometheus.prometheus:9090/api/v1/write
+    remoteWriteUrl: http://kube-prometheus-stack-prometheus.prometheus:9090/api/v1/write
   config: |
     overrides:
       metrics_generator_processors:
