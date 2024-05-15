@@ -15,10 +15,10 @@
 - [chapter05_grafana](./chapter05_grafana/)
 - [chapter06_opentelemetry](./chapter06_opentelemetry/)
 - [chapter07_argocd](./chapter07_argocd/)
-- [chapter08_istio](./chapter08_istio/)
+- [chapter_istio](./chapter_istio/)
 - [chapter09_cilium](./chapter09_cilium/)
 - [chapter10_argo-rollouts](./chapter10_argo-rollouts/)
-- [chapter11_istio-ambientmesh](./chapter11_istio-ambientmesh/)
+- [chapter_istio-ambientmesh](./chapter_istio-ambientmesh/)
 - [chapter12_hubble](./chapter12_hubble/)
 
 ### 進め方
@@ -35,10 +35,10 @@ flowchart TD
     grafana[chapter05_grafana]
     otel[chapter06_opentelemetry]
     argocd[chapter07_argocd]
-    istio[chapter08_istio]
+    istio[chapter_istio]
     cilium[chapter09_cilium]
     argorollouts[chapter10_argo-rollouts]
-    istioambient[chapter11_istio-ambientmesh]
+    istioambient[chapter_istio-ambientmesh]
     hubble[chapter12_hubble]
 
     setup-->cluster

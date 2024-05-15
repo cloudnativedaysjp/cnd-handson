@@ -99,7 +99,7 @@ kubectl get services,pods -n handson -l app=handson
 
 > [!NOTE]
 >
-> chapter04_opentelemetryで[traceをopentelemetryで管理する例](../chapter04_opentelemetry/README.md#trace-をopentelemetryで管理する例)を実装している場合はコンテナ数は3になります。
+> chapter_opentelemetryで[traceをopentelemetryで管理する例](../chapter_opentelemetry/README.md#trace-をopentelemetryで管理する例)を実装している場合はコンテナ数は3になります。
 
 ```sh
 ＃ 実行結果
@@ -215,8 +215,8 @@ handson-blue-6c4f4c9c57-597dx   2/2     Running   0          5m
 
 加重ルーティング実装のための追加アプリケーションをデプロイします。
 ```sh
-kubectl apply -f ../chapter01_cluster-create/manifest/app/serviceaccount.yaml -n handson -l color=yellow
-kubectl apply -f ../chapter01_cluster-create/manifest/app/deployment.yaml -n handson -l color=yellow
+kubectl apply -f ../chapter_cluster-create/manifest/app/serviceaccount.yaml -n handson -l color=yellow
+kubectl apply -f ../chapter_cluster-create/manifest/app/deployment.yaml -n handson -l color=yellow
 ```
 
 2つのワークロードが`handson` namespaceで稼働していることを確認してください。
@@ -369,8 +369,8 @@ Fault Injectionは、HTTPS(TLS)通信を対象には機能しないことに注�
 ```sh
 kubectl delete -f networking/http-request-based-routing.yaml
 kubectl apply -f networking/simple-routing.yaml
-kubectl delete -f ../chapter01_cluster-create/manifest/app/deployment.yaml -n handson -l color=yellow
-kubectl delete -f ../chapter01_cluster-create/manifest/app/serviceaccount.yaml -n handson -l color=yellow
+kubectl delete -f ../chapter_cluster-create/manifest/app/deployment.yaml -n handson -l color=yellow
+kubectl delete -f ../chapter_cluster-create/manifest/app/serviceaccount.yaml -n handson -l color=yellow
 ```
 
 実際にリクエストを流して、期待した通り50%ずつトラフィックが流れているかKialiで確認してみましょう。**ローカル端末から**下記コマンドを実行してください。
@@ -546,8 +546,8 @@ Kiali dashboardからも確認してみましょう。リクエストを流し�
 ### クリーンアップ
 
 ```sh
-kubectl delete -f ../chapter01_cluster-create/manifest/app/serviceaccount.yaml -n handson -l color=yellow
-kubectl delete -f ../chapter01_cluster-create/manifest/app/deployment.yaml -n handson -l color=yellow
+kubectl delete -f ../chapter_cluster-create/manifest/app/serviceaccount.yaml -n handson -l color=yellow
+kubectl delete -f ../chapter_cluster-create/manifest/app/deployment.yaml -n handson -l color=yellow
 kubectl delete -f networking/simple-routing.yaml
 kubectl delete -f networking/service-entry-cloudnativedays.yaml 
 kubectl delete -f networking/gateway.yaml
