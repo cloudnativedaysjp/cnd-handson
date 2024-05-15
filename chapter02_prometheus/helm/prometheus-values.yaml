@@ -33,7 +33,8 @@ prometheus:
     enableRemoteWriteReceiver: true
     podMonitorSelectorNilUsesHelmValues: false
     serviceMonitorSelectorNilUsesHelmValues: false
-    enableFeatures: [exemplar-storage]
+    enableFeatures: 
+      - exemplar-storage
     additionalScrapeConfigs:
     # Cilium and Envoy metrics
     #  see: https://docs.cilium.io/en/stable/observability/metrics/#cilium-metrics
