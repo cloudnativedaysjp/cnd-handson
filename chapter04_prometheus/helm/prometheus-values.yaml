@@ -30,8 +30,6 @@ grafana:
 
 prometheus:
   prometheusSpec:
-    enableFeatures:
-      - exemplar-storage
     enableRemoteWriteReceiver: true
     podMonitorSelectorNilUsesHelmValues: false
     serviceMonitorSelectorNilUsesHelmValues: false
