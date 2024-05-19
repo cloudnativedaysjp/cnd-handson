@@ -122,7 +122,9 @@ Run Queryボタンをクリックしてください。
 すると一覧が表示されます。
 ![search-result](image/search-result.png)
 一覧の中から1つTrace IDを選択してクリックしてください。
+
 ![trace-id](image/trace-id.png)
+
 右にTrace IDの詳細が展開されます。この画面はTrace IDを直接 Trace QLの欄に記入しても開くことができます。
 ![click-trace-id](image/click-trace-id.png)
 
