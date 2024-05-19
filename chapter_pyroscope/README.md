@@ -70,6 +70,11 @@ Pyroscopeのアーキテクチャを説明します。後述するdistributorや
 当ハンズオンでは、初期構築時にGrafana Agentがインストールされています。
 
 ## 実践: Grafana Pyroscopeのインストール
+実践として、Pyroscopeをインストールします。以降のハンズオンででは、pyroscopeのchapterを作業ディレクトリとしてください。
+```bash
+cd chapter_pyroscope
+```
+
 Kubernetesクラスタ上にPyroscopeをインストールします。
 ここでは、grafanaのHelm Chartから利用します。
 
