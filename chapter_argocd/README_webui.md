@@ -100,7 +100,7 @@ ingressを作成し、Argo CDのWEB UIにアクセス出来るようにします
 ```
 kubectl apply -f ingress/ingress.yaml
 ```
-http://app.argocd.example.com
+http://argocd.example.com
 へアクセスします。下記のページにアクセス出来るか確認して下さい。
 * ユーザ名: admin
 * パスワード: 以下のコマンドをサーバ上で実行した値
