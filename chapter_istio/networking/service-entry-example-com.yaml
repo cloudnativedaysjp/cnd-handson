@@ -1,13 +1,13 @@
 apiVersion: networking.istio.io/v1beta1
 kind: ServiceEntry
 metadata:
-  name: external-cloudnativedays
+  name: external-example-com
   namespace: handson
   labels:
-    content: cloudnativedays
+    content: example.com
 spec:
   hosts:
-  - event.cloudnativedays.jp
+  - example.com
   location: MESH_EXTERNAL
   ports:
   - number: 443

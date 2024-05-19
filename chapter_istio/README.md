@@ -412,7 +412,8 @@ kubectl apply -f networking/simple-routing-inject-delay.yaml
 200     5.031547
 ```
 
-KialiでトラフィックのResponse Timeを確認してみましょう。P99(99%tile)をみてみると、1秒以内である事がわかります。
+KialiでトラフィックのResponse Timeを確認してみましょう。 Service `handson` と、Deployment `handson-blue` の間の線をクリックしてください。<br>
+そうすると右側のパネルに`HTTP Request Response Time (ms)`が下記画面の様に表示されます。そしてマウスのフォーカスを合わせてP99(99%tile)をみてみると、1秒以内である事がわかりますv (見づらい場合は表示期間を伸ばしてみてください)。
 この遅延は、アプリケーション到達前のEnvoyの部分で遅延させているものなので、呼び出される側には影響がない事がわかります。
 
 ![image](./image/kiali-graph-fault-injection-delay.png)
@@ -455,7 +456,7 @@ SaaSとして提供されているデータベースへのアクセスや外部A
 それでは実際にどのような設定になっているのかを見てみましょう。
 
 ```sh
-kubectl get cm -n istio-system istio -o yaml  
+kubectl get cm -n istio-system istio -o yaml
 ```
 
 `meshConfig.outboundTrafficPolicy.mode` の値が、 `REGISTRY_ONLY`　になっていることがわかります。
@@ -489,45 +490,41 @@ NAME   READY   STATUS    RESTARTS   AGE
 curl   2/2     Running   0          26s
 ```
 
-メッシュ内に存在する、`curl` Podから、メッシュ外に存在する https://event.cloudnativedays.jp/ にアクセスしてみましょう。
+メッシュ内に存在する、`curl` Podから、メッシュ外に存在する https://example.com/ にアクセスしてみましょう。
 
 ```sh
-while :; do kubectl exec curl -n handson -- curl -s -o /dev/null -w '%{http_code}\t%{errormsg}\n' https://event.cloudnativedays.jp/ ;sleep 1;done 2>/dev/null
+while :; do kubectl exec curl -n handson -- curl -s -o /dev/null -w '%{http_code}\t%{errormsg}\n' https://example.com/ ;sleep 1;done 2>/dev/null
 ```
 
 下記のように表示されるはずです。HTTPS通信が確立できずエラーとなっています。
 
 ```sh
-000     OpenSSL SSL_connect: SSL_ERROR_SYSCALL in connection to event.cloudnativedays.jp:443 
-000     OpenSSL SSL_connect: SSL_ERROR_SYSCALL in connection to event.cloudnativedays.jp:443 
-000     OpenSSL SSL_connect: SSL_ERROR_SYSCALL in connection to event.cloudnativedays.jp:443 
+000     OpenSSL SSL_connect: SSL_ERROR_SYSCALL in connection to example.com:443 
+000     OpenSSL SSL_connect: SSL_ERROR_SYSCALL in connection to example.com:443 
+000     OpenSSL SSL_connect: SSL_ERROR_SYSCALL in connection to example.com:443 
 ```
 
-それでは、event.cloudnativedays.jpのHTTPS通信をService Entryとして定義しましょう。
-さらに、Virtual Serviceで、5秒の応答遅延を50%の割合で挿入します。
+それでは、example.comのHTTPS通信をService Entryとして定義しましょう。
 
 ```sh
-kubectl apply -f networking/service-entry-cloudnativedays.yaml 
+kubectl apply -f networking/service-entry-example-com.yaml
 ```
 
 作成されるリソースは下記のとおりです。
 
 ```sh
-kubectl get virtualservices,serviceentries -n handson -l content=cloudnativedays
+kubectl get serviceentries -n handson -l content=example.com
 ```
 
 ```sh
-NAME                                                 GATEWAYS   HOSTS                          AGE
-virtualservice.networking.istio.io/cloudnativedays              ["event.cloudnativedays.jp"]   2m29s
-
-NAME                                                        HOSTS                          LOCATION        RESOLUTION   AGE
-serviceentry.networking.istio.io/external-cloudnativedays   ["event.cloudnativedays.jp"]   MESH_EXTERNAL   DNS          2m30s
+NAME                                                        HOSTS             LOCATION        RESOLUTION   AGE
+serviceentry.networking.istio.io/external-cloudnativedays   ["example.com"]   MESH_EXTERNAL   NONE         24s
 ```
 
-実際にリクエストを流して、期待したトラフィックが流れているかKialiで確認してみましょう。**ローカル端末から**下記コマンドを実行してください。
+実際にリクエストを流して、期待したトラフィックが流れているかKialiで確認してみましょう。下記コマンドを実行してください。
 
 ```sh
-while :; do kubectl exec curl -n handson -- curl -s -o /dev/null -w '%{http_code}\t%{time_total}\t%{errormsg}\n' https://event.cloudnativedays.jp/ ;sleep 1;done 2>/dev/null
+while :; do kubectl exec curl -n handson -- curl -s -o /dev/null -w '%{http_code}\t%{time_total}\t%{errormsg}\n' https://example.com/ ;sleep 1;done 2>/dev/null
 ```
 
 コンソールには下記のように表示されるはずです。
@@ -539,7 +536,7 @@ while :; do kubectl exec curl -n handson -- curl -s -o /dev/null -w '%{http_code
 200     0.632720
 ```
 
-Kiali dashboardからも確認してみましょう。リクエストを流した状態でブラウザから<http://kiali.example.com>にアクセスをしてください。`curl` のワークロードから `event.cloudnativedays.jp` Serviceにアクセスできていることが確認できます。グラフが表示されない場合は、Kialiダッシュボード右上の青い`Refresh`ボタンを押して状態を更新してください。
+Kiali dashboardからも確認してみましょう。リクエストを流した状態でブラウザから<http://kiali.example.com>にアクセスをしてください。`curl` のワークロードから `example.com` Serviceにアクセスできていることが確認できます。グラフが表示されない場合は、Kialiダッシュボード右上の青い`Refresh`ボタンを押して状態を更新してください。
 
 ![image](./image/kiali-graph-service-entry.png)
 
@@ -551,6 +548,7 @@ kubectl delete -f ../chapter_cluster-create/manifest/app/deployment.yaml -n hand
 kubectl delete -f networking/simple-routing.yaml
 kubectl delete -f networking/service-entry-cloudnativedays.yaml 
 kubectl delete -f networking/gateway.yaml
+kubectl delete -f app/curl.yaml
 ```
 
 ## 認可制御
