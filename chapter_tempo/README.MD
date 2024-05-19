@@ -161,6 +161,7 @@ Service Graphを表示させるには追加で設定が必要です。
 ![result-service-graph](image/result-service-graph.png)
 
 `Rate`をクリックしてください。
+
 ![click-rate](image/click-rate.png)
 
 すると右にPrometheusのパネルが展開してAPIがコールされた回数がグラフで表示されます。
