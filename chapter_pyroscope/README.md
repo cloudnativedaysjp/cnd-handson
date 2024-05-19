@@ -120,7 +120,7 @@ kubectl apply -f ingress.yaml
 ## Grafanaへのデータソース追加
 chapter_grafanaで構築したGrafanaに、Pyroscopeのデータソースを追加します。
 * Data sourse：Grafana Pyroscope
-* HTTP>URL：http://pyroscope.pyroscope.svc.cluster.local:4040
+* HTTP>URL：http://pyroscope.monitoring.svc.cluster.local:4040
 
 ![image](./image/grafana-pyroscope.png)
 
@@ -129,7 +129,7 @@ chapter_grafanaで構築したGrafanaに、Pyroscopeのデータソースを追�
 datasources:
   - name: Grafana Pyroscope
     type: grafana-pyroscope-datasource
-    url: http://pyroscope.pyroscope.svc.cluster.local:4040
+    url: http://pyroscope.monitoring.svc.cluster.local:4040
 ```
 
 ## 番外編：マイクロサービスモードで動かしたいとき
@@ -138,6 +138,7 @@ datasources:
 
 ハンズオン用では、[values-micro-services.yaml](https://raw.githubusercontent.com/grafana/pyroscope/main/operations/pyroscope/helm/pyroscope/values-micro-services.yaml)を元に、要求リソースを小さくして作成しています。
 
+vim等で、下記の通りvalueのコメントアウトをはずします。
 ```helmfile.yaml
 releases:
 - name: pyroscope
@@ -149,6 +150,11 @@ releases:
   - values-micro-services.yaml # マイクロサービスモードを使用する場合使用
 ```
 
+`helmfile sync`を再実行します。
+
+```bash
+helmfile sync helm/helmfile.yaml
+```
 
 ```bash
 # 実行結果
@@ -171,8 +177,11 @@ pyroscope-store-gateway-1                    0/1     Running   0          33s
 
 ```
 
-## 参考文献
+マイクロサービスモードの場合、Grafanaのデータソースも、接続先をquery-frontendにする必要があります。下記に変更します。
 
+* HTTP>URL：http://pyroscope-query-frontend.monitoring.svc.cluster.local:4040
+
+## 参考文献
 
 - [Pyroscopeの公式ドキュメント](https://grafana.com/docs/pyroscope/latest/)
 - [What is continuous profiling, and what is Pyroscope?](https://isitobservable.io/open-telemetry/what-is-continuous-profiling-and-what-is-pyroscope)
