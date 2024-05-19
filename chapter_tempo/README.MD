@@ -119,7 +119,6 @@ kubectl -n handson patch deployment handson-blue -p '{"spec":{"template":{"metad
 これでセットアップは完了です。
 ## search
 まず`http://app.example.com/`にアクセス後`http://grafana.example.com/explore`を開きます。
-ここでエラーのバーやレイテンシのバーも操作しておきましょう。
 Promethusと書かれてるトグルメニューをクリックしてください。するとメニューが展開されるのでTempoを選択します。
 
 ![select-tempo](image/select-tempo.png)
