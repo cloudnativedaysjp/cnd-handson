@@ -11,7 +11,7 @@ resources:
 service:
   type: NodePort
   ports:
-    # For port numbers, see https://github.com/cloudnativedaysjp/cndt2023-handson/blob/main/chapter01_cluster-create/kind-config.yaml.
+    # For port numbers, see https://github.com/cloudnativedaysjp/cndt2023-handson/blob/main/chapter_cluster-create/kind-config.yaml.
   - port: 18080
     targetPort: 18080
     nodePort: 32080
