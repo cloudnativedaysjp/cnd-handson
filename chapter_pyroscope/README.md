@@ -102,11 +102,7 @@ pyroscope-agent-0   2/2     Running   0          69s
 
 
 ## Pyroscopeフロントエンドへのアクセス
-Pyoscopeの画面にアクセスします。pyroscopeのserviceをポートフォワードします。
-
-```bash
-kubectl --namespace pyroscope port-forward svc/pyroscope 4040:4040
-```
+Pyoscopeの画面にアクセスします。pyroscopeの画面を参照するために、ingressリソースを追加します。
 
 ```bash
 kubectl apply -f ingress.yaml
