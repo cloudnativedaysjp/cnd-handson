@@ -82,15 +82,15 @@ https://argo-cd.readthedocs.io/en/stable/cli_installation/
 <details><summary><b>Linux User</b></summary> 
 
 #### Linux
-```
 - Homebrew
+```
 brew install argocd
 ```
 
 or
 
-```
 - Download with Curl
+```
 curl -sSL -o argocd-linux-amd64 https://github.com/argoproj/argo-cd/releases/latest/download/argocd-linux-amd64
 ```
 ```
@@ -176,8 +176,10 @@ kubectl apply -f ingress/ingress.yaml
 
 * ユーザ名: admin
 * パスワード: 以下のコマンドをサーバ上で実行した値
-    * `kubectl -n argo-cd get secret argocd-initial-admin-secret -o jsonpath="{.data.password}" | base64 -d ; echo`
-      
+```
+kubectl -n argo-cd get secret argocd-initial-admin-secret -o jsonpath="{.data.password}" | base64 -d ; echo`
+```
+  
 ## Argo　CDへログイン
 こちらは自身の端末で実施してください。
 ```
