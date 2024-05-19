@@ -107,7 +107,19 @@ kubectl --namespace pyroscope port-forward svc/pyroscope 4040:4040
 
 
 ## Grafanaへのデータソース追加
+chapter_grafanaで構築したGrafanaに、Pyroscopeのデータソースを追加します。
+* Data sourse：Grafana Pyroscope
+* HTTP>URL：http://pyroscope.pyroscope.svc.cluster.local:4040
 
+![image](./image/grafana-pyroscope.png)
+
+※kube-prometheus-stackで使用したhelmのvaluesに追加も可。
+```helmのvalues.yaml
+datasources:
+  - name: Grafana Pyroscope
+    type: grafana-pyroscope-datasource
+    url: http://pyroscope.pyroscope.svc.cluster.local:4040
+```
 
 ## 番外編：マイクロサービスモードで動かしたいとき
 マイクロサービスモードで動かしたい場合、helmのvaluesを宣言した状態で、`helmfile sync`を実行してみてください。
