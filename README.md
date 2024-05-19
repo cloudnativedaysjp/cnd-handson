@@ -6,40 +6,40 @@
 
 
 ## Chapter
-準備用chapter1＋全10chapterから構成されています。
-- [chapter00_setup](./chapter00_setup/)
-- [chapter01_cluster-create](./chapter01_cluster-create/)
-- [chapter02_docker](./chapter02_docker/)
-- [chapter03_kubernetes](./chapter03_kubernetes/)
-- [chapter04_prometheus](./chapter04_prometheus/)
-- [chapter05_grafana](./chapter05_grafana/)
-- [chapter06_opentelemetry](./chapter06_opentelemetry/)
-- [chapter07_argocd](./chapter07_argocd/)
+準備用chapter＋全10chapterから構成されています。
+- [chapter_setup](./chapter_setup/)
+- [chapter_cluster-create](./chapter_cluster-create/)
+- [chapter_docker](./chapter_docker/)
+- [chapter_kubernetes](./chapter_kubernetes/)
+- [chapter_prometheus](./chapter_prometheus/)
+- [chapter_grafana](./chapter_grafana/)
+- [chapter_opentelemetry](./chapter_opentelemetry/)
+- [chapter_argocd](./chapter_argocd/)
 - [chapter_istio](./chapter_istio/)
-- [chapter09_cilium](./chapter09_cilium/)
-- [chapter10_argo-rollouts](./chapter10_argo-rollouts/)
+- [chapter_cilium](./chapter_cilium/)
+- [chapter_argo-rollouts](./chapter_argo-rollouts/)
 - [chapter_istio-ambientmesh](./chapter_istio-ambientmesh/)
-- [chapter12_hubble](./chapter12_hubble/)
+- [chapter_hubble](./chapter_hubble/)
 
 ### 進め方
-まずは、chapter00, chapter01を実施してhandsonを進めるための環境を構築してください。<br>
+まずは、chapter, chapterを実施してhandsonを進めるための環境を構築してください。<br>
 その後は、順番にchapterを進めることはもちろん、下記フローチャートのように、気になる技術に焦点を当てたchapterを進めることもできます。
 
 ```mermaid
 flowchart TD
-    setup[chapter00_setup]
-    cluster[chapter01_cluster-create]
-    docker[chapter02_docker]
-    k8s[chapter03_kubernetes]
-    prom[chapter04_prometheus]
-    grafana[chapter05_grafana]
-    otel[chapter06_opentelemetry]
-    argocd[chapter07_argocd]
+    setup[chapter_setup]
+    cluster[chapter_cluster-create]
+    docker[chapter_docker]
+    k8s[chapter_kubernetes]
+    prom[chapter_prometheus]
+    grafana[chapter_grafana]
+    otel[chapter_opentelemetry]
+    argocd[chapter_argocd]
     istio[chapter_istio]
-    cilium[chapter09_cilium]
-    argorollouts[chapter10_argo-rollouts]
+    cilium[chapter_cilium]
+    argorollouts[chapter_argo-rollouts]
     istioambient[chapter_istio-ambientmesh]
-    hubble[chapter12_hubble]
+    hubble[chapter_hubble]
 
     setup-->cluster
     cluster-->docker

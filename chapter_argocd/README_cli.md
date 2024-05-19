@@ -217,7 +217,7 @@ git clone https://github.com/自身のアカウント名/cnd-handson.git
 ```
 アプリケーションの追加
 ```
-argocd app create argocd-demo --repo https://github.com/自身のアカウント名/cnd-handson --sync-option CreateNamespace=true --path chapter05_argocd/app/default --dest-server https://kubernetes.default.svc --dest-namespace argocd-demo
+argocd app create argocd-demo --repo https://github.com/自身のアカウント名/cnd-handson --sync-option CreateNamespace=true --path chapter_argocd/app/default --dest-server https://kubernetes.default.svc --dest-namespace argocd-demo
 ```
 
 アプリケーションが追加されたことをWebUI上でも確認ができます。
@@ -242,7 +242,7 @@ Namespace:          argocd-demo
 URL:                https://argocd.example.com/applications/argocd-demo
 Repo:               https://github.com/akiran123/cnd-handson
 Target:
-Path:               chapter05_argocd/app/default
+Path:               chapter_argocd/app/default
 SyncWindow:         Sync Allowed
 Sync Policy:        <none>
 Sync Status:        Synced to  (935fc73)
@@ -305,8 +305,8 @@ GENERAL
     Repository URL: https://github.com/自身のアカウント名/cnd-handson
     Revision: main
     Path:
-      開発環境: chapter05_argocd/app/Kustomize/overlays/dev
-      本番環境: chapter05_argocd/app/Kustomize/overlays/prd
+      開発環境: chapter_argocd/app/Kustomize/overlays/dev
+      本番環境: chapter_argocd/app/Kustomize/overlays/prd
   DESTINATION
     Cluster URL: https://kubernetes.default.svc
     Namespace: 
@@ -315,7 +315,7 @@ GENERAL
 ```
 開発環境のアプリを作成します。
 ```
-argocd app create argocd-kustomize-dev --repo https://github.com/自身のアカウント名/cnd-handson --sync-option CreateNamespace=true --path chapter05_argocd/app/Kustomize/overlays/dev --dest-server https://kubernetes.default.svc --dest-namespace argocd-kustomize-dev
+argocd app create argocd-kustomize-dev --repo https://github.com/自身のアカウント名/cnd-handson --sync-option CreateNamespace=true --path chapter_argocd/app/Kustomize/overlays/dev --dest-server https://kubernetes.default.svc --dest-namespace argocd-kustomize-dev
 ```
 SYNCして、ステータスを確認します。
 ```
@@ -333,7 +333,7 @@ Namespace:          argocd-kustomize-dev
 URL:                https://argocd.example.com/applications/argocd-kustomize-dev
 Repo:               https://github.com/自身のアカウント/cnd-handson
 Target:
-Path:               chapter05_argocd/app/Kustomize/overlays/dev
+Path:               chapter_argocd/app/Kustomize/overlays/dev
 SyncWindow:         Sync Allowed
 Sync Policy:        <none>
 Sync Status:        Synced to  (935fc73)
@@ -362,7 +362,7 @@ ingress.networking.k8s.io/app-ingress-by-nginx   nginx   dev.kustomize.argocd.ex
 
 本番環境のアプリを作成します。
 ```
-argocd app create argocd-kustomize-prd --repo https://github.com/自身のアカウント名/cnd-handson --sync-option CreateNamespace=true --path chapter05_argocd/app/Kustomize/overlays/prd --dest-server https://kubernetes.default.svc --dest-namespace argocd-kustomize-prd
+argocd app create argocd-kustomize-prd --repo https://github.com/自身のアカウント名/cnd-handson --sync-option CreateNamespace=true --path chapter_argocd/app/Kustomize/overlays/prd --dest-server https://kubernetes.default.svc --dest-namespace argocd-kustomize-prd
 ```
 SYNCして、ステータスを確認します。
 ```
@@ -380,7 +380,7 @@ Namespace:          argocd-kustomize-prd
 URL:                http://argocd.example.com/applications/argocd-kustomize-prd
 Repo:               https://github.com/自身のアカウント/cnd-handson
 Target:
-Path:               chapter05_argocd/app/Kustomize/overlays/prd
+Path:               chapter_argocd/app/Kustomize/overlays/prd
 SyncWindow:         Sync Allowed
 Sync Policy:        <none>
 Sync Status:        Synced to  (935fc73)
@@ -437,14 +437,14 @@ GENERAL
   SOURCE
     Repository URL: https://github.com/自身のアカウント名/cnd-handson
     Revision: main
-    Path: chapter05_argocd/app/Helm/rollouts-demo
+    Path: chapter_argocd/app/Helm/rollouts-demo
   DESTINATION
     Cluster URL: https://kubernetes.default.svc
     Namespace: argocd-helm
 ```
 Helmからアプリを作成します。
 ```
-argocd app create argocd-helm --repo https://github.com/自身のアカウント名/cnd-handson --sync-option CreateNamespace=true --path chapter05_argocd/app/Helm/rollouts-demo --dest-server https://kubernetes.default.svc --dest-namespace argocd-helm
+argocd app create argocd-helm --repo https://github.com/自身のアカウント名/cnd-handson --sync-option CreateNamespace=true --path chapter_argocd/app/Helm/rollouts-demo --dest-server https://kubernetes.default.svc --dest-namespace argocd-helm
 ```
 SYNCして、ステータスを確認します。
 ```
@@ -462,7 +462,7 @@ Namespace:          argocd-helm
 URL:                http://argocd.argocd.example.com/applications/argocd-helm
 Repo:               https://github.com/akiran123/cnd-handson
 Target:
-Path:               chapter05_argocd/app/Helm/rollouts-demo
+Path:               chapter_argocd/app/Helm/rollouts-demo
 SyncWindow:         Sync Allowed
 Sync Policy:        <none>
 Sync Status:        Synced to  (935fc73)
