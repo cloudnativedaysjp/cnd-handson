@@ -5,7 +5,7 @@ Tempoを利用するとトレースを検索し、スパンからメトリクス
 動作にはオブジェクト ストレージのみが必要で、[Grafana](https://github.com/grafana/grafana)、[Prometheus](https://github.com/prometheus/prometheus)、[Loki](https://github.com/grafana/loki) などと連携することができます。
 
 
-TempoはJaeger、OpenTelemetry と互換性があります。Azure、GCS、S3、またはローカル ディスクに書き込みます。そのため、堅牢で安価、そして操作が簡単です。
+TempoはJaeger、OpenTelemetry と互換性があります。Azure、GCS、S3、またはローカル ディスクに書き込みます。
 
 Tempo は、LogQL と PromQL からインスピレーションを得たトレースファーストのクエリ言語であるTraceQLを実装しています。このクエリ言語を使用すると、ユーザーは非常に正確かつ簡単にスパンを選択し、指定された条件を満たすスパンに直接ジャンプできます。
 
@@ -79,6 +79,11 @@ Tempo は、モノリシック モードまたはマイクロサービスモー�
 - これはProduction環境で推奨される方法ですが、最も複雑でもあります。
 
 ## Trace QLの概要
+TraceQL は、PromQL と LogQL からインスピレーションを得て、Tempo でトレースを選択するために設計されたクエリ言語です。現在、TraceQL クエリは以下に基づいてトレースを選択できます。
+- スパンとリソースの属性、タイミング、期間
+- 基本的な集計: count()、avg()、min()、max()、およびsum()
+TraceQL の設計の詳細については、[TraceQL コンセプトの設計提案](https://github.com/grafana/tempo/blob/main/docs/design-proposals/2022-04%20TraceQL%20Concepts.md)を参照してください。
+
 ## セットアップ
 この章を行うにはPrometheusとGrafanaとOpentelemetryをデプロイしておく必要があります。
 各章へ行きデプロイしてきてください。
@@ -116,11 +121,16 @@ kubectl -n handson patch deployment handson-blue -p '{"spec":{"template":{"metad
 まず`http://app.example.com/`にアクセス後`http://grafana.example.com/explore`を開きます。
 ここでエラーのバーやレイテンシのバーも操作しておきましょう。
 Promethusと書かれてるトグルメニューをクリックしてください。するとメニューが展開されるのでTempoを選択します。
+
 ![select-tempo](image/select-tempo.png)
+
 Run Queryボタンをクリックしてください。
+
 ![run-query](image/run-query.png)
+
 すると一覧が表示されます。
 ![search-result](image/search-result.png)
+
 一覧の中から1つTrace IDを選択してクリックしてください。
 
 ![trace-id](image/trace-id.png)
@@ -131,6 +141,7 @@ Run Queryボタンをクリックしてください。
 ## TraceQL
 次にTrace QLタブをクリックしてください。
 ![traceql](image/traceql.png)
+
 空欄があるので`{resource.service.name="handson-blue"}` と入力してみましょう。
 すると表示されます。
 ![traceql-result](image/traceql-result.png)
@@ -139,15 +150,19 @@ Run Queryボタンをクリックしてください。
 Service Graphを表示させるには追加で設定が必要です。
 `http://grafana.example.com/connections/datasources`にアクセスしたあとTempoを選択します。
 ![expolre-select-tempo](image/expolre-select-tempo.png)
+
 下のほうまでスクロールして`Additional settings`のメニューを展開します。
 展開した後Service graphの項目のData sourceにPrometheusを選択して一番下にあるSave & testをクリックします。
 `Data source successfully connected.`と表示されると設定が完了しています。
 ![select-promethues](image/select-promethues.png)
+
 `http://grafana.example.com/explore`を開きます。Service GraphタブをクリックしてRun Queryボタンをクリックしてください。
 すると下の画像のような表示になります。
 ![result-service-graph](image/result-service-graph.png)
+
 `Rate`をクリックしてください。
 ![click-rate](image/click-rate.png)
+
 すると右にPrometheusのパネルが展開してAPIがコールされた回数がグラフで表示されます。
 ![result-click-rate](image/result-click-rate.png)
 
