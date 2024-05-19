@@ -7,7 +7,7 @@
 Kubernetesクラスターを作成する方法はいくつかありますが、今回のハンズオンではkindを利用してKubernetesクラスターを作成します。
 構成としてはControl Plane 1台とWorker Node 2台の構成で作成します。
 また、CNIとしてCiliumをデプロイします。
-Ciliumの詳細は[chapter07_cilium](../chapter07_cilium/)にて説明します。
+Ciliumの詳細は[chapter_cilium](../chapter_cilium/)にて説明します。
 
 ![](image/ch1-1.png)
 
@@ -109,7 +109,7 @@ Not sure what to do next? 😅  Check out https://kind.sigs.k8s.io/docs/user/qui
 - [Ingress NGINX Controller](https://github.com/kubernetes/ingress-nginx)
 
 Gateway APIはKubernetesクラスター外からKubernetesクラスター内のServiceへのトラフィックを管理するためのものです。
-Ciliumについては[chapter07_cilium](../chapter07_cilium/)で説明するのでそちらを参照してください。
+Ciliumについては[chapter_cilium](../chapter_cilium/)で説明するのでそちらを参照してください。
 MetallbはKind上のクラスターでServiceリソースのType:LoadBalancerを利用するためにインストールします。
 Ingress NGINX Controllerはインターネットからkind上のServiceリソースへ通信をルーティングするためにインストールします。
 各コンポーネントの詳細については上記リンクをご参照ください。
@@ -133,7 +133,7 @@ helmfile sync -f helm/helmfile.yaml
 > [!NOTE]
 >
 > Kubernetesのイングレスコントローラーとして、Ingress NGINX Controllerをインストールしていますが、Cilium自体もKubernetes Ingressリソースをサポートしています。
-> こちらに関しては、[chapter07_cilium](../chapter07_cilium/)にて説明します。
+> こちらに関しては、[chapter_cilium](../chapter_cilium/)にて説明します。
 
 Metallbに関しては、追加で`IPAddressPool`と`L2Advertisement`をデプロイする必要があります。
 

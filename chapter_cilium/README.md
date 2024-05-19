@@ -53,7 +53,7 @@ Ciliumは下記の主要コンポーネントで構成されています。
   - PodがNode上でスケジュールまたは終了される時にKubernetesによって呼び出されます
   - Cilium APIと対話し、ネットワーキング/ロードバランシング/ネットワークポリシーを提供するために必要な設定を起動します
 
-Chapter01 Cluster Createで導入したCiliumに対して、上記のコンポーネントを簡単に確認してみます。
+chapter Cluster Createで導入したCiliumに対して、上記のコンポーネントを簡単に確認してみます。
 
 最初にAgentはDaemonSetリソース、OperatorはDeploymentリソースとしてデプロイされていることを確認します。
 
@@ -61,7 +61,7 @@ Chapter01 Cluster Createで導入したCiliumに対して、上記のコンポ�
 kubectl get -n kube-system -l app.kubernetes.io/part-of=cilium ds,deploy
 ```
 
-下記のような出力になるはずです。hubble-relayやhubble-uiに関しては[chapter10_hubble](../chapter10_hubble/)にて説明します。
+下記のような出力になるはずです。hubble-relayやhubble-uiに関しては[chapter_hubble](../chapter_hubble/)にて説明します。
 
 ```shell
 NAME                    DESIRED   CURRENT   READY   UP-TO-DATE   AVAILABLE   NODE SELECTOR            AGE
@@ -106,7 +106,7 @@ ServiceMeshに関しては、まず初めに、CiliumのIngressClassを設定し
 
 > [!NOTE]
 > 
-> Observabilityについては[chapter10_hubble](../chapter10_hubble/)にて説明します。
+> Observabilityについては[chapter_hubble](../chapter_hubble/)にて説明します。
 
 ## Networking
 
@@ -126,7 +126,7 @@ Ciliumでは3種類のリソースでNetwork Policyを定義できます。
 
 この節では`CiliumNetworkPolicy`の動作確認を行います。
 
-動作確認は[chapter01_cluster-create](../chapter01_cluster-create/README.md#アプリケーションのデプロイ)でデプロイしたアプリケーションを利用します。
+動作確認は[chapter_cluster-create](../chapter_cluster-create/README.md#アプリケーションのデプロイ)でデプロイしたアプリケーションを利用します。
 また、このアプリケーションに接続するためのクライアントを2種類デプロイします。
 
 ```shell
@@ -202,7 +202,7 @@ kubectl delete -f manifest/cnp.yaml
 
 CiliumはIngressリソースのサポートをしており、第1章でIngress NGINX Controllerをデプロイしましたが、Ingress NGINX Controllerを使わずともCilium単体でIngressリソースを利用できます。
 Ingressリソースを利用するためには、CiliumのHelm Chartで`ingressController.enabled: true`を指定する必要があります。
-この設定はすでに[chapter01_cluster-create](../chapter01_cluster-create/)で行っており、現時点でIngressリソースは利用できる状態になっています。
+この設定はすでに[chapter_cluster-create](../chapter_cluster-create/)で行っており、現時点でIngressリソースは利用できる状態になっています。
 詳細については[Kubernetes Ingress Support](https://docs.cilium.io/en/stable/network/servicemesh/ingress/)を参照ください。
 
 この節では、IngressClassとしてCiliumを利用したトラフィックルーティングのデモを行います。
@@ -241,7 +241,7 @@ Gateway APIの詳細は[Kubernetes Gateway API](https://gateway-api.sigs.k8s.io/
 また、yellowイメージとblueイメージのそれぞれにアクセスするためのServiceリソースを作成します。
 
 ```shell
-kubectl apply -Rf ../chapter01_cluster-create/manifest/app -n handson -l color=yellow
+kubectl apply -Rf ../chapter_cluster-create/manifest/app -n handson -l color=yellow
 kubectl apply -f manifest/service.yaml
 ```
 
@@ -376,7 +376,7 @@ done
 
 ```shell
 kubectl delete -f manifest/cec.yaml
-kubectl delete -Rf ../chapter01_cluster-create/manifest/app -n handson -l color=yellow
+kubectl delete -Rf ../chapter_cluster-create/manifest/app -n handson -l color=yellow
 kubectl delete -f manifest/service.yaml
 kubectl delete -n handson pod curl-allow --force
 kubectl delete -n handson pod curl-deny  --force
