@@ -37,7 +37,7 @@ Performanceタブが開いたら、左上の再生ボタン（▶︎）をクリ
 
 
 ## Pyroscopeについて
-<img src="https://private-user-images.githubusercontent.com/662636/263812497-c1fc4055-b33d-4e69-a450-9e7a7b2317bb.png?jwt=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJnaXRodWIuY29tIiwiYXVkIjoicmF3LmdpdGh1YnVzZXJjb250ZW50LmNvbSIsImtleSI6ImtleTUiLCJleHAiOjE3MTYwODA4NTQsIm5iZiI6MTcxNjA4MDU1NCwicGF0aCI6Ii82NjI2MzYvMjYzODEyNDk3LWMxZmM0MDU1LWIzM2QtNGU2OS1hNDUwLTllN2E3YjIzMTdiYi5wbmc_WC1BbXotQWxnb3JpdGhtPUFXUzQtSE1BQy1TSEEyNTYmWC1BbXotQ3JlZGVudGlhbD1BS0lBVkNPRFlMU0E1M1BRSzRaQSUyRjIwMjQwNTE5JTJGdXMtZWFzdC0xJTJGczMlMkZhd3M0X3JlcXVlc3QmWC1BbXotRGF0ZT0yMDI0MDUxOVQwMTAyMzRaJlgtQW16LUV4cGlyZXM9MzAwJlgtQW16LVNpZ25hdHVyZT1hMzg3MTc1NGI2NDZjMTI5MmIyYzljNmI0NjNmMWU5YzMzMjdmYzA3NTE1ZjllNGMzYmJjNDk5YjUxYjIyNzQ0JlgtQW16LVNpZ25lZEhlYWRlcnM9aG9zdCZhY3Rvcl9pZD0wJmtleV9pZD0wJnJlcG9faWQ9MCJ9.RiQs2AKSGMmH9Qn1RlgVhYer5HMNCupUWIMSvZeoEcc" width="300">
+<img src="https://grafana.com/static/img/pyroscope-logo.svg" width="50">
 
 **Pyroscope**は、Grafana Labsにより展開されている、継続的プロファイリングのOSS製品です。
 
@@ -78,7 +78,7 @@ Pyroscopeでは、モノリシックモードと、マイクロサービスモ�
 用意されているhelmfile.yamlおよびvalues.yamlを利用して、 `helmfile sync` を実行し、Pyroscopeをインストールしましょう。
 
 ```bash
-helmfile sync helmfile.yaml
+helmfile sync helm/helmfile.yaml
 ```
 
 実際に各種サービスが起動しているか確認します。
@@ -95,13 +95,19 @@ pyroscope-0         1/1     Running   0          69s
 pyroscope-agent-0   2/2     Running   0          69s
 ```
 
+
 ## Pyroscopeフロントエンドへのアクセス
 Pyoscopeの画面にアクセスします。pyroscopeのserviceをポートフォワードします。
 
 ```bash
 kubectl --namespace pyroscope port-forward svc/pyroscope 4040:4040
 ```
-[http://localhost:4040](http://localhost:4040)にアクセスしましょう。既に、Pyroscope自身のプロファイルが確認できます。
+
+```bash
+kubectl apply -f ingress.yaml
+```
+
+[pyroscope.example.com](http://pyroscope.example.com)にアクセスしましょう。既に、Pyroscope自身のプロファイルが確認できます。
 
 ![image](./image/pyroscope_web.png)
 
@@ -122,7 +128,7 @@ datasources:
 ```
 
 ## 番外編：マイクロサービスモードで動かしたいとき
-マイクロサービスモードで動かしたい場合、helmのvaluesを宣言した状態で、`helmfile sync`を実行してみてください。
+マイクロサービスモードで動かしたい場合、helmのvaluesを宣言した状態で、`helmfile sync`を再実行してみてください。
 マイクロサービスモードでは、ストレージサービスの指定が必要で、ここではMinIOというオブジェクトストレージサーバが採用されます。
 
 ハンズオン用では、[values-micro-services.yaml](https://raw.githubusercontent.com/grafana/pyroscope/main/operations/pyroscope/helm/pyroscope/values-micro-services.yaml)を元に、要求リソースを小さくして作成しています。
