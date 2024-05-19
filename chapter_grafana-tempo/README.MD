@@ -23,10 +23,13 @@ Tempoは以下のコンポーネントで構成されています。
 - Object Storage(S3 GCS Azure)
 
 ### Distributor
- Distributorは、Jaeger、OpenTelemetry、などの複数の形式のスパンを受け入れます。分散一貫性のあるハッシュ リングをtraceIDハッシュし、使用することによって、スパンをインジェスターにルーティングします。ディストリビュータは、OpenTelemetry Collectorのレシーバーを使用します。
+ - Distributorは、Jaeger、OpenTelemetry、などの複数の形式のスパンを受け入れます。
+ - traceIDをハッシュして、使用することによって、スパンをIngesterにルーティングします。
+ - Distributorは、OpenTelemetry Collectorのレシーバーを使用します。
 
 ### Ingester
-Ingesterは、トレースをブロックにバッチ処理し、ブルーム フィルターとインデックスを作成して、それをすべてバックエンドにフラッシュします。バックエンドのブロックは次のレイアウトで生成されます。
+- Ingesterは、トレースをブロックにバッチ処理し、ブルーム フィルターとインデックスを作成して、それをすべてバックエンドにフラッシュします。
+- バックエンドのブロックは以下のレイアウトで生成されます。
 
 ```
 <bucketname> / <tenantID> / <blockID> / <meta.json>
@@ -38,26 +41,23 @@ Ingesterは、トレースをブロックにバッチ処理し、ブルーム �
                                       / <bloom_n>
 ```                         
 ### Query Frontend
-Query Frontendは、受信クエリの検索スペースをシャーディングする役割を果たします。
-
-トレースは、単純な HTTP エンドポイントを介して公開されます。 `GET /api/traces/<traceID>`
-
-内部的には、クエリ フロントエンドは blockID スペースを構成可能な数のシャードに分割し、これらのリクエストをキューに入れます。Queriersは gRPC 接続を介してQuery Frontendに接続し、これらのシャード クエリを処理します。
+- Query Frontendは、受信クエリの検索スペースをシャーディングする役割を果たします。
+- トレースは、単純な HTTP エンドポイントを介して公開されます。 `GET /api/traces/<traceID>`
+-  Query Frontendはクエリキューに入れます。Queriersは gRPC 接続を介してQuery Frontendに接続し、これらのシャード クエリを処理します。
 
 ### Queriers
-Queriersは、 Ingesterまたはバックエンド ストレージで要求されたトレース ID を見つける責任があります。パラメーターに応じて、両方の Ingesterにクエリを実行し、バックエンドからブルーム/インデックスをプルして、オブジェクト ストレージ内のブロックを検索します。
-
-Queriersは HTTP エンドポイントを次の場所に公開しますが `GET /querier/api/traces/<traceID>`、直接使用されることは想定されていません。
-
-クエリはQuery Frontendに送信する必要があります。
+- Querierは、Ingesterまたはバックエンドストレージ内のリクエストされたトレースIDを検索します。
+- パラメータに応じて、Ingesterとバックエンドからブルーム/インデックスを取得してオブジェクトストレージ内のブロックを検索します
+- Queriersは HTTP エンドポイントを次の場所に公開しますが `GET /querier/api/traces/<traceID>`、直接使用されることは想定されていません。
+- クエリはQuery Frontendに送信する必要があります。
 
 ### Compactor
-Compactorは、ブロックをバックエンド ストレージとの間でストリーミングして、ブロックの総数を減らします。
+- Compactorは、ブロックをバックエンド ストレージとの間でストリーミングして、ブロックの総数を減らします。
 
 ### Metrics generator
-これは、取り込まれたトレースからメトリクスを取得し、メトリクス ストレージに書き込むオプションのコンポーネントです。
-利用する場合DistributorはIngesterとMetrics generatorの両方に書き込みます。
-Metrics generatorはPrometheusのremote_writeを利用してPrometheusに書き込みます。
+- 取り込まれたトレースからメトリクスを生成し、メトリクス ストレージに書き込むオプションのコンポーネントです。
+- 利用する場合DistributorはIngesterとMetrics generatorの両方に書き込みます。
+- Metrics generatorはPrometheusのremote_writeを利用してPrometheusに書き込みます。
 
 ## デプロイ方法
 Tempo は、モノリシック モードまたはマイクロサービスモードでデプロイできます。
