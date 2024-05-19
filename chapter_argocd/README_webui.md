@@ -100,11 +100,13 @@ ingressを作成し、Argo CDのWEB UIにアクセス出来るようにします
 ```
 kubectl apply -f ingress/ingress.yaml
 ```
-http://argocd.vmXX.handson.cloudnativedays.jp/
+http://app.argocd.example.com
 へアクセスします。下記のページにアクセス出来るか確認して下さい。
 * ユーザ名: admin
 * パスワード: 以下のコマンドをサーバ上で実行した値
-    * `kubectl -n argo-cd get secret argocd-initial-admin-secret -o jsonpath="{.data.password}" | base64 -d ; echo`
+```
+kubectl -n argo-cd get secret argocd-initial-admin-secret -o jsonpath="{.data.password}" | base64 -d ; echo
+```
 
 ![webui](./image/setup/access-webui.png)
 ### レポジトリの登録
@@ -156,7 +158,7 @@ GENERAL
 
 ![sync](./image/demoapp/sync.png)
 ブラウザから
-http://app.argocd.vmXX.handson.cloudnativedays.jp
+http://app.argocd.example.com
 へアクセスして確認してみてください。アプリケーションが表示され青い色のタイルが出てくるのが確認できます。
 
 ![demo app](./image/demoapp/demo-app.png)
@@ -175,7 +177,7 @@ Argo CDはデフォルトでは3分に一回の頻度でブランチを確認し
 ![blue2green](image/demoapp/blue2green.png)
 Gitの変更をKubernetes Clusterに反映させるためにページ上部にあるSYNCをクリックして、下記のように表示されていることを確認して下さい。
 ![blue2green](image/demoapp/blue2green-sync.png)
-http://app.argocd.vmXX.handson.cloudnativedays.jp
+http://app.argocd.example.com
 へアクセスして確認するとタイルが青から緑に変わったことが確認できます。
 ![blue2green](image/demoapp/blue2green-demoapp.png)
 ## Kustomizeを使ったデプロイ
@@ -218,8 +220,8 @@ GENERAL
 
 
 ブラウザで各環境へアクセスして確認してみてください。タイルの色が開発環境と本番環境で違う事が確認できます。
-  * 開発環境: dev.kustomize.argocd.vmXX.handson.cloudnativedays.jp
-  * 本番環境: prd.kustomize.argocd.vmXX.handson.cloudnativedays.jp
+  * 開発環境: http://dev.kustomize.argocd.example.com
+  * 本番環境: http://prd.kustomize.argocd.example.com
 ## Helmを使ったデプロイ
 KubernetesのパッケージマネージャーのHelmを利用したデプロイを行います。
 
@@ -246,7 +248,7 @@ GENERAL
 ページ上部にある SYNCをクリックします（無事デプロイされると下記のようになります）
 ![helm-sync](./image/demoapp/helm-sync.png)
 ブラウザで
-helm.argocd.vmXX.handson.cloudnativedays.jp
+http://helm.argocd.example.com
 アクセスして確認してみてください。Helmを使ってデプロイが出来ている事が確認できます。
 
 ## 作成したデモアプリを削除
