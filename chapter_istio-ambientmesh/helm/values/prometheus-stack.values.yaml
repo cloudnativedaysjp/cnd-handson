@@ -1,0 +1,75 @@
+defaultRules:
+  create: false
+alertmanager:
+  enabled: false
+grafana:
+  enabled: false
+prometheusOperator:
+  resources:
+    limits:
+      cpu: 100m
+      memory: 256Mi
+    requests:
+      cpu: 100m
+      memory: 256Mi
+prometheus:
+  prometheusSpec:
+    resources:
+      requests:
+        cpu: 250m
+        memory: 400Mi
+      limits:
+        cpu: 250m
+        memory: 400Mi
+    retention: 1d
+    storageSpec:
+      volumeClaimTemplate:
+        spec:
+          storageClassName: standard
+          accessModes: ["ReadWriteOnce"]
+          resources:
+            requests:
+              storage: 10Gi
+  additionalPodMonitors:
+  - name: istio-ambient-stats
+    labels:
+      release: kube-prometheus-stack
+    jobLabel: istio-ambient-stats
+    selector:
+      matchExpressions:
+      - key: prometheus-monitor-ignore
+        operator: DoesNotExist
+    namespaceSelector:
+      matchNames:
+      - istio-system
+      - default
+    podMetricsEndpoints:
+    - honorLabels: true
+      path: /metrics
+      relabelings:
+      - action: drop
+        sourceLabels:
+        - __meta_kubernetes_pod_label_k8s_app
+        regex: istio-cni-node
+      - action: replace
+        regex: (\d+);((([0-9]+?)(\.|$)){4})
+        replacement: $2:$1
+        sourceLabels:
+        - __meta_kubernetes_pod_annotation_prometheus_io_port
+        - __meta_kubernetes_pod_ip
+        targetLabel: __address__
+      - sourceLabels:
+        - __meta_kubernetes_pod_label_app
+        replacement: $1
+        targetLabel: app
+        # Thin metrics to free up Prometheus storage for metrics.
+        # Cf.)
+        # - https://kiali.io/docs/configuration/p8s-jaeger-grafana/prometheus/#metric-thinning
+        # - https://kiali.io/docs/faq/general/#requiredmetrics
+      metricRelabelings:
+      - action: drop
+        sourceLabels:
+        - __name__
+        regex: istio_agent_.*|istiod_.*|istio_build|citadel_.*|galley_.*|pilot_[^p].*|envoy_cluster_[^u].*|envoy_cluster_update.*|envoy_listener_[^dh].*|envoy_server_[^mu].*
+      - action: labeldrop
+        regex: chart|destination_app|destination_version|heritage|.*operator.*|istio.*|release|security_istio_io_.*|service_istio_io_.*|sidecar_istio_io_inject|source_app|source_version

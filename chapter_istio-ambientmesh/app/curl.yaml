@@ -4,7 +4,6 @@ kind: ServiceAccount
 automountServiceAccountToken: false
 metadata:
   name: curl
-  namespace: handson
 ---
 apiVersion: v1
 kind: Pod
@@ -13,8 +12,8 @@ metadata:
     app: curl
     version: v1
     content: layer7-authz
+    prometheus-monitor-ignore: ""
   name: curl
-  namespace: handson
 spec:
   serviceAccountName: curl
   terminationGracePeriodSeconds: 0
