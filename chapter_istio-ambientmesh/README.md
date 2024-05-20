@@ -202,7 +202,7 @@ Ztunnelによって管理されるL4レベルのトラフィックに対し、Is
 [セットアップ](#セットアップ)が完了していることを前提とします。
 
 ### Kialiグラフ設定
-TCPトラフィックの状態を確認するために、TOP画面左のサイドメニューの`Graph`をクリックし、下記のとおり設定をしてください。
+TCPトラフィックの状態を確認するために、TOP画面左のサイドメニューの`Traffic Graph`をクリックし、下記のとおり設定をしてください。
 - `Namespace`の`default`にチェック
 
 ![image](./image/kiali-graph-namespace.png)
@@ -355,9 +355,9 @@ kubectl get pods -o=custom-columns='Name:.metadata.name, IP:.status.podIP'
 ```sh
 # 実行結果
 Name                           IP
-curl-allow                    10.244.1.13
-curl-deny                     10.244.1.14
-handson-blue-d8476dfd-fft7j   10.244.1.5
+curl-allow                     10.244.1.12
+curl-deny                      10.244.1.13
+handson-blue-bb6bbc767-24zhd   10.244.1.11
 ```
 
 それではztunnelのlogを確認します。
@@ -367,19 +367,16 @@ kubectl logs "$ZTUNNEL_POD" -n istio-system --tail 10
 ```
 ```sh
 # 実行結果(1行が長いためtimestampは表示は省略しています)
-WARN outbound{id=a0d26a1850f57eba5760b9c2d2b25163}: ztunnel::proxy::outbound: failed dur=124.75¬µs err=http status: 401 Unauthorized
-INFO outbound{id=bccd848fbc0077a257d642a254c4e0b9}: ztunnel::proxy::outbound: proxying to 10.244.1.5:8080 using node local fast path
-INFO outbound{id=bccd848fbc0077a257d642a254c4e0b9}: ztunnel::proxy::outbound: RBAC rejected conn=10.244.1.14(spiffe://cluster.local/ns/default/sa/curl-deny)->10.244.1.5:8080
-WARN outbound{id=bccd848fbc0077a257d642a254c4e0b9}: ztunnel::proxy::outbound: failed dur=146.917¬µs err=http status: 401 Unauthorized
-INFO outbound{id=1cbfb371a22e54d86493a16d7ab89636}: ztunnel::proxy::outbound: proxying to 10.244.1.5:8080 using node local fast path
-INFO outbound{id=1cbfb371a22e54d86493a16d7ab89636}: ztunnel::proxy::outbound: RBAC rejected conn=10.244.1.14(spiffe://cluster.local/ns/default/sa/curl-deny)->10.244.1.5:8080
-WARN outbound{id=1cbfb371a22e54d86493a16d7ab89636}: ztunnel::proxy::outbound: failed dur=118.375¬µs err=http status: 401 Unauthorized
+INFO proxy{uid=b2ca5664-f33c-4c17-8759-6572c419aa68}:outbound{id=1418fc0f36f63ebcdb648ffe19aa171c}: ztunnel::proxy::outbound: proxy to 10.244.1.11:8080 using HBONE via 10.244.1.11:15008 type Direct
+INFO inbound{id=1418fc0f36f63ebcdb648ffe19aa171c peer_ip=10.244.1.13 peer_id=spiffe://cluster.local/ns/default/sa/curl-deny}: ztunnel::proxy::inbound: got CONNECT request to 10.244.1.11:8080
+INFO inbound{id=1418fc0f36f63ebcdb648ffe19aa171c peer_ip=10.244.1.13 peer_id=spiffe://cluster.local/ns/default/sa/curl-deny}: ztunnel::proxy::inbound: RBAC rejected conn=10.244.1.13(spiffe://cluster.local/ns/default/sa/curl-deny)->10.244.1.11:8080
+WARN proxy{uid=b2ca5664-f33c-4c17-8759-6572c419aa68}:outbound{id=1418fc0f36f63ebcdb648ffe19aa171c}: ztunnel::proxy::outbound: failed dur=728.8µs err=http status: 401 Unauthorized
 .
 .
 .
 ```
 
-ログの2行目を見ると、ztunnelは`curl-deny` pod(IP: 10.244.1.14)からのリクエストを`handson-blue`pod(IP: 10.244.1.5)にproxyしようしていますが(`using node local fast path`は同node内通信という意味です)、次の行では`curl-deny` podから`handson-blue` podへSPIFFEを用いたアクセスはRBAC(先に設定したIstio Authorization Policy)によって拒否され、結果401が返却されていることが分かります。
+ログの2行目を見ると、ztunnelは`curl-deny` pod(IP: 10.244.1.13)からのリクエストを`10.244.1.11`pod(IP: 10.244.1.5)にproxyしようしていますが、次の行では`curl-deny` podから`handson-blue` podへSPIFFEを用いたアクセスはRBAC(先に設定したIstio Authorization Policy)によって拒否され、結果401が返却されていることが分かります。
 
 > [!NOTE]
 >
@@ -553,9 +550,9 @@ kubectl get pods -o=custom-columns='Name:.metadata.name, IP:.status.podIP'
 ```sh
 # 実行結果
 Name                                      IP
-curl                                     10.244.1.16
-handson-blue-d8476dfd-fft7j              10.244.1.5
-handson-istio-waypoint-b7bb499c6-m5bsr   10.244.1.15
+curl                                     10.244.1.15
+handson-blue-bb6bbc767-24zhd             10.244.1.11
+handson-istio-waypoint-54d47d947-lx7r5   10.244.1.14
 ```
 
 それでは、ztunnelのログを見てみましょう。
@@ -565,15 +562,15 @@ kubectl logs "$ZTUNNEL_POD" -n istio-system --tail 10
 ```
 ```sh
 # 実行結果 (1行が長いためtimestampは表示は省略しています)
-INFO outbound{id=7d01633a36b0d76771ce64a74ccaef8a}: ztunnel::proxy::outbound: proxy to 10.96.65.222:8080 using HBONE via 10.244.1.15:15008 type ToServerWaypoint
-INFO outbound{id=7d01633a36b0d76771ce64a74ccaef8a}: ztunnel::proxy::outbound: complete dur=2.156042ms
-INFO outbound{id=61d06ba5d79b338df5907fc3b39dad21}: ztunnel::proxy::outbound: proxy to 10.96.65.222:8080 using HBONE via 10.244.1.15:15008 type ToServerWaypoint
-INFO outbound{id=61d06ba5d79b338df5907fc3b39dad21}: ztunnel::proxy::outbound: complete dur=2.03575ms
+INFO proxy{uid=c0c844ca-65a4-4c7f-9862-3b679c3fcaac}:outbound{id=d6e5a41d258f5c01580a8111dd95cc99}: ztunnel::proxy::outbound: proxy to 10.96.188.110:8080 using HBONE via 10.244.1.14:15008 type ToServerWaypoint
+INFO proxy{uid=c0c844ca-65a4-4c7f-9862-3b679c3fcaac}:outbound{id=d6e5a41d258f5c01580a8111dd95cc99}: ztunnel::proxy::outbound: complete dur=2.701923ms
+INFO proxy{uid=c0c844ca-65a4-4c7f-9862-3b679c3fcaac}:outbound{id=dde5aa430d8c5d2b14517b73460402ca}: ztunnel::proxy::outbound: proxy to 10.96.188.110:8080 using HBONE via 10.244.1.14:15008 type ToServerWaypoint
+INFO proxy{uid=c0c844ca-65a4-4c7f-9862-3b679c3fcaac}:outbound{id=dde5aa430d8c5d2b14517b73460402ca}: ztunnel::proxy::outbound: complete dur=2.893585ms
 .
 .
 .
 ```
-1行目のログを見ると、HBONEトネリングを使用して、waypoint proxy pod(ID: 10.244.1.19)を経由して`handson` Kubernetes service(IP: 10.96.65.222)にアクセスをしていることがわかります。
+1行目のログを見ると、HBONEトネリングを使用して、waypoint proxy pod(ID: 10.244.1.14)を経由して`handson` Kubernetes service(IP: 10.96.188.110)にアクセスをしていることがわかります。
 
 次は、waypoint proxyのログを確認してみましょう(JSON出力なので、`jq`コマンドがあれば可視性のために併用してください)。
 ```sh
@@ -583,30 +580,30 @@ kubectl logs "$WAYPOINT_PROXY_POD" --tail 5
 ```sh
 # 実行結果 (見やすいようにjqで成形しています)。
 {
-  "downstream_remote_address": "envoy://internal_client_address/",
-  "response_code_details": "rbac_access_denied_matched_policy[ns[default]-policy[layer7-authz]-rule[0]]",
-  "response_flags": "-",
-  "connection_termination_details": null,
-  "upstream_transport_failure_reason": null,
-  "x_forwarded_for": null,
-  "start_time": "2023-11-23T07:15:16.808Z",
-  "upstream_service_time": null,
-  "upstream_host": null,
-  "route_name": null,
-  "response_code": 403,
-  "bytes_sent": 19,
-  "upstream_cluster": "inbound-vip|8080|http|handson.default.svc.cluster.local",
-  "requested_server_name": null,
-  "duration": 0,
-  "upstream_local_address": null,
-  "user_agent": "curl/8.4.0",
-  "path": "/",
-  "authority": "handson:8080",
-  "protocol": "HTTP/1.1",
-  "method": "POST",
-  "bytes_received": 0,
-  "request_id": "a6b37887-9406-4ca2-a3a7-1b00fc3621c2",
-  "downstream_local_address": "10.96.65.222:8080"
+    "x_forwarded_for": null,
+    "upstream_host": null,
+    "upstream_cluster": "inbound-vip|8080|http|handson.default.svc.cluster.local",
+    "bytes_received": 0,
+    "start_time": "2024-05-20T14:04:22.470Z",
+    "upstream_transport_failure_reason": null,
+    "method": "POST",
+    "response_code_details": "rbac_access_denied_matched_policy[ns[default]-policy[layer7-authz]-rule[0]]",
+    "route_name": "default",
+    "connection_termination_details": null,
+    "request_id": "1b2a28df-93ae-4ee6-a881-f6eab74f692d",
+    "downstream_local_address": "10.96.188.110:8080",
+    "duration": 0,
+    "path": "/",
+    "upstream_local_address": null,
+    "requested_server_name": null,
+    "authority": "handson:8080",
+    "bytes_sent": 19,
+    "protocol": "HTTP/1.1",
+    "downstream_remote_address": "10.244.1.15:37141",
+    "response_flags": "-",
+    "user_agent": "curl/8.7.1",
+    "upstream_service_time": null,
+    "response_code": 403
 }
 .
 .
@@ -644,6 +641,11 @@ kubectl delete -f app/curl.yaml
 サイドカーを用いないIstioの新しいデータプレーンであるIstio ambient meshを使用することで、アプリケーションと、データプレーンの分離が可能になります。これにより、データプレーン起因によるアプリケーションワークロードの阻害を防止することができます。さらに、サイドカーを使用せずに、ztunnel, waypoint proxyを用いることにより、L4, L7管理をアプリケーションの必要に応じて実装することができるようになります。2023年11月の段階ではalphaステータスでありますが、Istio ambient meshをぜひ試してみてください。
 
 Istio ambient meshに関するGitHub Issue: https://github.com/istio/istio/labels/area%2Fambient
+
+> [!NOTE]
+>
+> Istio ambient meshは、2024年5月、v1.22にてbetaになりました。
+> https://istio.io/latest/news/releases/1.22.x/announcing-1.22/
 
 ## 最終クリーンアップ
 本chapter用に作成したKubernetes clusterを削除します。
