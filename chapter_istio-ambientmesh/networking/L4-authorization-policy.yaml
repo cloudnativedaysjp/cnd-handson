@@ -3,7 +3,6 @@ apiVersion: security.istio.io/v1beta1
 kind: AuthorizationPolicy
 metadata:
   name: layer4-authz
-  namespace: handson
   labels:
     content: layer4-authz
 spec:
@@ -15,7 +14,7 @@ spec:
   - from:
     - source:
         principals:
-        - cluster.local/ns/handson/sa/curl-deny
+        - cluster.local/ns/default/sa/curl-deny
     to:
     - operation:
         ports:

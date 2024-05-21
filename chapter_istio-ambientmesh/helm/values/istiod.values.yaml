@@ -3,14 +3,6 @@ global:
   logAsJson: true
   defaultPodDisruptionBudget:
     enabled: false
-  proxy:
-    resources:
-      requests:
-        cpu: 200m
-        memory: 256Mi
-      limits:
-        cpu: 200m
-        memory: 256Mi
 pilot:
   deploymentLabels:
     app.kubernetes.io/managed-by: Helm
@@ -36,6 +28,12 @@ meshConfig:
   defaultConfig:
     proxyMetadata:
       ISTIO_META_ENABLE_HBONE: "true"
+  defaultProviders:
+    metrics:
+    - prometheus
+  extensionProviders:
+  - name: prometheus
+    prometheus: {}
   accessLogFile: /dev/stdout
   accessLogEncoding: JSON
   outboundTrafficPolicy:

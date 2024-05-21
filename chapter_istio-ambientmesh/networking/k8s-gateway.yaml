@@ -6,7 +6,6 @@ metadata:
   labels:
     app.kubernetes.io/component: waypoint-proxy
   name: handson
-  namespace: handson
 spec:
   gatewayClassName: istio-waypoint
   listeners:
