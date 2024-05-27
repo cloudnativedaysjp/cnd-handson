@@ -50,6 +50,11 @@ Client Version: v1.28.1
 Kustomize Version: v5.0.4-0.20230601165947-6ce0bf390ce3
 ```
 
+続いて、chapter_kubernetesにcurrent directoryを移動します。
+
+```
+cd ~/cnd-handson/chapter_kubernetes/
+```
 
 
 ## 2. アプリケーションデプロイ
@@ -75,7 +80,7 @@ kubectl get pods
 ### 2.4. ポートフォワードと通信確認
 
 続いて、作成したPodにアクセスします。
-今回はポートフォワードを使いインターネット上のpodにアクセスしていきます。
+今回はポートフォワードを使いpodにアクセスしていきます。
 
 ```Bash
 kubectl port-forward <Pod名>  8888:80
@@ -96,6 +101,10 @@ curl http://localhost:8888
 
 
 成功すると、nginxのテストページが表示されるはずです。
+
+
+動作確認後、ctrl＋Cでポートフォワードを停止します。
+
 
 ### 2.5 Pod削除
 
@@ -126,7 +135,7 @@ kubectl get deployments
 続いて、以下のコマンドで対象PodのDeploymentを削除します。
 
 ```Bash
-kubectl delete deployment test-deployment
+kubectl delete deployment test
 ```
 
 以下のコマンドでDeployment及びPodが削除されたことを確認します。
