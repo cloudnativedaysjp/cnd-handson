@@ -46,30 +46,11 @@ kubectl version --client
 
 ```
 # 実行結果
-Client Version: v1.28.1-eks-43840fb
+Client Version: v1.28.1
 Kustomize Version: v5.0.4-0.20230601165947-6ce0bf390ce3
 ```
 
-続いて、kubectlのコマンド補完の設定を行います。
 
-> 現在のbashシェルにコマンド補完を設定するには、最初にbash-completionパッケージをインストールする必要があります。
-
-```Bash
-source <(kubectl completion bash)
-```
-
-> bashシェルでのコマンド補完を永続化するために.bashrcに追記します。
-
-```Bash
-echo "source <(kubectl completion bash)" >> ~/.bashrc
-```
-
-> 下記までの設定を行うと、コマンド補完が行え"k"のみでkubectlとみなされます。
-
-```
-alias k=kubectl
-complete -F __start_kubectl k
-```
 
 ## 2. アプリケーションデプロイ
 
