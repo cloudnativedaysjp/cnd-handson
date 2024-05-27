@@ -241,7 +241,7 @@ before、afterディレクトリ配下のアプリをそれぞれbuildしてく�
 ```Bash
 cd ..
 cd multistage/before 
-docker build --network host -t multistage:before .
+docker build -t multistage:before .
 ```
 
 
@@ -249,20 +249,20 @@ docker build --network host -t multistage:before .
 ```Bash
 cd ..
 cd after
-docker build --network host -t multistage:after .
+docker build -t multistage:after .
 ```
 
 それぞれのサイズを比較してみましょう。1GBほど縮小されていることがわかります。
 
 ```Bash
-docker images | grep multistaged
+docker images | grep multistage
 ```
 
 
 コンテナにアクセスしてどちらのアプリも応答することを確認してみましょう。
 
 ```Bash
-docker run --rm --name echo-after -p 1323:1323 -dit multistaged:after
+docker run --rm --name echo-after -p 1323:1323 -dit multistage:after
 
 curl http://localhost:1323/
 ```
