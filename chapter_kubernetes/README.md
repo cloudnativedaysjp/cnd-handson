@@ -200,6 +200,7 @@ spec:
     spec:
       containers:
       - image: <DockerHubのユーザ名>/<リポジトリ名>:<タグ>
+        imagePullPolicy: Always
         name: hello-world
         ports:
         - containerPort: 80
@@ -353,6 +354,7 @@ spec:
     spec:
       containers:
       - image: <DockerHubのユーザ名>/<リポジトリ名>:<タグ>
+        imagePullPolicy: Always
         name: hello-world
         ports:
         - containerPort: 80
