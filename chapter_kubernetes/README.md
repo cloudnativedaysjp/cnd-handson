@@ -78,7 +78,7 @@ kubectl get pods
 今回はポートフォワードを使いインターネット上のpodにアクセスしていきます。
 
 ```Bash
-kubectl port-forward <Pod名>  8888:80 -n <namespace名>
+kubectl port-forward <Pod名>  8888:80
 ```
 
 以下のように出力されたら操作が受け付けられなくなりますが、ctrl＋Cを押さずにそのままでいてください。
