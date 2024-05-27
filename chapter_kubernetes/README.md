@@ -13,9 +13,9 @@ Nodeの一覧が出力されるはずです。
 
 ```Log
 NAME                 STATUS   ROLES           AGE   VERSION
-kind-control-plane   Ready    control-plane   30d   v1.27.3
-kind-worker          Ready    <none>          30d   v1.27.3
-kind-worker2         Ready    <none>          30d   v1.27.3
+kind-control-plane   Ready    control-plane   12d   v1.30.0
+kind-worker          Ready    <none>          12d   v1.30.0
+kind-worker2         Ready    <none>          312d   v1.30.0
 ```
 
 Nodeが表示されない場合は、kubeconfigが設定されていない可能性があります。
