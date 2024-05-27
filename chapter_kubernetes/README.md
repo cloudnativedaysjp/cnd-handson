@@ -566,7 +566,7 @@ Hello Worldの文字が表示されたら成功です。
 ```
 kubectl delete ingress hello-world-ingress
 kubectl delete service hello-world-service
-kubectl deelete deployment hello-world
+kubectl delete deployment hello-world
 kubectl delete secret dockerhub-secret
 ```
 
