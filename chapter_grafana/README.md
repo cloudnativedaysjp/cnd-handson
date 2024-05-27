@@ -127,7 +127,7 @@ DashboardやGrafana Alertingでは、Dashboard Panelやアラートの内容文�
 
 1. `1. Creating an app` にある `Go to Your Apps` をクリックする
 2. `Create an App` をクリックし、 `From scratch` を選択する
-3. アプリ名を `cndt2023-sample-grafana-alert`, ワークスペースを設定し `Create App` をクリックする
+3. アプリ名を `cnd-sample-grafana-alert`, ワークスペースを設定し `Create App` をクリックする
 4. `Add features and functionality` にある `Incoming Webhooks` をクリックする
 5. `Activate Incoming Webhooks` を有効にする
 6. `Add New Webhook to Workspace` をクリックする
@@ -184,3 +184,7 @@ Contact Pointを追加しただけでは新規にアラートを追加しても�
 
 このアラートは、1分間隔で取得した、 `app.example.com` に対するリクエスト数が10以上でなければアラートを発報するというルールになっています。
 5分程度経過すると、無事にアラートが発報されると思います。
+
+> [!TIPS]
+> Slackの通知に表示されるメッセージはGrafanaの[Notification Templates](https://grafana.com/docs/grafana/latest/alerting/configure-notifications/template-notifications/create-notification-templates/)を利用することで、
+> 自由に編集可能です。
