@@ -778,7 +778,7 @@ kubectl describe pvc handson-pvc
 以下のコマンドで動作確認が行えます。
 
 ```Bash
-kubectl exec -ti volume-pod -- tail /data/out1.txt
+kubectl exec volume-pod -- tail /data/out1.txt
 ```
 
 動作確認後、リソースの削除を行います。
