@@ -876,9 +876,7 @@ kubectl get rolebinding
 > Podデプロイ
 
 ```Bash
-
 kubectl apply -f kubectl-pod.yaml
-
 ```
 
 > ログからコマンドを実行していることを確認
@@ -890,9 +888,7 @@ kubectl logs kubectl-pod
 > 一度Podを削除し、コマンドを変更して再デプロイ
 
 ```Bash
-
 kubectl delete pod kubectl-pod
-
 ```
 
 vimなどのエディタを使って、Pod名で実行するコマンドを変更します。
@@ -919,9 +915,7 @@ spec:
 ```
 
 ```Bash
-
 kubectl apply -f kubectl-pod.yaml
-
 ```
 
 > ログからコマンドが弾かれていることを確認
@@ -931,12 +925,9 @@ kubectl logs kubectl-pod
 ```
 
 >確認できたらPodを削除
->
->
+
 ```Bash
-
 kubectl delete pod kubectl-pod
-
 ```
 
 #### User Accountの作成と動作確認
@@ -1057,15 +1048,34 @@ KubernetesにはPodが正常に起動したか、または正常に動作を続�
 
 
 - initialDelaySeconds
+
+  
   初回ヘルスチェックまでの遅延時間（秒）
+
+  
 - periodSeconds
+
+  
   Probeが実行される間隔（秒）
+
+  
 - timeoutSeconds
+
+  
   タイムアウトまでの時間（秒）
+
+  
 - successThreshold
+
+  
   成功と判断する最小連続成功数（回数）
+
+  
 - failureThreshold
+
+  
   失敗と判断する試行回数（回数）
+
 
 ### 11.1 Readiness Probe
 
