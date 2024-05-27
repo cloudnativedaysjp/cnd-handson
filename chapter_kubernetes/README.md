@@ -943,14 +943,14 @@ User Accountは厳密にはK8sのリソースとして定義されておらず�
 まずは秘密鍵とCSRの作成を行います。
 
 ```Bash
-openssl genrsa -out handson.pem 2048
-openssl req -new -key handson.pem -out handson.csr -subj "/CN=<任意のCN>"
+openssl genrsa -out handson-user.pem 2048
+openssl req -new -key handson-user.pem -out handson-user.csr -subj "/CN=handson-user"
 ```
 
 > csrをbase64にエンコード
 
 ```Bash
-cat handson.csr | base64 | tr -d '\n'
+cat handson-user.csr | base64 | tr -d '\n'
 ```
 
 > UserAccount作成
@@ -983,8 +983,30 @@ kubectl apply -f handson-csr.yaml
 
 ```Bash
 kubectl get csr
+```
+
+```Bash
 kubectl certificate approve handson-user
+```
+
+```Bash
 kubectl get csr
+```
+
+> 証明書の取得
+
+続いて、CSRから証明書を取得します。
+実際の証明書の値は`status.certificate`を見ると確認できます。
+
+```Bash
+kubectl get csr/handson-user -o yaml
+```
+
+これをbase64でencodeした形でエクスポートします。
+
+
+```Bash
+kubectl get csr handson-user -o jsonpath='{.status.certificate}'| base64 -d > handson-user.crt
 ```
 
 > Role作成
@@ -994,7 +1016,7 @@ kubectl get csr
 
 ```Bash
 kubectl get role
-kubectl create role handson-user-role --resource=pods --verb=create,list,get,update,delete
+kubectl create role handson-user-role --resource=pods --verb=create,list,get,update,delete,watch
 kubectl get role
 ```
 
@@ -1007,6 +1029,37 @@ kubectl get rolebinding
 kubectl create rolebinding handson-user-rolebinding --role=handson-user-role --user=handson-user
 kubectl get rolebinding
 ```
+
+> kubeconfigに追加
+
+以下のコマンドで、新しいクレデンシャルを追加します。
+
+```Bash
+kubectl config set-credentials handson-user --client-key=handson-user.pem --client-certificate=handson-user.crt --embed-certs=true
+```
+
+続いて、contextを追加します。
+
+
+```Bash
+kubectl config set-context handson-user --cluster=kind-kind --user=handson-user
+```
+
+追加されると、以下のようにcontextが増えているのが確認できます。
+
+```Bash
+kubectl config get-contexts
+```
+
+
+```Log
+CURRENT   NAME           CLUSTER     AUTHINFO       NAMESPACE
+          handson-user   kind-kind   handson-user   
+*         kind-kind      kind-kind   kind-kind
+```
+
+続いて、
+
 > 動作確認
 
 リソース名などを変えてみて、yes or noの出力を確かめます。
