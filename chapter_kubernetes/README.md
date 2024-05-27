@@ -387,26 +387,26 @@ metadata:
   annotations:
     deployment.kubernetes.io/revision: "1"
   labels:
-    app: hands-on-nginx
-  name: hands-on-nginx
+    app: hello-world
+  name: hello-world
 spec:
-  replicas: 1 # ここが1に設定されている
+  replicas: 1 #ここが1になっている 
   selector:
     matchLabels:
-      app: hands-on-nginx
+      app: hello-world
   template:
     spec:
     metadata:
       labels:
-        app: hands-on-nginx
+        app: hello-world
     spec:
       containers:
-      - image: ryuichitakei/hands-on:hands-on-nginx 
-        name: hands-on-nginx
+      - image: ryuichitakei/hello-world:1.0
+        name: hello-world
         ports:
         - containerPort: 80
-      imagePullSecrets: # 追記
-      - name: <secret名> # 追記
+      imagePullSecrets:
+      - name: dockerhub-secret
 ```
 
 では以下のようにManifestを修正し、再度Manifestを登録しなおしてみます。
