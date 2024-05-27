@@ -680,7 +680,7 @@ kubectl delete pod blue
 kubectl delete pod green
 kubectl delete service blue-service
 kubectl delete service green-service
-lubectl delete ingress blue-green
+kubectl delete ingress blue-green
 ```
 
 ## 7. データの永続化 (PVとPVC)
