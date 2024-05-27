@@ -297,14 +297,28 @@ docker images | grep multistage
 コンテナにアクセスしてどちらのアプリも応答することを確認してみましょう。
 
 ```Bash
-docker run --rm --name echo-after -p 1323:1323 -dit multistage:after
+docker run --rm --name echo-before -p 1111:1323 -dit multistage:before
 ```
 
 ```Bash
-curl http://localhost:1323/
+docker run --rm --name echo-after -p 2222:1323 -dit multistage:after
 ```
 
+```Bash
+curl http://localhost:1111/
+```
+
+```Bash
+curl http://localhost:2222/
+```
+
+
 コンテナを停止して、削除されたことを確認しましょう。
+
+```Bash
+docker stop echo-before
+```
+
 ```Bash
 docker stop echo-after
 ```
