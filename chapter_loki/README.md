@@ -15,7 +15,7 @@
 
 LokiはPrometheusを参考に作成されたログ集約システムです。
 LokiをベースにしたLogging Stackの利用イメージは下記の図になります。
-LokiはPull型ではなくPush型でを採用しており、ログを取得しLokiに送付するAgentが必要になります。
+LokiはPull型ではなくPush型を採用しており、ログを取得しLokiに送付するAgentが必要になります。
 Agentとしては、[Promtail](https://grafana.com/docs/loki/latest/send-data/promtail/)や[fluentbit](https://fluentbit.io/)、[OpenTelemetry](https://opentelemetry.io/)などがあげられます。
 また、集約したログは[Grafana](https://github.com/grafana/grafana)や[LogCLI](https://grafana.com/docs/loki/latest/query/logcli/)のようなツールで参照します。
 
@@ -27,16 +27,16 @@ Lokiの特徴として、ログに付与されたラベルに対してのみイ�
 下記の図は簡単なログの格納処理になります。
 Lokiでは、ログのラベルのキーと値の組み合わせの数だけ、ログストリームと呼ばれるものが作成されます。
 Lokiで受け取ったログは、ラベルのキーと値をもとにログストリームへ振り分けられ、一定数たまると圧縮され、Chunkとしてオブジェクトストレージに格納されます。
-たとえば、下記の図であれば、Lokiはjobラベルの値としてAAAとBBBを認識しており、`{job="AAA"}`と`{job="BBB"}`の2種類のログストリームが定義されてます。
-Lokiがjobラベルの値が`AAA`であるログを受け取ると、`{job="AAA"}`のログストリームと判断され、まとめられます。
+たとえば、Lokiがjobラベルの値として`AAA`と`BBB`を認識している例を考えます（以下の図）。
+この場合、`{job="AAA"}`と`{job="BBB"}`の2種類のログストリームが定義され、Lokiがjobラベルの値が`AAA`であるログを受け取ると、`{job="AAA"}`のログストリームにまとめられます。
 
-<img src="image/ch11_grafana_loki_write.png" width=500>
+<img src="image/ch11_grafana_loki_write.png" width=600>
 
-読み取り時は、タイムスタンプやログのラベルのキーと値をもとにログの位置を特定し、ログの読み込み処理が行われます。
-Lokiでは、ラベルに対しIndexを付与します。
-Indexの情報を参照し、Chunkからログ情報を取得します。
+前述した通り、Lokiではラベルに対しIndexを付与します。
+読み取り時は、タイムスタンプやログのラベルの情報をもとにログが含まれるChunkの位置を特定し、読み込み処理を行います。
+読み込んだChunkのデータに対して、ログの検索や集計等が行われます。
 
-<img src="image/ch11_grafana_loki_read.png" width=500>
+<img src="image/ch11_grafana_loki_read.png" width=600>
 
 > [!WARNING]
 > とぢらも説明の簡易化のために、かなり処理を省いています。
@@ -72,7 +72,7 @@ Loki自体はシングルバイナリとなっており、実行時に`-target`�
 > 上記の図で示したコンポーネントは一部です。
 > たとえば、Loki v3.0.0からBloom CompactorとBloom Gatewayというコンポーネントが追加されました。
 > これはクエリの速度向上を目的に実装されたBloomフィルターを実現するためのコンポーネントです。
-> ここでの詳細は省きますが、この機能を利用することで、ログが格納されているChunkをより効果的に見つけることができます。
+> ここでの説明は省きますが、この機能を利用することで、ログが格納されているChunkをより効果的に見つけることができます。
 > 詳細は[Query Acceleration with Blooms (Experimental)](https://grafana.com/docs/loki/latest/operations/query-acceleration-blooms/?pg=blog&plcmt=body-txt)を参照してください。
 
 ### コンポーネント
@@ -87,8 +87,8 @@ Loki自体はシングルバイナリとなっており、実行時に`-target`�
 - Ingester
   - Distributorからログの書き込みリクエストを受け取ると、オブジェクトストレージに格納します
     - オブジェクトストレージへはログを圧縮し送付します
-      - 送付前にログを一時的に貯めておくことで、オブジェクトストレージの操作を削減します
-  - ログの読み取りリクエストを受け取ると、インメモリーのログデータを返却します
+    - 送付前にログを一時的に貯めておくことで、オブジェクトストレージの操作を削減します
+  - ログの読み取りリクエストを受け取ると、インメモリーに一時的に貯められたログデータを返却します
 - Querier
   - Log Query Language(LogQL)の実行を担当するコンポーネントです
   - Ingesterとオブジェクトストレージからログを取得します
@@ -125,7 +125,8 @@ Loki自体はシングルバイナリとなっており、実行時に`-target`�
 - オブジェクトストレージ
   - IndexとChunkのデータを格納するために利用します
   - オブジェクトストレージとして、S3やGCPなどが利用できます
-  - 図ではオブジェクトストレージとなっていますが、ローカルのファイルシステムも利用可能です
+  - 図ではオブジェクトストレージとなっていますが、ファイルシステムも利用可能です
+    - 推奨はされていません。詳細は[Manage storage](https://grafana.com/docs/loki/latest/operations/storage/#manage-storage)を参照してください
 - Memcached
   - 各コンポーネントで利用されるキャッシュです
   - 図ではMemcacedとなっていますが、他にもRedisなどが利用できます
@@ -151,7 +152,7 @@ Loki自体はシングルバイナリとなっており、実行時に`-target`�
 LokiのHelm Chartでデフォルトの設定です。
 Simple Scalable Deploymentを略してSSDと呼ばれることもあります。
 1日あたり数TBのログまでスケールアップが可能であり、これを大幅に超える場合にはMicroservices Modeを検討する必要があります。
-SSDでは各コンポーネントをWrite Target/Read Target/Backend Targetに分類されます。
+SSDでは各コンポーネントをWrite Target/Read Target/Backend Targetに分類し運用します。
 
 - Write Target
   - Kubernetesリソース: StatefulSet
@@ -165,7 +166,8 @@ SSDでは各コンポーネントをWrite Target/Read Target/Backend Targetに�
 
 ### Monolithic mode
 
-このモードはもっとも単純な動作モードであり、すべてのコンポーネントを単一バイナリ（またはコンテナイメージ）として単一のプロセス内で実行します。1日あたり約20GBまでの少量のRead/Writeが発生する場合や、動作確認のために起動する場合などで便利です。
+このモードはもっとも単純な動作モードであり、すべてのコンポーネントを単一バイナリ（またはコンテナイメージ）として単一のプロセス内で実行します。
+1日あたり約20GBまでの少量のRead/Writeが発生する場合や、動作確認のために起動する場合などで便利です。
 共有オブジェクトストレージを使用することで、水平スケールも可能です。
 
 ## 実践
@@ -173,6 +175,7 @@ SSDでは各コンポーネントをWrite Target/Read Target/Backend Targetに�
 ### Lokiの構築
 
 まずはLokiをKubernetesクラスターに展開してみましょう。
+今回はMonolithic modeでデプロイします。
 
 ```shell
 helmfile sync -f helm/helmfile.yaml
@@ -241,6 +244,14 @@ kubectl apply -f manifest/log-collector.yaml
 サンプルアプリは`http://app.example.com/`にアクセスしてみてください。
 色がついたパネルが発生するたびに、バックエンドのアプリケーションにログが出力されます。
 
+> [!NOTE]
+> Podのログは下記のコマンドで確認できます。
+> 下記コマンドをコンソールで実行しておくと、実際にブラウザでアクセスした際にログが表示されていることを確認できます。
+>
+> ```sh
+> kubectl logs -n handson -l app=handson -f
+> ```
+
 それでは実際にGrafanaからログを確認してみましょう。
 `http://grafana.example.com/explore`にアクセスします。
 Label filtersに`exporter`と`OTLP`を設定して検索ボタンを押します。
@@ -252,14 +263,20 @@ Label filtersに`exporter`と`OTLP`を設定して検索ボタンを押します
 
 ![](image/ch11_grafana_explore_logs.png)
 
+> [!NOTE]
+> Lokiではログの検索や集約にLogQLを利用します。
+> さきほど、`exporter`ラベルの値が`OTLP`を指定すると、`{exporter="OTLP"} |= ""`という文字列が表示されていると思います。
+> これがLogQLになります。
+> 他にもさまざまなことがLogQLでできます。詳細は[LogQL: Log query language](https://grafana.com/docs/loki/latest/query/)をご確認ください。
+
 ### Grafana Explore: Kick start your query機能
 
 Grafana Exploreの画面からよく使われるクエリのパターンを確認することもできます。
 「Kick start your query」をクリックしてみてください。
 下記の2種類のグループが表示されると思います。
 
-- Log Query Starters
-- Metrics Query starters
+- Log Query Starters：ログの検索や集計等に利用できるパターン
+- Metrics Query starters：ログからメトリクスを生成する際に利用できるパターン
 
 ![](image/ch11_grafana_explore_kick_start_your_query.png)
 
@@ -267,3 +284,64 @@ Log Query Startersには、特定の文字列でフィルターしたログをlo
 また、Metrics Query startersには、ログをもとにメトリクスを生成するパターンが紹介されています。
 たとえば、特定の文字列を持つログの数やラベルの数などのメトリクスに変換して視覚化できます。
 どのパターンもそのまま適用することはできませんが、クエリを書く際のヒントとして利用できます。
+
+試しに、Metric Query startersの`Total requests per label of streams`をクリックしてみましょう。
+選択肢が表示される場合、「Replace query」を選択します。
+すると、LogQLが自動で構築されるので、追加で下記の設定をしてください。
+
+- `Line contains`: `blue`
+- `Range`: `5m`
+
+![](image/ch11_grafana_explore_kick_start_your_query_1.png)
+
+この場合、`sum(count_over_time({exporter="OTLP"} |= "blue" [5m]))`がLogQLになります。
+このLogQLの意味は下記となり、直近5分間で`exporter`ラベルの値が`OTLP`であるログのうちblueを含むログの数を表示します。
+
+- `{exporter="OTLP"}`: `exporter`ラベルの値が`OTLP`であるログを選択
+- `|= "blue"`: blueという文字列が含まれるログを選択
+- `count_over_time(...)[5m]`: 直近5分間のログの数をカウント
+- `sum()`: 合計する
+
+### アラートを投げる
+
+`http://grafana.example.com/alerting/notifications`にアクセスしてアラートを設定してみましょう！
+
+> [!WARNING]
+> Grafanaの章で設定したContact PointとNotification Policyを利用します。
+
+下記の項目を入力し`Save rule and exit`をクリックして適用します。
+
+- `Rule name` ... `SampleGrafanaAlertLoki`
+- `Datastore` ... `Loki`
+- `Metric` ... `nginx_ingress_controller_requests`
+- `Label filter` ... `exporter = OTLP`
+- `Operation` ... 以下を順に設定
+  - `Line Filter > Line contains` をクリックし、 `blue` に設定
+  - `Range Functions > Count over time` をクリックし、 `Range` を `5m` に設定
+  - `Aggregations > Sum` をクリック
+- `Expressions`
+  - `Reduce > Mode` ... `Replace Non-numeric value`を`0`に設定
+    - この設定をいれることで、値が無い場合は0とみなします
+  - `Threshold` ... `IS ABOVE`を`100`に設定
+    - 100より大きい場合、アラートを発砲します
+- `Set evaluation behavior`
+  - `Folder` ... New folderで`loki-alert`を作成
+  - `Evaluation group` ... `New evaluation group` をクリックし、 `Evaluation group name` を `sample-grafana-alert-loki`, `Evaluation Interval` を `1m` に設定
+  - `Pending period` ... `0s`に設定（即時発砲）
+- `Configure labels and notifications` ... `alert-route`と`slack`を設定
+- `Summary` ... 任意の文字列を追加
+  - 他の参加者とアラートが被った場合でも、自分が設定したアラートだと識別できるように設定
+
+このアラートは、`sum(count_over_time({exporter="OTLP"} |= "blue" [5m]))`が100を超えた場合にアラートを発報するというルールになっています。
+アラートを設定したら`http://app.example.com/`にアクセスして、ログを増やしてみましょう。
+
+> [!TIPS]
+> アラートの発表状況は`http://grafana.example.com/alerting/list`から確認できます。
+> Datasoucesにlokiを指定すると、先ほど設定したアラートの状況が確認できます。
+> 通常はStateが`Normal`となっており、`Firing`となればアラートが発砲されている状態です。
+
+Slackにアラートが連携されることを確認したら、アラートの設定を削除しておきましょう
+`http://grafana.example.com/alerting/list?search=datasource:loki`にアクセスし、Moreから「Delete」を選択肢削除しておきます。
+
+
+![](image/ch11_grafana_alerting_loki.png)

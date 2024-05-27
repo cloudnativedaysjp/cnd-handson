@@ -40,6 +40,7 @@ flowchart TD
     argorollouts[chapter_argo-rollouts]
     istioambient[chapter_istio-ambientmesh]
     hubble[chapter_hubble]
+    loki[chapter_loki]
 
     setup-->cluster
     cluster-->docker
@@ -54,6 +55,8 @@ flowchart TD
 
     grafana-->otel
     grafana-->cilium
+
+    otel-->loki
 
     cilium-->hubble
 

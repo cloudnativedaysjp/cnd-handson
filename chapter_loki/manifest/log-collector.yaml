@@ -17,7 +17,7 @@ spec:
   config: |
     receivers:
       filelog:
-        include: [ /var/log/pods/default_handson-*/*/*.log]
+        include: [ /var/log/pods/handson_handson-*/*/*.log]
         operators:
         # https://github.com/open-telemetry/opentelemetry-collector-contrib/blob/main/pkg/stanza/docs/types/timestamp.md#example-configurations
         - type: regex_parser
