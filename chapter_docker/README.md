@@ -29,7 +29,7 @@ Docker version 26.0.0, build 2ae903e
 その後、自身のDocker Hubにログインを行います。
 
 
-```
+```Bash
 docker login
 ```
 
@@ -39,7 +39,7 @@ docker login
 このイメージはDocker社が作成したチュートリアルのWebアプリケーションです。
 
 
-```
+```Bash
 docker pull docker/getting-started
 ```
 
@@ -99,7 +99,7 @@ fe5facdead0cc4645abf79f477c44d8a5d99690e4478942e9c56cb7959fc5201
 正常にコンテナが起動できていれば、ステータスコード200が返却されるはずです。
 
 
-```
+```Bash
 curl -I localhost:8888
 ```
 
@@ -171,7 +171,6 @@ curlまたはブラウザを使ってアクセスすると、ご自身の作成�
 
 ```Bash
 curl localhost:8888
-
 ```
 
 
@@ -181,6 +180,10 @@ curl localhost:8888
 
 ```Bash
 docker container ls
+```
+
+
+```Bash
 docker stop <container id> 
 ```
 
@@ -262,15 +265,25 @@ before、afterディレクトリ配下のアプリをそれぞれbuildしてく�
 
 ```Bash
 cd ..
+```
+
+```Bash
 cd multistage/before 
+```
+
+```Bash
 docker build -t multistage:before .
 ```
 
-
-
 ```Bash
 cd ..
+```
+
+```Bash
 cd after
+```
+
+```Bash
 docker build -t multistage:after .
 ```
 
@@ -285,13 +298,18 @@ docker images | grep multistage
 
 ```Bash
 docker run --rm --name echo-after -p 1323:1323 -dit multistage:after
+```
 
+```Bash
 curl http://localhost:1323/
 ```
 
 コンテナを停止して、削除されたことを確認しましょう。
 ```Bash
 docker stop echo-after
+```
+
+```Bash
 docker ps -a
 ```
 
