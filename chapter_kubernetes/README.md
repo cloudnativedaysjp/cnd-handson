@@ -478,7 +478,6 @@ hello-world-5b48b68bb6-ftwtz   1/1     Running   0          23s
 apiVersion: v1
 kind: Service
 metadata:
-  creationTimestamp: null
   labels:
     app: hello-world
   name: hello-world-service
@@ -490,8 +489,6 @@ spec:
   selector:
     app: hello-world
   type: ClusterIP
-status:
-  loadBalancer: {}
 ```
 
 ```Bash
@@ -617,14 +614,15 @@ Pod更新前の状態では、`This app is Blue`の画面が表示がされて�
 
 ```Bash
 # 適用
-kubectl set image deployment/rolling rolling-app=ryuichitakei/green-app:1.0
+kubectl set image deployment/rollout rollout-app=ryuichitakei/green-app:1.0
+```
 
+```Bash
 # 確認
 kubectl rollout status deployment 
 kubectl rollout history deployment 
 kubectl get pod
 kubectl get deployment
-
 ```
 
 更新後、ブラウザで再度以下にアクセスを行うと`This app is Green`の表示に更新されていることが確認できます。
@@ -636,15 +634,15 @@ http://rollout.example.com
 尚、ロールバックを行う場合は以下のコマンドで実行可能です。
 
 ```Bash
-kubectl rollout undo deployment rolling
+kubectl rollout undo deployment rollout
 ```
 
 動作確認実施後、リソースの削除を行います。
 
 ```Bash
-kubectl delete deployment rolling
-kubectl delete service rolling
-lubectl delete ingress rolling
+kubectl delete deployment rollout
+kubectl delete service rollout-service
+kubectl delete ingress rollout-ingress
 ```
 
 ### 6.2 Blue-Green Deployment
