@@ -108,13 +108,13 @@ curl -I localhost:8888
 
 
 コンテナを停止するにはコンテナIDが必要なため
-以下のいづれかのコマンドで自身のコンテナIDを出力します。
+以下のいずれかのコマンドで自身のコンテナIDを出力します。
 
 
 ```Bash
-docker container ls | grep getting-atarted
+docker container ls | grep getting-started
 # or
-docker ps | grep getting-atarted
+docker ps | grep getting-started
 ```
 
 以下のコマンドでコンテナを停止します。
