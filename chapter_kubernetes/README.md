@@ -338,22 +338,22 @@ metadata:
   annotations:
     deployment.kubernetes.io/revision: "1"
   labels:
-    app: hands-on-nginx
-  name: hands-on-nginx
+    app: hello-world
+  name: hello-world
 spec:
   replicas: 1
   selector:
     matchLabels:
-      app: hands-on-nginx
+      app: hello-world
   template:
     spec:
     metadata:
       labels:
-        app: hands-on-nginx
+        app: hello-world
     spec:
       containers:
-      - image: ryuichitakei/hands-on:hands-on-nginx # タグ名を自身のImageのものに変更
-        name: hands-on-nginx
+      - image: <DockerHubのユーザ名>/<リポジトリ名>:<タグ>
+        name: hello-world
         ports:
         - containerPort: 80
       imagePullSecrets: # 追記
