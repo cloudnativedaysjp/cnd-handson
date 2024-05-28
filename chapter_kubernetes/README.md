@@ -891,7 +891,7 @@ kubectl logs kubectl-pod
 kubectl delete pod kubectl-pod
 ```
 
-vimなどのエディタを使って、Pod名で実行するコマンドを変更します。
+vimなどのエディタを使って、Pod内で実行するコマンドを変更します。
 
 ```Yaml
 apiVersion: v1
@@ -1456,9 +1456,10 @@ kubectl logs <Pod名>
 
 ```Bash
 kubectl get cronjob
+```
 
+```Bash
 kubectl describe cronjob　handson-cronjob
-
 ```
 
 Cron Jobを一時停止したい場合は、kubectl patchコマンドを使用します。
@@ -1503,8 +1504,8 @@ ConfigMapは、機密性のないデータをキーと値のペアで保存す�
 環境固有の設定などをコンテナイメージから分離できるため、アプリケーションを簡単に移植できるようになります。
 
 但し、機密性や暗号化の機能を持たないため保存したいデータが機密情報である場合はSecretやサードパーティツールを使用する必要があります。
-今回は` CNDS2024 ConfigMap Handson`というHTML形式のデータをConfigMapに保存し、Podにマウントさせています。
-クライアントからのリクエストはマウントされたConfigMapのHTMLデータを参照するため、` CNDS2024 ConfigMap Handson`という文字列が返却されるはずです。
+今回は`CNDS2024 ConfigMap Handson`というHTML形式のデータをConfigMapに保存し、Podにマウントさせています。
+クライアントからのリクエストはマウントされたConfigMapのHTMLデータを参照するため、`CNDS2024 ConfigMap Handson`という文字列が返却されるはずです。
 
 
 
@@ -1527,7 +1528,7 @@ kubectl get pod -o wide
 ```
 
 最後にテンポラリのPodを作成し、curlでアクセスを試みます。
-` CNDS2024 ConfigMap Handson`という文字列が返却されると成功です。
+`CNDS2024 ConfigMap Handson`という文字列が返却されると成功です。
 
 ```Bash
 kubectl run tmp --restart=Never --rm -i --image=nginx:alpine -- curl <PodのIPアドレス>
