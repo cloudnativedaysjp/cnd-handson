@@ -10,7 +10,9 @@ TempoはJaeger、OpenTelemetry と互換性があります。Azure、GCS、S3、
 Tempo は、LogQL と PromQL からインスピレーションを得たトレースファーストのクエリ言語であるTraceQLを実装しています。このクエリ言語を使用すると、ユーザーは非常に正確かつ簡単にスパンを選択し、指定された条件を満たすスパンに直接ジャンプできます。
 
 ## アーキテクチャ
+
 ![](https://grafana.com/docs/tempo/latest/operations/tempo_arch.png)
+
 Tempoは以下のコンポーネントで構成されています。
 - Distributor
 - Ingester
