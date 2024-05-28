@@ -1214,15 +1214,36 @@ readiness-pod           0/1     Running   0             7s
 
 続いてreadiness-pod.yamlを以下のように編集して、コンテナ内に対象のファイルを作成するようにします。
 
-
 ```Yaml
+apiVersion: v1
+kind: Pod
+metadata:
+  labels:
+    app: readiness-pod
+  name: readiness-pod
+spec:
+  containers:
   - command:
     - sh
     - -c
-    - touch /tmp/ready && sleep 1d
+    - touch /tmp/ready && sleep 1d # 編集
+    image: busybox:1.31.0
+    name: readiness-container
+    resources: {}
+    readinessProbe:
+      exec:
+        command:
+        - sh
+        - -c
+        - cat /tmp/ready
+      initialDelaySeconds: 5
+      periodSeconds: 5
+      timeoutSeconds: 1
+      successThreshold: 1
+      failureThreshold: 1
 ```
 
-vimなどでファイルを編集し、以下のコマンドでPodを入れ替えてみましょう。
+以下のコマンドでPodを入れ替えてみましょう。
 
 ```Bash
 kubectl replace -f readiness-pod.yaml --force
