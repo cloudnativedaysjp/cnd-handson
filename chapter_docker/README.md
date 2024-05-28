@@ -301,7 +301,7 @@ https://docs.docker.jp/develop/develop-images/dockerfile_best-practices.html
 - 不要なパッケージのインストール禁止
 
   
-　脆弱性などの対象範囲を狭めることにもつながり、セキュリティが向上します。
+  脆弱性などの対象範囲を狭めることにもつながり、セキュリティが向上します。
 
 
 - アプリケーションを切り離す
