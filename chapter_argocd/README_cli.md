@@ -1,9 +1,9 @@
-# こちらの手順では、ArgoCDをCLIから作成する流れになります。<br>WebUIで作成する場合は、別途README_webui.mdを参照ください。
+# こちらの手順では、Argo CDをCLIから作成する流れになります。<br>WebUIで作成する場合は、別途README_webui.mdを参照ください。
 
 
-# Argo CD with Argocd CLI
+# Argo CD with Argo CD CLI
 この章では、Kubernetes上でGitOpsを可能とするCDツールであるArgo CDについて紹介し、導入します。<br>
-Argocd CLIでの構築を想定しています。
+Argo CD CLIでの構築を想定しています。
 
 
 ## GitOpsとCI/CDについて
@@ -17,7 +17,7 @@ GitOpsは、CI/CDを実現するための手法の一つで、Gitのリポジト
 
 ## Argo CDについて 
 Kubrnetes用のGitOpsツールで、Gitリポジトリに格納されたマニフェストをデプロイすることができます。WEB GUIとCLIの両方で操作することができ、アプリケーションやKuberenetesのリソースの状態を可視化し簡単に管理する事が可能になっています。
-ArgoCDはGitHub等からのWebhookを受け取り、Gitリポジトリに格納されたマニフェストをデプロイすることができるため、開発者のコードPushやPRをトリガーにデプロイまで実行することができます。
+Argo CDはGitHub等からのWebhookを受け取り、Gitリポジトリに格納されたマニフェストをデプロイすることができるため、開発者のコードPushやPRをトリガーにデプロイまで実行することができます。
 
 
 
@@ -275,7 +275,7 @@ image: argoproj/rollouts-demo:green
 ```
 git push origin main
 ```
-Argo CDはデフォルトでは3分に一回の頻度でブランチを確認し、差分を検出しています。 3分待てない場合には、ページ上部にある [REFRESH]をクリックします。下記のようにdeploymentにおいて差分が検出されます。（黄色で表示されているOutOfSyncが差分があることを示しています） ちなみにAppの設定において、SYNC POLICYをManualでなくAutoにしていた場合には、ここでOutOfSyncを検知すると自動でArgoCDがSyncを実行します。
+Argo CDはデフォルトでは3分に一回の頻度でブランチを確認し、差分を検出しています。 3分待てない場合には、ページ上部にある [REFRESH]をクリックします。下記のようにdeploymentにおいて差分が検出されます。（黄色で表示されているOutOfSyncが差分があることを示しています） ちなみにAppの設定において、SYNC POLICYをManualでなくAutoにしていた場合には、ここでOutOfSyncを検知すると自動でArgo CDがSyncを実行します。
 <br>
 SYNCして、青色 → 緑色のタイルに変わるることを確認して下さい。
 ```
@@ -291,7 +291,7 @@ http://app.argocd.example.com
 ![blue2green](image/demoapp/blue2green-demoapp.png)
 <br>
 ## Kustomizeを使ったデプロイ
-ArgoCD上でマニフェストの管理ツールである「Kustomize」を利用した、開発環境と本番環境の2つのマニフェスト管理を行います。
+Argo CD上でマニフェストの管理ツールである「Kustomize」を利用した、開発環境と本番環境の2つのマニフェスト管理を行います。
 Kustomize とは、Kuberbets コミュニティの sig-cli が提供しているマニフェストのテンプレーティングツールです。
 環境ごとにマニフェストを生成したり、特定のフィールドを上書きするといった機能が提供されており、効率的にマニフェストを作ることができます。
 
