@@ -96,6 +96,9 @@ helmfile sync -f helm/helmfile.yaml
 デプロイが完了したら起動しているかどうかを確認してください。
 ```
 kubectl get pod -n monitoring
+```
+
+```
 NAME                                      READY   STATUS    RESTARTS   AGE
 grafana-tempo-0                           1/1     Running   0          102s
 opentelemetry-operator-569f6b668c-zrzdb   2/2     Running   0          23h
@@ -109,7 +112,11 @@ opentelemetry-operator-569f6b668c-zrzdb   2/2     Running   0          23h
 今回はGUIで設定しましたが`prometheus/helm/prometheus-valus.yaml`に設定を追加することでコード上で設定を追加することも可能です。
 
 次にOpenTelemetryの設定をApplyします。
-`kubectl apply -f manifest/`
+
+```
+kubectl apply -f manifests/
+```
+
 OpenTelemetryの章ではJaegerに向けていた設定をTempoへ書き換えています。
 自動インスツルメンテーションを利用するためにhandson-blue Deploymentに対しても設定を行います。kubectl patchコマンドを利用してこれらのアノテーションを付与します。
 
@@ -120,7 +127,9 @@ kubectl -n handson patch deployment handson-blue -p '{"spec":{"template":{"metad
 
 これでセットアップは完了です。
 ## search
-まず`http://app.example.com/`にアクセス後`http://grafana.example.com/explore`を開きます。
+まず`http://app.example.com/`にアクセス後Errorのバーをスライドしてエラーを出力します。
+![slide-bar](image/slide-bar.png)
+次に`http://grafana.example.com/explore`を開きます。
 Promethusと書かれてるトグルメニューをクリックしてください。するとメニューが展開されるのでTempoを選択します。
 
 ![select-tempo](image/select-tempo.png)
@@ -143,7 +152,7 @@ Run Queryボタンをクリックしてください。
 次にTrace QLタブをクリックしてください。
 ![traceql](image/traceql.png)
 
-空欄があるので`{resource.service.name="handson-blue"}` と入力してみましょう。
+空欄があるので`{span.http.response.status_code=500}` と入力してみましょう。
 すると表示されます。
 ![traceql-result](image/traceql-result.png)
 
