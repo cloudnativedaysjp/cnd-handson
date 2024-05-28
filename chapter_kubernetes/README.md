@@ -1256,7 +1256,7 @@ Readiness Probe同様、ファイルの有無によってPodの正常性を確�
 まず、PodをApplyします。
 
 ```Bash
-
+kubectl apply -f liveness-pod.yaml
 ```
 
 以下のコマンドでPodの挙動が確認できます。
