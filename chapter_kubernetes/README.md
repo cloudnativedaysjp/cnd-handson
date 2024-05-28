@@ -13,9 +13,9 @@ Nodeの一覧が出力されるはずです。
 
 ```Log
 NAME                 STATUS   ROLES           AGE   VERSION
-kind-control-plane   Ready    control-plane   30d   v1.27.3
-kind-worker          Ready    <none>          30d   v1.27.3
-kind-worker2         Ready    <none>          30d   v1.27.3
+kind-control-plane   Ready    control-plane   12d   v1.30.0
+kind-worker          Ready    <none>          12d   v1.30.0
+kind-worker2         Ready    <none>          312d   v1.30.0
 ```
 
 Nodeが表示されない場合は、kubeconfigが設定されていない可能性があります。
@@ -46,30 +46,16 @@ kubectl version --client
 
 ```
 # 実行結果
-Client Version: v1.28.1-eks-43840fb
+Client Version: v1.28.1
 Kustomize Version: v5.0.4-0.20230601165947-6ce0bf390ce3
 ```
 
-続いて、kubectlのコマンド補完の設定を行います。
-
-> 現在のbashシェルにコマンド補完を設定するには、最初にbash-completionパッケージをインストールする必要があります。
-
-```Bash
-source <(kubectl completion bash)
-```
-
-> bashシェルでのコマンド補完を永続化するために.bashrcに追記します。
-
-```Bash
-echo "source <(kubectl completion bash)" >> ~/.bashrc
-```
-
-> 下記までの設定を行うと、コマンド補完が行え"k"のみでkubectlとみなされます。
+続いて、chapter_kubernetesにcurrent directoryを移動します。
 
 ```
-alias k=kubectl
-complete -F __start_kubectl k
+cd ~/cnd-handson/chapter_kubernetes/
 ```
+
 
 ## 2. アプリケーションデプロイ
 
@@ -94,10 +80,10 @@ kubectl get pods
 ### 2.4. ポートフォワードと通信確認
 
 続いて、作成したPodにアクセスします。
-今回はポートフォワードを使いインターネット上のpodにアクセスしていきます。
+今回はポートフォワードを使いpodにアクセスしていきます。
 
 ```Bash
-kubectl port-forward <Pod名>  8888:80 -n <namespace名>
+kubectl port-forward <Pod名>  8888:80
 ```
 
 以下のように出力されたら操作が受け付けられなくなりますが、ctrl＋Cを押さずにそのままでいてください。
@@ -115,6 +101,10 @@ curl http://localhost:8888
 
 
 成功すると、nginxのテストページが表示されるはずです。
+
+
+動作確認後、ctrl＋Cでポートフォワードを停止します。
+
 
 ### 2.5 Pod削除
 
@@ -145,7 +135,7 @@ kubectl get deployments
 続いて、以下のコマンドで対象PodのDeploymentを削除します。
 
 ```Bash
-kubectl delete deployment test-deployment
+kubectl delete deployment test
 ```
 
 以下のコマンドでDeployment及びPodが削除されたことを確認します。
@@ -210,6 +200,7 @@ spec:
     spec:
       containers:
       - image: <DockerHubのユーザ名>/<リポジトリ名>:<タグ>
+        imagePullPolicy: Always
         name: hello-world
         ports:
         - containerPort: 80
@@ -348,22 +339,23 @@ metadata:
   annotations:
     deployment.kubernetes.io/revision: "1"
   labels:
-    app: hands-on-nginx
-  name: hands-on-nginx
+    app: hello-world
+  name: hello-world
 spec:
   replicas: 1
   selector:
     matchLabels:
-      app: hands-on-nginx
+      app: hello-world
   template:
     spec:
     metadata:
       labels:
-        app: hands-on-nginx
+        app: hello-world
     spec:
       containers:
-      - image: ryuichitakei/hands-on:hands-on-nginx # タグ名を自身のImageのものに変更
-        name: hands-on-nginx
+      - image: <DockerHubのユーザ名>/<リポジトリ名>:<タグ>
+        imagePullPolicy: Always
+        name: hello-world
         ports:
         - containerPort: 80
       imagePullSecrets: # 追記
@@ -397,26 +389,26 @@ metadata:
   annotations:
     deployment.kubernetes.io/revision: "1"
   labels:
-    app: hands-on-nginx
-  name: hands-on-nginx
+    app: hello-world
+  name: hello-world
 spec:
-  replicas: 1 # ここが1に設定されている
+  replicas: 1 #ここが1になっている 
   selector:
     matchLabels:
-      app: hands-on-nginx
+      app: hello-world
   template:
     spec:
     metadata:
       labels:
-        app: hands-on-nginx
+        app: hello-world
     spec:
       containers:
-      - image: ryuichitakei/hands-on:hands-on-nginx 
-        name: hands-on-nginx
+      - image: ryuichitakei/hello-world:1.0
+        name: hello-world
         ports:
         - containerPort: 80
-      imagePullSecrets: # 追記
-      - name: <secret名> # 追記
+      imagePullSecrets:
+      - name: dockerhub-secret
 ```
 
 では以下のようにManifestを修正し、再度Manifestを登録しなおしてみます。
@@ -486,7 +478,6 @@ hello-world-5b48b68bb6-ftwtz   1/1     Running   0          23s
 apiVersion: v1
 kind: Service
 metadata:
-  creationTimestamp: null
   labels:
     app: hello-world
   name: hello-world-service
@@ -498,8 +489,6 @@ spec:
   selector:
     app: hello-world
   type: ClusterIP
-status:
-  loadBalancer: {}
 ```
 
 ```Bash
@@ -574,7 +563,7 @@ Hello Worldの文字が表示されたら成功です。
 ```
 kubectl delete ingress hello-world-ingress
 kubectl delete service hello-world-service
-kubectl deelete deployment hello-world
+kubectl delete deployment hello-world
 kubectl delete secret dockerhub-secret
 ```
 
@@ -625,14 +614,15 @@ Pod更新前の状態では、`This app is Blue`の画面が表示がされて�
 
 ```Bash
 # 適用
-kubectl set image deployment/rolling rolling-app=ryuichitakei/green-app:1.0
+kubectl set image deployment/rollout rollout-app=ryuichitakei/green-app:1.0
+```
 
+```Bash
 # 確認
 kubectl rollout status deployment 
 kubectl rollout history deployment 
 kubectl get pod
 kubectl get deployment
-
 ```
 
 更新後、ブラウザで再度以下にアクセスを行うと`This app is Green`の表示に更新されていることが確認できます。
@@ -644,15 +634,15 @@ http://rollout.example.com
 尚、ロールバックを行う場合は以下のコマンドで実行可能です。
 
 ```Bash
-kubectl rollout undo deployment rolling
+kubectl rollout undo deployment rollout
 ```
 
 動作確認実施後、リソースの削除を行います。
 
 ```Bash
-kubectl delete deployment rolling
-kubectl delete service rolling
-lubectl delete ingress rolling
+kubectl delete deployment rollout
+kubectl delete service rollout-service
+kubectl delete ingress rollout-ingress
 ```
 
 ### 6.2 Blue-Green Deployment
@@ -690,7 +680,7 @@ kubectl delete pod blue
 kubectl delete pod green
 kubectl delete service blue-service
 kubectl delete service green-service
-lubectl delete ingress blue-green
+kubectl delete ingress blue-green
 ```
 
 ## 7. データの永続化 (PVとPVC)
@@ -788,7 +778,7 @@ kubectl describe pvc handson-pvc
 以下のコマンドで動作確認が行えます。
 
 ```Bash
-kubectl exec -ti volume-pod -- tail /data/out1.txt
+kubectl exec volume-pod -- tail /data/out1.txt
 ```
 
 動作確認後、リソースの削除を行います。
@@ -886,9 +876,7 @@ kubectl get rolebinding
 > Podデプロイ
 
 ```Bash
-
 kubectl apply -f kubectl-pod.yaml
-
 ```
 
 > ログからコマンドを実行していることを確認
@@ -900,12 +888,10 @@ kubectl logs kubectl-pod
 > 一度Podを削除し、コマンドを変更して再デプロイ
 
 ```Bash
-
 kubectl delete pod kubectl-pod
-
 ```
 
-vimなどのエディタを使って、Pod名で実行するコマンドを変更します。
+vimなどのエディタを使って、Pod内で実行するコマンドを変更します。
 
 ```Yaml
 apiVersion: v1
@@ -929,9 +915,7 @@ spec:
 ```
 
 ```Bash
-
 kubectl apply -f kubectl-pod.yaml
-
 ```
 
 > ログからコマンドが弾かれていることを確認
@@ -941,12 +925,9 @@ kubectl logs kubectl-pod
 ```
 
 >確認できたらPodを削除
->
->
+
 ```Bash
-
 kubectl delete pod kubectl-pod
-
 ```
 
 #### User Accountの作成と動作確認
@@ -962,14 +943,14 @@ User Accountは厳密にはK8sのリソースとして定義されておらず�
 まずは秘密鍵とCSRの作成を行います。
 
 ```Bash
-openssl genrsa -out handson.pem 2048
-openssl req -new -key handson.pem -out handson.csr -subj "/CN=<任意のCN>"
+openssl genrsa -out handson-user.pem 2048
+openssl req -new -key handson-user.pem -out handson-user.csr -subj "/CN=handson-user"
 ```
 
 > csrをbase64にエンコード
 
 ```Bash
-cat handson.csr | base64 | tr -d '\n'
+cat handson-user.csr | base64 | tr -d '\n'
 ```
 
 > UserAccount作成
@@ -1002,8 +983,30 @@ kubectl apply -f handson-csr.yaml
 
 ```Bash
 kubectl get csr
+```
+
+```Bash
 kubectl certificate approve handson-user
+```
+
+```Bash
 kubectl get csr
+```
+
+> 証明書の取得
+
+続いて、CSRから証明書を取得します。
+実際の証明書の値は`status.certificate`を見ると確認できます。
+
+```Bash
+kubectl get csr/handson-user -o yaml
+```
+
+これをbase64でencodeした形でエクスポートします。
+
+
+```Bash
+kubectl get csr handson-user -o jsonpath='{.status.certificate}'| base64 -d > handson-user.crt
 ```
 
 > Role作成
@@ -1013,7 +1016,7 @@ kubectl get csr
 
 ```Bash
 kubectl get role
-kubectl create role handson-user-role --resource=pods --verb=create,list,get,update,delete
+kubectl create role handson-user-role --resource=pods --verb=create,list,get,update,delete,watch
 kubectl get role
 ```
 
@@ -1026,32 +1029,121 @@ kubectl get rolebinding
 kubectl create rolebinding handson-user-rolebinding --role=handson-user-role --user=handson-user
 kubectl get rolebinding
 ```
+
+> kubeconfigに追加
+
+以下のコマンドで、新しいクレデンシャルを追加します。
+
+```Bash
+kubectl config set-credentials handson-user --client-key=handson-user.pem --client-certificate=handson-user.crt --embed-certs=true
+```
+
+続いて、contextを追加します。
+
+
+```Bash
+kubectl config set-context handson-user --cluster=kind-kind --user=handson-user
+```
+
+追加されると、以下のようにcontextが増えているのが確認できます。
+
+```Bash
+kubectl config get-contexts
+```
+
+
+```Log
+CURRENT   NAME           CLUSTER     AUTHINFO       NAMESPACE
+          handson-user   kind-kind   handson-user   
+*         kind-kind      kind-kind   kind-kind
+```
+
+続いて、handson-userにcontextを変更します。
+
+```Bash
+kubectl config use-context handson-user
+```
+
+再度contextの状態を確認すると、handson-userに*が付いていることがわかります。
+
+```Log
+CURRENT   NAME           CLUSTER     AUTHINFO       NAMESPACE
+*         handson-user   kind-kind   handson-user   
+          kind-kind      kind-kind   kind-kind
+```
+
+
+
+```Bash
+kubectl config get-contexts
+```
+
 > 動作確認
 
-リソース名などを変えてみて、yes or noの出力を確かめます。
+この状態でいくつかコマンドを実行してみます。
 
-まずはPodの更新が可能かどうかを確かめます。
-Roleを作成した際に、PodのUpdateを許可しているので、`yes`を返すはずです。
 
-```Bash
-kubectl auth can-i update pods --as=handson-user
-```
-
-続いて、deploymentの作成が可能かを確かめます。
-deploymentに関する許可は行なっていないため`no`を返すはずです。
+まずはPodの作成、確認コマンドを実行します。
+Podの作成、確認に関してはroleにより権限が付与されているため実行可能です。
 
 ```Bash
-kubectl auth can-i create deployment --as=handson-user
+kubectl run test --image=nginx
 ```
 
-このように、対象のユーザがどのリソースの操作を許可するかを細かく設定することが可能です。
+```Bash
+ kubectl get pod
+```
+
+```Log
+NAME   READY   STATUS    RESTARTS   AGE
+test   1/1     Running   0          28s
+```
+
+削除も同様に行うことが可能です。
+
+```Bash
+kubectl delete pod test
+```
+
+しかしながら、Deploymentなど他のリソースに関するロールは割り当てられていないためエラーとなります。
+
+```Bash
+kubectl create deployment test --image=nginx
+```
+
+```Log
+error: failed to create deployment: deployments.apps is forbidden: User "handson-user" cannot create resource "deployments" in API group "apps" in the namespace "default"
+```
+
+続いて、contextを元々使用していたものに再度変更し同じコマンドを実行してみます。
+
+```Bash
+kubectl config use-context kind-kind
+```
+
+```Bash
+kubectl create deployment test --image=nginx
+```
+
+問題なく実行できることが確認できます。
+
+```Bash
+kubectl get deployment
+```
+
+```Log
+NAME   READY   UP-TO-DATE   AVAILABLE   AGE
+test   1/1     1            1           8s
+```
 
 動作確認後、リソースを削除します。
 
 ```Bash
+kubectl config delete-context handson-user 
 kubectl delete rolebinding handson-user-rolebinding 
 kubectl delete role handson-user-role
 kubectl delete csr handson-user
+kubectl delete deployment test
 ```
 
 
@@ -1067,15 +1159,34 @@ KubernetesにはPodが正常に起動したか、または正常に動作を続�
 
 
 - initialDelaySeconds
+
+  
   初回ヘルスチェックまでの遅延時間（秒）
+
+  
 - periodSeconds
+
+  
   Probeが実行される間隔（秒）
+
+  
 - timeoutSeconds
+
+  
   タイムアウトまでの時間（秒）
+
+  
 - successThreshold
+
+  
   成功と判断する最小連続成功数（回数）
+
+  
 - failureThreshold
+
+  
   失敗と判断する試行回数（回数）
+
 
 ### 11.1 Readiness Probe
 
@@ -1103,15 +1214,36 @@ readiness-pod           0/1     Running   0             7s
 
 続いてreadiness-pod.yamlを以下のように編集して、コンテナ内に対象のファイルを作成するようにします。
 
-
 ```Yaml
+apiVersion: v1
+kind: Pod
+metadata:
+  labels:
+    app: readiness-pod
+  name: readiness-pod
+spec:
+  containers:
   - command:
     - sh
     - -c
-    - touch /tmp/ready && sleep 1d
+    - touch /tmp/ready && sleep 1d # 編集
+    image: busybox:1.31.0
+    name: readiness-container
+    resources: {}
+    readinessProbe:
+      exec:
+        command:
+        - sh
+        - -c
+        - cat /tmp/ready
+      initialDelaySeconds: 5
+      periodSeconds: 5
+      timeoutSeconds: 1
+      successThreshold: 1
+      failureThreshold: 1
 ```
 
-vimなどでファイルを編集し、以下のコマンドでPodを入れ替えてみましょう。
+以下のコマンドでPodを入れ替えてみましょう。
 
 ```Bash
 kubectl replace -f readiness-pod.yaml --force
@@ -1141,6 +1273,12 @@ kubecttl delete pod readiness-pod
 Readiness Probe同様、ファイルの有無によってPodの正常性を確認します。
 このシナリオでは`/tmp/healthy`ファイルが自動的に削除されます。
 そのため、ヘルスチェックに失敗したPodは自動的にリスタートを行います。
+
+まず、PodをApplyします。
+
+```Bash
+kubectl apply -f liveness-pod.yaml
+```
 
 以下のコマンドでPodの挙動が確認できます。
 Pod作成からしばらく経つと、`RESTARTS`のカウンタが上昇していくのが確認できます。
@@ -1339,9 +1477,10 @@ kubectl logs <Pod名>
 
 ```Bash
 kubectl get cronjob
+```
 
-kubectl describe cronjob　handson-cronjob
-
+```Bash
+kubectl describe cronjob handson-cronjob
 ```
 
 Cron Jobを一時停止したい場合は、kubectl patchコマンドを使用します。
@@ -1386,8 +1525,8 @@ ConfigMapは、機密性のないデータをキーと値のペアで保存す�
 環境固有の設定などをコンテナイメージから分離できるため、アプリケーションを簡単に移植できるようになります。
 
 但し、機密性や暗号化の機能を持たないため保存したいデータが機密情報である場合はSecretやサードパーティツールを使用する必要があります。
-今回は` CNDS2024 ConfigMap Handson`というHTML形式のデータをConfigMapに保存し、Podにマウントさせています。
-クライアントからのリクエストはマウントされたConfigMapのHTMLデータを参照するため、` CNDS2024 ConfigMap Handson`という文字列が返却されるはずです。
+今回は`CNDS2024 ConfigMap Handson`というHTML形式のデータをConfigMapに保存し、Podにマウントさせています。
+クライアントからのリクエストはマウントされたConfigMapのHTMLデータを参照するため、`CNDS2024 ConfigMap Handson`という文字列が返却されるはずです。
 
 
 
@@ -1410,7 +1549,7 @@ kubectl get pod -o wide
 ```
 
 最後にテンポラリのPodを作成し、curlでアクセスを試みます。
-` CNDS2024 ConfigMap Handson`という文字列が返却されると成功です。
+`CNDS2024 ConfigMap Handson`という文字列が返却されると成功です。
 
 ```Bash
 kubectl run tmp --restart=Never --rm -i --image=nginx:alpine -- curl <PodのIPアドレス>
