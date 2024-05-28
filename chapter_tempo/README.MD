@@ -121,7 +121,9 @@ kubectl -n handson patch deployment handson-blue -p '{"spec":{"template":{"metad
 
 これでセットアップは完了です。
 ## search
-まず`http://app.example.com/`にアクセス後`http://grafana.example.com/explore`を開きます。
+まず`http://app.example.com/`にアクセス後Errorのバーをスライドしてエラーを出力します。
+![slide-bar](image/slide-bar.png)
+次に`http://grafana.example.com/explore`を開きます。
 Promethusと書かれてるトグルメニューをクリックしてください。するとメニューが展開されるのでTempoを選択します。
 
 ![select-tempo](image/select-tempo.png)
@@ -144,7 +146,7 @@ Run Queryボタンをクリックしてください。
 次にTrace QLタブをクリックしてください。
 ![traceql](image/traceql.png)
 
-空欄があるので`{resource.service.name="handson-blue"}` と入力してみましょう。
+空欄があるので`{span.http.response.status_code=500}` と入力してみましょう。
 すると表示されます。
 ![traceql-result](image/traceql-result.png)
 
