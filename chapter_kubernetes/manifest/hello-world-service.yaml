@@ -12,5 +12,3 @@ spec:
   selector:
     app: hello-world
   type: ClusterIP
-status:
-  loadBalancer: {}
