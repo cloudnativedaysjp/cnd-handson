@@ -1058,34 +1058,92 @@ CURRENT   NAME           CLUSTER     AUTHINFO       NAMESPACE
 *         kind-kind      kind-kind   kind-kind
 ```
 
-続いて、
+続いて、handson-userにcontextを変更します。
+
+```Bash
+kubectl config use-context handson-user
+```
+
+再度contextの状態を確認すると、handson-userに*が付いていることがわかります。
+
+```Log
+CURRENT   NAME           CLUSTER     AUTHINFO       NAMESPACE
+*         handson-user   kind-kind   handson-user   
+          kind-kind      kind-kind   kind-kind
+```
+
+
+
+```Bash
+kubectl config get-contexts
+```
 
 > 動作確認
 
-リソース名などを変えてみて、yes or noの出力を確かめます。
+この状態でいくつかコマンドを実行してみます。
 
-まずはPodの更新が可能かどうかを確かめます。
-Roleを作成した際に、PodのUpdateを許可しているので、`yes`を返すはずです。
 
-```Bash
-kubectl auth can-i update pods --as=handson-user
-```
-
-続いて、deploymentの作成が可能かを確かめます。
-deploymentに関する許可は行なっていないため`no`を返すはずです。
+まずはPodの作成、確認コマンドを実行します。
+Podの作成、確認に関してはroleにより権限が付与されているため実行可能です。
 
 ```Bash
-kubectl auth can-i create deployment --as=handson-user
+kubectl run test --image=nginx
 ```
 
-このように、対象のユーザがどのリソースの操作を許可するかを細かく設定することが可能です。
+```Bash
+ kubectl get pod
+```
+
+```Log
+NAME   READY   STATUS    RESTARTS   AGE
+test   1/1     Running   0          28s
+```
+
+削除も同様に行うことが可能です。
+
+```Bash
+kubectl delete pod test
+```
+
+しかしながら、Deploymentなど他のリソースに関するロールは割り当てられていないためエラーとなります。
+
+```Bash
+kubectl create deployment test --image=nginx
+```
+
+```Log
+error: failed to create deployment: deployments.apps is forbidden: User "handson-user" cannot create resource "deployments" in API group "apps" in the namespace "default"
+```
+
+続いて、contextを元々使用していたものに再度変更し同じコマンドを実行してみます。
+
+```Bash
+kubectl config use-context kind-kind
+```
+
+```Bash
+kubectl create deployment test --image=nginx
+```
+
+問題なく実行できることが確認できます。
+
+```Bash
+kubectl get deployment
+```
+
+```Log
+NAME   READY   UP-TO-DATE   AVAILABLE   AGE
+test   1/1     1            1           8s
+```
 
 動作確認後、リソースを削除します。
 
 ```Bash
+kubectl config delete-context handson-user 
 kubectl delete rolebinding handson-user-rolebinding 
 kubectl delete role handson-user-role
 kubectl delete csr handson-user
+kubectl delete deployment test
 ```
 
 
