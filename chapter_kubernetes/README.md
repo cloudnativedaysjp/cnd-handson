@@ -1459,7 +1459,7 @@ kubectl get cronjob
 ```
 
 ```Bash
-kubectl describe cronjob　handson-cronjob
+kubectl describe cronjob handson-cronjob
 ```
 
 Cron Jobを一時停止したい場合は、kubectl patchコマンドを使用します。
