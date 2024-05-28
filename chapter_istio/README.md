@@ -336,19 +336,19 @@ Kialiでトラフィックを確認すると、`handson-blue` トラフィック
 最後に、ヘッダーを何もつけない場合どのようになるのか確認してみましょう。
 
 ```sh
-while :; do curl -s -w '%header{location}\t%{http_code}\n' http://app.example.com:18080/color ;sleep 1;done
+while :; do curl -s -w '%{http_code}\n' http://app.example.com:18080/color ;sleep 1;done
 ```
 
 コンソールには下記のように表示されるはずです。
 
 ```sh
-http://app.example.com/maintenance.html 302
-http://app.example.com/maintenance.html 302
-http://app.example.com/maintenance.html 302
+302
+302
+302
 ```
 
 Kialiでトラフィックを確認すると、workload側にはトラフィックが流れていないことがわかります。<br>
-**[HTTPRedirect](https://istio.io/latest/docs/reference/config/networking/virtual-service/#HTTPRedirect)を使う際は、デフォルトのHTTPレスポンスコードが301(MOVED_PERMANENTLY)であることに注意してください。**利用シーンとして一時的にトラフィックを別の場所にリダイレクトさせたい場合は、302(Found)などを使うようにしましょう。301を使う場合は、ブラウザ側がそのリダイレクト情報をキャッシュしてしまいます。
+[HTTPRedirect](https://istio.io/latest/docs/reference/config/networking/virtual-service/#HTTPRedirect)を使う際は、デフォルトのHTTPレスポンスコードが301(MOVED_PERMANENTLY)であることに注意してください。利用シーンとして一時的にトラフィックを別の場所にリダイレクトさせたい場合は、302(Found)などを使うようにしましょう。301を使う場合は、ブラウザ側がそのリダイレクト情報をキャッシュしてしまいます。
 
 ![image](./image/kiali-graph-http-request-based-routing-redirect.png)
 

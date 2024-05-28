@@ -19,8 +19,9 @@
 
 Istio ambient meshはこれらの問題を解決する目的で、Google, Solo.ioによって開発が始まりました。
 
-> [!IMPORTANT]
->  Istio ambient meshは2023年11月末時点ではαステータスです。本番環境への導入は控え、検証用途でのみ使用してください。
+> [!NOTE]
+> Istio ambient meshは、2024年5月、v1.22にてbetaバージョンとなっています。
+> https://istio.io/latest/news/releases/1.22.x/announcing-1.22/
 
 ### Istio ambient mesh構成
 L4、L7機能の全てを管理しているサイドカーモードにおけるデータプレーンと異なり、Istio ambientモードではデータプレーンの機能を2つの層に分けて管理をします。
@@ -638,14 +639,10 @@ kubectl delete -f app/curl.yaml
 ```
 
 ## まとめ
-サイドカーを用いないIstioの新しいデータプレーンであるIstio ambient meshを使用することで、アプリケーションと、データプレーンの分離が可能になります。これにより、データプレーン起因によるアプリケーションワークロードの阻害を防止することができます。さらに、サイドカーを使用せずに、ztunnel, waypoint proxyを用いることにより、L4, L7管理をアプリケーションの必要に応じて実装することができるようになります。2023年11月の段階ではalphaステータスでありますが、Istio ambient meshをぜひ試してみてください。
+サイドカーを用いないIstioの新しいデータプレーンであるIstio ambient meshを使用することで、アプリケーションと、データプレーンの分離が可能になります。これにより、データプレーン起因によるアプリケーションワークロードの阻害を防止することができます。さらに、サイドカーを使用せずに、ztunnel, waypoint proxyを用いることにより、L4, L7管理をアプリケーションの必要に応じて実装することができるようになります。
 
 Istio ambient meshに関するGitHub Issue: https://github.com/istio/istio/labels/area%2Fambient
 
-> [!NOTE]
->
-> Istio ambient meshは、2024年5月、v1.22にてbetaになりました。
-> https://istio.io/latest/news/releases/1.22.x/announcing-1.22/
 
 ## 最終クリーンアップ
 本chapter用に作成したKubernetes clusterを削除します。
