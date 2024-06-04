@@ -161,7 +161,7 @@ Contact Pointを追加しただけでは新規にアラートを追加しても�
 <http://grafana.example.com/alerting/routes> にアクセスし、 `New nested policy` のボタンをクリックします。
 以下の設定を入力し、 `Save policy` ボタンをクリックします。
 
-- `Matching Labels` ... `alert-route = slack`
+- `Matching Labels` ... `alert-route`と`slack`
 - `Contact point` ... `sample-grafana-alerting`
 
 ### サンプルアラートの作成
