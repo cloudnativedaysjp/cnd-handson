@@ -56,7 +56,6 @@ flowchart TD
     prom-->grafana
     prom-->argorollouts
     prom-->istio
-    argocd-->prom
 
     grafana-->otel
     grafana-->cilium
