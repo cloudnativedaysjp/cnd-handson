@@ -50,6 +50,9 @@ chunksCache:
 # Enable minio for storage
 minio:
   enabled: true
+  serviceAccount:
+    name: "minio-sa-loki"
+
 
 # Zero out replica counts of other deployment modes
 backend:

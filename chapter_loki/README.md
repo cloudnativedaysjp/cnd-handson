@@ -141,7 +141,7 @@ Loki自体はシングルバイナリとなっており、実行時に`-target`�
 - Simple Scalable Deployment
 - Monolithic Mode
 
-### Microservices mode
+### Microservice mode
 
 このモードでは、Lokiの各コンポーネントを個々のマイクロサービスとして実行します。
 個々の要件に合わせたきめ細かな設定が可能になります。
@@ -151,7 +151,7 @@ Loki自体はシングルバイナリとなっており、実行時に`-target`�
 
 LokiのHelm Chartでデフォルトの設定です。
 Simple Scalable Deploymentを略してSSDと呼ばれることもあります。
-1日あたり数TBのログまでスケールアップが可能であり、これを大幅に超える場合にはMicroservices Modeを検討する必要があります。
+1日あたり数TBのログまでスケールアップが可能であり、これを大幅に超える場合にはMicroservice Modeを検討する必要があります。
 SSDでは各コンポーネントをWrite Target/Read Target/Backend Targetに分類し運用します。
 
 - Write Target
@@ -304,16 +304,16 @@ Log Query Startersには、特定の文字列でフィルターしたログをlo
 
 ### アラートを投げる
 
-`http://grafana.example.com/alerting/notifications`にアクセスしてアラートを設定してみましょう！
+`http://grafana.example.com/alerting/list`にアクセスしてアラートを設定してみましょう！
 
 > [!WARNING]
 > Grafanaの章で設定したContact PointとNotification Policyを利用します。
 
-下記の項目を入力し`Save rule and exit`をクリックして適用します。
+`New alert rule`をクリックして、下記の項目を入力します。
+入力が終わると`Save rule and exit`をクリックして適用します。
 
 - `Rule name` ... `SampleGrafanaAlertLoki`
 - `Datastore` ... `Loki`
-- `Metric` ... `nginx_ingress_controller_requests`
 - `Label filter` ... `exporter = OTLP`
 - `Operation` ... 以下を順に設定
   - `Line Filter > Line contains` をクリックし、 `blue` に設定
