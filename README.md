@@ -1,12 +1,12 @@
 # Co-located Hands-on Event by CNDS2024 Committee
 『一日で学ぶクラウドネイティブ技術実践ハンズオン』by CloudNative Days Summer 2024 実行委員会のドキュメントです。
 
-このハンズオンでは、Docker・Kubernetes・Prometheus・Grafana・OpenTelemetry・Argo CD・Argo Rollouts・Istio・Cilium・Hubble といったよく利用されるクラウドネイティブな OSS について触れることができるハンズオンです。
+このハンズオンでは、Docker・Kubernetes・Prometheus・Grafana・OpenTelemetry・Argo CD・Argo Rollouts・Istio・Cilium・Hubble Loki Tempo Pyroscopeといったよく利用されるクラウドネイティブな OSS について触れることができるハンズオンです。
 これらの OSS についての第一歩を学び、これから先の学習のきっかけにしてください。
 
 
 ## Chapter
-準備用chapter＋全10chapterから構成されています。
+準備用chapter＋全15chapterから構成されています。
 - [chapter_setup](./chapter_setup/)
 - [chapter_cluster-create](./chapter_cluster-create/)
 - [chapter_docker](./chapter_docker/)
@@ -20,6 +20,9 @@
 - [chapter_argo-rollouts](./chapter_argo-rollouts/)
 - [chapter_istio-ambientmesh](./chapter_istio-ambientmesh/)
 - [chapter_hubble](./chapter_hubble/)
+- [chapter_loki](./chapter_loki/)
+- [chapter_tempo](./chapter_tempo/)
+- [chapter_pyroscope](./chapter_pyroscope/)
 
 ### 進め方
 まずは、chapter, chapterを実施してhandsonを進めるための環境を構築してください。<br>
@@ -41,6 +44,8 @@ flowchart TD
     istioambient[chapter_istio-ambientmesh]
     hubble[chapter_hubble]
     loki[chapter_loki]
+    tempo[chapter_tempo]
+    pyroscope[chapter_pyroscope]
 
     setup-->cluster
     cluster-->docker
@@ -55,8 +60,10 @@ flowchart TD
 
     grafana-->otel
     grafana-->cilium
+    grafana-->pyroscope
 
     otel-->loki
+    otel-->tempo
 
     cilium-->hubble
 
