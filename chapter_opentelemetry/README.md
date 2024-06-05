@@ -381,7 +381,7 @@ kubectl logs -l app.kubernetes.io/name=metrics-collector-collector -f
 ```
 
 次に、実際にGrafana上からメトリクスを確認してみましょう。
-`https://grafana.example.com/explore` に接続し、`system_cpu_time_seconds_total`のメトリクスを確認してみます。
+`http://grafana.example.com/explore` に接続し、`system_cpu_time_seconds_total`のメトリクスを確認してみます。
 今回利用している`hostmetrics` Receiverで取得しているメトリクスには[Host Metrics Receiver](https://github.com/open-telemetry/opentelemetry-collector-contrib/blob/main/receiver/hostmetricsreceiver/internal/scraper/cpuscraper/documentation.md)のページから確認できます。
 `exporters.prometheusremotewrite.external_labels`の設定で`oteltest=cndt2023`のラベルを付与しているため、ラベルの指定をすることでOpenTelemetry Colelctorが出力したメトリクスのみに絞ることも可能です。
 
@@ -535,7 +535,7 @@ OpenTelemetry Operatorには、各種アプリケーションのトレースデ�
 トレースデータを計装する場合には、[SDKを利用してアプリケーションに手動インスツルメンテーション](https://opentelemetry.io/docs/instrumentation/)するか、[サイドカーとしてコンテナをデプロイして自動インスツルメンテーション](https://opentelemetry.io/docs/kubernetes/operator/automatic/)するかの2通りの方法があります。
 今回は、アプリケーションに手を加えなくて利用可能な自動インスツルメンテーションを利用します。
 
-自動インスツルメンテーションを行う場合には、`Instrumentation`リソースで設定を行います。今回はデータを取得し、先ほど作成したJaegerのOTLP用のgRPCエンドポイント `jaeger-collector.jaeger:14250` に対してデータを転送する設定を行います。
+自動インスツルメンテーションを行う場合には、`Instrumentation`リソースで設定を行います。今回はデータを取得し、先ほど作成したJaegerのOTLP用のHTTPエンドポイント `jaeger-collector.jaeger:14250` に対してデータを転送する設定を行います。
 
 ```yaml
 apiVersion: opentelemetry.io/v1alpha1
@@ -545,7 +545,7 @@ metadata:
   namespace: handson
 spec:
   exporter:
-    endpoint: http://jaeger-collector.jaeger:4317
+    endpoint: http://jaeger-collector.jaeger:4318
   propagators:
     - tracecontext
     - baggage
@@ -592,13 +592,13 @@ kubectl -n handson get pods
 ```bash
 # 実行結果
 NAME                               READY   STATUS   RESTARTS   AGE
-sample-app-blue-5fb8dc75fd-7cvxg   2/2     Ready    0          30s
+handson-blue-5fb8dc75fd-7cvxg   2/2     Ready    0          30s
 ```
 
 
 次に、実際にJaeger上からメトリクスを確認してみましょう。
 まず、`http://app.example.com/` に接続し、一定量のトレースデータを出力します。
-`https://jaeger.example.com/explore` に接続し、Service名に`sample-app-blue`を指定してみると、トレースデータが確認できます。
+`http://jaeger.example.com/search` に接続し、Service名に`handson-blue`を指定してみると、トレースデータが確認できます。
 今回は複雑なマイクロサービスではないため、シンプルな表示になっていますが、サービス間の通信がある場合はもう少し複雑なトレースデータを確認できます。
 
 ![](./image/jaeger.png)
