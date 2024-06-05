@@ -83,15 +83,14 @@ Pyroscopeでは、モノリシックモードと、マイクロサービスモ�
 用意されているhelmfile.yamlおよびvalues.yamlを利用して、 `helmfile sync` を実行し、Pyroscopeをインストールしましょう。
 
 ```bash
-helmfile sync helm/helmfile.yaml
+helmfile sync -f helm/helmfile.yaml
 ```
 
 実際に各種サービスが起動しているか確認します。
 
 ```bash
-kubectl get pods -n pyroscope
+kubectl get pods -n monitoring -l app.kubernetes.io/instance=pyroscope
 ```
-
 
 ```bash
 # 実行結果
@@ -149,7 +148,13 @@ releases:
 `helmfile sync`を再実行します。
 
 ```bash
-helmfile sync helm/helmfile.yaml
+helmfile sync -f helm/helmfile.yaml
+```
+
+マイクロサービスモードで動いているか確認します。
+
+```bash
+kubectl get pods -n monitoring -l app.kubernetes.io/instance=pyroscope
 ```
 
 ```bash
@@ -170,10 +175,9 @@ pyroscope-query-frontend-7b55fbf7f6-2cz8p    1/1     Running   0          33s
 pyroscope-query-scheduler-7497dd4996-v56z7   1/1     Running   0          33s
 pyroscope-store-gateway-0                    0/1     Running   0          33s
 pyroscope-store-gateway-1                    0/1     Running   0          33s
-
 ```
 
-マイクロサービスモードの場合、Grafanaのデータソースも、接続先をquery-frontendにする必要があります。下記に変更します。
+マイクロサービスモードの場合、Grafanaのデータソースも、接続先をquery-frontendにする必要があります。下記に変更してください。
 
 * HTTP>URL：http://pyroscope-query-frontend.monitoring.svc.cluster.local:4040
 
