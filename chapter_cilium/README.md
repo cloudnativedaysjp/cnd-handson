@@ -82,8 +82,8 @@ kubectl exec -n kube-system ds/cilium -c cilium-agent -- cilium version
 下記のようにバージョンが確認できます。
 
 ```shell
-Client: 1.14.2 a6748946 2023-09-09T20:59:33+00:00 go version go1.20.8 linux/amd64
-Daemon: 1.14.2 a6748946 2023-09-09T20:59:33+00:00 go version go1.20.8 linux/amd64
+Client: 1.15.4 9b3f9a8c 2024-04-11T17:25:42-04:00 go version go1.21.9 linux/amd64
+Daemon: 1.15.4 9b3f9a8c 2024-04-11T17:25:42-04:00 go version go1.21.9 linux/amd64
 ```
 
 この章ではCiliumの機能として下記について説明します。
