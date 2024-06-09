@@ -83,15 +83,14 @@ Pyroscopeでは、モノリシックモードと、マイクロサービスモ�
 用意されているhelmfile.yamlおよびvalues.yamlを利用して、 `helmfile sync` を実行し、Pyroscopeをインストールしましょう。
 
 ```bash
-helmfile sync helm/helmfile.yaml
+helmfile sync -f helm/helmfile.yaml
 ```
 
 実際に各種サービスが起動しているか確認します。
 
 ```bash
-kubectl get pods -n pyroscope
+kubectl get pods -n monitoring -l app.kubernetes.io/instance=pyroscope
 ```
-
 
 ```bash
 # 実行結果
@@ -108,7 +107,7 @@ Pyoscopeの画面にアクセスします。pyroscopeの画面を参照するた
 kubectl apply -f ingress.yaml
 ```
 
-[pyroscope.example.com](http://pyroscope.example.com)にアクセスしましょう。既に、Pyroscope自身のプロファイルが確認できます。
+[http://pyroscope.example.com](http://pyroscope.example.com)にアクセスしましょう。既に、Pyroscope自身のプロファイルが確認できます。
 
 ![image](./image/pyroscope_web.png)
 
@@ -118,15 +117,50 @@ chapter_grafanaで構築したGrafanaに、Pyroscopeのデータソースを追�
 * Data sourse：Grafana Pyroscope
 * HTTP>URL：http://pyroscope.monitoring.svc.cluster.local:4040
 
-![image](./image/grafana-pyroscope.png)
+![image](./image/grafana-datasource.png)
 
-※kube-prometheus-stackで使用したhelmのvaluesに追加も可。
+※kube-prometheus-stackで使用したhelmのvaluesに追加する手順でも対応できます。
 ```helmのvalues.yaml
 datasources:
   - name: Grafana Pyroscope
     type: grafana-pyroscope-datasource
     url: http://pyroscope.monitoring.svc.cluster.local:4040
 ```
+
+## Grafanaからのプロファイル参照
+GrafanaのExplore([http://grafana.example.com/explore](http://grafana.example.com/explore))からプロファイルを見てみましょう。GarafanaのExploreでは、プロファイルタイプの選択と、ラベルセレクターでの絞り込みで、容易に表示できます。
+
+プロファイルタイプは、cpu、memory、goroutineなどがあり、各言語ごとにサポートされています。詳細は、[Pyroscopeのドキュメント](https://grafana.com/docs/pyroscope/latest/view-and-analyze-profile-data/profiling-types/#available-profiling-types)を参照ください。
+
+ラベルセレクターは、対象をtagで絞りたい場合に有効です。これは、Pyroscopeのclient側で付与されたtagになります。helmでinstallしたgrafana-agentでは、自動計装として使用可能なtagが付与されています。（[Pyroscope](http://pyroscope.example.com)のSingle View>Select Tagでの確認が簡単です。）空欄のままでもプロファイルを参照可能です。
+
+<img src="./image/pyroscope-singleview.png" width="520">
+
+
+
+1. プロファイルタイプを選択します。試しに、`process_cpu-cpu`を選択します。
+
+<img src="./image/grafana-pyroscope-profiletype.png" width="320">
+
+2. ラベルセレクターで、対象を絞り込みます。記法は`{<tag>=<value>}`です。 試しに、`{app_kubernetes_io_instance="pyroscope"}`を入力します。
+
+<img src="./image/grafana-pyroscope-labelselector.png" width="600">
+
+3. 「Run query」を実行して、プロファイルを表示します。
+
+<img src="./image/grafana-pyroscope-queryview.png" width="700">
+
+
+4. メトリクスも同時に表示することができます。「Options」で表示項目を増やし、「Query Type」を「Both」にします。
+
+<img src="./image/grafana-pyroscope-options.png" width="620">
+
+5. 再度、「Run query」を実行すれば、メトリクスとプロファイルを同時に表示することができます。（※「Query Type」を「Metric」にすれば、メトリクスだけ表示します）
+
+<img src="./image/grafana-pyroscope-bothmetric.png" width="700">
+
+## まとめ
+当ハンズオンでは、プロファイルとは何かという原理・原則的な話から、実際にGrafanaLabsのPyroscopeを使ったプロファイリングの実装を、手短に説明してみました。プロファイルは、アプリケーションのどのプログラムがパフォーマンスに影響しているかを、一発で見つけることに貢献します。また、メトリクスはもちろん、トレース、ログとの紐付けなども期待できますので、ぜひ実装にチャレンジしてみて下さい。
 
 ## 番外編：マイクロサービスモードで動かしたいとき
 マイクロサービスモードで動かしたい場合、helmのvaluesを宣言した状態で、`helmfile sync`を再実行してみてください。
@@ -149,7 +183,13 @@ releases:
 `helmfile sync`を再実行します。
 
 ```bash
-helmfile sync helm/helmfile.yaml
+helmfile sync -f helm/helmfile.yaml
+```
+
+マイクロサービスモードで動いているか確認します。
+
+```bash
+kubectl get pods -n monitoring -l app.kubernetes.io/instance=pyroscope
 ```
 
 ```bash
@@ -170,10 +210,9 @@ pyroscope-query-frontend-7b55fbf7f6-2cz8p    1/1     Running   0          33s
 pyroscope-query-scheduler-7497dd4996-v56z7   1/1     Running   0          33s
 pyroscope-store-gateway-0                    0/1     Running   0          33s
 pyroscope-store-gateway-1                    0/1     Running   0          33s
-
 ```
 
-マイクロサービスモードの場合、Grafanaのデータソースも、接続先をquery-frontendにする必要があります。下記に変更します。
+マイクロサービスモードの場合、Grafanaのデータソースも、接続先をquery-frontendにする必要があります。下記に変更してください。
 
 * HTTP>URL：http://pyroscope-query-frontend.monitoring.svc.cluster.local:4040
 

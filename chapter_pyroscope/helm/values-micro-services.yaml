@@ -86,5 +86,5 @@ pyroscope:
         initialDelaySeconds: 60
 minio:
   enabled: true
-
-
+  serviceAccount:
+    name: "minio-sa-pyroscope"
