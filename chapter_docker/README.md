@@ -98,6 +98,9 @@ docker -v
 Docker version 26.0.0, build 2ae903e
 ```
 
+> [!NOTE]
+> Dockerのバージョンは、執筆時点での最新バージョンです。
+
 その後、自身のDocker Hubにログインを行います。
 
 
