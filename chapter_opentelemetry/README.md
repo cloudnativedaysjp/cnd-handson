@@ -381,7 +381,7 @@ kubectl logs -l app.kubernetes.io/name=metrics-collector-collector -f
 ```
 
 次に、実際にGrafana上からメトリクスを確認してみましょう。
-`https://grafana.example.com/search` に接続し、`system_cpu_time_seconds_total`のメトリクスを確認してみます。
+`http://grafana.example.com/explore` に接続し、`system_cpu_time_seconds_total`のメトリクスを確認してみます。
 今回利用している`hostmetrics` Receiverで取得しているメトリクスには[Host Metrics Receiver](https://github.com/open-telemetry/opentelemetry-collector-contrib/blob/main/receiver/hostmetricsreceiver/internal/scraper/cpuscraper/documentation.md)のページから確認できます。
 `exporters.prometheusremotewrite.external_labels`の設定で`oteltest=cndt2023`のラベルを付与しているため、ラベルの指定をすることでOpenTelemetry Colelctorが出力したメトリクスのみに絞ることも可能です。
 
