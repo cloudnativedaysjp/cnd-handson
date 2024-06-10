@@ -381,7 +381,7 @@ kubectl logs -l app.kubernetes.io/name=metrics-collector-collector -f
 ```
 
 次に、実際にGrafana上からメトリクスを確認してみましょう。
-`http://grafana.example.com/explore` に接続し、`system_cpu_time_seconds_total`のメトリクスを確認してみます。
+`https://grafana.example.com/search` に接続し、`system_cpu_time_seconds_total`のメトリクスを確認してみます。
 今回利用している`hostmetrics` Receiverで取得しているメトリクスには[Host Metrics Receiver](https://github.com/open-telemetry/opentelemetry-collector-contrib/blob/main/receiver/hostmetricsreceiver/internal/scraper/cpuscraper/documentation.md)のページから確認できます。
 `exporters.prometheusremotewrite.external_labels`の設定で`oteltest=cndt2023`のラベルを付与しているため、ラベルの指定をすることでOpenTelemetry Colelctorが出力したメトリクスのみに絞ることも可能です。
 
@@ -476,14 +476,14 @@ spec:
     receivers:
       otlp:
         protocols:
-          grpc:
+          http:
 
     processors: {}
 
     exporters:
       debug: {}
       otlp:
-        endpoint: jaeger-collector.jaeger:14250
+        endpoint: jaeger-collector.jaeger:4317
         tls:
           insecure: true
 
@@ -526,8 +526,8 @@ NAME                                             READY   STATUS    RESTARTS   AG
 pod/trace-collector-collector-5bbc5d7c47-jtscf   2/2     Running   0          88s
 
 NAME                                         TYPE        CLUSTER-IP      EXTERNAL-IP   PORT(S)    AGE
-service/trace-collector-collector            ClusterIP   10.96.172.252   <none>        4317/TCP   10m
-service/trace-collector-collector-headless   ClusterIP   None            <none>        4317/TCP   10m
+service/trace-collector-collector            ClusterIP   10.96.172.252   <none>        4318/TCP   10m
+service/trace-collector-collector-headless   ClusterIP   None            <none>        4318/TCP   10m
 ```
 
 
@@ -535,7 +535,7 @@ OpenTelemetry Operatorには、各種アプリケーションのトレースデ�
 トレースデータを計装する場合には、[SDKを利用してアプリケーションに手動インスツルメンテーション](https://opentelemetry.io/docs/instrumentation/)するか、[サイドカーとしてコンテナをデプロイして自動インスツルメンテーション](https://opentelemetry.io/docs/kubernetes/operator/automatic/)するかの2通りの方法があります。
 今回は、アプリケーションに手を加えなくて利用可能な自動インスツルメンテーションを利用します。
 
-自動インスツルメンテーションを行う場合には、`Instrumentation`リソースで設定を行います。今回はデータを取得し、先ほど作成したJaegerのOTLP用のHTTPエンドポイント `jaeger-collector.jaeger:14250` に対してデータを転送する設定を行います。
+自動インスツルメンテーションを行う場合には、`Instrumentation`リソースで設定を行います。今回はデータを取得し、先ほど作成したJaegerに転送するOpenTelemetry CollectorのOTLP用のエンドポイント `trace-collector-collector.default:4318` に対してデータを転送する設定を行います。
 
 ```yaml
 apiVersion: opentelemetry.io/v1alpha1
@@ -545,7 +545,7 @@ metadata:
   namespace: handson
 spec:
   exporter:
-    endpoint: http://jaeger-collector.jaeger:4318
+    endpoint: http://trace-collector-collector.default:4318
   propagators:
     - tracecontext
     - baggage
@@ -591,8 +591,8 @@ kubectl -n handson get pods
 ```
 ```bash
 # 実行結果
-NAME                               READY   STATUS   RESTARTS   AGE
-handson-blue-5fb8dc75fd-7cvxg   2/2     Ready    0          30s
+NAME                             READY   STATUS   RESTARTS   AGE
+handson-blue-5b6445bcfc-vdmwm    2/2     Ready    0          30s
 ```
 
 
