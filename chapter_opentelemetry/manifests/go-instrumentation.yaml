@@ -5,7 +5,7 @@ metadata:
   namespace: handson
 spec:
   exporter:
-    endpoint: http://jaeger-collector.jaeger:4318
+    endpoint: http://trace-collector-collector.default:4318
   propagators:
     - tracecontext
     - baggage
