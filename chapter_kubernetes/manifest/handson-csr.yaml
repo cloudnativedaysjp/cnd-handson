@@ -1,0 +1,9 @@
+apiVersion: certificates.k8s.io/v1
+kind: CertificateSigningRequest
+metadata:
+  name: handson-user
+spec:
+  signerName: kubernetes.io/kube-apiserver-client
+  request: <base64でエンコードしたテキストを貼り付ける>
+  usages:
+  - client auth

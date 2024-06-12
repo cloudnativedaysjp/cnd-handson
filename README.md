@@ -1,54 +1,68 @@
-# Co-located Hands-on Event by CNDT2023 Committee
-『一日で学ぶクラウドネイティブ技術実践ハンズオン』by CloudNative Days Tokyo 2023 実行委員会のドキュメントです。
+# Co-located Hands-on Event by CNDS2024 Committee
+『一日で学ぶクラウドネイティブ技術実践ハンズオン』by CloudNative Days Summer 2024 実行委員会のドキュメントです。
 
-このハンズオンでは、Prometheus・Grafana・OpenTelemetry・Argo CD・Argo Rollouts・Istio・Cilium・Hubble といったよく利用されるクラウドネイティブな OSS について触れることができるハンズオンです。
+このハンズオンでは、Docker・Kubernetes・Prometheus・Grafana・OpenTelemetry・Argo CD・Argo Rollouts・Istio・Cilium・Hubble Loki Tempo Pyroscopeといったよく利用されるクラウドネイティブな OSS について触れることができるハンズオンです。
 これらの OSS についての第一歩を学び、これから先の学習のきっかけにしてください。
 
 
 ## Chapter
-準備用chapter1＋全10chapterから構成されています。
-- [chapter00_setup](./chapter00_setup/)
-- [chapter01_cluster-create](./chapter01_cluster-create/)
-- [chapter02_prometheus](./chapter02_prometheus/)
-- [chapter03_grafana](./chapter03_grafana/)
-- [chapter04_opentelemetry](./chapter04_opentelemetry/)
-- [chapter05_argocd](./chapter05_argocd/)
-- [chapter06_istio](./chapter06_istio/)
-- [chapter07_cilium](./chapter07_cilium/)
-- [chapter08_argo-rollouts](./chapter08_argo-rollouts/)
-- [chapter09_istio-ambientmesh](./chapter09_istio-ambientmesh/)
-- [chapter10_hubble](./chapter10_hubble/)
+準備用chapter＋全15chapterから構成されています。
+- [chapter_setup](./chapter_setup/)
+- [chapter_cluster-create](./chapter_cluster-create/)
+- [chapter_docker](./chapter_docker/)
+- [chapter_kubernetes](./chapter_kubernetes/)
+- [chapter_prometheus](./chapter_prometheus/)
+- [chapter_grafana](./chapter_grafana/)
+- [chapter_opentelemetry](./chapter_opentelemetry/)
+- [chapter_argocd](./chapter_argocd/)
+- [chapter_istio](./chapter_istio/)
+- [chapter_cilium](./chapter_cilium/)
+- [chapter_argo-rollouts](./chapter_argo-rollouts/)
+- [chapter_istio-ambientmesh](./chapter_istio-ambientmesh/)
+- [chapter_hubble](./chapter_hubble/)
+- [chapter_loki](./chapter_loki/)
+- [chapter_tempo](./chapter_tempo/)
+- [chapter_pyroscope](./chapter_pyroscope/)
 
 ### 進め方
-まずは、chapter00, chapter01を実施してhandsonを進めるための環境を構築してください。<br>
+まずは、chapter, chapterを実施してhandsonを進めるための環境を構築してください。<br>
 その後は、順番にchapterを進めることはもちろん、下記フローチャートのように、気になる技術に焦点を当てたchapterを進めることもできます。
 
 ```mermaid
 flowchart TD
-    setup[chapter00_setup]
-    cluster[chapter01_cluster-create]
-    prom[chapter02_prometheus]
-    grafana[chapter03_grafana]
-    otel[chapter04_opentelemetry]
-    argocd[chapter05_argocd]
-    istio[chapter06_istio]
-    cilium[chapter07_cilium]
-    argorollouts[chapter08_argo-rollouts]
-    istioambient[chapter09_istio-ambientmesh]
-    hubble[chapter10_hubble]
+    setup[chapter_setup]
+    cluster[chapter_cluster-create]
+    docker[chapter_docker]
+    k8s[chapter_kubernetes]
+    prom[chapter_prometheus]
+    grafana[chapter_grafana]
+    otel[chapter_opentelemetry]
+    argocd[chapter_argocd]
+    istio[chapter_istio]
+    cilium[chapter_cilium]
+    argorollouts[chapter_argo-rollouts]
+    istioambient[chapter_istio-ambientmesh]
+    hubble[chapter_hubble]
+    loki[chapter_loki]
+    tempo[chapter_tempo]
+    pyroscope[chapter_pyroscope]
 
     setup-->cluster
-
+    cluster-->docker
+    docker-->k8s
     cluster-->prom
     cluster-->argocd
 
     prom-->grafana
     prom-->argorollouts
     prom-->istio
-    argocd-->prom
 
     grafana-->otel
     grafana-->cilium
+    grafana-->pyroscope
+
+    otel-->loki
+    otel-->tempo
 
     cilium-->hubble
 
