@@ -68,9 +68,9 @@ Argo CDを利用する上では、GitHubへのPush等の変更が必要不可欠
 ![fork1](image/setup/fork-1-new.png)
 
 Create fork をクリックします
-<br>
+
 ![fork2](image/setup/fork-2-new.png)
-<br>
+
 自身のアカウントでforkされていることが確認できます
 ![fork3](image/setup/fork-3-new.png)
 
@@ -198,7 +198,7 @@ Context 'argocd.example.com' updated
 ```
 以下のように、WebUIでログインした状態と同じです。
 ![webui](./image/setup/access-webui.png)
-<br>
+
 ### レポジトリの登録
 
 同期させるGitのレポジトリを登録します。
@@ -277,12 +277,43 @@ image: argoproj/rollouts-demo:green
 ```
 git push origin main
 ```
-Argo CDはデフォルトでは3分に一回の頻度でブランチを確認し、差分を検出しています。 3分待てない場合には、ページ上部にある [REFRESH]をクリックします。下記のようにdeploymentにおいて差分が検出されます。（黄色で表示されているOutOfSyncが差分があることを示しています） ちなみにAppの設定において、SYNC POLICYをManualでなくAutoにしていた場合には、ここでOutOfSyncを検知すると自動でArgo CDがSyncを実行します。
-<br>
-SYNCして、青色 → 緑色のタイルに変わるることを確認して下さい。
+Argo CDはデフォルトでは3分に一回の頻度でブランチを確認し、差分を検出しています。アプリケーションの状態を見てみましょう。
+```
+argocd app get argocd-demo
+```
+下記のようにdeploymentにおいて差分が検出されます。（STATUS OutOfSyncが差分があることを示しています） 
+ちなみにAppの設定において、SYNC POLICYをManualでなくAutoにしていた場合には、ここでOutOfSyncを検知すると自動でArgo CDがSyncを実行します。
+```
+# 実行結果
+
+Name:               argo-cd/argocd-demo
+Project:            default
+Server:             https://kubernetes.default.svc
+Namespace:          argocd-demo
+URL:                https://argocd.example.com/applications/argocd-demo
+Source:
+- Repo:             https://github.com/自身のアカウント/cnd-handson
+  Target:           
+  Path:             chapter_argocd/app/default
+SyncWindow:         Sync Allowed
+Sync Policy:        Manual
+Sync Status:        OutOfSync from  (264190f)
+Health Status:      Healthy
+
+GROUP              KIND        NAMESPACE    NAME                  STATUS     HEALTH   HOOK  MESSAGE
+                   Service     argocd-demo  handson               Synced     Healthy        service/handson unchanged
+apps               Deployment  argocd-demo  handson               OutOfSync  Healthy        deployment.apps/handson unchanged
+networking.k8s.io  Ingress     argocd-demo  app-ingress-by-nginx  Synced     Healthy        ingress.networking.k8s.io/app-ingress-by-nginx unchanged
+```
+
+手動でSYNCするコマンドを実行してみましょう。
 ```
 argocd app sync argocd-demo
 ```
+
+SYNC後、
+http://app.argocd.example.com
+にアクセスして、青色 → 緑色のタイルに変わるることを確認して下さい。
 
 もちろん、WebUIから設定することも可能です。
 ![blue2green](image/demoapp/blue2green.png)
@@ -291,10 +322,10 @@ Gitの変更をKubernetes Clusterに反映させるためにページ上部に�
 http://app.argocd.example.com
 へアクセスして確認するとタイルが青から緑に変わったことが確認できます。
 ![blue2green](image/demoapp/blue2green-demoapp.png)
-<br>
+
 ## Kustomizeを使ったデプロイ
 Argo CD上でマニフェストの管理ツールである「Kustomize」を利用した、開発環境と本番環境の2つのマニフェスト管理を行います。
-Kustomize とは、Kuberbets コミュニティの sig-cli が提供しているマニフェストのテンプレーティングツールです。
+Kustomize とは、Kubernetes コミュニティの sig-cli が提供しているマニフェストのテンプレーティングツールです。
 環境ごとにマニフェストを生成したり、特定のフィールドを上書きするといった機能が提供されており、効率的にマニフェストを作ることができます。
 
 ```
@@ -428,7 +459,6 @@ WebUIでも確認してみると、argocd-kustomise-dev/argocd-kustomise-prdの�
 ### 本番環境
 ![Kustomize-prd](image/demoapp/Kustomize-sync-prd.png)
 
-<br>
 ## Helmを使ったデプロイ
 KubernetesのパッケージマネージャーのHelmを利用したデプロイを行います。
 
