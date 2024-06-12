@@ -529,7 +529,7 @@ http://helm.argocd.example.com
 アクセスして青いタイルのアプリが動いていることが確認できます。<br>
 こちらでHelmを使ってデプロイが出来ている事が確認できました。
 
-## 作成したデモアプリケーションを削除
+## 作成したリソースの削除
 作成したアプリケーションを削除していきます。
 ```
 argocd app delete argocd-demo
@@ -549,8 +549,12 @@ argocd app delete argocd-kustomize-prd
 argocd app delete argocd-helm
 ```
 
-最後に、作成したnamespaceの削除を行います。
+作成したnamespaceの削除を行います。
 ```
 kubectl delete namespace argocd-demo argocd-kustomize-dev argocd-kustomize-prd argocd-helm
 ```
 
+最後に、argocd自体も削除します
+```
+kubectl delete namespace argo-cd
+```
