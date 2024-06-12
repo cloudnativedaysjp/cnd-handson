@@ -184,8 +184,11 @@ Gitの変更をKubernetes Clusterに反映させるためにページ上部に�
 http://app.argocd.example.com
 へアクセスして確認するとタイルが青から緑に変わったことが確認できます。
 ![blue2green](image/demoapp/blue2green-demoapp.png)
+
 ## Kustomizeを使ったデプロイ
 Argo CD上でマニフェストの管理ツールである「Kustomize」を利用した、開発環境と本番環境の2つのマニフェスト管理を行います。
+Kustomize とは、Kubernetes コミュニティの sig-cli が提供しているマニフェストのテンプレーティングツールです。
+環境ごとにマニフェストを生成したり、特定のフィールドを上書きするといった機能が提供されており、効率的にマニフェストを作ることができます。
 
 Applicationsの画面において + NEW APPをクリックし、本番環境・開発環境それぞれのアプリケーションを作成します。
 ![Applications](image/demoapp/new-app.png)
