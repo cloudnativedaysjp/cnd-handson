@@ -73,7 +73,7 @@ sudo kind create cluster --config=kind-config.yaml
 
 ```shell
 Creating cluster "kind" ...
- ✓ Ensuring node image (kindest/node:v1.27.3) 🖼
+ ✓ Ensuring node image (kindest/node:v1.30.0) 🖼
  ✓ Preparing nodes 📦 📦 📦
  ✓ Writing configuration 📜
  ✓ Starting control-plane 🕹️
@@ -84,7 +84,7 @@ You can now use your cluster with:
 
 kubectl cluster-info --context kind-kind
 
-Not sure what to do next? 😅  Check out https://kind.sigs.k8s.io/docs/user/quick-start/
+Have a nice day! 👋
 ```
 
 > [!NOTE]
