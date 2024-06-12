@@ -328,26 +328,6 @@ Argo CD上でマニフェストの管理ツールである「Kustomize」を利�
 Kustomize とは、Kubernetes コミュニティの sig-cli が提供しているマニフェストのテンプレーティングツールです。
 環境ごとにマニフェストを生成したり、特定のフィールドを上書きするといった機能が提供されており、効率的にマニフェストを作ることができます。
 
-```
-GENERAL
-  Application Name: 
-    開発環境: argocd-kustomize-dev
-    本番環境: argocd-kustomize-prd
-  Project Name: default
-  SYNC POLICY: Manual
-  SYNC OPTIONS: AUTO CREATE NAMESPACE [v]
-  SOURCE
-    Repository URL: https://github.com/自身のアカウント名/cnd-handson
-    Revision: main
-    Path:
-      開発環境: chapter_argocd/app/Kustomize/overlays/dev
-      本番環境: chapter_argocd/app/Kustomize/overlays/prd
-  DESTINATION
-    Cluster URL: https://kubernetes.default.svc
-    Namespace: 
-      開発環境: argocd-kustomize-dev
-      本番環境: argocd-kustomize-prd
-```
 開発環境のアプリを作成します。
 ```
 argocd app create argocd-kustomize-dev --repo https://github.com/自身のアカウント名/cnd-handson --sync-option CreateNamespace=true --path chapter_argocd/app/Kustomize/overlays/dev --dest-server https://kubernetes.default.svc --dest-namespace argocd-kustomize-dev
