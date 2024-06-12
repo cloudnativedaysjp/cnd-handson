@@ -1707,7 +1707,7 @@ Events:
   Warning  FailedCreate  5m15s (x8 over 10m)  replicaset-controller  (combined from similar events): Error creating: pods "resource-test-6cb9b54b4c-z92sl" is forbidden: failed quota: test-resource-quota: must specify limits.cpu for: nginx; limits.memory for: nginx
 ```
 
-では、先ほどのDeployment Manifestをvimなどのエディタを利用して編集し、リソースの上限と下限を割り当ててみましょう。
+では、先ほどのDeployment Manifest resource-test.yamlをvimなどのエディタを利用して編集し、リソースの上限と下限を割り当ててみましょう。
 
 ```Yaml
 apiVersion: apps/v1
