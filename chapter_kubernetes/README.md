@@ -1745,8 +1745,7 @@ kubectl apply -f resource-test.yaml
 ```
 
 すると、Podが対象のnamespaceにデプロイされたことが確認できます。
-Bash
-```
+```Bash
 kubectl get pod -n resource-test 
 ```
 
