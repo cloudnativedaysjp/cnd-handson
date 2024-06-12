@@ -15,7 +15,7 @@ CDは、アプリケーションのデプロイメントを自動化するプロ
 GitOpsは、CI/CDを実現するための手法の一つで、Gitのリポジトリの変更をトリガーにCI/CDを実行することで、アプリケーションのデプロイメントを自動化するプロセスです。
 
 
-## Argo CDについて 
+## Argo CDについて
 Kubrnetes用のGitOpsツールで、Gitリポジトリに格納されたマニフェストをデプロイすることができます。WEB GUIとCLIの両方で操作することができ、アプリケーションやKuberenetesのリソースの状態を可視化し簡単に管理する事が可能になっています。
 Argo CDはGitHub等からのWebhookを受け取り、Gitリポジトリに格納されたマニフェストをデプロイすることができるため、開発者のコードPushやPRをトリガーにデプロイまで実行することができます。
 
@@ -39,7 +39,7 @@ Gitリポジトリとアプリケーションの状態が一致せず、アプ�
 #### Synced
 Gitリポジトリとアプリケーションの状態が一致し、アプリケーションが期待どおりに機能していることを示します。
 
-## Healthy/Degrated/Processing 
+## Healthy/Degrated/Processing
 アプリケーションの状態を示す異なるステータスで、アプリケーションの健全性や動作状態を示すステータスです。
 #### Healthy
 アプリケーションのコンポーネントやサーバーが期待どおりに応答し、エラーや障害がない状態です。
@@ -79,7 +79,7 @@ GitHubのリポジトリの登録やPushはforkした自身のリポジトリを
 こちらは自身の端末で実施してください。
 https://argo-cd.readthedocs.io/en/stable/cli_installation/
 
-<details><summary><b>Linux User</b></summary> 
+<details><summary><b>Linux User</b></summary>
 
 #### Linux
 - Homebrew
@@ -101,8 +101,8 @@ rm argocd-linux-amd64
 ```
 </details>
 
-<details><summary><b>Mac User</b></summary> 
-   
+<details><summary><b>Mac User</b></summary>
+
 #### Mac(M1)
 ```
 VERSION=$(curl --silent "https://api.github.com/repos/argoproj/argo-cd/releases/latest" | grep '"tag_name"' | sed -E 's/.*"([^"]+)".*/\1/')
@@ -132,8 +132,8 @@ rm argocd-darwin-arm64
 ```
 </details>
 
-<details><summary><b>Windows User</b></summary> 
-   
+<details><summary><b>Windows User</b></summary>
+
 #### Windows
 Download With PowerShell: Invoke-WebRequest
 ```
@@ -142,7 +142,7 @@ $version = (Invoke-RestMethod https://api.github.com/repos/argoproj/argo-cd/rele
 ```
 </details>
 
-### Argo　CDのインストール
+### Argo CDのインストール
 こちらのインストールは、VM上で実施します。
 helmファイルを利用してArgo CDをインストールします。
 ```
@@ -179,8 +179,8 @@ kubectl apply -f ingress/ingress.yaml
 ```
 kubectl -n argo-cd get secret argocd-initial-admin-secret -o jsonpath="{.data.password}" | base64 -d ; echo`
 ```
-  
-## Argo　CDへログイン
+
+## Argo CDへログイン
 こちらは自身の端末で実施してください。
 ```
 argocd login --insecure argocd.example.com

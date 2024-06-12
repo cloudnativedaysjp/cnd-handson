@@ -1,8 +1,8 @@
-# こちらの手順では、ArgoCDをWebUIから作成する流れになります。<br>ArgoCD　CLIで作成する場合、別途README_cli.mdを参照ください。
+# こちらの手順では、Argo CDをWebUIから作成する流れになります。<br>Argo CD CLIで作成する場合、別途README_cli.mdを参照ください。
 
 # Argo CD with WebUI
 この章では、Kubernetes上でGitOpsを可能とするCDツールであるArgo CDについて紹介し、導入します。<br>
-ArgocdをWebUIでの構築を想定しています。
+Argo CDをWebUIでの構築を想定しています。
 
 ## GitOpsとCI/CDについて
 CI/CDは、継続的インテグレーション（CI）と継続的デリバリー/デプロイメント（CD）を実現するための手法です。
@@ -13,9 +13,9 @@ CDは、アプリケーションのデプロイメントを自動化するプロ
 GitOpsは、CI/CDを実現するための手法の一つで、Gitのリポジトリの変更をトリガーにCI/CDを実行することで、アプリケーションのデプロイメントを自動化するプロセスです。
 
 
-## Argo CDについて 
+## Argo CDについて
 Kubrnetes用のGitOpsツールで、Gitリポジトリに格納されたマニフェストをデプロイすることができます。WEB GUIとCLIの両方で操作することができ、アプリケーションやKuberenetesのリソースの状態を可視化し簡単に管理する事が可能になっています。
-ArgoCDはGitHub等からのWebhookを受け取り、Gitリポジトリに格納されたマニフェストをデプロイすることができるため、開発者のコードPushやPRをトリガーにデプロイまで実行することができます。
+Argo CDはGitHub等からのWebhookを受け取り、Gitリポジトリに格納されたマニフェストをデプロイすることができるため、開発者のコードPushやPRをトリガーにデプロイまで実行することができます。
 
 
 
@@ -37,7 +37,7 @@ Gitリポジトリとアプリケーションの状態が一致せず、アプ�
 #### Synced
 Gitリポジトリとアプリケーションの状態が一致し、アプリケーションが期待どおりに機能していることを示します。
 
-## Healthy/Degrated/Processing 
+## Healthy/Degrated/Processing
 アプリケーションの状態を示す異なるステータスで、アプリケーションの健全性や動作状態を示すステータスです。
 #### Healthy
 アプリケーションのコンポーネントやサーバーが期待どおりに応答し、エラーや障害がない状態です。
@@ -113,7 +113,7 @@ kubectl -n argo-cd get secret argocd-initial-admin-secret -o jsonpath="{.data.pa
 
 同期させるGitのレポジトリを登録します。
 
-Settings - > Repositories と進み CONEECT REPOをクリックします　
+Settings - > Repositories と進み CONEECT REPOをクリックします
 ![CONEECT REPO](./image/setup/add-repo-setting.png)
 上の画面上で各項目を次のように設定
 ```
@@ -173,7 +173,7 @@ image: argoproj/rollouts-demo:green
 ```
 git push origin main
 ```
-Argo CDはデフォルトでは3分に一回の頻度でブランチを確認し、差分を検出しています。 3分待てない場合には、ページ上部にある [REFRESH]をクリックします。下記のようにdeploymentにおいて差分が検出されます。（黄色で表示されているOutOfSyncが差分があることを示しています） ちなみにAppの設定において、SYNC POLICYをManualでなくAutoにしていた場合には、ここでOutOfSyncを検知すると自動でArgoCDがSyncを実行します。
+Argo CDはデフォルトでは3分に一回の頻度でブランチを確認し、差分を検出しています。 3分待てない場合には、ページ上部にある [REFRESH]をクリックします。下記のようにdeploymentにおいて差分が検出されます。（黄色で表示されているOutOfSyncが差分があることを示しています） ちなみにAppの設定において、SYNC POLICYをManualでなくAutoにしていた場合には、ここでOutOfSyncを検知すると自動でArgo CDがSyncを実行します。
 ![blue2green](image/demoapp/blue2green.png)
 Gitの変更をKubernetes Clusterに反映させるためにページ上部にあるSYNCをクリックして、下記のように表示されていることを確認して下さい。
 ![blue2green](image/demoapp/blue2green-sync.png)
@@ -181,7 +181,7 @@ http://app.argocd.example.com
 へアクセスして確認するとタイルが青から緑に変わったことが確認できます。
 ![blue2green](image/demoapp/blue2green-demoapp.png)
 ## Kustomizeを使ったデプロイ
-ArgoCD上でマニフェストの管理ツールである「Kustomize」を利用した、開発環境と本番環境の2つのマニフェスト管理を行います。
+Argo CD上でマニフェストの管理ツールである「Kustomize」を利用した、開発環境と本番環境の2つのマニフェスト管理を行います。
 
 Applicationsの画面において + NEW APPをクリックし、本番環境・開発環境それぞれのアプリケーションを作成します。
 [Applications](./image/demoapp/new-app.png)
