@@ -1263,7 +1263,7 @@ readiness-pod           1/1     Running   0             7s
 動作確認後、リソースを削除します。
 
 ```Bash
-kubecttl delete pod readiness-pod
+kubectl delete pod readiness-pod
 ```
 
 ### 11.2 Liveness Probe
