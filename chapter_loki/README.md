@@ -129,7 +129,7 @@ Loki自体はシングルバイナリとなっており、実行時に`-target`�
     - 推奨はされていません。詳細は[Manage storage](https://grafana.com/docs/loki/latest/operations/storage/#manage-storage)を参照してください
 - Memcached
   - 各コンポーネントで利用されるキャッシュです
-  - 図ではMemcacedとなっていますが、他にもRedisなどが利用できます
+  - 図ではMemcachedとなっていますが、他にもRedisなどが利用できます
     - 詳細は[configure: cache config](https://grafana.com/docs/loki/latest/configure/#cache_config)を参照してください
 
 ## Deploy Model
