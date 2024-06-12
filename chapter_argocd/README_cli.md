@@ -244,7 +244,7 @@ Project:            default
 Server:             https://kubernetes.default.svc
 Namespace:          argocd-demo
 URL:                https://argocd.example.com/applications/argocd-demo
-Repo:               https://github.com/akiran123/cnd-handson
+Repo:               https://github.com/自身のアカウント/cnd-handson
 Target:
 Path:               chapter_argocd/app/default
 SyncWindow:         Sync Allowed
@@ -494,7 +494,7 @@ Project:            default
 Server:             https://kubernetes.default.svc
 Namespace:          argocd-helm
 URL:                http://argocd.argocd.example.com/applications/argocd-helm
-Repo:               https://github.com/akiran123/cnd-handson
+Repo:               https://github.com/自身のアカウント/cnd-handson
 Target:
 Path:               chapter_argocd/app/Helm/rollouts-demo
 SyncWindow:         Sync Allowed
