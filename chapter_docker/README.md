@@ -95,7 +95,7 @@ docker -v
 
 ```
 # 実行結果
-Docker version 26.0.0, build 2ae903e
+Docker version 26.1.4, build 5650f9b
 ```
 
 その後、自身のDocker Hubにログインを行います。
