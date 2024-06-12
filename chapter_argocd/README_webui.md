@@ -262,9 +262,11 @@ http://helm.argocd.example.com
 各アプリのDELETEをクリックします
 
 Applications画面の場合は、一番右下の端に、
+
 ![delete](image/demoapp/Delete-1.png)
 
 詳細画面の場合は、右上の2番目にあります。
+
 ![delete](image/demoapp/Delete-2.png)
 
 削除する際にアプリケーション名の入力があるので入力してOKをクリックします。
