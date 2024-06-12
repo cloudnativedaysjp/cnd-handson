@@ -842,7 +842,7 @@ kubectl delete deployment handson-init-container
 ```
 
 
-### 9. 認証
+### 9. 認証・認可
 
 すべてのKubernetesクラスターには、2種類のユーザーがあります。Kubernetesによって管理されるService Accountと、通常のユーザーです。
 
