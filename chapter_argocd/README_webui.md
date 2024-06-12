@@ -67,9 +67,9 @@ Argo CDを利用する上では、GitHubへのPush等の変更が必要不可欠
 [このハンズオン](https://github.com/cloudnativedaysjp/cnd-handson)にアクセスし、forkをクリックします
 ![fork1](image/setup/fork-1-new.png)
 Create fork をクリックします
-<br>
+
 ![fork2](image/setup/fork-2-new.png)
-<br>
+
 自身のアカウントでforkされていることが確認できます
 ![fork2](image/setup/fork-3-new.png)
 
@@ -188,7 +188,7 @@ http://app.argocd.example.com
 Argo CD上でマニフェストの管理ツールである「Kustomize」を利用した、開発環境と本番環境の2つのマニフェスト管理を行います。
 
 Applicationsの画面において + NEW APPをクリックし、本番環境・開発環境それぞれのアプリケーションを作成します。
-[Applications](./image/demoapp/new-app.png)
+![Applications](image/demoapp/new-app.png)
 上の画面上で各項目を次のように設定します。(開発環境と本番環境で分けて表示してある項目は、それぞれ設定してください)
 ```
 GENERAL
@@ -270,7 +270,7 @@ Applications画面の場合は、一番右下の端に、
 全てのアプリケーションを削除して、初めてアクセスした画面と同じようにして下さい。
 ![aplication](image/setup/access-webui.png)
 
-namespaceの削除を行います。
+作成したnamespaceの削除を行います。
 ```
 kubectl delete namespace argocd-demo argocd-kustomize-dev argocd-kustomize-prd argocd-helm
 ```
