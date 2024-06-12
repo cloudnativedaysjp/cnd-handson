@@ -95,11 +95,11 @@ docker -v
 
 ```
 # 実行結果
-Docker version 26.0.0, build 2ae903e
+Docker version 26.1.4, build 5650f9b
 ```
 
 > [!NOTE]
-> Dockerのバージョンは、執筆時点(2024年5月)での最新バージョンです。
+> Dockerのバージョンは、執筆時点(2024年6月)での最新バージョンです。
 
 その後、自身のDocker Hubにログインを行います。
 
@@ -123,15 +123,16 @@ docker pull docker/getting-started
 # 実行結果
 Using default tag: latest
 latest: Pulling from docker/getting-started
-df9b9388f04a: Pull complete 
-5867cba5fcbd: Pull complete 
-4b639e65cb3b: Pull complete 
-061ed9e2b976: Pull complete 
-bc19f3e8eeb1: Pull complete 
-4071be97c256: Pull complete 
-79b586f1a54b: Pull complete 
-0c9732f525d6: Pull complete 
-Digest: sha256:b558be874169471bd4e65bd6eac8c303b271a7ee8553ba47481b73b2bf597aae
+c158987b0551: Pull complete
+1e35f6679fab: Pull complete
+cb9626c74200: Pull complete
+b6334b6ace34: Pull complete
+f1d1c9928c82: Pull complete
+9b6f639ec6ea: Pull complete
+ee68d3549ec8: Pull complete
+33e0cbbb4673: Pull complete
+4f7e34c2de10: Pull complete
+Digest: sha256:d79336f4812b6547a53e735480dde67f8f8f7071b414fbd9297609ffb989abc1
 Status: Downloaded newer image for docker/getting-started:latest
 docker.io/docker/getting-started:latest
 ```
@@ -149,7 +150,9 @@ docker images
 
 ```
 # 実行結果
-docker/getting-started                                  latest    cb90f98fd791   4 months ago    28.8MB
+REPOSITORY               TAG       IMAGE ID       CREATED         SIZE
+kindest/node             <none>    9319cf209ac5   4 weeks ago     974MB
+docker/getting-started   latest    3e4394f6b72f   17 months ago   47MB
 ```
 
 
@@ -179,17 +182,37 @@ curl -I localhost:8888
 ```
 
 
+```
+# 実行結果
+HTTP/1.1 200 OK
+Server: nginx/1.23.3
+Date: Wed, 12 Jun 2024 06:26:03 GMT
+Content-Type: text/html
+Content-Length: 8702
+Last-Modified: Thu, 22 Dec 2022 20:49:18 GMT
+Connection: keep-alive
+ETag: "63a4c2ce-21fe"
+Accept-Ranges: bytes
+```
+
+
 次に、コンテナを停止します。
 
 
 コンテナを停止するにはコンテナIDが必要なため
 以下のいずれかのコマンドで自身のコンテナIDを出力します。
+実行結果の左端、例でいうと `d7ae9ab08bd5` がコンテナIDとなります。
 
 
 ```Bash
 docker container ls | grep getting-started
 # or
 docker ps | grep getting-started
+```
+
+```
+# 実行結果
+d7ae9ab08bd5   docker/getting-started   "/docker-entrypoint.…"   3 minutes ago    Up 3 minutes    0.0.0.0:8888->80/tcp, :::8888->80/tcp                                                                                                                                            vigorous_tharp
 ```
 
 以下のコマンドでコンテナを停止します。

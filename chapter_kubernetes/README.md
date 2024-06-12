@@ -200,7 +200,7 @@ spec:
         app: hello-world
     spec:
       containers:
-      - image: <DockerHubのユーザ名>/<リポジトリ名>:<タグ>
+      - image: <DockerHubのユーザ名>/<リポジトリ名>:<タグ名>
         imagePullPolicy: Always
         name: hello-world
         ports:
@@ -608,7 +608,7 @@ http://rollout.example.com
 Pod更新前の状態では、`This app is Blue`の画面が表示がされていると思います。
 
 
-続いて、先ほどデプロイしたDeplpymentに対して、イメージの更新を行います。
+続いて、先ほどデプロイしたDeploymentに対して、イメージの更新を行います。
 
 
 その際、Rolling Updateの機能が働き、25%のPod数(1個)ずつ追加されていく様子が確認できます。
@@ -1278,7 +1278,7 @@ readiness-pod           1/1     Running   0             7s
 動作確認後、リソースを削除します。
 
 ```Bash
-kubecttl delete pod readiness-pod
+kubectl delete pod readiness-pod
 ```
 
 ### 10.2 Liveness Probe
@@ -1597,6 +1597,10 @@ kubectl create namespace resource-test
 
 以下のようにnamespaceが作成されます。
 
+```Bash
+kubectl get namespace
+```
+
 ```Log
 # 実行結果
 
@@ -1717,7 +1721,7 @@ Events:
   Warning  FailedCreate  5m15s (x8 over 10m)  replicaset-controller  (combined from similar events): Error creating: pods "resource-test-6cb9b54b4c-z92sl" is forbidden: failed quota: test-resource-quota: must specify limits.cpu for: nginx; limits.memory for: nginx
 ```
 
-では、先ほどのDeployment Manifestをvimなどのエディタを利用して編集し、リソースの上限と下限を割り当ててみましょう。
+では、先ほどのDeployment Manifest resource-test.yamlをvimなどのエディタを利用して編集し、リソースの上限と下限を割り当ててみましょう。
 
 ```Yaml
 apiVersion: apps/v1
@@ -1738,13 +1742,14 @@ spec:
       containers:
         - name: nginx
           image: nginx:latest
-          resources:  # 追記
-            requests:  # 追記
-              memory: 100Mi  # 追記
-              cpu: 100m  # 追記
-            limits:  # 追記
-              memory: 200Mi  # 追記 
-              cpu: 200m  # 追記
+          ## ↓ここから追記
+          resources:
+            requests:
+              memory: 100Mi
+              cpu: 100m
+            limits:
+              memory: 200Mi 
+              cpu: 200m 
 ```
 
 
