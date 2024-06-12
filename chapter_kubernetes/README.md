@@ -199,7 +199,7 @@ spec:
         app: hello-world
     spec:
       containers:
-      - image: <DockerHubのユーザ名>/<リポジトリ名>:<タグ>
+      - image: <DockerHubのユーザ名>/<リポジトリ名>:<タグ名>
         imagePullPolicy: Always
         name: hello-world
         ports:
@@ -607,7 +607,7 @@ http://rollout.example.com
 Pod更新前の状態では、`This app is Blue`の画面が表示がされていると思います。
 
 
-続いて、先ほどデプロイしたDeplpymentに対して、イメージの更新を行います。
+続いて、先ほどデプロイしたDeploymentに対して、イメージの更新を行います。
 
 
 その際、Rolling Updateの機能が働き、25%のPod数(1個)ずつ追加されていく様子が確認できます。
