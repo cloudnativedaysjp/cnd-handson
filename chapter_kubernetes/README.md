@@ -52,15 +52,16 @@ Kustomize Version: v5.0.4-0.20230601165947-6ce0bf390ce3
 
 続いて、chapter_kubernetesにcurrent directoryを移動します。
 
-```
+```Bash
 cd ~/cnd-handson/chapter_kubernetes/
 ```
 
 
 ## 2. アプリケーションデプロイ
 
+### 2.1. DeploymentをApply
 
-続いて、簡単なテスト用Podをデプロイします。
+続いて、簡単なテスト用アプリケーションをデプロイします。
 Kubernetesでは、Manifestと呼ばれるファイルによって各リソースの状態が定義されます。
 manifestファイルはyaml形式もしくはjson形式がサポートされています。
 今回はyaml形式のmanifestを用意していますので、そのManifestを使ってPodをデプロイします。
@@ -77,7 +78,7 @@ kubectl apply -f test-deployment.yaml
 kubectl get pods
 ```
 
-### 2.4. ポートフォワードと通信確認
+### 2.2. ポートフォワードと通信確認
 
 続いて、作成したPodにアクセスします。
 今回はポートフォワードを使いpodにアクセスしていきます。
@@ -96,17 +97,17 @@ Forwarding from [::1]:8888 -> 80
 この時点でアクセスが可能になっているはずなので、新しくターミナルを開き、以下のコマンドでアクセスしてみましょう。
 
 ```Bash
-curl http://localhost:8888
+curl -I http://localhost:8888
 ```
 
 
-成功すると、nginxのテストページが表示されるはずです。
+成功すると、リターンコード200が返却されるはずです。
 
 
 動作確認後、ctrl＋Cでポートフォワードを停止します。
 
 
-### 2.5 Pod削除
+### 2.3. Pod削除
 
 続いて、Podを削除してみます。
 以下のコマンドを入力してください。
@@ -123,8 +124,8 @@ kubectl get pod
 
 上記の対応では、対象PodのRESTARTSのみがリセットされPodが削除できていないことがわかります。
 Kubernetesはあるべき状態をManifestとして定義します。
-このケースではPodを削除したことをトリガーにあるべき状態、つまり対象のPodが1つ存在する状態に戻そうと、Podの上位リソースであるDeploymentが働きかけたことが原因です。
-このようなケースでPodを完全に削除したい場合はDeploymentごと削除する必要があります。
+このケースではPodを削除したことをトリガーにあるべき状態、つまり対象のPodが1つ存在する状態に戻そうと、Podの上位リソースであるReplicasetが働きかけたことが原因です。Replicasetはさらに上位リソースであるDeploymentによって管理されています。
+従って、このようなケースでPodを完全に削除したい場合はDeploymentごと削除する必要があります。
 
 まず、以下のコマンドでDeploymentの状態を確認します。
 
@@ -145,7 +146,7 @@ kubectl get deployments
 kubectl get pod
 ```
 
-### 2.6 Tips
+### 2.4. Tips
 
 先ほどまではDeployment Manifestを作成しPodを作成しましたが、簡単なテストを実行したい場合などに手軽にPodを起動したい場合などがあると思います。
 以下のようなコマンドを実行すると、ワンライナーでPodの起動までが行えます。
@@ -536,7 +537,7 @@ spec:
 kubectl apply -f hello-world-ingress.yaml 
 ```
 
-作成したServiceは以下で確認が可能です。
+作成したIngressは以下で確認が可能です。
 
 ```Bash
 kubectl get ingress
@@ -794,7 +795,7 @@ kubectl delete pv handson-pv
 
 
 PodはKubernetesにおける最小の単位ですが、その実態は複数(単独の場合もある)のコンテナで実行するリソースです。
-例えば、Serice Meshを実現するためにネットワークプロキシとなるコンテナAとサービスアプリケーションとなるコンテナBを1つのPodとして稼働させることで、ネットワーク周りの処理をコンテナBに任せてコンテナはサービスの提供に全てのリソースを割くといったことができます。
+例えば、Service Meshを実現するためにネットワークプロキシとなるコンテナAとサービスアプリケーションとなるコンテナBを1つのPodとして稼働させることで、ネットワーク周りの処理をコンテナBに任せてコンテナはサービスの提供に全てのリソースを割くといったことができます。
 また、init containerと呼ばれる一時的な用途のコンテナを作成することも可能です。
 
 今回はinit containerの動作を確認してみましょう。
@@ -841,13 +842,27 @@ kubectl delete deployment handson-init-container
 ```
 
 
-### 9. ServiceAccountとUser Account
+### 9. 認証・認可
 
-KubernetesにはPodにマッピングされるServiceAccountと、管理者もしくは開発者のkubectlの適用範囲を司るUser Accountの概念が存在します。
-まずは、`handson-sa`という名前のServiceAccountを作成してPodが実行することができるコマンドの範囲が制御できることを確認してみましょう。
+すべてのKubernetesクラスターには、2種類のユーザーがあります。Kubernetesによって管理されるService Accountと、通常のユーザーです。
+
+Service AccountはKubernetes APIによって管理されるユーザーです。特定の名前空間にバインドされており、APIサーバーによって自動的に作成されるか、APIコールによって手動で作成されます。
+また、Service Accountは、Secretsとして保存された資格情報の集合に紐付けられています。これをPodにマウントすることで、クラスター内のプロセスがKubernetes APIと通信できるようにします。
+
+一方、クラスターから独立したサービスは通常のユーザーを以下の方法で管理することを想定されています。
+
+- 秘密鍵を配布する管理者
+- KeystoneやGoogle Accountsのようなユーザーストア
+- ユーザー名とパスワードのリストを持つファイル
+  
+これを考慮すると、 Kubernetesは通常のユーザーアカウントを表すオブジェクトを持ちません。 APIコールを介して、通常のユーザーをクラスターに追加することはできません。
+
+APIコールを介して通常のユーザーを追加できませんが、クラスターの認証局(CA)に署名された有効な証明書で表すユーザーは認証済みと判断されます。
+この構成では、Kubernetesは証明書の‘subject’内にある一般的な名前フィールド(例えば、“/CN=bob”)からユーザー名を特定します。
+そこから、ロールベースアクセス制御(RBAC)サブシステムは、ユーザーがあるリソースにおける特定の操作を実行するために認証済みかどうか特定します。
 
 
-#### Service Accountの作成と動作確認
+#### 9.1. Service Accountの作成と動作確認
 
 > ServiceAccount作成
 
@@ -930,13 +945,13 @@ kubectl logs kubectl-pod
 kubectl delete pod kubectl-pod
 ```
 
-#### User Accountの作成と動作確認
+#### 9.2. ユーザの作成と動作確認
 
-続いてUserの作成を行います。
-User Accountは厳密にはK8sのリソースとして定義されておらず、getでも確認ができません。
-しかしながら、APIとマッピングしてkubectlの適用範囲を明示的に制御することができます。
-まずはUser Accountを作成するために秘密鍵とCSRを作成し、それを元にUser Accountを作成します。
-続いて、User Accountに紐づくRoleとRole Bindingを作成し、動作確認を行います。
+続いてユーザの作成を行います。
+前述した通り、KubernetesにはユーザーをAPIコールによって追加することはできませんが、Kuberrnetes Cluster内の認証局にて署名された証明書を持たせることによって、認証されたユーザーとしてAPIを呼び出すことができるようになります。
+今回は、CSRの作成後、認証局での承認を行い証明書を発行したのち、roleの作成を行い実際の動作確認を行います。
+その後、新しいクレデンシャルを作成し、contextを切り替えることで追加したユーザを使ったAPIコールの動作確認を行います。
+尚、本シナリオはPodに関する操作のみが行えるroleを作成します。
 
 > 秘密鍵とCSRの作成
 
@@ -947,13 +962,13 @@ openssl genrsa -out handson-user.pem 2048
 openssl req -new -key handson-user.pem -out handson-user.csr -subj "/CN=handson-user"
 ```
 
-> csrをbase64にエンコード
+> CSRをbase64にエンコード
 
 ```Bash
 cat handson-user.csr | base64 | tr -d '\n'
 ```
 
-> UserAccount作成
+> CSRの作成
 
 handson-csr.yamlを用意しています。
 その中に、先ほどエンコードした文字列を貼り付けます。
@@ -1148,7 +1163,7 @@ kubectl delete deployment test
 
 
 
-## 11. Readiness/Liveness Probe
+## 10. Readiness/Liveness Probe
 
 KubernetesにはPodが正常に起動したか、または正常に動作を続けているかを監視する機能が存在します。
 このセクションで取り扱うReadiness/Liveness Probeは、コマンドの実行結果やTCP・HTTPリクエストなどのリターンコードによって
@@ -1188,7 +1203,7 @@ KubernetesにはPodが正常に起動したか、または正常に動作を続�
   失敗と判断する試行回数（回数）
 
 
-### 11.1 Readiness Probe
+### 10.1 Readiness Probe
 
 今回は`/tmp/ready`ファイルの有無によって、Podの準備が出来ているかを判断するシナリオです。
 まずは対象のファイルを作成しない状態でPodをデプロイしてみます。
@@ -1266,7 +1281,7 @@ readiness-pod           1/1     Running   0             7s
 kubectl delete pod readiness-pod
 ```
 
-### 11.2 Liveness Probe
+### 10.2 Liveness Probe
 
 
 続いて、Liveness Probeの動作確認を行います。
@@ -1293,7 +1308,7 @@ watch -n 1 kubectl get pod
 kubectl delete pod liveness-pod
 ```
 
-## 12. Network Policy
+## 11. Network Policy
 
 Network PolicyはPod同士の通信を制御し、特定のPodやプロトコルを許可/拒否させることができるリソースです。
 
@@ -1380,9 +1395,9 @@ kubectl delete pod nginx-app3
 
 
 
-## 13. JobとCronJob
+## 12. JobとCronJob
 
-### 13.1. Job
+### 12.1. Job
 
 Jobは、ReplicaSetと同様、Podを管理するためのPodの上位リソースに該当します。
 Podを使って一時的な処理を行う際に利用するリソースで、処理を実行後にPodは自動的に削除されます。
@@ -1449,7 +1464,7 @@ kubectl logs <Pod名>
 kubectl delete job handson-job
 ```
 
-### 13.2. CronJob
+### 12.2. CronJob
 
 CronJobは、リソース内のCronに従って、スケジュールされた時間にJobを実行します。
 CronJobは、先ほど実行したJobの上位リソースに当たります。
@@ -1635,7 +1650,6 @@ kubectl get pod -n resource-test
 ```
 # 実行結果
 
-
 No resources found in resource-test namespace.
 ```
 
@@ -1746,6 +1760,7 @@ kubectl apply -f resource-test.yaml
 ```
 
 すると、Podが対象のnamespaceにデプロイされたことが確認できます。
+
 ```Bash
 kubectl get pod -n resource-test 
 ```

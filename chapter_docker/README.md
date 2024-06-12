@@ -98,6 +98,9 @@ docker -v
 Docker version 26.1.4, build 5650f9b
 ```
 
+> [!NOTE]
+> Dockerのバージョンは、執筆時点(2024年6月)での最新バージョンです。
+
 その後、自身のDocker Hubにログインを行います。
 
 
