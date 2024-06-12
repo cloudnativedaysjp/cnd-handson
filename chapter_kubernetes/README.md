@@ -1582,6 +1582,10 @@ kubectl create namespace resource-test
 
 以下のようにnamespaceが作成されます。
 
+```Bash
+kubectl get namespace
+```
+
 ```Log
 # 実行結果
 
