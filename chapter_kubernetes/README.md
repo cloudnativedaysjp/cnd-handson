@@ -1728,6 +1728,7 @@ spec:
       containers:
         - name: nginx
           image: nginx:latest
+          ## ↓ここから追記
           resources:
             requests:
               memory: 100Mi
