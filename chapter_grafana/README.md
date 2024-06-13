@@ -120,7 +120,7 @@ DashboardやGrafana Alertingでは、Dashboard Panelやアラートの内容文�
 
 ### Contact Pointの追加
 
-**2023/12/8に実施されているハンズオンに参加される方はこのステップは不要です。**
+**2024/6/14のハンズオンに参加されている方はこのステップは不要です。**
 
 まずは、Slackに通知するためにWebhook URLを発行します。
 <https://api.slack.com/start/quickstart> にアクセスして、 ドキュメント通りにIncoming Webhook URLを取得します。
