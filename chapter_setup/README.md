@@ -10,17 +10,17 @@
 ```
 # SSH で利用するキーペアの作成
 aws ec2 create-key-pair  \
-  --key-name cndt2023-handson-key \
+  --key-name cnd-handson-key \
   --query 'KeyMaterial' \
-  --output text > cndt2023-handson-key.pem
+  --output text > cnd-handson-key.pem
 
 # Security Groupの作成
 aws ec2 create-security-group \
-  --group-name cndt2023-handson-segcroup \
-  --description "CNDT2023 handson security group"
+  --group-name cnd-handson-segcroup \
+  --description "CND handson security group"
 
 # Security Groupルールの更新
-SECGROUP_ID=`aws ec2 describe-security-groups --group-names 'cndt2023-handson-segcroup' --query 'SecurityGroups[*].[GroupId]' --output text`
+SECGROUP_ID=`aws ec2 describe-security-groups --group-names 'cnd-handson-segcroup' --query 'SecurityGroups[*].[GroupId]' --output text`
 for PORT in 22 80 443 8080 8443 18080 18443 28080 28443; do
   aws ec2 authorize-security-group-ingress \
   --group-id ${SECGROUP_ID} \
@@ -35,13 +35,13 @@ aws ec2 run-instances \
   --count 1 \
   --instance-type t2.xlarge \
   --block-device-mappings '[{"DeviceName":"/dev/sda1","Ebs":{"VolumeSize":50}}]' \
-  --key-name cndt2023-handson-key \
+  --key-name cnd-handson-key \
   --security-group-ids ${SECGROUP_ID} \
-  --tag-specifications 'ResourceType=instance,Tags=[{Key=Name,Value=cndt2023-handson-vm}]'
+  --tag-specifications 'ResourceType=instance,Tags=[{Key=Name,Value=cnd-handson-vm}]'
 
 # インスタンスのIPアドレスの確認
 aws ec2 describe-instances \
-  --filters "Name=tag:Name,Values=cndt2023-handson-vm" \
+  --filters "Name=tag:Name,Values=cnd-handson-vm" \
   --query 'Reservations[*].Instances[*].PublicIpAddress' \
   --output text
 ```
