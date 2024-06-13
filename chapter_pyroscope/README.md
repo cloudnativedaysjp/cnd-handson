@@ -107,7 +107,7 @@ Pyoscopeの画面にアクセスします。pyroscopeの画面を参照するた
 kubectl apply -f ingress.yaml
 ```
 
-[http://pyroscope.example.com](http://pyroscope.example.com)にアクセスしましょう。既に、Pyroscope自身のプロファイルが確認できます。
+[http://pyroscope.vmXX.handson.cloudnativedays.jp](http://pyroscope.vmXX.handson.cloudnativedays.jp)にアクセスしましょう。既に、Pyroscope自身のプロファイルが確認できます。
 
 ![image](./image/pyroscope_web.png)
 
@@ -128,11 +128,11 @@ datasources:
 ```
 
 ## Grafanaからのプロファイル参照
-GrafanaのExplore([http://grafana.example.com/explore](http://grafana.example.com/explore))からプロファイルを見てみましょう。GarafanaのExploreでは、プロファイルタイプの選択と、ラベルセレクターでの絞り込みで、容易に表示できます。
+GrafanaのExplore([http://grafana.vmXX.handson.cloudnativedays.jp/explore](http://grafana.vmXX.handson.cloudnativedays.jp/explore))からプロファイルを見てみましょう。GarafanaのExploreでは、プロファイルタイプの選択と、ラベルセレクターでの絞り込みで、容易に表示できます。
 
 プロファイルタイプは、cpu、memory、goroutineなどがあり、各言語ごとにサポートされています。詳細は、[Pyroscopeのドキュメント](https://grafana.com/docs/pyroscope/latest/view-and-analyze-profile-data/profiling-types/#available-profiling-types)を参照ください。
 
-ラベルセレクターは、対象をtagで絞りたい場合に有効です。これは、Pyroscopeのclient側で付与されたtagになります。helmでinstallしたgrafana-agentでは、自動計装として使用可能なtagが付与されています。（[Pyroscope](http://pyroscope.example.com)のSingle View>Select Tagでの確認が簡単です。）空欄のままでもプロファイルを参照可能です。
+ラベルセレクターは、対象をtagで絞りたい場合に有効です。これは、Pyroscopeのclient側で付与されたtagになります。helmでinstallしたgrafana-agentでは、自動計装として使用可能なtagが付与されています。（[Pyroscope](http://pyroscope.vmXX.handson.cloudnativedays.jp)のSingle View>Select Tagでの確認が簡単です。）空欄のままでもプロファイルを参照可能です。
 
 <img src="./image/pyroscope-singleview.png" width="520">
 

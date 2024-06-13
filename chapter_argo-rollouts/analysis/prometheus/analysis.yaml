@@ -12,7 +12,7 @@ spec:
     failureLimit: 3
     provider:
       prometheus:
-        address: http://prometheus.example.com/
+        address: http://prometheus.vmXX.handson.cloudnativedays.jp/
         query: >+
           sum(
             rate(nginx_ingress_controller_requests{ingress="{{args.ingress}}",status!~"[4-5].*"}[1m]))

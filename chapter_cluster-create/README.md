@@ -209,10 +209,10 @@ service/handson   ClusterIP   10.96.82.202   <none>        8080/TCP   3m33s
 NAME                           READY   UP-TO-DATE   AVAILABLE   AGE
 deployment.apps/handson-blue   1/1     1            1           3m34s
 
-NAME                                             CLASS   HOSTS             ADDRESS       PORTS   AGE
-ingress.networking.k8s.io/app-ingress-by-nginx   nginx   app.example.com   10.96.54.28   80      3m9s
+NAME                                             CLASS   HOSTS                                 ADDRESS       PORTS   AGE
+ingress.networking.k8s.io/app-ingress-by-nginx   nginx   app.vmXX.handson.cloudnativedays.jp   10.96.54.28   80      3m9s
 ```
 
-ブラウザから`http://app.example.com`に接続し、下記のような画面が表示されることを確認してください。
+ブラウザから`http://app.vmXX.handson.cloudnativedays.jp`に接続し、下記のような画面が表示されることを確認してください。
 
 ![](./image/app-simple-routing.png)

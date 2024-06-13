@@ -146,11 +146,11 @@ kubectl get gw,virtualservices -n handson
 NAME                                  AGE
 gateway.networking.istio.io/handson   18s
 
-NAME                                                GATEWAYS      HOSTS                 AGE
-virtualservice.networking.istio.io/simple-routing   ["handson"]   ["app.example.com"]   25s
+NAME                                                GATEWAYS      HOSTS                                     AGE
+virtualservice.networking.istio.io/simple-routing   ["handson"]   ["app.vmXX.handson.cloudnativedays.jp"]   25s
 ```
 
-これでメッシュ外からのアクセスをアプリケーションにルーティングする準備ができました。ブラウザから<http://app.example.com:18080>にアクセスしてアプリケーションが表示されることを確認してください。
+これでメッシュ外からのアクセスをアプリケーションにルーティングする準備ができました。ブラウザから<http://app.vmXX.handson.cloudnativedays.jp:18080>にアクセスしてアプリケーションが表示されることを確認してください。
 
 ![image](./image/app-simple-routing.png)
 
@@ -167,11 +167,11 @@ kubectl get ingresses -n istio-system -l app=kiali
 ```
 ```sh
 # 実行結果
-NAME             CLASS   HOSTS               ADDRESS        PORTS   AGE
-kiali-by-nginx   nginx   kiali.example.com   10.96.88.164   80      2m5s
+NAME             CLASS   HOSTS                                   ADDRESS        PORTS   AGE
+kiali-by-nginx   nginx   kiali.vmXX.handson.cloudnativedays.jp   10.96.88.164   80      2m5s
 ```
 
-ブラウザから<http://kiali.example.com>にアクセスをしてKialiダッシュボードが表示されることを確認してください。
+ブラウザから<http://kiali.vmXX.handson.cloudnativedays.jp>にアクセスをしてKialiダッシュボードが表示されることを確認してください。
 
 ![image](./image/kiali-overview.png)
 
@@ -243,8 +243,8 @@ kubectl get virtualservices,destinationrules -n handson
 ```
 ```sh
 # 実行結果
-NAME                                                      GATEWAYS      HOSTS                 AGE
-virtualservice.networking.istio.io/weight-based-routing   ["handson"]   ["app.example.com"]   35s
+NAME                                                      GATEWAYS      HOSTS                                     AGE
+virtualservice.networking.istio.io/weight-based-routing   ["handson"]   ["app.vmXX.handson.cloudnativedays.jp"]   35s
 
 NAME                                                       HOST      AGE
 destinationrule.networking.istio.io/weight-based-routing   handson   35s
@@ -252,7 +252,7 @@ destinationrule.networking.istio.io/weight-based-routing   handson   35s
 
 実際にリクエストを流して、期待した通り50%ずつトラフィックが流れているかKialiで確認してみましょう。**ローカル端末から**下記コマンドを実行してください。
 ```sh
-while :; do curl -s -o /dev/null -w '%{http_code}\n' http://app.example.com:18080;sleep 1;done
+while :; do curl -s -o /dev/null -w '%{http_code}\n' http://app.vmXX.handson.cloudnativedays.jp:18080;sleep 1;done
 ```
 
 しばらくすると、グラフが表示されます(なかなか表示されない場合は、Kialiダッシュボード右上の青い`Refresh`ボタンを押して状態を更新してください)。しばらくすると、トラフィックが均等(約±5%)にルーティングされていることを確認してください。
@@ -289,8 +289,8 @@ kubectl get virtualservices,destinationrules -n handson
 ```
 ```sh
 # 実行結果
-NAME                                                            GATEWAYS      HOSTS                 AGE
-virtualservice.networking.istio.io/http-request-based-routing   ["handson"]   ["app.example.com"]   31s
+NAME                                                            GATEWAYS      HOSTS                                     AGE
+virtualservice.networking.istio.io/http-request-based-routing   ["handson"]   ["app.vmXX.handson.cloudnativedays.jp"]   31s
 
 NAME                                                             HOST      AGE
 destinationrule.networking.istio.io/http-request-based-routing   handson   31s
@@ -299,7 +299,7 @@ destinationrule.networking.istio.io/http-request-based-routing   handson   31s
 `"handson: alpha1" `ヘッダー持つ、リクエストを流してみましょう。**ローカル端末から**下記コマンドを実行してください。
 
 ```sh
-while :; do curl -s -w '\t%{http_code}\n' http://app.example.com:18080/color -H 'handson: alpha1';sleep 1;done
+while :; do curl -s -w '\t%{http_code}\n' http://app.vmXX.handson.cloudnativedays.jp:18080/color -H 'handson: alpha1';sleep 1;done
 ```
 
 コンソールには下記のように表示されるはずです。
@@ -318,7 +318,7 @@ Kialiでトラフィックを確認すると、`handson-yellow` トラフィッ�
 それでは、いったんリクエストを停止し、次のリクエストを流してみましょう。先ほどとの違いはヘッダーの値が `beta1` となっていることです。
 
 ```sh
-while :; do curl -s -w '\t%{http_code}\n' http://app.example.com:18080/color -H 'handson: beta1';sleep 1;done
+while :; do curl -s -w '\t%{http_code}\n' http://app.vmXX.handson.cloudnativedays.jp:18080/color -H 'handson: beta1';sleep 1;done
 ```
 
 コンソールには下記のように表示されるはずです。
@@ -336,7 +336,7 @@ Kialiでトラフィックを確認すると、`handson-blue` トラフィック
 最後に、ヘッダーを何もつけない場合どのようになるのか確認してみましょう。
 
 ```sh
-while :; do curl -s -w '%{http_code}\n' http://app.example.com:18080/color ;sleep 1;done
+while :; do curl -s -w '%{http_code}\n' http://app.vmXX.handson.cloudnativedays.jp:18080/color ;sleep 1;done
 ```
 
 コンソールには下記のように表示されるはずです。
@@ -376,7 +376,7 @@ kubectl delete -f ../chapter_cluster-create/manifest/app/serviceaccount.yaml -n 
 実際にリクエストを流して、期待した通り50%ずつトラフィックが流れているかKialiで確認してみましょう。**ローカル端末から**下記コマンドを実行してください。
 
 ```sh
-while :; do curl -s -o /dev/null -w '%{http_code}\t%{time_total}\n' http://app.example.com:18080;sleep 1;done
+while :; do curl -s -o /dev/null -w '%{http_code}\t%{time_total}\n' http://app.vmXX.handson.cloudnativedays.jp:18080;sleep 1;done
 ```
 
 概ね0.1秒以内にレスポンスが返されていることがわかります。
@@ -432,7 +432,7 @@ kubectl apply -f networking/simple-routing-inject-error.yaml
 実際にリクエストを流して、期待した通り50%ずつトラフィックが流れているかKialiで確認してみましょう。**ローカル端末から**下記コマンドを実行してください。
 
 ```sh
-while :; do curl -s -o /dev/null -w '%{http_code}\t%{time_total}\n' http://app.example.com:18080;sleep 1;done
+while :; do curl -s -o /dev/null -w '%{http_code}\t%{time_total}\n' http://app.vmXX.handson.cloudnativedays.jp:18080;sleep 1;done
 ```
 
 curlコマンドを流しているコンソールでは、下記のように表示され、502が多く返されていることがわかるかと思います。
@@ -490,41 +490,41 @@ NAME   READY   STATUS    RESTARTS   AGE
 curl   2/2     Running   0          26s
 ```
 
-メッシュ内に存在する、`curl` Podから、メッシュ外に存在する https://example.com/ にアクセスしてみましょう。
+メッシュ内に存在する、`curl` Podから、メッシュ外に存在する https://vmXX.handson.cloudnativedays.jp/ にアクセスしてみましょう。
 
 ```sh
-while :; do kubectl exec curl -n handson -- curl -s -o /dev/null -w '%{http_code}\t%{errormsg}\n' https://example.com/ ;sleep 1;done 2>/dev/null
+while :; do kubectl exec curl -n handson -- curl -s -o /dev/null -w '%{http_code}\t%{errormsg}\n' https://vmXX.handson.cloudnativedays.jp/ ;sleep 1;done 2>/dev/null
 ```
 
 下記のように表示されるはずです。HTTPS通信が確立できずエラーとなっています。
 
 ```sh
-000     OpenSSL SSL_connect: SSL_ERROR_SYSCALL in connection to example.com:443 
-000     OpenSSL SSL_connect: SSL_ERROR_SYSCALL in connection to example.com:443 
-000     OpenSSL SSL_connect: SSL_ERROR_SYSCALL in connection to example.com:443 
+000     OpenSSL SSL_connect: SSL_ERROR_SYSCALL in connection to vmXX.handson.cloudnativedays.jp:443 
+000     OpenSSL SSL_connect: SSL_ERROR_SYSCALL in connection to vmXX.handson.cloudnativedays.jp:443 
+000     OpenSSL SSL_connect: SSL_ERROR_SYSCALL in connection to vmXX.handson.cloudnativedays.jp:443 
 ```
 
-それでは、example.comのHTTPS通信をService Entryとして定義しましょう。
+それでは、vmXX.handson.cloudnativedays.jpのHTTPS通信をService Entryとして定義しましょう。
 
 ```sh
-kubectl apply -f networking/service-entry-example-com.yaml
+kubectl apply -f networking/service-entry-vmXX.handson.cloudnativedays.jp.yaml
 ```
 
 作成されるリソースは下記のとおりです。
 
 ```sh
-kubectl get serviceentries -n handson -l content=example.com
+kubectl get serviceentries -n handson -l content=vmXX.handson.cloudnativedays.jp
 ```
 
 ```sh
-NAME                                                        HOSTS             LOCATION        RESOLUTION   AGE
-serviceentry.networking.istio.io/external-cloudnativedays   ["example.com"]   MESH_EXTERNAL   NONE         24s
+NAME                                                        HOSTS                                 LOCATION        RESOLUTION   AGE
+serviceentry.networking.istio.io/external-cloudnativedays   ["vmXX.handson.cloudnativedays.jp"]   MESH_EXTERNAL   NONE         24s
 ```
 
 実際にリクエストを流して、期待したトラフィックが流れているかKialiで確認してみましょう。下記コマンドを実行してください。
 
 ```sh
-while :; do kubectl exec curl -n handson -- curl -s -o /dev/null -w '%{http_code}\t%{time_total}\t%{errormsg}\n' https://example.com/ ;sleep 1;done 2>/dev/null
+while :; do kubectl exec curl -n handson -- curl -s -o /dev/null -w '%{http_code}\t%{time_total}\t%{errormsg}\n' https://vmXX.handson.cloudnativedays.jp/ ;sleep 1;done 2>/dev/null
 ```
 
 コンソールには下記のように表示されるはずです。
@@ -536,7 +536,7 @@ while :; do kubectl exec curl -n handson -- curl -s -o /dev/null -w '%{http_code
 200     0.632720
 ```
 
-Kiali dashboardからも確認してみましょう。リクエストを流した状態でブラウザから<http://kiali.example.com>にアクセスをしてください。`curl` のワークロードから `example.com` Serviceにアクセスできていることが確認できます。グラフが表示されない場合は、Kialiダッシュボード右上の青い`Refresh`ボタンを押して状態を更新してください。
+Kiali dashboardからも確認してみましょう。リクエストを流した状態でブラウザから<http://kiali.vmXX.handson.cloudnativedays.jp>にアクセスをしてください。`curl` のワークロードから `vmXX.handson.cloudnativedays.jp` Serviceにアクセスできていることが確認できます。グラフが表示されない場合は、Kialiダッシュボード右上の青い`Refresh`ボタンを押して状態を更新してください。
 
 ![image](./image/kiali-graph-service-entry.png)
 
@@ -613,7 +613,7 @@ curl-deny:  200
 .
 ```
 
-Kiali dashboardからも確認してみましょう。リクエストを流した状態でブラウザから<http://kiali.example.com>にアクセスをしてください。`curl-allow`, `curl-deny` 双方のワークロードが`handson-blue`ワークロードにアクセスできていることが確認できます。グラフが表示されない場合は、Kialiダッシュボード右上の青い`Refresh`ボタンを押して状態を更新してください。
+Kiali dashboardからも確認してみましょう。リクエストを流した状態でブラウザから<http://kiali.vmXX.handson.cloudnativedays.jp>にアクセスをしてください。`curl-allow`, `curl-deny` 双方のワークロードが`handson-blue`ワークロードにアクセスできていることが確認できます。グラフが表示されない場合は、Kialiダッシュボード右上の青い`Refresh`ボタンを押して状態を更新してください。
 
 ![image](./image/kiali-L4-authz-autholizationpolicy-notapplied.png)
 
@@ -665,7 +665,7 @@ curl-deny:  403
 .
 ```
 
-改めてKiali dashboardから確認してみましょう。ブラウザから<http://kiali.example.com>にアクセスをしてください。しばらくすると、`curl-allow` ワークロードからのリクエストは許可されている一方で、`curl-deny` ワークロードからのリクエストは拒否されていることが確認できます(変化が見られない場合は、Kialiダッシュボード右上の青い`Refresh`ボタンを押して状態を更新してください)。
+改めてKiali dashboardから確認してみましょう。ブラウザから<http://kiali.vmXX.handson.cloudnativedays.jp>にアクセスをしてください。しばらくすると、`curl-allow` ワークロードからのリクエストは許可されている一方で、`curl-deny` ワークロードからのリクエストは拒否されていることが確認できます(変化が見られない場合は、Kialiダッシュボード右上の青い`Refresh`ボタンを押して状態を更新してください)。
 
 ![image](./image/kiali-L4-authz-autholizationpolicy-applied.png)
 
@@ -726,7 +726,7 @@ while :; do kubectl exec curl -n handson -- curl -s -o /dev/null -w '%{http_code
 .
 ```
 
-Kiali dashboardからも確認してみましょう。リクエストを流した状態でブラウザから<http://kiali.example.com>にアクセスをしてください。`curl` ワークロードから`handson-blue`ワークロードにアクセスできていることが確認できます(なかなか表示されない場合は、Kialiダッシュボード右上の青い`Refresh`ボタンを押して状態を更新してください)。
+Kiali dashboardからも確認してみましょう。リクエストを流した状態でブラウザから<http://kiali.vmXX.handson.cloudnativedays.jp>にアクセスをしてください。`curl` ワークロードから`handson-blue`ワークロードにアクセスできていることが確認できます(なかなか表示されない場合は、Kialiダッシュボード右上の青い`Refresh`ボタンを押して状態を更新してください)。
 
 ![image](./image/kiali-L7-authz-autholizationpolicy-notapplied.png)
 
@@ -784,7 +784,7 @@ while :; do kubectl exec curl -n handson -- curl -X POST -s -o /dev/null -d '{}'
 .
 ```
 
-Kiali dashboardから確認してみましょう。ブラウザから<http://kiali.example.com>にアクセスをしてください。しばらくすると、`curl` ワークロードからのPOSTリクエストは拒否されていることが確認できます(変化が見られない場合は、Kialiダッシュボード右上の青い`Refresh`ボタンを押して状態を更新してください)。
+Kiali dashboardから確認してみましょう。ブラウザから<http://kiali.vmXX.handson.cloudnativedays.jp>にアクセスをしてください。しばらくすると、`curl` ワークロードからのPOSTリクエストは拒否されていることが確認できます(変化が見られない場合は、Kialiダッシュボード右上の青い`Refresh`ボタンを押して状態を更新してください)。
 
 ![image](./image/kiali-L7-authz-autholizationpolicy-applied.png)
 

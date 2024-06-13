@@ -193,7 +193,7 @@ kiali   NodePort   10.96.140.207   <none>        28080:32766/TCP   30m
 >
 > KialiのHelm chartではnode portを指定することができないため、このようなアドホックな設定にしています。実ケースでKialiを使用する場合はingressリソース、loadBalancerタイプのKubernetes service等を用いてください。
 
-ブラウザから<http://kiali-ambient.example.com:28080>にアクセスをしてKialiダッシュボードが表示されることを確認してください。
+ブラウザから<http://kiali-ambient.vmXX.handson.cloudnativedays.jp:28080>にアクセスをしてKialiダッシュボードが表示されることを確認してください。
 
 ![image](./image/kiali-overview.png)
 
@@ -263,7 +263,7 @@ curl-deny:  200
 .
 ```
 
-Kiali dashboardからも確認してみましょう。リクエストを流した状態でブラウザから<http://kiali-ambient.example.com:28080>にアクセスをしてください。`curl-allow`, `curl-deny` podのワークロードが`handson-blue`ワークロードにアクセス出来ていることが確認できます(紺色の矢印はTCP通信を表しています)。グラフが表示されない場合は、Kialiダッシュボード右上の青い`Refresh`ボタンを押して状態を更新してください。
+Kiali dashboardからも確認してみましょう。リクエストを流した状態でブラウザから<http://kiali-ambient.vmXX.handson.cloudnativedays.jp:28080>にアクセスをしてください。`curl-allow`, `curl-deny` podのワークロードが`handson-blue`ワークロードにアクセス出来ていることが確認できます(紺色の矢印はTCP通信を表しています)。グラフが表示されない場合は、Kialiダッシュボード右上の青い`Refresh`ボタンを押して状態を更新してください。
 
 ![image](./image/kiali-L4-authz-autholizationpolicy-notapplied.png)
 
@@ -321,7 +321,7 @@ command terminated with exit code 56
 ```
 Http code 000はレスポンスが何もなかったという意味で、`command terminated with exit code 56`はcurlがデータを何も受け取らなかった(コネクションがリセットされた)ということを意味しています。(参考: [curl man page/"Exit Codes"の56](https://curl.se/docs/manpage.html))。
 
-改めてKiali dashboardから確認してみましょう。ブラウザから<http://kiali-ambient.example.com:28080>にアクセスをしてください。しばらくすると、`curl-allow` podからのリクエストのみグラフに表示されるようになります(グラフに変化が見られない場合は、Kialiダッシュボード右上の青い`Refresh`ボタンを押して状態を更新してください)。これは`curl-deny` podからのport 8080のリクエストをztunnelがAuthorization Poliyの設定に基づいて`handson-blue`ワークロードへのproxyを拒否しているためです。
+改めてKiali dashboardから確認してみましょう。ブラウザから<http://kiali-ambient.vmXX.handson.cloudnativedays.jp:28080>にアクセスをしてください。しばらくすると、`curl-allow` podからのリクエストのみグラフに表示されるようになります(グラフに変化が見られない場合は、Kialiダッシュボード右上の青い`Refresh`ボタンを押して状態を更新してください)。これは`curl-deny` podからのport 8080のリクエストをztunnelがAuthorization Poliyの設定に基づいて`handson-blue`ワークロードへのproxyを拒否しているためです。
 
 ![image](./image/kiali-L4-authz-autholizationpolicy-applied.png)
 
@@ -478,7 +478,7 @@ while :; do kubectl exec curl -- curl -s -o /dev/null handson:8080 -w '%{http_co
 .
 ```
 
-Kiali dashboardからも確認してみましょう。リクエストを流した状態でブラウザから<http://kiali-ambient.example.com:28080>にアクセスをしてください(グラフに変化が見られない場合は、Kialiダッシュボード右上の青い`Refresh`ボタンを押して状態を更新してください)。`curl` podから`handson-blue`ワークロードにアクセス出来ていることが確認できます。
+Kiali dashboardからも確認してみましょう。リクエストを流した状態でブラウザから<http://kiali-ambient.vmXX.handson.cloudnativedays.jp:28080>にアクセスをしてください(グラフに変化が見られない場合は、Kialiダッシュボード右上の青い`Refresh`ボタンを押して状態を更新してください)。`curl` podから`handson-blue`ワークロードにアクセス出来ていることが確認できます。
 
 ![image](./image/kiali-L7-authz-autholizationpolicy-notapplied.png)
 
@@ -536,7 +536,7 @@ while :; do kubectl exec curl -- curl -X POST -s -o /dev/null -d '{}' -w '%{http
 .
 ```
 
-改めてKiali dashboardから確認してみましょう。ブラウザから<http://kiali-ambient.example.com:28080>にアクセスをしてください(グラフに変化が見られない場合は、Kialiダッシュボード右上の青い`Refresh`ボタンを押して状態を更新してください)。しばらくすると、`curl` ワークロードからのPOSTリクエストは拒否されていることが確認できます。
+改めてKiali dashboardから確認してみましょう。ブラウザから<http://kiali-ambient.vmXX.handson.cloudnativedays.jp:28080>にアクセスをしてください(グラフに変化が見られない場合は、Kialiダッシュボード右上の青い`Refresh`ボタンを押して状態を更新してください)。しばらくすると、`curl` ワークロードからのPOSTリクエストは拒否されていることが確認できます。
 
 ![image](./image/kiali-L7-authz-autholizationpolicy-applied.png)
 

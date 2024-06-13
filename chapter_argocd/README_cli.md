@@ -185,7 +185,7 @@ kubectl -n argo-cd get secret argocd-initial-admin-secret -o jsonpath="{.data.pa
 ## Argo CDへログイン
 こちらは自身の端末で実施してください。
 ```
-argocd login --insecure argocd.example.com
+argocd login --insecure argocd.vmXX.handson.cloudnativedays.jp
 ```
 ログイン成功時
 ```
@@ -194,7 +194,7 @@ WARN[0000] Failed to invoke grpc call. Use flag --grpc-web in grpc calls. To avo
 Username: admin
 Password: (上記kubectlを実行して返ってきた値)
 'admin:login' logged in successfully
-Context 'argocd.example.com' updated
+Context 'argocd.vmXX.handson.cloudnativedays.jp' updated
 ```
 以下のように、WebUIでログインした状態と同じです。
 ![webui](./image/setup/access-webui.png)
@@ -243,7 +243,7 @@ Name:               argo-cd/argocd-demo
 Project:            default
 Server:             https://kubernetes.default.svc
 Namespace:          argocd-demo
-URL:                https://argocd.example.com/applications/argocd-demo
+URL:                https://argocd.vmXX.handson.cloudnativedays.jp/applications/argocd-demo
 Repo:               https://github.com/自身のアカウント/cnd-handson
 Target:
 Path:               chapter_argocd/app/default
@@ -262,7 +262,7 @@ networking.k8s.io  Ingress     argocd-demo  app-ingress-by-nginx  Synced   Healt
 
 ![sync](./image/demoapp/sync.png)
 ブラウザから
-http://app.argocd.example.com
+http://app.argocd.vmXX.handson.cloudnativedays.jp
 へアクセスして確認します。するとアプリケーションが表示され青い色のタイルが出てくるのが確認できます。
 
 ![demo app](./image/demoapp/demo-app.png)
@@ -290,7 +290,7 @@ Name:               argo-cd/argocd-demo
 Project:            default
 Server:             https://kubernetes.default.svc
 Namespace:          argocd-demo
-URL:                https://argocd.example.com/applications/argocd-demo
+URL:                https://argocd.vmXX.handson.cloudnativedays.jp/applications/argocd-demo
 Source:
 - Repo:             https://github.com/自身のアカウント/cnd-handson
   Target:           
@@ -312,14 +312,14 @@ argocd app sync argocd-demo
 ```
 
 SYNC後、
-http://app.argocd.example.com
+http://app.argocd.vmXX.handson.cloudnativedays.jp
 にアクセスして、青色 → 緑色のタイルに変わるることを確認して下さい。
 
 もちろん、WebUIから設定することも可能です。
 ![blue2green](image/demoapp/blue2green.png)
 Gitの変更をKubernetes Clusterに反映させるためにページ上部にあるSYNCをクリックして、下記のように表示されていることを確認して下さい。
 ![blue2green](image/demoapp/blue2green-sync.png)
-http://app.argocd.example.com
+http://app.argocd.vmXX.handson.cloudnativedays.jp
 へアクセスして確認するとタイルが青から緑に変わったことが確認できます。
 ![blue2green](image/demoapp/blue2green-demoapp.png)
 
@@ -345,7 +345,7 @@ Name:               argocd/argocd-kustomize-dev
 Project:            default
 Server:             https://kubernetes.default.svc
 Namespace:          argocd-kustomize-dev
-URL:                https://argocd.example.com/applications/argocd-kustomize-dev
+URL:                https://argocd.vmXX.handson.cloudnativedays.jp/applications/argocd-kustomize-dev
 Repo:               https://github.com/自身のアカウント/cnd-handson
 Target:
 Path:               chapter_argocd/app/Kustomize/overlays/dev
@@ -371,8 +371,8 @@ service/handson   ClusterIP   10.96.108.237   <none>        80/TCP    25m
 NAME                      READY   UP-TO-DATE   AVAILABLE   AGE
 deployment.apps/handson   1/1     1            1           25m
 
-NAME                                             CLASS   HOSTS                              ADDRESS        PORTS   AGE
-ingress.networking.k8s.io/app-ingress-by-nginx   nginx   dev.kustomize.argocd.example.com   10.96.185.74   80      25m
+NAME                                             CLASS   HOSTS                                                  ADDRESS        PORTS   AGE
+ingress.networking.k8s.io/app-ingress-by-nginx   nginx   dev.kustomize.argocd.vmXX.handson.cloudnativedays.jp   10.96.185.74   80      25m
 ```
 
 本番環境のアプリを作成します。
@@ -392,7 +392,7 @@ Name:               argocd/argocd-kustomize-prd
 Project:            default
 Server:             https://kubernetes.default.svc
 Namespace:          argocd-kustomize-prd
-URL:                http://argocd.example.com/applications/argocd-kustomize-prd
+URL:                http://argocd.vmXX.handson.cloudnativedays.jp/applications/argocd-kustomize-prd
 Repo:               https://github.com/自身のアカウント/cnd-handson
 Target:
 Path:               chapter_argocd/app/Kustomize/overlays/prd
@@ -418,14 +418,14 @@ service/handson   ClusterIP   10.96.183.12   <none>        80/TCP    25m
 NAME                      READY   UP-TO-DATE   AVAILABLE   AGE
 deployment.apps/handson   2/2     2            2           25m
 
-NAME                                             CLASS   HOSTS                              ADDRESS        PORTS   AGE
-ingress.networking.k8s.io/app-ingress-by-nginx   nginx   prd.kustomize.argocd.example.com   10.96.185.74   80      25m
+NAME                                             CLASS   HOSTS                                                  ADDRESS        PORTS   AGE
+ingress.networking.k8s.io/app-ingress-by-nginx   nginx   prd.kustomize.argocd.vmXX.handson.cloudnativedays.jp   10.96.185.74   80      25m
 ```
 
 
 ブラウザで各環境へアクセスして確認してみてください。タイルの色が開発環境と本番環境で違う事が確認できます。
-  * 開発環境: http://dev.kustomize.argocd.example.com
-  * 本番環境: http://prd.kustomize.argocd.example.com
+  * 開発環境: http://dev.kustomize.argocd.vmXX.handson.cloudnativedays.jp
+  * 本番環境: http://prd.kustomize.argocd.vmXX.handson.cloudnativedays.jp
 
 WebUIでも確認してみると、argocd-kustomise-dev/argocd-kustomise-prdの２つのアプリケーションが追加されています。
 ![Kustomize-create](image/demoapp/Kustomize-create.png)
@@ -473,7 +473,7 @@ Name:               argocd/argocd-helm
 Project:            default
 Server:             https://kubernetes.default.svc
 Namespace:          argocd-helm
-URL:                http://argocd.argocd.example.com/applications/argocd-helm
+URL:                http://argocd.argocd.vmXX.handson.cloudnativedays.jp/applications/argocd-helm
 Repo:               https://github.com/自身のアカウント/cnd-handson
 Target:
 Path:               chapter_argocd/app/Helm/rollouts-demo
@@ -500,12 +500,12 @@ service/handson   ClusterIP   10.96.139.198   <none>        80/TCP    23m
 NAME                      READY   UP-TO-DATE   AVAILABLE   AGE
 deployment.apps/handson   1/1     1            1           23m
 
-NAME                                             CLASS   HOSTS                     ADDRESS        PORTS   AGE
-ingress.networking.k8s.io/app-ingress-by-nginx   nginx   helm.argocd.example.com   10.96.185.74   80      23m
+NAME                                             CLASS   HOSTS                                         ADDRESS        PORTS   AGE
+ingress.networking.k8s.io/app-ingress-by-nginx   nginx   helm.argocd.vmXX.handson.cloudnativedays.jp   10.96.185.74   80      23m
 ```
 
 ブラウザで
-http://helm.argocd.example.com
+http://helm.argocd.vmXX.handson.cloudnativedays.jp
 アクセスして青いタイルのアプリが動いていることが確認できます。<br>
 こちらでHelmを使ってデプロイが出来ている事が確認できました。
 

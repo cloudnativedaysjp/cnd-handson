@@ -54,7 +54,7 @@ metadata:
 spec:
   ingressClassName: nginx
   rules:
-  - host: rollout.example.com
+  - host: rollout.vmXX.handson.cloudnativedays.jp
     http:
       paths:
       - pathType: Prefix
