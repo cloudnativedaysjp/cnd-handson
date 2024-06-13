@@ -11,6 +11,7 @@
 # SSH で利用するキーペアの作成
 aws ec2 create-key-pair  \
   --key-name cnd-handson-key \
+  --key-type ed25519 \
   --query 'KeyMaterial' \
   --output text > cnd-handson-key.pem
 
