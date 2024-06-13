@@ -13,9 +13,9 @@
 
 ## 概要
 
-LokiはPrometheusを参考に作成されたログ集約システムです。
+LokiはPrometheusを参考に作成されたログの集約システムです。
 LokiをベースにしたLogging Stackの利用イメージは下記の図になります。
-LokiはPull型ではなくPush型を採用しており、ログを取得しLokiに送付するAgentが必要になります。
+LokiはPull型ではなくPush型を採用しており、ログを取得してLokiに送付するAgentが必要になります。
 Agentとしては、[Promtail](https://grafana.com/docs/loki/latest/send-data/promtail/)や[fluentbit](https://fluentbit.io/)、[OpenTelemetry](https://opentelemetry.io/)などがあげられます。
 また、集約したログは[Grafana](https://github.com/grafana/grafana)や[LogCLI](https://grafana.com/docs/loki/latest/query/logcli/)のようなツールで参照します。
 
@@ -211,7 +211,7 @@ Lokiはマルチテナントにも対応しており、`Header`と`value`で使�
 > [!TIP]
 > 今回はDatasouceの設定をGUIから行いましたが、本来であれば設定はコードに起こして管理した方が良いでしょう。
 > たとえば、Helm Chartの[kube-prometheus-stack](https://artifacthub.io/packages/helm/prometheus-community/kube-prometheus-stack)でデプロイしたGrafanaのDatasourceに同様の設定をするのであれば、
-> 下記のような設定を`value.yaml`に記載することで、コード管理ができます。
+> 下記のような設定を`value.yaml`に記載することで、コードとして管理ができます。
 >
 > ```yaml
 > additionalDataSources:
@@ -227,7 +227,7 @@ Lokiはマルチテナントにも対応しており、`Header`と`value`で使�
 >     url: http://loki-gateway.monitoring.svc.cluster.local
 > ```
 
-### PodログをGrafanaで確認
+### PodのログをGrafanaで確認
 
 この節では、OpenTelemetry Collectorを利用して各Nodeのログを収集し、Lokiに格納する設定を行います。
 また、格納したログをGrafana経由で確認します。
@@ -335,7 +335,7 @@ Log Query Startersには、特定の文字列でフィルターしたログをlo
 このアラートは、`sum(count_over_time({exporter="OTLP"} |= "blue" [5m]))`が100を超えた場合にアラートを発報するというルールになっています。
 アラートを設定したら`http://app.example.com/`にアクセスして、ログを増やしてみましょう。
 
-> [!TIPS]
+> [!TIP]
 > アラートの発表状況は`http://grafana.example.com/alerting/list`から確認できます。
 > Datasoucesにlokiを指定すると、先ほど設定したアラートの状況が確認できます。
 > 通常はStateが`Normal`となっており、`Firing`となればアラートが発砲されている状態です。
