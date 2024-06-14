@@ -1,0 +1,11 @@
+repositories:
+- name: argo
+  url: https://argoproj.github.io/argo-helm
+
+releases:
+- name: argo-rollouts
+  namespace: argo-rollouts
+  chart: argo/argo-rollouts
+  version: 2.35.2
+  values:
+  - values.yaml

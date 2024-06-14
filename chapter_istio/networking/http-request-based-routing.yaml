@@ -1,0 +1,55 @@
+apiVersion: networking.istio.io/v1beta1
+kind: VirtualService
+metadata:
+  name: http-request-based-routing
+  namespace: handson
+  labels:
+    content: http-request-based-routing
+spec:
+  hosts:
+  - app.example.com
+  gateways:
+  - handson
+  http:
+  - name: "alpha user"
+    match:
+    - headers:
+        handson:
+          exact: "alpha1"
+    route:
+    - destination:
+        host: handson
+        port:
+          number: 8080
+        subset: yellow
+  - name: "beta user"
+    match:
+    - headers:
+        handson:
+          exact: "beta1"
+    route:
+    - destination:
+        host: handson
+        port:
+          number: 8080
+        subset: blue
+  - name: "default"
+    redirect:
+      uri: /maintenance.html
+      redirectCode: 302
+      authority: "app.example.com"
+---
+apiVersion: networking.istio.io/v1beta1
+kind: DestinationRule
+metadata:
+  name: http-request-based-routing
+  namespace: handson
+spec:
+  host: handson
+  subsets:
+  - name: blue
+    labels:
+      color: blue
+  - name: yellow
+    labels:
+      color: yellow
