@@ -1574,7 +1574,7 @@ kubectl run tmp --restart=Never --rm -i --image=nginx:alpine -- curl <Podã®IPã‚
 
 ```Bash
 kubectl delete pod configmap-pod
-kubectl delete pod handson-configmap
+kubectl delete configmap handson-configmap
 ```
 
 ## 14. Resources
