@@ -1,0 +1,27 @@
+apiVersion: opentelemetry.io/v1alpha1
+kind: OpenTelemetryCollector
+metadata:
+  name: trace-collector
+spec:
+  mode: "deployment"
+  config: |
+    receivers:
+      otlp:
+        protocols:
+          http:
+
+    processors: {}
+
+    exporters:
+      debug: {}
+      otlp:
+        endpoint: jaeger-collector.jaeger:4317
+        tls:
+          insecure: true
+
+    service:
+      pipelines:
+        traces:
+          receivers: [otlp]
+          processors: []
+          exporters: [debug, otlp]

@@ -1,0 +1,25 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  annotations:
+    deployment.kubernetes.io/revision: "1"
+  labels:
+    app: hello-world
+  name: hello-world
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: hello-world
+  template:
+    spec:
+    metadata:
+      labels:
+        app: hello-world
+    spec:
+      containers:
+      - image: <DockerHubのユーザ名>/<リポジトリ名>:<タグ名>
+        imagePullPolicy: Always
+        name: hello-world
+        ports:
+        - containerPort: 80

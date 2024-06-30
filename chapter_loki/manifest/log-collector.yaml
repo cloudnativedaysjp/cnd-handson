@@ -1,0 +1,48 @@
+# https://github.com/open-telemetry/opentelemetry-collector-contrib/tree/main/receiver/filelogreceiver
+# https://github.com/open-telemetry/opentelemetry-collector/tree/main/exporter/debugexporter
+# https://github.com/open-telemetry/opentelemetry-collector-contrib/tree/main/exporter/fileexporter
+apiVersion: opentelemetry.io/v1alpha1
+kind: OpenTelemetryCollector
+metadata:
+  name: log-collector
+spec:
+  mode: "daemonset"
+  volumeMounts:
+    - name:  host-log-volumes
+      mountPath: /var/log
+  volumes:
+    - name: host-log-volumes
+      hostPath:
+        path:  /var/log
+  config: |
+    receivers:
+      filelog:
+        include: [ /var/log/pods/handson_handson-*/*/*.log]
+        operators:
+        # https://github.com/open-telemetry/opentelemetry-collector-contrib/blob/main/pkg/stanza/docs/types/timestamp.md#example-configurations
+        - type: regex_parser
+          regex: (?P<timestamp_field>^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}.\d+Z)
+          timestamp:
+            layout: "%Y-%m-%d %H:%M:%S.%f"
+            parse_from: attributes.timestamp_field
+        - type: time_parser
+          parse_from: attributes.timestamp_field
+          layout: '%Y-%m-%dT%H:%M:%S.%LZ'
+        - type: remove
+          field: attributes.timestamp_field
+
+    exporters:
+      loki:
+        endpoint: http://loki-gateway.monitoring.svc.cluster.local/loki/api/v1/push
+        default_labels_enabled:
+          exporter: true
+          job: true
+        headers:
+          X-Scope-OrgID: tenant1
+
+    service:
+      pipelines:
+        logs:
+          receivers: [filelog]
+          processors: []
+          exporters: [loki]

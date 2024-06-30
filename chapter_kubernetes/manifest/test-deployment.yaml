@@ -1,0 +1,25 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  annotations:
+    deployment.kubernetes.io/revision: "1"
+  labels:
+    app: test
+  name: test
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: test
+  template:
+    spec:
+      restartPolicy: OnFailure
+    metadata:
+      labels:
+        app: test
+    spec:
+      containers:
+      - image: nginx:latest
+        name: test
+        ports:
+        - containerPort: 80

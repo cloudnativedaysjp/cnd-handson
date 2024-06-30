@@ -1,0 +1,12 @@
+repositories:
+- name: grafana
+  url: https://grafana.github.io/helm-charts
+
+releases:
+- name: pyroscope
+  namespace: monitoring
+  createNamespace: true
+  chart: grafana/pyroscope
+  version: 1.5.0
+  # values:
+  # - values-micro-services.yaml # マイクロサービスモードを使用する場合使用
