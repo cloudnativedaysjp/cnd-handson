@@ -3,8 +3,8 @@
 
 # Argo CD with WebUI
 
-[Argo CD with WebUI](https://github.com/cloudnativedaysjp/cnd-handson/blob/cnds2024/chapter_argocd/README_webui.md "Argo CD with WebUI")
+[Argo CD with WebUI](./README_webui.md)
 
 # Argo CD with CLI
 
-[Argo CD with CLI](https://github.com/cloudnativedaysjp/cnd-handson/blob/cnds2024/chapter_argocd/README_cli.md "Argo CD with CLI")
+[Argo CD with CLI](./README_cli.md)
