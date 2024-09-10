@@ -17,7 +17,7 @@ releases:
   namespace: metallb-system
   createNamespace: true
   chart: metallb/metallb
-  version: 0.14.5
+  version: 0.14.8
   values:
   - values/metallb.values.yaml
 - name: ingress-nginx
