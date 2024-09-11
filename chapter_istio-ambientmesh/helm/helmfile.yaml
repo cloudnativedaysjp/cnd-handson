@@ -20,7 +20,7 @@ releases:
 - name: istio-ztunnel
   namespace: istio-system
   chart: istio-official/ztunnel
-  version: 1.21.2
+  version: 1.23.1
   wait: true
   needs:
   - istio-system/istiod
