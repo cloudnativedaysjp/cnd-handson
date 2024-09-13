@@ -7,6 +7,6 @@ releases:
   namespace: prometheus
   createNamespace: true
   chart: prometheus-community/kube-prometheus-stack
-  version: 58.3.3
+  version: 62.7.0​
   values:
   - prometheus-values.yaml
