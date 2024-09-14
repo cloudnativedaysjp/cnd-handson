@@ -30,9 +30,9 @@ for PORT in 22 80 443 8080 8443 18080 18443 28080 28443; do
   --port ${PORT}
 done
 
-# インスタンスの起動（Ubuntu 22.04 image）
+# インスタンスの起動（Ubuntu 22.04 image update 20240701）
 aws ec2 run-instances \
-  --image-id ami-09a81b370b76de6a2 \
+  --image-id ami-0162fe8bfebb6ea16 \
   --count 1 \
   --instance-type t2.xlarge \
   --block-device-mappings '[{"DeviceName":"/dev/sda1","Ebs":{"VolumeSize":50}}]' \
