@@ -10,20 +10,20 @@ releases:
 - name: cilium
   namespace: kube-system
   chart: cilium/cilium
-  version: 1.15.4
+  version: 1.16.1
   values:
   - values/cilium.values.yaml
 - name: metallb
   namespace: metallb-system
   createNamespace: true
   chart: metallb/metallb
-  version: 0.14.5
+  version: 0.14.8
   values:
   - values/metallb.values.yaml
 - name: ingress-nginx
   namespace: ingress-nginx
   createNamespace: true
   chart: ingress-nginx/ingress-nginx
-  version: 4.10.1
+  version: 4.11.2
   values:
   - values/ingress-nginx.values.yaml
