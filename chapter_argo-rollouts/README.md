@@ -47,9 +47,26 @@ Argo CDとの連携が可能で、簡単に既存のGit Opsでプログレッシ
 [chapter_argocd](../chapter_argocd/README.md#argo-cdのインストール)を参照してArgo CDのインストールからWebUIの確認とレポジトリのforkから登録まで行って下さい。
 
 今回のchapterでは更にArgo CDのプラグインである、rollout-extensionをインストールしてArgoCD上でrolloutの操作結果が確認できるようにします。
+chapter_argocd/helmfile/values.yamlの更新をします。
+```values.yaml
+## Argo Configs
+configs:
+  params:
+  # -- Run server without TLS
+    server.insecure: true
+# ~~~~ ここから下を追記or更新 ~~~~
+server:
+  extensions:
+    enabled: true
+    extensionList:
+      - name: rollout-extension
+        env:
+          - name: EXTENSION_URL
+            value: https://github.com/argoproj-labs/rollout-extension/releases/download/v0.3.4/extension.tar
+```
+helmファイルの更新を行います。
 ```sh
-kubectl apply -n argo-cd \
-    -f https://raw.githubusercontent.com/argoproj-labs/rollout-extension/v0.2.1/manifests/install.yaml
+helmfile sync -f ./helm/helmfile.yaml
 ```
 
 
