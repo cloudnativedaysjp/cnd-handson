@@ -66,14 +66,14 @@ server:
 ```
 helmファイルの更新を行います。
 ```sh
+cd chapter_argocd 
 helmfile sync -f ./helm/helmfile.yaml
 ```
-
-
 
 ### Argo Rolloutsのインストール
 helmファイルを利用してArgo Rolloutsをインストールします。
 ```sh
+cd ../chapter_argo-rollouts 
 helmfile sync -f ./helm/helmfile.yaml
 ```
 作成されるリソースは下記の通りです。
@@ -129,7 +129,7 @@ metadata:
 
   ```
 ## Blue/Green DeploymentとCanary Release
-Argo Rolloutsによって追加された、Blue/Green DeploymentとCanary Releaseの二つのデプロイ方法を試します。
+Argo Rolloutsによって追加された、Blue/Green DeploymentとCanary Releaseの2つのデプロイ方法を試します。
 
 既存のローリングアップデートでは、一部のリソースを順次更新して本番環境をアップデートするため、新バージョンと旧バージョンが混在してしまいます。
 
@@ -154,11 +154,11 @@ Canary Releaseは、新旧混在状態を制御し、本番環境において限
       Cluster URL: https://kubernetes.default.svc
       Namespace: blue-green
   ```
- 設定できたら、CREATEをクリックして、下記のように表示されていることを確認して下さい
+ 設定できたら、CREATEをクリックして、下記のように表示されていることを確認してください。
   ![create](image/BG/blue-green-create.png)
   ![create2](image/BG/blue-green-create2.png)
   
- ページ上部にある SYNC をクリックして、無事デプロイされると下記のようになります
+ ページ上部にある`SYNC`をクリックして、無事デプロイされると下記のようになります
   ![sync](image/BG/blue-green-sync.png)
 
 以上の手順で、Blue/GreenのBlueに当たる状態がArgoCDを用いてデプロイされ、localからingressでアクセス可能となりました。
@@ -174,7 +174,7 @@ image: argoproj/rollouts-demo:green
 git push origin main
 ```
 
- ArgoCDはデフォルトでは3分に一回の頻度でブランチを確認し、差分を検出しています。
+ ArgoCDはデフォルトでは3分に1回の頻度でブランチを確認し、差分を検出しています。
  3分待てない場合には、ページ上部にある [REFRESH]をクリックします。下記のようにrolloutにおいて差分が検出されます。（黄色で表示されているOutOfSyncが差分があることを示しています）
  
  ちなみにAppの設定において、SYNC POLICYをManualでなくAutoにしていた場合には、ここでOutOfSyncを検知すると自動でArgoCDがSyncを実行します。
@@ -194,7 +194,7 @@ git push origin main
  rolloutの3点リーダーをクリックし [Promote-Full]をクリックすることで、blue-green deployが行われます。プロモートが行われたどちらのingressもgreenを見るようになり、blueのreplicasetは削除されます。
   ![promote](image/BG/promote.png)
  
- このように、ArgoRolloutのBlue/Green Deploymentにおいては、一旦greenに当たるサービスが、previewServiceとして登録され、プロモートすることで、activeServiceに昇格するような動きをして、Blue/Green Deploymentを実現します。  
+ このように、ArgoRolloutのBlue/Green Deploymentにおいては、いったんgreenに当たるサービスが、previewServiceとして登録され、プロモートすることで、activeServiceに昇格するような動きをして、Blue/Green Deploymentを実現します。  
  
  
 rollout-extensionを使用した場合、rolloutを選択しmoreのタブが出現します。moreのタブを選ぶとこのようにblueとgreenがどうなっているか一目で確認できるようになります。
@@ -232,7 +232,7 @@ Applications画面の場合は、一番右下の端に、
       Cluster URL: https://kubernetes.default.svc
       Namespace: canary
   ```
- 設定できたら、CREATEをクリックして、下記のように表示されていることを確認して下さい
+ 設定できたら、CREATEをクリックして、下記のように表示されていることを確認してください。
   ![create](./image/canary/canary-create.png)
   ![create2](./image/canary/canary-create2.png)
   
@@ -252,7 +252,7 @@ image: argoproj/rollouts-demo:green
 git push origin main
 ```
 
- ArgoCDはデフォルトでは3分に一回の頻度でブランチを確認し、差分を検出しています。3分待てない場合には、ページ上部にある [REFRESH]をクリックします。下記のようにrolloutにおいて差分が検出されます。（黄色で表示されているOutOfSyncが差分があることを示しています）
+ ArgoCDはデフォルトでは3分に1回の頻度でブランチを確認し、差分を検出しています。3分待てない場合には、ページ上部にある [REFRESH]をクリックします。下記のようにrolloutにおいて差分が検出されます。（黄色で表示されているOutOfSyncが差分があることを示しています）
 ちなみにAppの設定において、SYNC POLICYをManualでなくAutoにしていた場合には、ここでOutOfSyncを検知すると自動でArgoCDがSyncを実行します。
   ![OutOfSync](image/canary/canary-OutOfSync.png)
 rolloutを手動でSyncします
@@ -263,11 +263,11 @@ ingressにアクセスすると下記のように、安定バージョンであ�
   ![demoapp](image/canary/demoapp.png)
 rollout-extensionを使用した場合、rolloutを選択しmoreのタブが出現します。moreのタブを選ぶと、アプリケーションの動作を確認せずともどこのStepを動いているのが一目で確認できるようになります。
   ![rollout-extension](image/canary/canary-more.png)
-全てのpodを新バージョンにアップデートしたい場合には、rolloutのPromote Fullをクリックして下さい。
+すべてのpodを新バージョンにアップデートしたい場合には、rolloutのPromote Fullをクリックしてください。
 
 ![promote-full](image/canary/canary-promote.png)
 
-デモアプリへアクセスしてアップデートが完了していることを確認して下さい。
+デモアプリへアクセスしてアップデートが完了していることを確認してください。
 
 最後にアプリケーションの削除を行います。 Deleteをクリックします。
 
@@ -285,7 +285,7 @@ Applications画面の場合は、一番右下の端に、
 
 ## Analysis Metrics
 新しいリリースやバージョンを本番環境に展開する前に、新バージョンの健康状態やパフォーマンスなどを評価するために使用されます。
-例えば、Blue/Green Deployの場合、Green（新バージョン）への切り替えの前にGreenのデプロイが成功しているのか一度確認したり、Canary Releaseの場合、新バージョンのパフォーマンスの分析等に利用されます。
+たとえば、Blue/Green Deployの場合、Green（新バージョン）への切り替えの前にGreenのデプロイが成功しているのか一度確認したり、Canary Releaseの場合、新バージョンのパフォーマンスの分析等に利用されます。
 ### Metricsの種類
 * Job
 * Web
@@ -322,7 +322,7 @@ Applicationsの画面において + NEW APPをクリックします
       Cluster URL: https://kubernetes.default.svc
       Namespace: job-analysis
   ```
-設定できたら、CREATEをクリックして、下記のように表示されていることを確認して下さい
+設定できたら、CREATEをクリックして、下記のように表示されていることを確認してください
 ![create](./image/analysis/job-create.png)
 ![create2](./image/analysis/job-create2.png)
 
@@ -338,7 +338,7 @@ image: argoproj/rollouts-demo:green
 ```
 git push origin main
 ```
-ArgoCDはデフォルトでは3分に一回の頻度でブランチを確認し、差分を検出しています。3分待てない場合には、ページ上部にある [REFRESH]をクリックします。下記のようにrolloutにおいて差分が検出されます。（黄色で表示されているOutOfSyncが差分があることを示しています）
+ArgoCDはデフォルトでは3分に1回の頻度でブランチを確認し、差分を検出しています。3分待てない場合には、ページ上部にある [REFRESH]をクリックします。下記のようにrolloutにおいて差分が検出されます。（黄色で表示されているOutOfSyncが差分があることを示しています）
 ちなみにAppの設定において、SYNC POLICYをManualでなくAutoにしていた場合には、ここでOutOfSyncを検知すると自動でArgoCDがSyncを実行します。
 ![sync](./image/analysis/Job-refresh.png)
 rolloutを手動でSyncすると、アプリケーションのpodと新たにAnalysisrunが生成され、jobが発行されたのが確認できます。
@@ -382,7 +382,7 @@ Applicationsの画面において + NEW APPをクリックします
       Cluster URL: https://kubernetes.default.svc
       Namespace: web-analysis
   ```
-設定できたら、CREATEをクリックして、下記のように表示されていることを確認して下さい
+設定できたら、CREATEをクリックして、下記のように表示されていることを確認してください
 ![create](./image/analysis/web-create.png)
 ![create](./image/analysis/web-create2.png)
 
@@ -399,7 +399,7 @@ image: argoproj/rollouts-demo:green
 ```
 git push origin main
 ```
-ArgoCDはデフォルトでは3分に一回の頻度でブランチを確認し、差分を検出しています。3分待てない場合には、ページ上部にある [REFRESH]をクリックします。下記のようにrolloutにおいて差分が検出されます。（黄色で表示されているOutOfSyncが差分があることを示しています）
+ArgoCDはデフォルトでは3分に1回の頻度でブランチを確認し、差分を検出しています。3分待てない場合には、ページ上部にある [REFRESH]をクリックします。下記のようにrolloutにおいて差分が検出されます。（黄色で表示されているOutOfSyncが差分があることを示しています）
 ちなみにAppの設定において、SYNC POLICYをManualでなくAutoにしていた場合には、ここでOutOfSyncを検知すると自動でArgoCDがSyncを実行します。
 ![sync](./image/analysis/web-refresh.png)
 rolloutを手動でSyncすると、アプリケーションのpodと新たにAnalysisrunが生成されます。
@@ -441,7 +441,7 @@ Applicationsの画面において + NEW APPをクリックします
       Cluster URL: https://kubernetes.default.svc
       Namespace: prometheus-analysis
   ```
-設定できたら、CREATEをクリックして、下記のように表示されていることを確認して下さい
+設定できたら、CREATEをクリックして、下記のように表示されていることを確認してください。
 ![create](./image/analysis/prometheus-create.png)
 ![create](./image/analysis/prometheus-create2.png)
 
@@ -458,7 +458,7 @@ image: argoproj/rollouts-demo:green
 ```
 git push origin main
 ```
-ArgoCDはデフォルトでは3分に一回の頻度でブランチを確認し、差分を検出しています。3分待てない場合には、ページ上部にある [REFRESH]をクリックします。下記のようにrolloutにおいて差分が検出されます。（黄色で表示されているOutOfSyncが差分があることを示しています）
+ArgoCDはデフォルトでは3分に1回の頻度でブランチを確認し、差分を検出しています。3分待てない場合には、ページ上部にある [REFRESH]をクリックします。下記のようにrolloutにおいて差分が検出されます。（黄色で表示されているOutOfSyncが差分があることを示しています）
 ちなみにAppの設定において、SYNC POLICYをManualでなくAutoにしていた場合には、ここでOutOfSyncを検知すると自動でArgoCDがSyncを実行します。
 ![sync](./image/analysis/prometheus-refresh.png)
 rolloutを手動でSyncすると、アプリケーションのpodと新たにAnalysisrunが生成されます。
