@@ -23,7 +23,7 @@ releases:
 - name: istio-ingressgateway
   namespace: istio-system
   chart: istio-official/gateway
-  version: 1.19.0
+  version: 1.23.2
   wait: true
   needs:
   - istio-system/istiod
