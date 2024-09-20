@@ -16,7 +16,7 @@ releases:
 - name: istiod
   namespace: istio-system
   chart: istio-official/istiod
-  version: 1.19.0
+  version: 1.23.2
   wait: true
   values:
   - values/istiod.values.yaml
