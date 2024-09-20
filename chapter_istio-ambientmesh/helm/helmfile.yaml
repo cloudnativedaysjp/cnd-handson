@@ -29,7 +29,7 @@ releases:
 - name: istio-cni
   namespace: istio-system
   chart: istio-official/cni
-  version: 1.23.1
+  version: 1.23.2
   wait: true
   needs:
   - istio-system/istiod
