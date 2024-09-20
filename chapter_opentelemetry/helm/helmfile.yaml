@@ -23,7 +23,7 @@ releases:
 - name: jaeger-operator
   namespace: jaeger
   chart: jaegertracing/jaeger-operator
-  version: 2.53.0
+  version: 2.56.0
   disableValidation: true
   values:
   - values/jaeger-operator.values.yaml
