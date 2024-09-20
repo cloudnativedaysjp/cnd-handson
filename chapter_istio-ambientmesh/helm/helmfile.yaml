@@ -9,7 +9,7 @@ repositories:
 releases:
 - name: istio-base
   chart: istio-official/base
-  version: 1.21.2
+  version: 1.23.2
 - name: istiod
   namespace: istio-system
   chart: istio-official/istiod
