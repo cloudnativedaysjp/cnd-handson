@@ -5,7 +5,7 @@
 まずは、CLIツールが正常に動作しているか確認します。
 以下のコマンドを入力してください。
 
-```Bash
+```sh
 kubectl get nodes
 ```
 
@@ -22,7 +22,7 @@ Nodeが表示されない場合は、kubeconfigが設定されていない可能
 
 以下のコマンドでkubeconfigの設定を確認します。
 
-```Bash
+```sh
 kubectl config get-contexts
 ```
 
@@ -40,7 +40,7 @@ kubectlは、ネットワークリーチャビリティのあるController Node�
 Kubernetesの操作ができなくなってしまいます。
 
 以下のコマンドでkubectlコマンドのバージョンの確認ができます。
-```Bash
+```sh
 kubectl version --client
 ```
 
@@ -52,7 +52,7 @@ Kustomize Version: v5.0.4-0.20230601165947-6ce0bf390ce3
 
 続いて、chapter_kubernetesにcurrent directoryを移動します。
 
-```Bash
+```sh
 cd ~/cnd-handson/chapter_kubernetes/
 ```
 
@@ -67,14 +67,14 @@ manifestファイルはyaml形式もしくはjson形式がサポートされて�
 今回はyaml形式のmanifestを用意していますので、そのManifestを使ってPodをデプロイします。
 以下のコマンドを入力してください。
 
-```Bash
+```sh
 cd manifest
 kubectl apply -f test-deployment.yaml
 ```
 
 以下のコマンドでPodの確認ができます。
 
-```Bash
+```sh
 kubectl get pods
 ```
 
@@ -83,7 +83,7 @@ kubectl get pods
 続いて、作成したPodにアクセスします。
 今回はポートフォワードを使いpodにアクセスしていきます。
 
-```Bash
+```sh
 kubectl port-forward <Pod名>  8888:80
 ```
 
@@ -96,7 +96,7 @@ Forwarding from [::1]:8888 -> 80
 
 この時点でアクセスが可能になっているはずなので、新しくターミナルを開き、以下のコマンドでアクセスしてみましょう。
 
-```Bash
+```sh
 curl -I http://localhost:8888
 ```
 
@@ -112,13 +112,13 @@ curl -I http://localhost:8888
 続いて、Podを削除してみます。
 以下のコマンドを入力してください。
 
-```Bash
+```sh
 kubectl delete pod <pod名>
 ```
 
 Pod名、及び削除されたかどうかは以下で調べることができます。
 
-```Bash
+```sh
 kubectl get pod
 ```
 
@@ -129,19 +129,19 @@ Kubernetesはあるべき状態をManifestとして定義します。
 
 まず、以下のコマンドでDeploymentの状態を確認します。
 
-```Bash
+```sh
 kubectl get deployments
 ```
 
 続いて、以下のコマンドで対象PodのDeploymentを削除します。
 
-```Bash
+```sh
 kubectl delete deployment test
 ```
 
 以下のコマンドでDeployment及びPodが削除されたことを確認します。
 
-```Bash
+```sh
 kubectl get deployments
 kubectl get pod
 ```
@@ -151,7 +151,7 @@ kubectl get pod
 先ほどまではDeployment Manifestを作成しPodを作成しましたが、簡単なテストを実行したい場合などに手軽にPodを起動したい場合などがあると思います。
 以下のようなコマンドを実行すると、ワンライナーでPodの起動までが行えます。
 
-```Bash
+```sh
 
 kubectl run <Pod名> --image=<image名> 
 
@@ -160,7 +160,7 @@ kubectl run <Pod名> --image=<image名>
 また、Manifestを1から書くことが難しい場合は、以下のようにdry-runとyaml出力を組み合わせてファイルに書き込むことでサンプルファイルを作成することができます。
 
 
-```Bash
+```sh
 
 kubectl run <pod名> --image=<image名> --dry-run=client -o yaml > <ファイル名>
 ```
@@ -174,7 +174,7 @@ Podを作成していきます。
 
 まずはmanifestを編集します。
 
-```Bash
+```sh
 vi hello-world.yaml
 ```
 
@@ -218,13 +218,13 @@ spec:
 
 デプロイを試みます。
 
-```Bash
+```sh
 kubectl apply -f hello-world.yaml
 ```
 
 以下のコマンドで確認すると、Podの作成が失敗していることがわかります。
 
-```Bash
+```sh
 kubectl get pod
 ```
 
@@ -236,7 +236,7 @@ hello-world-69db5b6c68-xdktt   0/1     ErrImagePull   0          4s
 このようなエラーが起こった場合は、原因の解析にPodの詳細出力が役立つ場合があります。
 以下のコマンドを入力します。
 
-```Bash
+```sh
 kubectl describe pod hello-world
 ```
 
@@ -306,7 +306,7 @@ Events:
 
 現状、Default NameSpaceにはSecretリソースが存在しないことを確認します。
 
-```Bash
+```sh
 kubectl get secret
 ```
 
@@ -321,7 +321,7 @@ No resources found in  default namespace.
 
 以下のコマンドでSecretを作成します。
 
-```Bash
+```sh
 kubectl create secret docker-registry dockerhub-secret --docker-username=<DockerHubのユーザ名> --docker-password='<Dockerhubのパスワード>'
 ```
 
@@ -329,7 +329,7 @@ kubectl create secret docker-registry dockerhub-secret --docker-username=<Docker
 
 先ほどのManifestに、Secretに関する指示を追記します。
 
-```Bash
+```sh
 vi hello-world.yaml
 ``` 
 
@@ -365,13 +365,13 @@ spec:
 
 先ほど作成したPodの設定を更新します。
 
-```Bash
+```sh
 kubectl apply -f hello-world.yaml
 ```
 
 ImageのPullが成功し、Podが起動しているはずです。
 
-```Bash
+```sh
 kubectl get pod
 ```
 
@@ -443,13 +443,13 @@ spec:
       - name: dockerhub-secret
 ```
 
-```Bash
+```sh
 kubectl apply -f hello-world.yaml
 ```
 
 Podが2つに増えているか確認します。
 
-```Bash
+```sh
 kubectl get pod
 ```
 
@@ -492,13 +492,13 @@ spec:
   type: ClusterIP
 ```
 
-```Bash
+```sh
 kubectl apply -f hello-world-service.yaml
 ```
 
 Serviceについては以下で確認が可能です。
 
-```Bash
+```sh
 kubectl get service
 ```
 
@@ -533,13 +533,13 @@ spec:
               number: 80
 ```
 
-```Bash
+```sh
 kubectl apply -f hello-world-ingress.yaml 
 ```
 
 作成したIngressは以下で確認が可能です。
 
-```Bash
+```sh
 kubectl get ingress
 ```
 
@@ -595,7 +595,7 @@ Kubernetesには、Podを別のイメージに変更したりバージョンを�
 
 動作確認用のManifestを適用しましょう。
 
-```Bash
+```sh
 kubectl apply -f rollout.yaml
 ```
 
@@ -613,12 +613,12 @@ Pod更新前の状態では、`This app is Blue`の画面が表示がされて�
 
 その際、Rolling Updateの機能が働き、25%のPod数(1個)ずつ追加されていく様子が確認できます。
 
-```Bash
+```sh
 # 適用
 kubectl set image deployment/rollout rollout-app=ryuichitakei/green-app:1.0
 ```
 
-```Bash
+```sh
 # 確認
 kubectl rollout status deployment 
 kubectl rollout history deployment 
@@ -634,13 +634,13 @@ http://rollout.example.com
 
 尚、ロールバックを行う場合は以下のコマンドで実行可能です。
 
-```Bash
+```sh
 kubectl rollout undo deployment rollout
 ```
 
 動作確認実施後、リソースの削除を行います。
 
-```Bash
+```sh
 kubectl delete deployment rollout
 kubectl delete service rollout-service
 kubectl delete ingress rollout-ingress
@@ -655,14 +655,14 @@ kubectl delete ingress rollout-ingress
 
 まずは、対象のManifestを適用します。
 
-```Bash
+```sh
 kubectl apply -f blue-green.yaml
 ```
 
 続いて、Pod,Service,Ingressがそれぞれデプロイされているか確認を行います。
 
 
-```Bash
+```sh
 kubectl get pod,service,ingress
 ```
 
@@ -676,7 +676,7 @@ http://green.example.com → Green App
 
 動作確認実施後、リソースの削除を行います。
 
-```Bash
+```sh
 kubectl delete pod blue
 kubectl delete pod green
 kubectl delete service blue-service
@@ -762,14 +762,14 @@ spec:
 以下のコマンドで各リソースの作成を行います。
 
 
-```Bash
+```sh
 kubectl apply -f handson-volume.yaml
 ```
 
 
 以下のコマンドで各リソースの確認を行います。
 
-```Bash
+```sh
 kubectl get pv,pvc,pod
 kubectl describe pv handson-pv
 kubectl describe pvc handson-pvc
@@ -778,14 +778,14 @@ kubectl describe pvc handson-pvc
 今回のシナリオでは、5秒ごとにdateコマンドで日付をマウント先のファイル`/data/out1.txt`に書き込むPodを作成しています。
 以下のコマンドで動作確認が行えます。
 
-```Bash
+```sh
 kubectl exec volume-pod -- tail /data/out1.txt
 ```
 
 動作確認後、リソースの削除を行います。
 
 
-```Bash
+```sh
 kubectl delete pod volume-pod
 kubectl delete pvc handson-pvc
 kubectl delete pv handson-pv
@@ -804,20 +804,20 @@ PodはKubernetesにおける最小の単位ですが、その実態は複数(単
 
 まずは以下のManifestをapplyします。
 
-```Bash
+```sh
 kubectl apply -f handson-init.yaml
 ```
 
 続いて、動作確認のためPodのIPを確認します。
 
-```Bash
+```sh
 kubectl get pod -o wide | grep init
 ```
 
 最後に一時的な確認Podを使ってcurlでのアクセス確認をしてみましょう。
 
 
-```Bash
+```sh
 kubectl run tmp --restart=Never --rm -i --image=nginx:alpine -- curl <PodのIP>
 ```
 
@@ -837,7 +837,7 @@ pod "tmp" deleted
 
 動作確認後、リソースを削除します。
 
-```Bash
+```sh
 kubectl delete deployment handson-init-container
 ```
 
@@ -866,7 +866,7 @@ APIコールを介して通常のユーザーを追加できませんが、ク�
 
 > ServiceAccount作成
 
-```Bash
+```sh
 kubectl get serviceaccounts
 kubectl create serviceaccount handson-sa
 kubectl get serviceaccounts
@@ -874,7 +874,7 @@ kubectl get serviceaccounts
 
 > Role作成
 
-```Bash
+```sh
 kubectl get role
 kubectl create role handson-role --resource=pods --verb=get,watch,list
 kubectl get role
@@ -882,7 +882,7 @@ kubectl get role
 
 > RoleBinding作成
 
-```Bash
+```sh
 kubectl get rolebinding
 kubectl create rolebinding handson-rolebinding --role=handson-role --serviceaccount=default:handson-sa
 kubectl get rolebinding
@@ -890,19 +890,19 @@ kubectl get rolebinding
 
 > Podデプロイ
 
-```Bash
+```sh
 kubectl apply -f kubectl-pod.yaml
 ```
 
 > ログからコマンドを実行していることを確認
 
-```Bash
+```sh
 kubectl logs kubectl-pod
 ```
 
 > 一度Podを削除し、コマンドを変更して再デプロイ
 
-```Bash
+```sh
 kubectl delete pod kubectl-pod
 ```
 
@@ -929,19 +929,19 @@ spec:
   serviceAccountName: handson-sa
 ```
 
-```Bash
+```sh
 kubectl apply -f kubectl-pod.yaml
 ```
 
 > ログからコマンドが弾かれていることを確認
 
-```Bash
+```sh
 kubectl logs kubectl-pod
 ```
 
 >確認できたらPodを削除
 
-```Bash
+```sh
 kubectl delete pod kubectl-pod
 ```
 
@@ -957,14 +957,14 @@ kubectl delete pod kubectl-pod
 
 まずは秘密鍵とCSRの作成を行います。
 
-```Bash
+```sh
 openssl genrsa -out handson-user.pem 2048
 openssl req -new -key handson-user.pem -out handson-user.csr -subj "/CN=handson-user"
 ```
 
 > CSRをbase64にエンコード
 
-```Bash
+```sh
 cat handson-user.csr | base64 | tr -d '\n'
 ```
 
@@ -988,7 +988,7 @@ spec:
 
 その後、Manifestをapplyします。
 
-```Bash
+```sh
 kubectl apply -f handson-csr.yaml
 ```
 
@@ -996,15 +996,15 @@ kubectl apply -f handson-csr.yaml
 
 続いて、作成したCSRをApploveします。
 
-```Bash
+```sh
 kubectl get csr
 ```
 
-```Bash
+```sh
 kubectl certificate approve handson-user
 ```
 
-```Bash
+```sh
 kubectl get csr
 ```
 
@@ -1013,14 +1013,14 @@ kubectl get csr
 続いて、CSRから証明書を取得します。
 実際の証明書の値は`status.certificate`を見ると確認できます。
 
-```Bash
+```sh
 kubectl get csr/handson-user -o yaml
 ```
 
 これをbase64でencodeした形でエクスポートします。
 
 
-```Bash
+```sh
 kubectl get csr handson-user -o jsonpath='{.status.certificate}'| base64 -d > handson-user.crt
 ```
 
@@ -1029,7 +1029,7 @@ kubectl get csr handson-user -o jsonpath='{.status.certificate}'| base64 -d > ha
 `handson-user`に割り当てるroleを作成します。
 今回はPodに関する一連の操作のみを許可する設定です。
 
-```Bash
+```sh
 kubectl get role
 kubectl create role handson-user-role --resource=pods --verb=create,list,get,update,delete,watch
 kubectl get role
@@ -1039,7 +1039,7 @@ kubectl get role
 
 続いてRoleBindingを作成します。先ほど作成したRoleとhandson-userを実際に紐づける設定です。
 
-```Bash
+```sh
 kubectl get rolebinding
 kubectl create rolebinding handson-user-rolebinding --role=handson-user-role --user=handson-user
 kubectl get rolebinding
@@ -1049,20 +1049,20 @@ kubectl get rolebinding
 
 以下のコマンドで、新しいクレデンシャルを追加します。
 
-```Bash
+```sh
 kubectl config set-credentials handson-user --client-key=handson-user.pem --client-certificate=handson-user.crt --embed-certs=true
 ```
 
 続いて、contextを追加します。
 
 
-```Bash
+```sh
 kubectl config set-context handson-user --cluster=kind-kind --user=handson-user
 ```
 
 追加されると、以下のようにcontextが増えているのが確認できます。
 
-```Bash
+```sh
 kubectl config get-contexts
 ```
 
@@ -1075,7 +1075,7 @@ CURRENT   NAME           CLUSTER     AUTHINFO       NAMESPACE
 
 続いて、handson-userにcontextを変更します。
 
-```Bash
+```sh
 kubectl config use-context handson-user
 ```
 
@@ -1089,7 +1089,7 @@ CURRENT   NAME           CLUSTER     AUTHINFO       NAMESPACE
 
 
 
-```Bash
+```sh
 kubectl config get-contexts
 ```
 
@@ -1101,11 +1101,11 @@ kubectl config get-contexts
 まずはPodの作成、確認コマンドを実行します。
 Podの作成、確認に関してはroleにより権限が付与されているため実行可能です。
 
-```Bash
+```sh
 kubectl run test --image=nginx
 ```
 
-```Bash
+```sh
  kubectl get pod
 ```
 
@@ -1116,13 +1116,13 @@ test   1/1     Running   0          28s
 
 削除も同様に行うことが可能です。
 
-```Bash
+```sh
 kubectl delete pod test
 ```
 
 しかしながら、Deploymentなど他のリソースに関するロールは割り当てられていないためエラーとなります。
 
-```Bash
+```sh
 kubectl create deployment test --image=nginx
 ```
 
@@ -1132,17 +1132,17 @@ error: failed to create deployment: deployments.apps is forbidden: User "handson
 
 続いて、contextを元々使用していたものに再度変更し同じコマンドを実行してみます。
 
-```Bash
+```sh
 kubectl config use-context kind-kind
 ```
 
-```Bash
+```sh
 kubectl create deployment test --image=nginx
 ```
 
 問題なく実行できることが確認できます。
 
-```Bash
+```sh
 kubectl get deployment
 ```
 
@@ -1153,7 +1153,7 @@ test   1/1     1            1           8s
 
 動作確認後、リソースを削除します。
 
-```Bash
+```sh
 kubectl config delete-context handson-user 
 kubectl delete rolebinding handson-user-rolebinding 
 kubectl delete role handson-user-role
@@ -1209,13 +1209,13 @@ KubernetesにはPodが正常に起動したか、または正常に動作を続�
 まずは対象のファイルを作成しない状態でPodをデプロイしてみます。
 
 
-```Bash
+```sh
 kubectl apply -f readiness-pod.yaml
 ```
 
 対象のファイルが作成されていない状態ではPodがReadyのステータスにならないことがわかります。
 
-```Bash
+```sh
 kubectl get pod
 ```
 
@@ -1260,7 +1260,7 @@ spec:
 
 以下のコマンドでPodを入れ替えてみましょう。
 
-```Bash
+```sh
 kubectl replace -f readiness-pod.yaml --force
 ```
 
@@ -1277,7 +1277,7 @@ readiness-pod           1/1     Running   0             7s
 
 動作確認後、リソースを削除します。
 
-```Bash
+```sh
 kubectl delete pod readiness-pod
 ```
 
@@ -1291,20 +1291,20 @@ Readiness Probe同様、ファイルの有無によってPodの正常性を確�
 
 まず、PodをApplyします。
 
-```Bash
+```sh
 kubectl apply -f liveness-pod.yaml
 ```
 
 以下のコマンドでPodの挙動が確認できます。
 Pod作成からしばらく経つと、`RESTARTS`のカウンタが上昇していくのが確認できます。
 
-```Bash
+```sh
 watch -n 1 kubectl get pod
 ```
 
 動作確認後、リソースを削除します。
 
-```Bash
+```sh
 kubectl delete pod liveness-pod
 ```
 
@@ -1334,19 +1334,19 @@ Network PolicyはPod同士の通信を制御し、特定のPodやプロトコル
 
 今回は3つのテスト用のPodをデプロイし、curlを使って通信確認を行なっていきます。
 
-```Bash
+```sh
 kubectl apply -f netpol-pod.yaml
 ```
 
 通信確認を行うためにPodに付与されているIPアドレスを確認します。
 
-```Bash
+```sh
 kubectl get pod -o wide -L app | grep app
 ```
 
 以下のように、curlを使ってPod同士の通信確認をそれぞれ行なっていきます。
 
-```Bash
+```sh
 kubectl exec -it nginx-app1 -- curl -I <PodのIP>
 kubectl exec -it nginx-app2 -- curl -I <PodのIP>
 kubectl exec -it nginx-app3 -- curl -I <PodのIP>
@@ -1355,13 +1355,13 @@ kubectl exec -it nginx-app3 -- curl -I <PodのIP>
 続いて、すべての通信を拒否するNetwork Policyを適用します。
 
 
-```Bash
+```sh
 kubectl apply -f default-deny-all.yaml
 ```
 
 先ほどと同じようにcurlを投げても、タイムアウトになることが確認できます。
 
-```Bash
+```sh
 kubectl exec -it nginx-app1 -- curl -I <PodのIP>
 kubectl exec -it nginx-app2 -- curl -I <PodのIP>
 kubectl exec -it nginx-app3 -- curl -I <PodのIP>
@@ -1370,13 +1370,13 @@ kubectl exec -it nginx-app3 -- curl -I <PodのIP>
 続いて、`app1`と`app3`同士の通信のみが許可されるポリシーを適用していきます。
 今回は`podSelector`を使用してポリシーを設定しています。
 
-```Bash
+```sh
 kubectl apply -f handson-policy.yaml
 ```
 
 設定後、`app1`と`app3`同士の通信のみが可能であることが確認できます。
 
-```Bash
+```sh
 kubectl exec -it nginx-app1 -- curl -I <PodのIP>
 kubectl exec -it nginx-app2 -- curl -I <PodのIP>
 kubectl exec -it nginx-app3 -- curl -I <PodのIP>
@@ -1384,7 +1384,7 @@ kubectl exec -it nginx-app3 -- curl -I <PodのIP>
 
 動作確認後、リソースを削除します。
 
-```Bash
+```sh
 kubectl delete networkpolicy default-deny-all
 kubectl delete networkpolicy app1-app3
 kubectl delete networkpolicy app3-app1
@@ -1424,13 +1424,13 @@ parallelism: 2
 
 以下のManifestを適用します。
 
-```Bash
+```sh
 kubectl apply -f handson-job.yaml
 ```
 
 動作確認は以下のコマンドで行います。
 
-```Bash
+```sh
 kubectl get job
 ```
 
@@ -1447,20 +1447,20 @@ handson-job   6/6           15s        58s
 また、Podの挙動を観察することで動作確認をすることも可能です。
 以下のコマンドで2つずつ並列でJobが実行されていくのが確認できます。
 
-```Bash
+```sh
 watch -n 1 kubectl get pod
 ```
 
 実際のJobの実行結果はLogを確認します。
 
-```Bash
+```sh
 kubectl logs <Pod名>
 ```
 
 確認が完了したらリソースを削除します。
 
 
-```Bash
+```sh
 kubectl delete job handson-job
 ```
 
@@ -1472,29 +1472,29 @@ CronJobは、先ほど実行したJobの上位リソースに当たります。
 今回は1分ごとにJobを動作させるシナリオです。
 それでは、前回のJobのシナリオ同様にManifestをapplyして動作を確認していきましょう。
 
-```Bash
+```sh
 kubectl apply -f handson-cronjob.yaml
 ```
 
 1分ごとにJobが増えていくのが確認できます。
 
-```Bash
+```sh
 watch -n 1 kubectl get pod
 ```
 
 今回はdateコマンドを実行するJobなので、日付が出力されているはずです。
 
-```Bash
+```sh
 kubectl logs <Pod名>
 ```
 
 以下のコマンドはCron Jobのステータスや詳細が確認できます。
 
-```Bash
+```sh
 kubectl get cronjob
 ```
 
-```Bash
+```sh
 kubectl describe cronjob handson-cronjob
 ```
 
@@ -1513,7 +1513,7 @@ handson-cronjob   */1 * * * *   False     0        24s             7m24s
 
 以下のコマンドを実行します。
 
-```Bash
+```sh
 kubectl patch cronjob handson-cronjob -p '{"spec":{"suspend":true}}'
 ```
 
@@ -1530,7 +1530,7 @@ handson-cronjob   */1 * * * *   True      0        8s              13m
 動作確認後、リソースを削除します。
 
 
-```Bash
+```sh
 kubectl delete cronjob handson-cronjob
 ```
 
@@ -1547,32 +1547,32 @@ ConfigMapは、機密性のないデータをキーと値のペアで保存す�
 
 まずは、ConfigMapを作成します。
 
-```Bash
+```sh
 kubectl apply -f handson-configmap.yaml
 ```
 
 続いてPodを作成します。
 
-```Bash
+```sh
 kubectl apply -f configmap-pod.yaml
 ```
 
 次に、PodにアクセスするためIPアドレスを調べます。以下のコマンドでPodに紐づくIPアドレスが判ります。
 
-```Bash
+```sh
 kubectl get pod -o wide
 ```
 
 最後にテンポラリのPodを作成し、curlでアクセスを試みます。
 `CNDS2024 ConfigMap Handson`という文字列が返却されると成功です。
 
-```Bash
+```sh
 kubectl run tmp --restart=Never --rm -i --image=nginx:alpine -- curl <PodのIPアドレス>
 ```
 
 動作確認後、リソースを削除します。
 
-```Bash
+```sh
 kubectl delete pod configmap-pod
 kubectl delete pod handson-configmap
 ```
@@ -1591,13 +1591,13 @@ KubernetesにはNamespace単位でリソースを制御することができるR
 まずは`resource-test`という名前のnamespaceを作成します。
 
 
-```Bash
+```sh
 kubectl create namespace resource-test
 ```
 
 以下のようにnamespaceが作成されます。
 
-```Bash
+```sh
 kubectl get namespace
 ```
 
@@ -1610,14 +1610,14 @@ resource-test        Active   6s
 
 続いて、作成したnamespaceにCompute Resource Quotaを設定します。
 
-```Bash
+```sh
 kubectl apply -f test-resource-quota.yaml 
 ```
 
 以下のように作成されていることが確認できます。
 
 
-```Bash
+```sh
 kubectl get resourcequotas -n resource-test
 ```
 
@@ -1634,14 +1634,14 @@ test-resource-quota   14s             limits.cpu: 0/200m, limits.memory: 0/200Mi
 続いて、テスト用Podのデプロイを試みます。
 今回はテスト用のDeployment Manifestを用意しています。
 
-```Bash
+```sh
 kubectl apply -f resource-test.yaml
 ```
 
 
 動作確認をすると、Podが起動していないことが確認できます。
 
-```Bash
+```sh
 kubectl get pod -n resource-test
 ```
 
@@ -1655,7 +1655,7 @@ No resources found in resource-test namespace.
 
 Deploymentも同様にREADYのPodが0であることが確認できます。
 
-```Bash
+```sh
 kubectl get deployment -n resource-test
 ```
 
@@ -1671,7 +1671,7 @@ resource-test   0/1     0            0           52s
 
 この時、Replicasetの状態を確認するとCPUやMemoryなどQuotaで設定したリソースの制限は必須であるため、エラーになっていることが判ります。
 
-```Bash
+```sh
 kubectl describe -n resource-test replicasets.apps resource-test
 ```
 
@@ -1755,13 +1755,13 @@ spec:
 
 再度Deployment Manifestをapplyします。
 
-```Bash
+```sh
 kubectl apply -f resource-test.yaml 
 ```
 
 すると、Podが対象のnamespaceにデプロイされたことが確認できます。
 
-```Bash
+```sh
 kubectl get pod -n resource-test 
 ```
 
@@ -1777,7 +1777,7 @@ resource-test-695d9849c7-6dg2v   1/1     Running   0          8s
 
 動作確認後、リソースを削除します。
 
-```Bash
+```sh
 kubectl delete -n resource-test deployments.apps resource-test
 kubectl delete -n resource-test resourcequotas test-resource-quota
 kubectl delete namespaces resource-test
@@ -1788,6 +1788,6 @@ kubectl delete namespaces resource-test
 jsonpathは、ワンライナーで欲しい情報のみを引き抜く際に便利な機能です。
 jsonpathでNodeの内部IPのみをファイルに書き出してみましょう。
 
-```Bash
+```sh
 kubectl get nodes -o jsonpath='{.items[*].status.addresses[?(@.type=="InternalIP")].address}' > <ファイルのPathとファイル名>
 ```
