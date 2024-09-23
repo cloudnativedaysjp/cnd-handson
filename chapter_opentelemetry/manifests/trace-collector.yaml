@@ -4,7 +4,7 @@ metadata:
   name: trace-collector
 spec:
   mode: "deployment"
-  config: |
+  config:
     receivers:
       otlp:
         protocols:
