@@ -15,7 +15,9 @@ spec:
     exporters:
       debug: {}
       otlp:
-        endpoint: jaeger-collector.jaeger:4317
+        protocol:
+          grpc:
+              endpoint: jaeger-collector.jaeger:4317
         tls:
           insecure: true
 
