@@ -1,1 +1,2 @@
-rbac.clusterRole: true
+rbac:
+  clusterRole: true
