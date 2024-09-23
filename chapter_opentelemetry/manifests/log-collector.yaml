@@ -1,7 +1,7 @@
 # https://github.com/open-telemetry/opentelemetry-collector-contrib/tree/main/receiver/filelogreceiver
 # https://github.com/open-telemetry/opentelemetry-collector/tree/main/exporter/debugexporter
 # https://github.com/open-telemetry/opentelemetry-collector-contrib/tree/main/exporter/fileexporter
-apiVersion: opentelemetry.io/v1alpha1
+apiVersion: opentelemetry.io/v1beta1
 kind: OpenTelemetryCollector
 metadata:
   name: log-collector
@@ -14,7 +14,7 @@ spec:
     - name: host-log-volumes
       hostPath:
         path:  /tmp
-  config: |
+  config:
     receivers:
       filelog:
         include: [ /var/log/cndt-*.json ]
