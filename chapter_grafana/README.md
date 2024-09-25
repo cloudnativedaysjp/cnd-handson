@@ -55,7 +55,7 @@ chapter_prometheusで導入したkube-prometheus-stackによって、すでにGr
 
 Grafanaでは手作業でDashboardを作成する以外に、
 すでに構築されたDashboardの設定をJSONで切り出して保存しておいたものを利用したり、
-<https://grafana.com/grafana/dashboards/> 等で提供されているさまざまなダッシュボードをインポートしたりできます。
+<https://grafana.com/grafana/dashboards/> 等で提供されているさまざまなダッシュボードをインポートできます。
 
 <https://grafana.com/docs/grafana/latest/dashboards/manage-dashboards/#import-a-dashboard>
 
