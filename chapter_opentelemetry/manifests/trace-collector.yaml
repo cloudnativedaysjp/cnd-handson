@@ -8,16 +8,14 @@ spec:
     receivers:
       otlp:
         protocols:
-          http:
+          http: {}
 
     processors: {}
 
     exporters:
       debug: {}
       otlp:
-        protocol:
-          grpc:
-              endpoint: jaeger-collector.jaeger:4317
+        endpoint: jaeger-collector.jaeger:4317
         tls:
           insecure: true
 
