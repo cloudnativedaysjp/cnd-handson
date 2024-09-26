@@ -1,10 +1,10 @@
-apiVersion: opentelemetry.io/v1alpha1
+apiVersion: opentelemetry.io/v1beta1
 kind: OpenTelemetryCollector
 metadata:
   name: metrics-collector
 spec:
   mode: "daemonset"
-  config: |
+  config:
     receivers:
       hostmetrics:
         collection_interval: 30s
