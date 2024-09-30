@@ -65,9 +65,12 @@ Pyroscopeのアーキテクチャを説明します。後述するdistributorや
 4. querierの参照先は、最近のデータからならingesterから、長期ストレージからならstore-gatewayからデータを取得します。
 
 ## Pyroscopeへのプロファイルの送信（クライアント）
-プロファイルをPyroscopeに送信する場合、各言語ごとのPyroscope SDKを使うか、Grafana Agentを使うかの2択となります。しかし、2024/04にGrafana Alloyという、OpenTelemetry Collector互換の新たなOSSが発表されました。Grafana Agentは2025年にEOLとなり、Alloyへとプロジェクト移行されます。
+プロファイルをPyroscopeに送信する場合、各言語ごとのPyroscope SDKを使うか、Grafana Agentを使うかの2択でしたが、2024/04のGrafanaCONで、**Grafana Alloy**という、OTLP(OpenTelemetry Protocol)互換の新たなCollectorが発表されました。
 
-当ハンズオンでは、初期構築時にGrafana Agentがインストールされています。
+当ハンズオンでは、初期構築時にGrafana Alloyがインストールされています。
+
+> [!NOTE]
+> Grafana Agentは2025年にEOLとなり、Alloyへとプロジェクト移行されます。
 
 ## 実践: Grafana Pyroscopeのインストール
 実践として、Pyroscopeをインストールします。以降のハンズオンででは、pyroscopeのchapterを作業ディレクトリとしてください。
@@ -95,8 +98,8 @@ kubectl get pods -n monitoring -l app.kubernetes.io/instance=pyroscope
 ```bash
 # 実行結果
 NAME                READY   STATUS    RESTARTS   AGE
-pyroscope-0         1/1     Running   0          69s
-pyroscope-agent-0   2/2     Running   0          69s
+pyroscope-0         1/1     Running   0          22s
+pyroscope-alloy-0   2/2     Running   0          22s
 ```
 
 
@@ -159,8 +162,22 @@ GrafanaのExplore([http://grafana.example.com/explore](http://grafana.example.co
 
 <img src="./image/grafana-pyroscope-bothmetric.png" width="700">
 
+## プロファイルの比較によるアプリケーションの改善
+プロファイルは、ラベルセットや期間で比較することができ、パフォーマンスの変化を可視化できます。
+たとえば、あるリリースからメモリリークが発生するようになり、プロファイルを比較することで原因の関数を特定するなど、アプリケーションの改善に役立ちます。
+
+[http://pyroscope.example.com](http://pyroscope.example.com/) の`Comparison View`から、`Baseline time range`で比較元の期間、`Comparison time range`で比較先の期間を選択すると、比較結果が表示されます。
+
+<img src="./image/grafana-pyroscope-comparison-view.png" width="700">
+
+
+`Diff View`は上の`Comparison View`を拡張したもので、2つのプロファイルの差分を見ることができます。各関数が費やした時間を比較できるため、たとえばパフォーマンスの劣化や改善を認識できます。
+
+<img src="./image/grafana-pyroscope-diff-view.png" width="700">
+
+
 ## まとめ
-当ハンズオンでは、プロファイルとは何かという原理・原則的な話から、実際にGrafanaLabsのPyroscopeを使ったプロファイリングの実装を、手短に説明してみました。プロファイルは、アプリケーションのどのプログラムがパフォーマンスに影響しているかを、一発で見つけることに貢献します。また、メトリクスはもちろん、トレース、ログとの紐付けなども期待できますので、ぜひ実装にチャレンジしてみて下さい。
+当ハンズオンでは、プロファイルとは何かという原理・原則的な話から、実際にGrafanaLabsのPyroscopeを使ったプロファイリングの実装を、手短に説明してみました。プロファイルは、アプリケーションのどのプログラムがパフォーマンスに影響しているかを、一発で見つけることに貢献します。また、メトリクスはもちろん、トレース、ログとの紐付けなども期待できますので、ぜひ実装にチャレンジしてみてください。
 
 ## 番外編：マイクロサービスモードで動かしたいとき
 マイクロサービスモードで動かしたい場合、helmのvaluesを宣言した状態で、`helmfile sync`を再実行してみてください。
