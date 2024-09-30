@@ -98,8 +98,8 @@ kubectl get pods -n monitoring -l app.kubernetes.io/instance=pyroscope
 ```bash
 # 実行結果
 NAME                READY   STATUS    RESTARTS   AGE
-pyroscope-0         1/1     Running   0          69s
-pyroscope-agent-0   2/2     Running   0          69s
+pyroscope-0         1/1     Running   0          22s
+pyroscope-alloy-0   2/2     Running   0          22s
 ```
 
 
