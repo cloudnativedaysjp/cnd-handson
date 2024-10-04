@@ -79,7 +79,8 @@ spec:
 
 ### ServiceMonitorの設定
 
-`ServiceMonitor`オブジェクトは、サービスのエンドポイントからメトリクスを収集することができます。
+`ServiceMonitor`オブジェクトは、Serviceリソースに基づいてエンドポイントからメトリクスを収集することができます。
+ 具体的には,Serviceオブジェクトに紐づくPodを検出し、そのPodからのメトリクスを収集する場合に便利です。
 
 ```yaml
 apiVersion: monitoring.coreos.com/v1
@@ -98,7 +99,8 @@ spec:
 
 ### PodMonitorの設定
 
-`PodMonitor`オブジェクトは、個々のポッドから直接メトリクスを収集することができます。
+`PodMonitor`オブジェクトは、KubernetesのPodリソースを監視するためのカスタムリソースです。こちらはServiceを介さず、直接Podを監視するために使用されます。
+ 個々のPodからメトリクスを収集する場合に便利です。
 
 ```yaml
 apiVersion: monitoring.coreos.com/v1
