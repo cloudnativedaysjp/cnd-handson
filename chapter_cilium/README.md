@@ -105,7 +105,7 @@ ServiceMeshに関しては、まず初めに、CiliumのIngressClassを設定し
 - [Cilium: L7-Aware Traffic Management/Examples](https://docs.cilium.io/en/stable/network/servicemesh/l7-traffic-management/#examples)
 
 > [!NOTE]
-> 
+>
 > Observabilityについては[chapter_hubble](../chapter_hubble/)にて説明します。
 
 ## Networking
@@ -139,7 +139,7 @@ kubectl run curl-deny  -n handson --image=curlimages/curl --labels="app=curl-den
 ![](image/ch4-1.png)
 
 
-現状はNetwork Policyの設定を行っていないので、`curl-allow`/`curl-deny`の両方から`/`と`/color`にアクセスできます。
+現状は何も設定を行っていないので、`curl-allow`/`curl-deny`の両方から`/`と`/color`にアクセスできます。
 また、HTTPステータスコードはすべて200が返ってきます。
 
 ```shell
@@ -166,16 +166,17 @@ curl-deny  -> /color: 200
 kubectl apply -f manifest/cnp.yaml
 ```
 
-実際にアクセスし確認すると、想定通りの動作になっていることが分かります。
+`CiliumNetworkPolicy`リソースをデプロイした後に先ほどと同じコマンドを打ってみてください。
 
-```sh
+```shell
 kubectl exec -n handson curl-allow -- /bin/sh -c "echo -n 'curl-allow -> /     : ';curl -s -o /dev/null handson:8080 -w '%{http_code}\n'"
 kubectl exec -n handson curl-allow -- /bin/sh -c "echo -n 'curl-allow -> /color: ';curl -s -o /dev/null handson:8080/color -w '%{http_code}\n'"
 kubectl exec -n handson curl-deny  -- /bin/sh -c "echo -n 'curl-deny  -> /     : ';curl -s -o /dev/null handson:8080 -w '%{http_code}\n'"
 kubectl exec -n handson curl-deny  -- /bin/sh -c "echo -n 'curl-deny  -> /color: ';curl -s -o /dev/null handson:8080/color -w '%{http_code}\n'"
 ```
 
-期待通り、`/`にアクセスしたcurl-denyのみHTTPステータスコード403が返ってくることを確認します。
+すると、curl-denyから`/`へのアクセスがHTTPステータスコード403でできなくなっています。
+このように、Ciliumでは、`CiliumNetworkPolicy`を利用することで、L7のトラフィック制御が可能です。
 
 ```shell
 curl-allow -> /     : 200
@@ -185,7 +186,7 @@ curl-deny  -> /color: 200
 ```
 
 > [!NOTE]
-> 
+>
 > L3/L4のポリシーとL7のポリシーでルール違反の際の挙動が変わります。
 > L3/L4のポリシーに違反した場合は、パケットがDropされますが、L7のポリシー違反の場合は、HTTP 403 Access Deniedが返されます。
 > 上記の例ではパスベースの制御が行われており、L7ポリシーのルール違反になるため、HTTP 403 Access Deniedとなります。
@@ -200,7 +201,7 @@ kubectl delete -f manifest/cnp.yaml
 
 ### Ingress
 
-CiliumはIngressリソースのサポートをしており、第1章でIngress NGINX Controllerをデプロイしましたが、Ingress NGINX Controllerを使わずともCilium単体でIngressリソースを利用できます。
+CiliumはIngressリソースをサポートしており、第1章でIngress NGINX Controllerをデプロイしましたが、Ingress NGINX Controllerを使わずとも、Cilium単体でIngressリソースを利用できます。
 Ingressリソースを利用するためには、CiliumのHelm Chartで`ingressController.enabled: true`を指定する必要があります。
 この設定はすでに[chapter_cluster-create](../chapter_cluster-create/)で行っており、現時点でIngressリソースは利用できる状態になっています。
 詳細については[Kubernetes Ingress Support](https://docs.cilium.io/en/stable/network/servicemesh/ingress/)を参照ください。
@@ -263,30 +264,70 @@ kubectl get gateway,httproute,svc -n handson
 
 ```shell
 NAME                                         CLASS    ADDRESS        PROGRAMMED   AGE
-gateway.gateway.networking.k8s.io/color-gw   cilium   172.24.0.200   True         52s
+gateway.gateway.networking.k8s.io/color-gw   cilium                  True         52s
 
 NAME                                                HOSTNAMES   AGE
 httproute.gateway.networking.k8s.io/color-route-1               52s
 
 NAME                              TYPE           CLUSTER-IP      EXTERNAL-IP    PORT(S)        AGE
-service/cilium-gateway-color-gw   LoadBalancer   10.96.50.28     172.24.0.200   80:32720/TCP   52s
+service/cilium-gateway-color-gw   LoadBalancer   10.96.50.28     <pending>   80:32720/TCP   52s
 service/handson                   ClusterIP      10.96.131.226   <none>         8080/TCP       24m
 service/handson-blue              ClusterIP      10.96.164.242   <none>         8080/TCP       113s
 service/handson-yellow            ClusterIP      10.96.189.95    <none>         8080/TCP       113s
 ```
 
-作成されたServiceリソースのIPアドレスを取得します。
+ここで、`Type:Loadbalancer`のEXTERNAL-IPが`<pending>`表示になっていることが分かります。
+Serviceリソースの`Type:Loadbalancer`とは、awsやGoogle Cloudなどのクラウドプロバイダーで利用できる外部のロードバランサーを利用するためのリソースになります。
+そのため、別途ロードバランサーが必要になるのですが、今回のハンズオン環境では用意していないので、`<pending>`表示のまま固まっています。
+
+クラウドプロバイダーで利用できる外部のロードバランサーと説明しましたが、オンプレミスやローカルの開発環境でも`Type:Loadbalancer`を利用することは可能です。
+やり方はいろいろありますが、有名なものとしては[MetalLB](https://metallb.universe.tf/)を利用する方法があげられます。
+今回はせっかくCiliumについて学んでいるので、Cilium v1.14からサポートが始まった[L2 Announcement](https://docs.cilium.io/en/latest/network/l2-announcements/)を利用してみましょう。
+
+> [!NOTE]
+>
+> L2 Announcementの詳細についてはここで解説しませんが、より深く知りたい方は
+> [公式ドキュメント: L2 Announcement](https://docs.cilium.io/en/latest/network/l2-announcements/)や[Cilium L2 Announcement を使ってみる](https://sreake.com/blog/learn-about-cilium-l2-announcement)を参照してください。
+
+> [!WARNING]
+>
+> ハンズオン作成時点で、L2 Announcementはβ機能なので本番利用には注意が必要です。
+
+L2 Announcementを利用するためには、現行の設定に加えて、追加で`CiliumL2AnnouncementPolicy`と`CiliumLoadBalancerIPPool`を設定する必要があります。
+下記コマンドでリソースを適用しましょう。
+
+```shell
+kubectl apply -f manifest/l2announcement.yaml
+```
+
+再度Serviceリソースの`Type:Loadbalancer`を確認すると、EXTERNAL-IPが振られていることが分かります。
+docker network kindのIP帯を設定しているため、dockerを起動しているホストからのみアクセスすることが可能です。
+
+```shell
+kubectl get svc -n handson
+```
+
+```shell
+NAME                      TYPE           CLUSTER-IP      EXTERNAL-IP    PORT(S)        AGE
+cilium-gateway-color-gw   LoadBalancer   10.96.36.91     172.18.0.200   80:30183/TCP   12m
+handson                   ClusterIP      10.96.238.128   <none>         8080/TCP       24m
+handson-blue              ClusterIP      10.96.244.167   <none>         8080/TCP       23m
+handson-yellow            ClusterIP      10.96.80.215    <none>         8080/TCP       23m
+```
+
+> [!WARNING]
+>
+> manifest/l2announcement.yamlでデプロイした`CiliumLoadBalancerIPPool`リソースの`spec.blocks`に設定する値は、docker kindネットワークのアドレス帯から選択する必要があります。
+> 今回は既に設定済みのため意識する必要はありせんが、別環境でL2 Announcementを利用するときには注意してください。
+
+
+Serviceリソースの`Type:Loadbalancer`のIPアドレスを取得します。
 
 ```shell
 LB_IP=$(kubectl get -n handson svc -l io.cilium.gateway/owning-gateway=color-gw -o=jsonpath='{.items[0].status.loadBalancer.ingress[0].ip}')
 ```
 
-> [!WARNING]
-> 
-> LB_IPは第1章で導入したIPAddressPoolのspec.addressesのアドレスになります。
-> 今回のハンズオンでは、docker network kindのIP帯を設定しているため、dockerを起動しているホストからのみアクセスすることが可能です。
-
-LBのIPアドレス宛に10回ほどアクセスし、おおよそ9:1に分散していることを確認します。
+取得したIPアドレス宛に10回ほどアクセスし、おおよそ9:1に分散していることを確認します。
 
 ```shell
 for in in {1..10}; do \
@@ -303,7 +344,7 @@ kubectl delete -f manifest/gateway_api.yaml
 ```
 
 > [!NOTE]
-> 
+>
 > 今回のようなルーティング機能はCilium Service Meshの機能を利用しても提供することができます。
 > 次節でCilium Service Meshを利用したトラフィック分割のデモを説明します。
 

@@ -105,12 +105,10 @@ Have a nice day! 👋
 
 - [Gateway API](https://gateway-api.sigs.k8s.io/)
 - [Cilium](https://cilium.io/)
-- [Metallb](https://metallb.universe.tf/)
 - [Ingress NGINX Controller](https://github.com/kubernetes/ingress-nginx)
 
 Gateway APIはKubernetesクラスター外からKubernetesクラスター内のServiceへのトラフィックを管理するためのものです。
 Ciliumについては[chapter_cilium](../chapter_cilium/)で説明するのでそちらを参照してください。
-MetallbはKind上のクラスターでServiceリソースのType:LoadBalancerを利用するためにインストールします。
 Ingress NGINX Controllerはインターネットからkind上のServiceリソースへ通信をルーティングするためにインストールします。
 各コンポーネントの詳細については上記リンクをご参照ください。
 
@@ -135,18 +133,6 @@ helmfile sync -f helm/helmfile.yaml
 >
 > Kubernetesのイングレスコントローラーとして、Ingress NGINX Controllerをインストールしていますが、Cilium自体もKubernetes Ingressリソースをサポートしています。
 > こちらに関しては、[chapter_cilium](../chapter_cilium/)にて説明します。
-
-Metallbに関しては、追加で`IPAddressPool`と`L2Advertisement`をデプロイする必要があります。
-
-```shell
-kubectl apply -f manifest/metallb.yaml
-```
-
-> [!WARNING]
->
-> manifest/metallb.yamlでデプロイしたIPAddressPoolリソースの`spec.addresses`に設定する値は、docker kindネットワークのアドレス帯から選択する必要があります。
-> 今回は`manifest/metallb.yaml`既に設定済みのため意識する必要はありせんが、別環境でMetallbを設定するときには注意してください。
-> 詳細は[Loadbalancer](https://kind.sigs.k8s.io/docs/user/loadbalancer/)を参照してください。
 
 ## kubectlコマンドのシェル補完の有効化
 

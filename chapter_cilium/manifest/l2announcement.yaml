@@ -1,0 +1,24 @@
+apiVersion: "cilium.io/v2alpha1"
+kind: CiliumL2AnnouncementPolicy
+metadata:
+  name: l2announcements
+spec:
+  nodeSelector:
+    matchExpressions:
+      - key: node-role.kubernetes.io/control-plane
+        operator: DoesNotExist
+  externalIPs: true
+  loadBalancerIPs: true
+
+---
+
+apiVersion: "cilium.io/v2alpha1"
+kind: CiliumLoadBalancerIPPool
+metadata:
+  name: ippool
+spec:
+  blocks:
+  # docker network inspect -f '{{.IPAM.Config}}' kind
+  #   see: https://kind.sigs.k8s.io/docs/user/loadbalancer/
+  - start: 172.18.0.200
+    stop: 172.18.0.250
