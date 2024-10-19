@@ -17,7 +17,7 @@ spec:
     spec:
       containers:
       - name: handson
-        image: argoproj/rollouts-demo:blue
+        image: argoproj/rollouts-demo:green
         imagePullPolicy: Always
         ports:
         - name: http
