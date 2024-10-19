@@ -85,8 +85,11 @@ kubectl get service,deployment -n argo-rollouts
 NAME                            READY   UP-TO-DATE   AVAILABLE   AGE
 deployment.apps/argo-rollouts   2/2     2            2           28d
 ```
-### Corednsへhotsの追加
+### Corednsへhostsの追加
 Argo Rolloutsのメトリクスプロバイダーが、デモアプリやPrometheusにアクセスできるようにCore DNSのを設定を行います。
+
+下記yamlの `<IPアドレス>` には[インスタンスのIPアドレスの確認](../chapter_setup/README.md#名前解決の設定)で取得したグローバルIPを設定してください。
+
   ```sh
   kubectl edit cm coredns -n kube-system
   ```
@@ -100,22 +103,27 @@ data:
   Corefile: |
     .:53 {
         errors
-        health
+        health {
+           lameduck 5s
+        }
         # 下記追加
         hosts {
-           IPアドレス app.argocd.example.com
-           IPアドレス app-preview.argocd.example.com
-           IPアドレス prometheus.example.com
+           <IPアドレス> app.argocd.example.com
+           <IPアドレス> app-preview.argocd.example.com
+           <IPアドレス> prometheus.example.com
            fallthrough
         }
         # ここまで
+        ready
         kubernetes cluster.local in-addr.arpa ip6.arpa {
            pods insecure
-           upstream
            fallthrough in-addr.arpa ip6.arpa
+           ttl 30
         }
         prometheus :9153
-        proxy . /etc/resolv.conf
+        forward . /etc/resolv.conf {
+           max_concurrent 1000
+        }
         cache 30
         loop
         reload
@@ -123,8 +131,10 @@ data:
     }
 kind: ConfigMap
 metadata:
+  creationTimestamp: "2024-10-18T05:20:19Z"
   name: coredns
   namespace: kube-system
+
   (略)
 
   ```
