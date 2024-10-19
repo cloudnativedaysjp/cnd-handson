@@ -157,7 +157,7 @@ Canary Releaseは、新旧混在状態を制御し、本番環境において限
     SYNC POLICY: Manual
     SYNC OPTIONS: AUTO CREATE NAMESPACE [v]
     SOURCE
-      Repository URL: https://github.com/自身のアカウント名/cndt2023-handson
+      Repository URL: https://github.com/自身のアカウント名/cnd-handson
       Revision: main
       Path: chapter_argo-rollouts/app/blue-green
     DESTINATION
@@ -235,7 +235,7 @@ Applications画面の場合は、一番右下の端に、
     SYNC POLICY: Manual
     SYNC OPTIONS: AUTO CREATE NAMESPACE [v]
     SOURCE
-      Repository URL: https://github.com/自身のアカウント名/cndt2023-handson
+      Repository URL: https://github.com/自身のアカウント名/cnd-handson
       Revision: main
       Path: chapter_argo-rollouts/app/canary
     DESTINATION
@@ -284,7 +284,7 @@ rollout-extensionを使用した場合、rolloutを選択しmoreのタブが出�
 Applications画面の場合は、一番右下の端に、
 
 
-![delete](../chapter_argocd/image/demoapp/Delete-1.png)
+![delete](image/canary/canary-create.png)
 
 詳細画面の場合は、右上の2番目にあります。
 ![delete](../chapter_argocd/image/demoapp/Delete-2.png)
@@ -325,7 +325,7 @@ Applicationsの画面において + NEW APPをクリックします
     SYNC POLICY: Manual
     SYNC OPTIONS: AUTO CREATE NAMESPACE [v]
     SOURCE
-      Repository URL: https://github.com/自身のアカウント名/cndt2023-handson
+      Repository URL: https://github.com/自身のアカウント名/cnd-handson
       Revision: main
       Path: chapter_argo-rollouts/analysis/job
     DESTINATION
@@ -385,7 +385,7 @@ Applicationsの画面において + NEW APPをクリックします
     SYNC POLICY: Manual
     SYNC OPTIONS: AUTO CREATE NAMESPACE [v]
     SOURCE
-      Repository URL: https://github.com/自身のアカウント名/cndt2023-handson
+      Repository URL: https://github.com/自身のアカウント名/cnd-handson
       Revision: main
       Path: chapter_argo-rollouts/analysis/web
     DESTINATION
