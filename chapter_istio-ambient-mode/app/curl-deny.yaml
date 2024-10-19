@@ -3,19 +3,17 @@ apiVersion: v1
 kind: ServiceAccount
 automountServiceAccountToken: false
 metadata:
-  name: curl
+  name: curl-deny
 ---
 apiVersion: v1
 kind: Pod
 metadata:
   labels:
-    app: curl
-    version: v1
-    content: layer7-authz
+    content: layer4-authz
     prometheus-monitor-ignore: ""
-  name: curl
+  name: curl-deny
 spec:
-  serviceAccountName: curl
+  serviceAccountName: curl-deny
   terminationGracePeriodSeconds: 0
   containers:
   - name: curl

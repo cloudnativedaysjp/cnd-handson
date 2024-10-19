@@ -6,9 +6,10 @@ metadata:
   labels:
     content: layer7-authz
 spec:
-  selector:
-    matchLabels:
-     istio.io/gateway-name: handson
+  targetRefs:
+  - kind: Service
+    group: ""
+    name: handson
   action: DENY
   rules:
   - from:

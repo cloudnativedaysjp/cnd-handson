@@ -11,4 +11,6 @@ resources:
   limits:
     cpu: 100m
     memory: 84Mi
+env:
+  LOG_FORMAT: json
 imagePullPolicy: IfNotPresent
