@@ -29,5 +29,12 @@ external_services:
   tracing:
     enabled: false
 server:
-  port: 28080
-  metrics_enabled: false
+  node_port: 32766
+  observability:
+    metrics:
+      enabled: false
+# 新しいsigning_keyが毎apply/syncで作成されてしまうことが原因で、
+# kialiのhelm versionが毎回更新される(pod)が毎回再作成されることを
+# 回避するために、ダミー用のsigning_keyを指定する。
+login_token:
+  signing_key: "dummy key"
