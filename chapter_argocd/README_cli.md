@@ -20,7 +20,7 @@ Argo CDはGitHub等からWebhookを受け取り、Gitリポジトリに格納さ
 ### Argo CDのアーキテクチャ
 ![image](https://argo-cd.readthedocs.io/en/stable/assets/argocd_architecture.png)
 
-Argo CDは三つのコアコンポーネントで構成されています。
+Argo CDは3つのコアコンポーネントで構成されています。
 - API Server
 - Repository Server
 - Application Controller
@@ -64,7 +64,7 @@ KubernetesクラスターをGitの状態に同期させるため、マニフェ�
 ### Gitリポジトリの準備(ローカル環境)
 Argo CDを利用する上では、GitHubへのPush等の変更が必要不可欠になります。そのため、このハンズオンのリポジトリをforkして操作する為の準備をします。
 
-[このハンズオン](https://github.com/cloudnativedaysjp/cnd-handson)にアクセスし、forkをクリックします
+[このハンズオン](https://github.com/cloudnativedaysjp/cnd-handson)にアクセスし、forkをクリックします。
 ![fork1](image/setup/fork-1-new.png)
 
 Create fork をクリックします
@@ -74,7 +74,7 @@ Create fork をクリックします
 自身のアカウントでforkされていることが確認できます
 ![fork3](image/setup/fork-3-new.png)
 
-GitHubのリポジトリの登録やPushはforkした自身のリポジトリを利用して下さい
+GitHubのリポジトリの登録やPushはforkした自身のリポジトリを利用してください。
 
 
 ### argocd cliのインストール
@@ -171,7 +171,7 @@ deployment.apps/argo-cd-argocd-redis                       1/1     1            
 deployment.apps/argo-cd-argocd-repo-server                 1/1     1            1           26d
 deployment.apps/argo-cd-argocd-server                      1/1     1            1           26d
 ```
-ingressを作成し、Argo CDのWEB UIにも、アクセス出来るようにします。
+ingressを作成し、Argo CDのWEB UIにも、アクセスできるようにします。
 ```
 kubectl apply -f ingress/ingress.yaml
 ```
@@ -228,7 +228,7 @@ argocd app create argocd-demo --repo https://github.com/自身のアカウント
 ![create](./image/demoapp/create.png)
 ![create2](./image/demoapp/create2.png)
 
-SYNCして、無事デプロイされると下記のように表示されていることを確認して下さい。
+SYNCして、無事デプロイされると下記のように表示されていることを確認してください。
 ```
 argocd app sync argocd-demo
 ```
@@ -277,7 +277,7 @@ image: argoproj/rollouts-demo:green
 ```
 git push origin main
 ```
-Argo CDはデフォルトでは3分に一回の頻度でブランチを確認し、差分を検出しています。アプリケーションの状態を見てみましょう。
+Argo CDはデフォルトでは3分に1回の頻度でブランチを確認し、差分を検出しています。アプリケーションの状態を見てみましょう。
 ```
 argocd app get argocd-demo
 ```
@@ -313,11 +313,11 @@ argocd app sync argocd-demo
 
 SYNC後、
 http://app.argocd.example.com
-にアクセスして、青色 → 緑色のタイルに変わるることを確認して下さい。
+にアクセスして、青色 → 緑色のタイルに変わるることを確認してください。
 
 もちろん、WebUIから設定することも可能です。
 ![blue2green](image/demoapp/blue2green.png)
-Gitの変更をKubernetes Clusterに反映させるためにページ上部にあるSYNCをクリックして、下記のように表示されていることを確認して下さい。
+Gitの変更をKubernetes Clusterに反映させるためにページ上部にあるSYNCをクリックして、下記のように表示されていることを確認してください。
 ![blue2green](image/demoapp/blue2green-sync.png)
 http://app.argocd.example.com
 へアクセスして確認するとタイルが青から緑に変わったことが確認できます。
@@ -427,35 +427,11 @@ ingress.networking.k8s.io/app-ingress-by-nginx   nginx   prd.kustomize.argocd.ex
   * 開発環境: http://dev.kustomize.argocd.example.com
   * 本番環境: http://prd.kustomize.argocd.example.com
 
-WebUIでも確認してみると、argocd-kustomise-dev/argocd-kustomise-prdの２つのアプリケーションが追加されています。
+WebUIでも確認してみると、argocd-kustomise-dev/argocd-kustomise-prdの2つのアプリケーションが追加されています。
 ![Kustomize-create](image/demoapp/Kustomize-create.png)
-### 開発環境
-![Kustomize-create](image/demoapp/Kustomize-create2-dev.png)
-### 本番環境
-![Kustomize-create](image/demoapp/Kustomize-create2-prd.png)
-ページ上部にある SYNCをクリックします(開発環境の場合はpodが1個、本番環境の場合はpodが2個出来るのが確認できます。)
-### 開発環境
-![Kustomize-dev](image/demoapp/Kustomize-sync-dev.png)
-### 本番環境
-![Kustomize-prd](image/demoapp/Kustomize-sync-prd.png)
 
 ## Helmを使ったデプロイ
 KubernetesのパッケージマネージャーのHelmを利用したデプロイを行います。
-
-```
-GENERAL
-  Application Name: argocd-helm
-  Project Name: default
-  SYNC POLICY: Manual
-  SYNC OPTIONS: AUTO CREATE NAMESPACE [v]
-  SOURCE
-    Repository URL: https://github.com/自身のアカウント名/cnd-handson
-    Revision: main
-    Path: chapter_argocd/app/Helm/rollouts-demo
-  DESTINATION
-    Cluster URL: https://kubernetes.default.svc
-    Namespace: argocd-helm
-```
 Helmからアプリを作成します。
 ```
 argocd app create argocd-helm --repo https://github.com/自身のアカウント名/cnd-handson --sync-option CreateNamespace=true --path chapter_argocd/app/Helm/rollouts-demo --dest-server https://kubernetes.default.svc --dest-namespace argocd-helm
@@ -506,11 +482,10 @@ ingress.networking.k8s.io/app-ingress-by-nginx   nginx   helm.argocd.example.com
 
 ブラウザで
 http://helm.argocd.example.com
-アクセスして青いタイルのアプリが動いていることが確認できます。<br>
-こちらでHelmを使ってデプロイが出来ている事が確認できました。
+アクセスして青いタイルのアプリが動いていることが確認できます。
 
 ## 作成したリソースの削除
-作成したアプリケーションを削除していきます。
+作成したアプリケーションを削除します。
 ```
 argocd app delete argocd-demo
 ```
@@ -518,7 +493,7 @@ argocd app delete argocd-demo
 ```
 Are you sure you want to delete 'argocd-demo' and all its resources? [y/n] y
 ```
-同様に、他のアプリケーションも削除していきます。
+同様に、他のアプリケーションも削除します。
 ```
 argocd app delete argocd-kustomize-dev
 ```
@@ -534,7 +509,7 @@ argocd app delete argocd-helm
 kubectl delete namespace argocd-demo argocd-kustomize-dev argocd-kustomize-prd argocd-helm
 ```
 
-最後に、argocd自体も削除します
+最後に、argocd自体も削除します。
 ```
 kubectl delete namespace argo-cd
 ```
