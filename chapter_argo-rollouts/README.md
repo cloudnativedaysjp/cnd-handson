@@ -4,7 +4,7 @@
 ## プログレッシブデリバリーについて
 プログレッシブデリバリー（Progressive Delivery）は、アプリケーションの新機能や変更を段階的に展開し、その過程を自動化してリスクを最小限に抑え、品質を確保する手法です。
 
-実現するために、一部のユーザに対してアプリケーションを提供するトラフィック制御（Canary Release）、提供したアプリケーションの新機能に対する分析、分析をもとに自動化されたロールバックの三つの機能が必要になります
+実現するために、一部のユーザに対してアプリケーションを提供するトラフィック制御（Canary Release）、提供したアプリケーションの新機能に対する分析、分析をもとに自動化されたロールバックの3つの機能が必要になります
 
 ```mermaid
 graph LR;
@@ -38,15 +38,15 @@ Argo CDとの連携が可能で、簡単に既存のGit Opsでプログレッシ
 ## セットアップ
 今回のハンズオンでは、PrometheusとArgo CD、Argo Rolloutsを利用します。
 
-また、GitHubのリポジトリの登録やPushは、forkした自身のリポジトリを利用して下さい。
+また、GitHubのリポジトリの登録やPushは、forkした自身のリポジトリを利用してください。
 
 ### Prometheusのセットアップ
-[chapter_prometheus](../chapter_prometheus/README.md#実践-ingress-nginx-controllerからメトリクスを収集する)を参照して、kube-prometheus-stackのインストールからNginx Ingressのメトリクスを外部公開できていることを確認まで行って下さい。
+[chapter_prometheus](../chapter_prometheus/README.md#実践-ingress-nginx-controllerからメトリクスを収集する)を参照して、kube-prometheus-stackのインストールからNginx Ingressのメトリクスを外部公開できていることを確認まで行ってください。
 
 ### Argo CDのセットアップ
-[chapter_argocd](../chapter_argocd/README.md#argo-cdのインストール)を参照してArgo CDのインストールからWebUIの確認とレポジトリのforkから登録まで行って下さい。
+[chapter_argocd](../chapter_argocd/README.md#argo-cdのインストール)を参照してArgo CDのインストールからWebUIの確認とレポジトリのforkから登録まで行ってください。
 
-今回のchapterでは更にArgo CDのプラグインである、rollout-extensionをインストールしてArgoCD上でrolloutの操作結果が確認できるようにします。
+今回のchapterではさらにArgo CDのプラグインである、rollout-extensionをインストールしてArgoCD上でrolloutの操作結果が確認できるようにします。
 chapter_argocd/helmfile/values.yamlの更新をします。
 ```values.yaml
 ## Argo Configs
@@ -78,7 +78,7 @@ helmfile sync -f ./helm/helmfile.yaml
 ```
 作成されるリソースは下記の通りです。
 ```sh
-kubectl get service,deployment  -n argo-rollouts
+kubectl get service,deployment -n argo-rollouts
 ```
 ```sh
 # 実行結果
@@ -147,7 +147,7 @@ Canary Releaseは、新旧混在状態を制御し、本番環境において限
     SYNC POLICY: Manual
     SYNC OPTIONS: AUTO CREATE NAMESPACE [v]
     SOURCE
-      Repository URL: https://github.com/自身のアカウント名/cndt2023-handson
+      Repository URL: chapter_argocdでforkした自分のリポジトリのURL
       Revision: main
       Path: chapter_argo-rollouts/app/blue-green
     DESTINATION
@@ -194,12 +194,12 @@ git push origin main
  rolloutの3点リーダーをクリックし [Promote-Full]をクリックすることで、blue-green deployが行われます。プロモートが行われたどちらのingressもgreenを見るようになり、blueのreplicasetは削除されます。
   ![promote](image/BG/promote.png)
  
- このように、ArgoRolloutのBlue/Green Deploymentにおいては、いったんgreenに当たるサービスが、previewServiceとして登録され、プロモートすることで、activeServiceに昇格するような動きをして、Blue/Green Deploymentを実現します。  
+ このように、ArgoRolloutのBlue/Green Deploymentにおいては、いったんgreenに当たるサービスがpreviewServiceとして登録されプロモートすることで、activeServiceに昇格するような動きをして、Blue/Green Deploymentを実現します。  
  
  
-rollout-extensionを使用した場合、rolloutを選択しmoreのタブが出現します。moreのタブを選ぶとこのようにblueとgreenがどうなっているか一目で確認できるようになります。
+rollout-extensionを使用した場合、rolloutをクリックするとROLLOUTのタブが出現します。タブを選ぶとこのようにblueとgreenがどうなっているか一目で確認できるようになります。
   ![rollout-extension](image/BG/blue-green-promote.png)
-最後にアプリケーションの削除を行います。 Deleteをクリックします
+最後にアプリケーションの削除を行います。 DELETEをクリックします。
 
 
 Applications画面の場合は、一番右下の端に、
@@ -225,7 +225,7 @@ Applications画面の場合は、一番右下の端に、
     SYNC POLICY: Manual
     SYNC OPTIONS: AUTO CREATE NAMESPACE [v]
     SOURCE
-      Repository URL: https://github.com/自身のアカウント名/cndt2023-handson
+      Repository URL: chapter_argocdでforkした自分のリポジトリのURL
       Revision: main
       Path: chapter_argo-rollouts/app/canary
     DESTINATION
@@ -236,7 +236,7 @@ Applications画面の場合は、一番右下の端に、
   ![create](./image/canary/canary-create.png)
   ![create2](./image/canary/canary-create2.png)
   
- ページ上部にある SYNC をクリックして、無事デプロイされると下記のようになります
+ ページ上部にある SYNC をクリックして、無事デプロイされると下記のようになります。
   ![sync](image/canary/canary-sync.png)
 
 以上の手順で、Canary Releaseにおける安定バージョンがArgoCDを用いてデプロイされ、localからingressでアクセス可能となりました
@@ -255,21 +255,20 @@ git push origin main
  ArgoCDはデフォルトでは3分に1回の頻度でブランチを確認し、差分を検出しています。3分待てない場合には、ページ上部にある [REFRESH]をクリックします。下記のようにrolloutにおいて差分が検出されます。（黄色で表示されているOutOfSyncが差分があることを示しています）
 ちなみにAppの設定において、SYNC POLICYをManualでなくAutoにしていた場合には、ここでOutOfSyncを検知すると自動でArgoCDがSyncを実行します。
   ![OutOfSync](image/canary/canary-OutOfSync.png)
-rolloutを手動でSyncします
-  ![rollout-sync](image/canary/canary-sync2.png)
+rolloutを手動でSyncします。
 syncされた結果安定バージョンと新バージョンの両方のreplicasetが確認できます。
-  ![update](image/canary/canary-ver2.png)
+  ![rollout-sync](image/canary/canary-sync2.png)
 ingressにアクセスすると下記のように、安定バージョンであるBlueから新バージョンであるGreenのタイルが少しづつ増えて行っているのが確認できます。
   ![demoapp](image/canary/demoapp.png)
-rollout-extensionを使用した場合、rolloutを選択しmoreのタブが出現します。moreのタブを選ぶと、アプリケーションの動作を確認せずともどこのStepを動いているのが一目で確認できるようになります。
+rollout-extensionを使用した場合、rolloutを選択しROLLOUTのタブが出現します。タブを選ぶと、アプリケーションの動作を確認せずともどこのStepを動いているのが一目で確認できるようになります。
   ![rollout-extension](image/canary/canary-more.png)
-すべてのpodを新バージョンにアップデートしたい場合には、rolloutのPromote Fullをクリックしてください。
+すべてのpodを新バージョンにアップデートしたい場合には、rolloutのPromote-Fullをクリックしてください。
 
 ![promote-full](image/canary/canary-promote.png)
 
 デモアプリへアクセスしてアップデートが完了していることを確認してください。
 
-最後にアプリケーションの削除を行います。 Deleteをクリックします。
+最後にアプリケーションの削除を行います。 DELETEをクリックします。
 
 Applications画面の場合は、一番右下の端に、
 
@@ -315,7 +314,7 @@ Applicationsの画面において + NEW APPをクリックします
     SYNC POLICY: Manual
     SYNC OPTIONS: AUTO CREATE NAMESPACE [v]
     SOURCE
-      Repository URL: https://github.com/自身のアカウント名/cndt2023-handson
+      Repository URL: chapter_argocdでforkした自分のリポジトリのURL
       Revision: main
       Path: chapter_argo-rollouts/analysis/job
     DESTINATION
@@ -358,7 +357,7 @@ Applications画面の場合は、一番右下の端に、
 ![delete](../chapter_argocd/image/demoapp/Delete-2.png)
 
 削除する際にアプリケーション名の入力があるので「job」と入力してOKをクリックします。
-![delete](../chapter_argocd/image/demoapp/Delete-3.png)
+![delete](./image/analysis/job-delete.png)
 
 ### Web metrics (Blue/Green Deploy)
 Analysis実行時にリクエストを送信し、レスポンスの内容にてよってPromoteするかどうかを判断します
@@ -375,7 +374,7 @@ Applicationsの画面において + NEW APPをクリックします
     SYNC POLICY: Manual
     SYNC OPTIONS: AUTO CREATE NAMESPACE [v]
     SOURCE
-      Repository URL: https://github.com/自身のアカウント名/cndt2023-handson
+      Repository URL: chapter_argocdでforkした自分のリポジトリのURL
       Revision: main
       Path: chapter_argo-rollouts/analysis/web
     DESTINATION
@@ -420,7 +419,7 @@ Applications画面の場合は、一番右下の端に、
 ![delete](../chapter_argocd/image/demoapp/Delete-2.png)
 
 削除する際にアプリケーション名の入力があるので「web」と入力してOKをクリックします。
-![delete](../chapter_argocd/image/demoapp/Delete-3.png)
+![delete](image/analysis/web-delete.png)
 ### Prometheus metrics (Canary Release)
 Analysis実行時にPrometheusにPromQLを送信し、その結果によってPromoteするかどうかを判断します
 
@@ -434,7 +433,7 @@ Applicationsの画面において + NEW APPをクリックします
     SYNC POLICY: Manual
     SYNC OPTIONS: AUTO CREATE NAMESPACE [v]
     SOURCE
-      Repository URL: https://github.com/自身のアカウント名/cndt2023-handson
+      Repository URL: chapter_argocdでforkした自分のリポジトリのURL
       Revision: main
       Path: chapter_argo-rollouts/analysis/prometheus
     DESTINATION
@@ -481,7 +480,7 @@ Applications画面の場合は、一番右下の端に、
 ![delete](../chapter_argocd/image/demoapp/Delete-2.png)
 
 削除する際にアプリケーション名の入力があるので「prometheus」と入力してOKをクリックします。
-![delete](../chapter_argocd/image/demoapp/Delete-3.png)
+![delete](image/analysis/prometheus-delete.png)
 
 ## Argo Rolloutsのクリーンアップ
 ### Argo CDを削除
