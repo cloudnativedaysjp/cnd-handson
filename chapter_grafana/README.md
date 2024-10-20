@@ -175,7 +175,7 @@ Contact Pointを追加しただけでは新規にアラートを追加しても�
 
 最後に、具体的なアラートの作成を行います。
 <http://grafana.example.com/alerting/list> にアクセスし、 `New alert rule` のボタンをクリックします。
-以下の内容で設定し、右上の `Save rule` ボタンをクリックします。
+以下1~5の内容を設定し、最後に右上の `Save rule and exit` ボタンをクリックします。
 
 1. Enter alert rule name
   - `Rule name` ... `SampleGrafanaAlert1`
