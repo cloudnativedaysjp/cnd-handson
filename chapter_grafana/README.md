@@ -137,7 +137,7 @@ DashboardやGrafana Alertingでは、Dashboard Panelやアラートの内容文�
 Grafana側では <http://grafana.example.com/alerting/notifications> にアクセスして、
 右側の `Add contact point` ボタンをクリックします。
 
-![image](./image/notifications.png)
+![image](./image/contact-points.png)
 
 画面が遷移したら、以下のような設定を入力して、 `Test` ボタンをクリックしてテストアラートを発報します。
 
@@ -159,6 +159,9 @@ Contact Pointを追加しただけでは新規にアラートを追加しても�
 それを実現するために、Notification Policyを作成する必要があります。
 
 <http://grafana.example.com/alerting/routes> にアクセスし、 `New chiled policy` のボタンをクリックします。
+
+![image](./image/notifications.png)
+
 以下の設定を入力し、 `Save policy` ボタンをクリックします。
 
 - `Label` ... `alert-route`
@@ -166,25 +169,47 @@ Contact Pointを追加しただけでは新規にアラートを追加しても�
 - `Value` ... `slack`
 - `Contact point` ... `sample-grafana-alerting`
 
+![image](./image/notification-policy.png)
+
 ### サンプルアラートの作成
 
 最後に、具体的なアラートの作成を行います。
 <http://grafana.example.com/alerting/list> にアクセスし、 `New alert rule` のボタンをクリックします。
 以下の内容で設定し、右上の `Save rule` ボタンをクリックします。
 
-- `Rule name` ... `SampleGrafanaAlert1`
-- `Metric` ... `nginx_ingress_controller_requests`
-- `Label filter` ... `host = app.example.com`
-- `Operation` ... 以下を順に設定
-  - `Range Functions > Avg over time` をクリックし、 `Range` を `1m` に設定
-  - `Binary Operations > Less than` をクリックし、 `Value` を `10` に設定
-- `Folder` ... `ingress-nginx`
-- `Evaluation group` ... `New evaluation group` をクリックし、 `Evaluation group name` を `sample-grafana-alert-1`, `Evaluation Interval` を `5m` に設定
-- `Pending preriod` ... `5m`
-- `Labels` ... `alert-route = slack`
-- `Contact point` ... `sample-grafana-alerting`
-- `Summary` ... `app.example.com has not received requests over 10 times`
-- `Description` ... `app.example.com has not received {{ $labels.method }} requests 10 times`
+1. Enter alert rule name
+  - `Rule name` ... `SampleGrafanaAlert1`
+
+![image](./image/add-alert-rule-1.png)
+
+2. Define query and alert condition
+  - `Metric` ... `nginx_ingress_controller_requests`
+  - `Label filter` ... `host = app.example.com`
+  - `Operation` ... 以下を順に設定
+    - `Range Functions > Avg over time` をクリックし、 `Range` を `1m` に設定
+    - `Binary Operations > Less than` をクリックし、 `Value` を `10` に設定
+  - `Rule type`,`Expressions` ... 変更なし
+
+![image](./image/add-alert-rule-2.png)
+
+3. Set evalua_tion behavior
+  - `Folder` ... `ingress-nginx`
+  - `Evaluation group` ... `New evaluation group` をクリックし、 `Evaluation group name` を `sample-grafana-alert-1`, `Evaluation Interval` を `5m` に設定
+  - `Pending preriod` ... `5m`
+
+![image](./image/add-alert-rule-3.png)
+
+4. Configure labels and notifications
+  - `Labels` ... `alert-route = slack`
+  - `Contact point` ... `sample-grafana-alerting`
+
+![image](./image/add-alert-rule-4.png)
+
+5. Add annotaions
+  - `Summary` ... `app.example.com has not received requests over 10 times`
+  - `Description` ... `app.example.com has not received {{ $labels.method }} requests 10 times`
+
+![image](./image/add-alert-rule-5.png)
 
 このアラートは、1分間隔で取得した、 `app.example.com` に対するリクエスト数が10以上でなければアラートを発報するというルールになっています。
 5分程度経過すると、無事にアラートが発報されると思います。
