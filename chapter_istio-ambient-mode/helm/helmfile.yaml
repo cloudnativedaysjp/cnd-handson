@@ -11,9 +11,10 @@ releases:
   chart: istio-official/base
   version: 1.23.2
 - name: istiod
-  namespace: istio-system
   chart: istio-official/istiod
   version: 1.23.2
+  namespace: istio-system
+  createNamespace: true
   wait: true
   values:
   - values/istiod.values.yaml

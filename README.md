@@ -18,7 +18,7 @@
 - [chapter_istio](./chapter_istio/)
 - [chapter_cilium](./chapter_cilium/)
 - [chapter_argo-rollouts](./chapter_argo-rollouts/)
-- [chapter_istio-ambientmesh](./chapter_istio-ambientmesh/)
+- [chapter_istio-ambient-mode](./chapter_istio-ambient-mode/)
 - [chapter_hubble](./chapter_hubble/)
 - [chapter_loki](./chapter_loki/)
 - [chapter_tempo](./chapter_tempo/)
@@ -41,7 +41,7 @@ flowchart TD
     istio[chapter_istio]
     cilium[chapter_cilium]
     argorollouts[chapter_argo-rollouts]
-    istioambient[chapter_istio-ambientmesh]
+    istioambient[chapter_istio-ambient-mode]
     hubble[chapter_hubble]
     loki[chapter_loki]
     tempo[chapter_tempo]

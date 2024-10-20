@@ -14,6 +14,7 @@ prometheusOperator:
       memory: 256Mi
 prometheus:
   prometheusSpec:
+    logFormat: json
     resources:
       requests:
         cpu: 250m
