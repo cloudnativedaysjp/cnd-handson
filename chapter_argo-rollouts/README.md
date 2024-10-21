@@ -87,8 +87,7 @@ deployment.apps/argo-rollouts   2/2     2            2           28d
 ### Corednsへhostsの追加
 Argo Rolloutsのメトリクスプロバイダーが、デモアプリやPrometheusにアクセスできるようにCore DNSのを設定を行います。
 
-下記yamlの `<IPアドレス>` には[インスタンスのIPアドレスの確認](../chapter_setup/README.md#名前解決の設定)で取得したグローバルIPを設定してください。
-
+下記yamlの `YOUR_VM_IP_ADDRESS` には[インスタンスのIPアドレスの確認](../chapter_setup/README.md#名前解決の設定)で取得したグローバルIPを設定してください。
   ```sh
   kubectl edit cm coredns -n kube-system
   ```
