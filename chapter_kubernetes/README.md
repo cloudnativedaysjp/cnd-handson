@@ -1783,7 +1783,15 @@ kubectl delete -n resource-test resourcequotas test-resource-quota
 kubectl delete namespaces resource-test
 ```
 
-### 15. おまけ(jsonpath)
+### 15. トラブルシュート
+
+セクションの最後に、簡単なWebアプリケーションを使ったトラブルシュートに挑戦してみましょう。
+
+
+![diagram](./image/cndw-tshoot-diagram.png)
+
+
+### 16. おまけ(jsonpath)
 
 jsonpathは、ワンライナーで欲しい情報のみを引き抜く際に便利な機能です。
 jsonpathでNodeの内部IPのみをファイルに書き出してみましょう。
