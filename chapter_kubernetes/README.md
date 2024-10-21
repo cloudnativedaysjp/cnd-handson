@@ -1792,15 +1792,14 @@ kubectl delete namespaces resource-test
 
 > [!NOTE]
 > - 動作確認は、ブラウザから以下のURLにアクセスすることで行います。
->   - cndw-web.example.com
-> - Webアプリケーションはdummyも用意されています。
-> - 正解のWebアプリケーションはバックエンドにmysqlが動作しており、パスワード認証で接続を行っています。
+>   - http://cndw-web.example.com
 > - プロビジョニング用のManifestではなく、なるべく各リソースごとに編集する形でトラブルシュートを実施してください。
 >
 >    ※意図しない形でプロビジョニング用のManifestをリプレイスしてしまうと、アプリケーションが正しく動作しなくなる恐れがあります。
 >   - (例1)`kubectl get pod xxx -o yaml > xxx.yaml`で生成したファイルを編集し、`kubectl replace -f xxx.yaml --force`でリプレイス
 >   - (例2)`kubectl edit svc xxx`で登録済みManifestを直接編集
->  
+
+
 
 
 ### 16. おまけ(jsonpath)
