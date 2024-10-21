@@ -47,17 +47,17 @@ Argo CDとの連携が可能で、簡単に既存のGit Opsでプログレッシ
 [chapter_argocd](../chapter_argocd/README.md#argo-cdのインストール)を参照してArgo CDのインストールからWebUIの確認とレポジトリのforkから登録まで行ってください。
 
 今回のchapterではさらにArgo CDのプラグインである、rollout-extensionをインストールしてArgoCD上でrolloutの操作結果が確認できるようにします。
-chapter_argocd/helmfile/values.yamlの更新をします。
+chapter_argocd/helm/values.yamlの更新をします。
 ```values.yaml
 ## Argo Configs
 configs:
   params:
   # -- Run server without TLS
     server.insecure: true
-# ~~~~ ここから下を追記or更新 ~~~~
 server:
   extensions:
     enabled: true
+# ~~~~ ここから下を追記or更新 ~~~~
     extensionList:
       - name: rollout-extension
         env:
@@ -66,25 +66,24 @@ server:
 ```
 helmファイルの更新を行います。
 ```sh
-cd chapter_argocd 
-helmfile sync -f ./helm/helmfile.yaml
+ helmfile sync -f ../chapter_argocd/helm/helmfile.yaml
 ```
 
 ### Argo Rolloutsのインストール
 helmファイルを利用してArgo Rolloutsをインストールします。
 ```sh
-cd ../chapter_argo-rollouts 
-helmfile sync -f ./helm/helmfile.yaml
+helmfile sync -f helm/helmfile.yaml
 ```
 作成されるリソースは下記の通りです。
 ```sh
-kubectl get service,deployment -n argo-rollouts
+kubectl get services,deployments -n argo-rollouts
 ```
 ```sh
 # 実行結果
 NAME                            READY   UP-TO-DATE   AVAILABLE   AGE
 deployment.apps/argo-rollouts   2/2     2            2           28d
 ```
+### Corednsへhostsの追加
 ### Corednsへhostsの追加
 Argo Rolloutsのメトリクスプロバイダーが、デモアプリやPrometheusにアクセスできるようにCore DNSのを設定を行います。
 
@@ -108,9 +107,9 @@ data:
         }
         # 下記追加
         hosts {
-           <IPアドレス> app.argocd.example.com
-           <IPアドレス> app-preview.argocd.example.com
-           <IPアドレス> prometheus.example.com
+           YOUR_VM_IP_ADDRESS app.argocd.example.com
+           YOUR_VM_IP_ADDRESS app-preview.argocd.example.com
+           YOUR_VM_IP_ADDRESS prometheus.example.com
            fallthrough
         }
         # ここまで
@@ -173,7 +172,7 @@ Canary Releaseは、新旧混在状態を制御し、本番環境において限
 
 以上の手順で、Blue/GreenのBlueに当たる状態がArgoCDを用いてデプロイされ、localからingressでアクセス可能となりました。
 
-ここからは、実際にBlue/Green Deploymentyを行いその様子を見ていこうと思います。
+ここからは、実際にBlue/Green Deploymentを行いその様子を見ていこうと思います。
 
  `app/blue-green/rollout.yaml`の編集を行います。 imageのtagをblueからgreenに変更します。
 ```
