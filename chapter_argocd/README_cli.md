@@ -510,6 +510,9 @@ kubectl delete namespace argocd-demo argocd-kustomize-dev argocd-kustomize-prd a
 ```
 
 最後に、argocd自体も削除します。
+
+*Argo-RolloutsのChapterに進む場合は削除しないでください。* 
+
 ```
 kubectl delete namespace argo-cd
 ```
