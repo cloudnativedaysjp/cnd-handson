@@ -79,6 +79,9 @@ Grafanaでは手作業でDashboardを作成する以外に、
 Ingress NGINX Controllerはgrafana.comではなくGitHubでダッシュボードを公開しているので、JSONファイル形式で行います。
 
 <https://github.com/kubernetes/ingress-nginx/blob/main/deploy/grafana/dashboards/nginx.json> を手元にダウンロードしておきます。
+
+![image](./image/download-nginx-dashboard.png)
+
 Grafana画面で `Upload dashboard JSON file` ボタンをクリックして、
 さきほどダウンロードしたJSONファイルをアップロードします。
 
@@ -120,7 +123,7 @@ DashboardやGrafana Alertingでは、Dashboard Panelやアラートの内容文�
 
 ### Contact Pointの追加
 
-**2024/6/14のハンズオンに参加されている方はこのステップは不要です。**
+**ハンズオンに参加されている方はこのステップは不要です。**
 
 まずは、Slackに通知するためにWebhook URLを発行します。
 <https://api.slack.com/start/quickstart> にアクセスして、 ドキュメント通りにIncoming Webhook URLを取得します。
@@ -158,7 +161,7 @@ Grafana側では <http://grafana.example.com/alerting/notifications> にアク�
 Contact Pointを追加しただけでは新規にアラートを追加しても、さきほどのContact Pointに向けて発報できません。
 それを実現するために、Notification Policyを作成する必要があります。
 
-<http://grafana.example.com/alerting/routes> にアクセスし、 `New chiled policy` のボタンをクリックします。
+<http://grafana.example.com/alerting/routes> にアクセスし、 `New child policy` のボタンをクリックします。
 
 ![image](./image/notifications.png)
 
@@ -192,7 +195,7 @@ Contact Pointを追加しただけでは新規にアラートを追加しても�
 
 ![image](./image/add-alert-rule-2.png)
 
-3. Set evalua_tion behavior
+3. Set evaluation behavior
   - `Folder` ... `ingress-nginx`
   - `Evaluation group` ... `New evaluation group` をクリックし、 `Evaluation group name` を `sample-grafana-alert-1`, `Evaluation Interval` を `5m` に設定
   - `Pending preriod` ... `5m`
@@ -214,6 +217,6 @@ Contact Pointを追加しただけでは新規にアラートを追加しても�
 このアラートは、1分間隔で取得した、 `app.example.com` に対するリクエスト数が10以上でなければアラートを発報するというルールになっています。
 5分程度経過すると、無事にアラートが発報されると思います。
 
-> [!TIPS]
+> [!TIP]
 > Slackの通知に表示されるメッセージはGrafanaの[Notification Templates](https://grafana.com/docs/grafana/latest/alerting/configure-notifications/template-notifications/create-notification-templates/)を利用することで、
 > 自由に編集可能です。
