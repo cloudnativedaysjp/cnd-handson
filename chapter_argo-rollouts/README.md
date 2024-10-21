@@ -47,17 +47,17 @@ Argo CDとの連携が可能で、簡単に既存のGit Opsでプログレッシ
 [chapter_argocd](../chapter_argocd/README.md#argo-cdのインストール)を参照してArgo CDのインストールからWebUIの確認とレポジトリのforkから登録まで行ってください。
 
 今回のchapterではさらにArgo CDのプラグインである、rollout-extensionをインストールしてArgoCD上でrolloutの操作結果が確認できるようにします。
-chapter_argocd/helmfile/values.yamlの更新をします。
+chapter_argocd/helm/values.yamlの更新をします。
 ```values.yaml
 ## Argo Configs
 configs:
   params:
   # -- Run server without TLS
     server.insecure: true
-# ~~~~ ここから下を追記or更新 ~~~~
 server:
   extensions:
     enabled: true
+# ~~~~ ここから下を追記or更新 ~~~~
     extensionList:
       - name: rollout-extension
         env:
@@ -66,27 +66,27 @@ server:
 ```
 helmファイルの更新を行います。
 ```sh
-cd chapter_argocd 
-helmfile sync -f ./helm/helmfile.yaml
+ helmfile sync -f ../chapter_argocd/helm/helmfile.yaml
 ```
 
 ### Argo Rolloutsのインストール
 helmファイルを利用してArgo Rolloutsをインストールします。
 ```sh
-cd ../chapter_argo-rollouts 
-helmfile sync -f ./helm/helmfile.yaml
+helmfile sync -f helm/helmfile.yaml
 ```
 作成されるリソースは下記の通りです。
 ```sh
-kubectl get service,deployment -n argo-rollouts
+kubectl get services,deployments -n argo-rollouts
 ```
 ```sh
 # 実行結果
 NAME                            READY   UP-TO-DATE   AVAILABLE   AGE
 deployment.apps/argo-rollouts   2/2     2            2           28d
 ```
-### Corednsへhotsの追加
+### Corednsへhostsの追加
 Argo Rolloutsのメトリクスプロバイダーが、デモアプリやPrometheusにアクセスできるようにCore DNSのを設定を行います。
+
+下記yamlの `YOUR_VM_IP_ADDRESS` には[インスタンスのIPアドレスの確認](../chapter_setup/README.md#名前解決の設定)で取得したグローバルIPを設定してください。
   ```sh
   kubectl edit cm coredns -n kube-system
   ```
@@ -100,22 +100,27 @@ data:
   Corefile: |
     .:53 {
         errors
-        health
+        health {
+           lameduck 5s
+        }
         # 下記追加
         hosts {
-           IPアドレス app.argocd.example.com
-           IPアドレス app-preview.argocd.example.com
-           IPアドレス prometheus.example.com
+           YOUR_VM_IP_ADDRESS app.argocd.example.com
+           YOUR_VM_IP_ADDRESS app-preview.argocd.example.com
+           YOUR_VM_IP_ADDRESS prometheus.example.com
            fallthrough
         }
         # ここまで
+        ready
         kubernetes cluster.local in-addr.arpa ip6.arpa {
            pods insecure
-           upstream
            fallthrough in-addr.arpa ip6.arpa
+           ttl 30
         }
         prometheus :9153
-        proxy . /etc/resolv.conf
+        forward . /etc/resolv.conf {
+           max_concurrent 1000
+        }
         cache 30
         loop
         reload
@@ -123,8 +128,10 @@ data:
     }
 kind: ConfigMap
 metadata:
+  creationTimestamp: "2024-10-18T05:20:19Z"
   name: coredns
   namespace: kube-system
+
   (略)
 
   ```
@@ -163,7 +170,7 @@ Canary Releaseは、新旧混在状態を制御し、本番環境において限
 
 以上の手順で、Blue/GreenのBlueに当たる状態がArgoCDを用いてデプロイされ、localからingressでアクセス可能となりました。
 
-ここからは、実際にBlue/Green Deploymentyを行いその様子を見ていこうと思います。
+ここからは、実際にBlue/Green Deploymentを行いその様子を見ていこうと思います。
 
  `app/blue-green/rollout.yaml`の編集を行います。 imageのtagをblueからgreenに変更します。
 ```
