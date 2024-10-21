@@ -1312,7 +1312,7 @@ kubectl delete pod liveness-pod
 
 Network PolicyはPod同士の通信を制御し、特定のPodやプロトコルを許可/拒否させることができるリソースです。
 
-前提として、以下のCNIを使ってクラスタを構築している必要があります。
+前提として、以下のCNIのいずれかを使ってクラスタを構築している必要があります。
 
 - Calico
 - Cilium
@@ -1328,9 +1328,9 @@ Network PolicyはPod同士の通信を制御し、特定のPodやプロトコル
   - Ingress：　あるPodからの通信（インバウンド）
   - Egress：　あるPodへの通信（アウトバウンド）
 - Policy
-  - podSelector: あるPodから、もしくはPodへの通信可否
-  - namespaceSelector: あるNamespaceから、もしくはNamespaceへの通信可否
-  - ipBlock: あるIPアドレスから、もしくはIPアドレスへの通信可否
+  - podSelector: あるPodから、もしくはあるPodへの通信可否
+  - namespaceSelector: あるNamespaceから、もしくはあるNamespaceへの通信可否
+  - ipBlock: あるIPアドレスから、もしくはあるIPアドレスへの通信可否
 
 今回は3つのテスト用のPodをデプロイし、curlを使って通信確認を行なっていきます。
 
