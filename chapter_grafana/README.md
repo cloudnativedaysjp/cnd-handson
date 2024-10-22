@@ -73,7 +73,9 @@ Grafanaでは手作業でDashboardを作成する以外に、
 
 ![image](./image/dashboards.png)
 
-次に、<http://grafana.example.com/dashboards> にもう一度アクセスし、 `New` ボタンのプルダウンメニューから `Import` をクリックします。
+次に、 `New` ボタンのプルダウンメニューから `Import` をクリックします。
+
+![image](./image/dashboard-ingress-nginx.png)
 
 その後Dashboardのインポート形式を選択してインポートしますが、
 Ingress NGINX Controllerはgrafana.comではなくGitHubでダッシュボードを公開しているので、JSONファイル形式で行います。
