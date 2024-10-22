@@ -1,4 +1,4 @@
-# Open Telemetry
+# OpenTelemetry
 
 ## 概要
 
@@ -18,7 +18,7 @@ OpenTelemetryプロジェクトの代表的なプロダクトは以下のとお�
 
 このハンズオンでは、OpenTelemetry Collectorでメトリクス・ログ・トレースを扱う方法と、OpenTelemetry SDKを用いて分散トレースを行う方法について実際に体験します。
 
-### Open Telemetry Collectorのコンポーネント
+### OpenTelemetry Collectorのコンポーネント
 
 OpenTelemetry Collectorは、内部的には4つのコンポーネントで構成されています。
 
@@ -131,7 +131,7 @@ service:
 ```
 
 
-Open Telemetryの設定ファイルに関しては、[公式サイト](https://opentelemetry.io/docs/collector/configuration/)に情報がまとまっています。また、利用可能なプラグインについては、先ほど「CoreプラグインとContribプラグイン」で紹介しているのでそちらを参照してください。
+OpenTelemetryの設定ファイルに関しては、[公式サイト](https://opentelemetry.io/docs/collector/configuration/)に情報がまとまっています。また、利用可能なプラグインについては、先ほど「CoreプラグインとContribプラグイン」で紹介しているのでそちらを参照してください。
 
 
 ## Log をOpenTelemetry Collectorで管理する例
