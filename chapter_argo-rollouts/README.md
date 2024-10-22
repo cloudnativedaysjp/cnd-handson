@@ -83,58 +83,6 @@ kubectl get services,deployments -n argo-rollouts
 NAME                            READY   UP-TO-DATE   AVAILABLE   AGE
 deployment.apps/argo-rollouts   2/2     2            2           28d
 ```
-### Corednsへhostsの追加
-Argo Rolloutsのメトリクスプロバイダーが、デモアプリやPrometheusにアクセスできるようにCore DNSのを設定を行います。
-
-下記yamlの `YOUR_VM_IP_ADDRESS` には[インスタンスのIPアドレスの確認](../chapter_setup/README.md#名前解決の設定)で取得したグローバルIPを設定してください。
-  ```sh
-  kubectl edit cm coredns -n kube-system
-  ```
-  ```yaml
-# Please edit the object below. Lines beginning with a '#' will be ignored,
-# and an empty file will abort the edit. If an error occurs while saving this file will be
-# reopened with the relevant failures.
-#
-apiVersion: v1
-data:
-  Corefile: |
-    .:53 {
-        errors
-        health {
-           lameduck 5s
-        }
-        # 下記追加
-        hosts {
-           YOUR_VM_IP_ADDRESS app.argocd.example.com
-           YOUR_VM_IP_ADDRESS app-preview.argocd.example.com
-           YOUR_VM_IP_ADDRESS prometheus.example.com
-           fallthrough
-        }
-        # ここまで
-        ready
-        kubernetes cluster.local in-addr.arpa ip6.arpa {
-           pods insecure
-           fallthrough in-addr.arpa ip6.arpa
-           ttl 30
-        }
-        prometheus :9153
-        forward . /etc/resolv.conf {
-           max_concurrent 1000
-        }
-        cache 30
-        loop
-        reload
-        loadbalance
-    }
-kind: ConfigMap
-metadata:
-  creationTimestamp: "2024-10-18T05:20:19Z"
-  name: coredns
-  namespace: kube-system
-
-  (略)
-
-  ```
 ## Blue/Green DeploymentとCanary Release
 Argo Rolloutsによって追加された、Blue/Green DeploymentとCanary Releaseの2つのデプロイ方法を試します。
 
