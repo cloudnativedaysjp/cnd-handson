@@ -201,8 +201,8 @@ kubectl get opentelemetrycollector
 ```
 ```sh
 # 実行結果
-NAME                MODE         VERSION   READY   AGE     IMAGE                                         MANAGEMENT
-log-collector       daemonset    0.98.0    1/1     18h     otel/opentelemetry-collector-contrib:0.98.0   managed
+NAME            MODE        VERSION   READY   AGE    IMAGE                                          MANAGEMENT
+log-collector   daemonset   0.108.0           102s   otel/opentelemetry-collector-contrib:0.108.0   managed
 ```
 
 ```sh
@@ -511,8 +511,8 @@ kubectl get opentelemetrycollector trace-collector
 ```
 ```sh
 # 実行結果
-NAME              MODE         VERSION   READY   AGE   IMAGE                                         MANAGEMENT
-trace-collector   deployment   0.98.0    1/1     10m   otel/opentelemetry-collector-contrib:0.98.0   managed
+NAME              MODE         VERSION   READY   AGE   IMAGE                                          MANAGEMENT
+trace-collector   deployment   0.108.0   1/1     9s    otel/opentelemetry-collector-contrib:0.108.0   managed
 ```
 ```sh
 kubectl get deployments,pods,services -l app.kubernetes.io/name=trace-collector-collector
@@ -628,7 +628,7 @@ OpenTelemetryでは、OpenTelemetry Protocol（OTLP）を利用して、OpenTele
 
 今回の例ではProcessorは利用しませんでしたが、Processorも非常に重要なコンポーネントの1つです。
 たとえば、大規模な環境で多くのテレメトリデータが出力される場合、それらのデータを適切に処理するにはProcessorが必要不可欠です。
-Prosessorではメモリ制限・サンプリング・バッチ処理などを行うこともできるため、そうした処理を間に挟むことで負荷を削減することもできます。
+Processorではメモリ制限・サンプリング・バッチ処理などを行うこともできるため、そうした処理を間に挟むことで負荷を削減することもできます。
 
 [推奨されるProcessor](https://github.com/open-telemetry/opentelemetry-collector/tree/main/processor#recommended-processors)については、Docsを確認してください。
 
