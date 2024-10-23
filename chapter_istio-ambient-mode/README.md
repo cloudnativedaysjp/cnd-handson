@@ -13,7 +13,7 @@ Istioの新しいデータプレーンであるIstio ambient modeを使用して
 - [最終クリーンアップ](#最終クリーンアップ)
 
 ## 概要
-2023年2月に[main branchにマージ](https://github.com/istio/istio/pull/43422)にマージされたIstio ambientモードは、サイドカーを使用しない新しいデータプレーンモードで、このモードで作成されるサービスメッシュをIstio ambient meshと呼びます。従来のサイドカーモードのIstioは多くの本番運用実績がありますが、データプレーンとアプリケーションの分離ができず、下記のような課題があげられています。
+2023年2月に[main branchにマージ](https://github.com/istio/istio/pull/43422)されたIstio ambientモードは、サイドカーを使用しない新しいデータプレーンモードで、このモードで作成されるサービスメッシュをIstio ambient meshと呼びます。従来のサイドカーモードのIstioは多くの本番運用実績がありますが、データプレーンとアプリケーションの分離ができず、下記のような課題があげられています。
 
 - データプレーンはサイドカーとしてアプリケーションpodに注入されるため、Istioデータプレーンのインストール、アップグレード時はpodの再起動が必要になり、アプリケーションワークロードを阻害してしまう
 - データプレーンが提供する機能の選択ができないため、一部の機能(mTLS実装のみ等)しか使用しないワークロードにとっては不要なリソースをpodに確保する必要があり、全体のリソースを効率的に使用できなくなる
@@ -159,27 +159,27 @@ NAME      STATUS   AGE     LABELS
 default   Active   3m43s   istio.io/dataplane-mode=ambient,kubernetes.io/metadata.name=default
 ```
 
-Ambient mesh内でアプリケーションが正しく起動しているかを確認をするために疎通確認をします。Kubernetes cluster外からはアクセス出来ないため、handsonアプリケーションのKubernetes serviceをポートフォワードしてホスト側から疎通確認をします。
+Ambient mesh内でアプリケーションが正しく起動しているかを確認をするために疎通確認を行います。なお、Kubernetes cluster外からはアクセス出来ないため、handsonアプリケーションのKubernetes serviceをポートフォワードしてホスト側から疎通確認を行います。
 
 ```sh
 kubectl port-forward service/handson 8081:8080 >/dev/null &
 ```
 
-アプリケーションにアクセスをします。
+アプリケーションにアクセスします。
 
 ```sh
 curl -I http://127.0.0.1:8081/
-
 ```
-HTTP status code 200が返却されれば疎通確認完了です。HTTPステータスコードが5XXを返した場合は、`handson-blue` ワークロードを再起動して再度疎通確認を行ってください。
 
-(HTTP status codeが5XXの時のみ実施。)
+HTTPステータスコード200が返却されれば疎通確認完了です。HTTPステータスコードが5XXを返した場合は、`handson-blue` ワークロードを再起動して再度疎通確認を行ってください。
+
+(HTTPステータスコードが5XXの時のみ実施。)
 
 ```sh
 kubectl rollout restart deploy/handson-blue
 ```
 
-疎通確認完了後、port forwardを実行しているjobを停止してください。
+疎通確認完了後、port forwardを実行しているjobを停止します。
 
 ```sh
 jobs
@@ -274,7 +274,7 @@ curl-deny:  200
 .
 ```
 
-リクエスト送信を続けたまま、Kiali dashboardから確認トラフィックを確認してみましょう。`curl-allow`, `curl-deny` podのワークロードが`handson-blue`ワークロードにアクセス出来ていることが確認できます(紺色の矢印はTCP通信を表しています)。グラフが表示されない場合は、Kialiダッシュボード右上の青い`Refresh`ボタンを押して状態を更新してください。
+リクエスト送信を続けたまま、Kiali dashboardからトラフィックを確認してみましょう。`curl-allow`, `curl-deny` podのワークロードが`handson-blue`ワークロードにアクセス出来ていることが確認できます(紺色の矢印はTCP通信を表しています)。グラフが表示されない場合は、Kialiダッシュボード右上の青い`Refresh`ボタンを押して状態を更新してください。
 
 ![image](./image/kiali-L4-authorizationpolicy-notapplied.png)
 
@@ -433,7 +433,13 @@ kubectl logs "$ZTUNNEL_POD" -n istio-system --tail 4
 .
 ```
 
-出力されたログは2行で1セットになっています。1行目がinbound用、つまりリクエストを受ける側、2行目がoutbount用、リクエストを送る側です。これを念頭に、出力されたログを見てみましょう。Inbound方向では、`curl-deny` pod(IP address: 10.244.1.13)からHBONE経由での`handson-blue-5cb87cdfc8-24npj`(IP address: 10.244.1.12)へのリクエストは、拒否ポリシーによってコネクションが閉じられていることが分かります。Outbound方向では、`curl-deny` podから`handson-blue-5cb87cdfc8-24npj` podへのリクエストはクライアントエラー(HTTP status: 401)によって失敗しています。この2つのログをまとめると、`curl-deny` podから`handson-blue-5cb87cdfc8-24npj` podへのリクエストは先に設定したIstio Authorization Policyにより拒否された結果、outbound方向では401エラーを、inbound方向では、リクエストが到達せず、結果コネクションが閉じられたということになります。
+出力されたログは2行で1セットになっています。1行目がinbound用、つまりリクエストを受ける側、2行目がoutbount用、リクエストを送る側です。これを念頭に、出力されたログを見てみましょう。
+
+- Inbound方向では、`curl-deny` pod(IP address: 10.244.1.13)からHBONE経由での`handson-blue-5cb87cdfc8-24npj`(IP address: 10.244.1.12)へのリクエストは、拒否ポリシーによってコネクションが閉じられていることが分かります。
+
+- Outbound方向では、`curl-deny` podから`handson-blue-5cb87cdfc8-24npj` podへのリクエストはクライアントエラー(HTTP status: 401)によって失敗しています。
+
+この2つのログをまとめると、`curl-deny` podから`handson-blue-5cb87cdfc8-24npj` podへのリクエストは先に設定したIstio Authorization Policyにより拒否された結果、outbound方向では401エラーを、inbound方向では、リクエストが到達せず、結果コネクションが閉じられたということになります。
 
 なお、ログの出力項目にある`src.identity="spiffe://~~"`に関して、IstioはmTLSによるサービスメッシュ内のサービス間通信を実現させるための方法としてSPIFF(Secure Production Identity Framework for Everyone)を採用しています。SPIFFEは、クラウドやコンテナ化された環境で動作するサービスやアプリケーションに対して、標準化されたアイデンティティの枠組みを提供するためのオープンスタンダードで、従来のユーザー認証の代わりに、サービス(マイクロサービスやアプリケーション)同士が相互に信頼できるアイデンティティを持つように設計されており、SPIFF IDと呼ばれるアイデンティティを使用してmTLSによる認証と暗号化を実現します。SPIFFの詳細に関しては、[こちら](https://spiffe.io/docs/latest/spiffe-about/overview/)をご確認ください。
 
@@ -464,7 +470,7 @@ Waypoint proxyによって管理されるL7レベルのトラフィックに対�
 [セットアップ](#セットアップ)が完了していることを前提とします。
 
 ### Kialiグラフ設定
-HTTPトラフィックの状態を確認するために、TOP画面左のサイドメニューのGraphをクリックし、下記のとおり設定してください(設定済みの項目はスキップしてください。)
+HTTPトラフィックの状態を確認するために、TOP画面左のサイドメニューのTraffic Graphをクリックし、下記のとおり設定してください(設定済みの項目はスキップしてください。)
 - `Namespace`の`default`にチェック
 
 ![image](./image/kiali-graph-namespace.png)
@@ -819,7 +825,7 @@ kubectl delete -f app/curl.yaml
 kind delete cluster --name istio-ambient
 ```
 
-すでに[chapter_cluster-create](../chapter_cluster-create/README.md)でkindクラスターを作成していて、他のchapterに進む場合は、cluster削除後にKubernetes contextを`kind-kind`に設定してください。
+すでに[chapter_cluster-create](../chapter_cluster-create/README.md)でkindクラスターを作成していて、他のchapterに進む場合は、クラスター削除後にKubernetes contextを`kind-kind`に設定してください。
 
 ```sh
 kubectl config use-context kind-kind
