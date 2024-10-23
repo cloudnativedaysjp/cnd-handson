@@ -433,7 +433,13 @@ kubectl logs "$ZTUNNEL_POD" -n istio-system --tail 4
 .
 ```
 
-出力されたログは2行で1セットになっています。1行目がinbound用、つまりリクエストを受ける側、2行目がoutbount用、リクエストを送る側です。これを念頭に、出力されたログを見てみましょう。Inbound方向では、`curl-deny` pod(IP address: 10.244.1.13)からHBONE経由での`handson-blue-5cb87cdfc8-24npj`(IP address: 10.244.1.12)へのリクエストは、拒否ポリシーによってコネクションが閉じられていることが分かります。Outbound方向では、`curl-deny` podから`handson-blue-5cb87cdfc8-24npj` podへのリクエストはクライアントエラー(HTTP status: 401)によって失敗しています。この2つのログをまとめると、`curl-deny` podから`handson-blue-5cb87cdfc8-24npj` podへのリクエストは先に設定したIstio Authorization Policyにより拒否された結果、outbound方向では401エラーを、inbound方向では、リクエストが到達せず、結果コネクションが閉じられたということになります。
+出力されたログは2行で1セットになっています。1行目がinbound用、つまりリクエストを受ける側、2行目がoutbount用、リクエストを送る側です。これを念頭に、出力されたログを見てみましょう。
+
+- Inbound方向では、`curl-deny` pod(IP address: 10.244.1.13)からHBONE経由での`handson-blue-5cb87cdfc8-24npj`(IP address: 10.244.1.12)へのリクエストは、拒否ポリシーによってコネクションが閉じられていることが分かります。
+
+- Outbound方向では、`curl-deny` podから`handson-blue-5cb87cdfc8-24npj` podへのリクエストはクライアントエラー(HTTP status: 401)によって失敗しています。
+
+この2つのログをまとめると、`curl-deny` podから`handson-blue-5cb87cdfc8-24npj` podへのリクエストは先に設定したIstio Authorization Policyにより拒否された結果、outbound方向では401エラーを、inbound方向では、リクエストが到達せず、結果コネクションが閉じられたということになります。
 
 なお、ログの出力項目にある`src.identity="spiffe://~~"`に関して、IstioはmTLSによるサービスメッシュ内のサービス間通信を実現させるための方法としてSPIFF(Secure Production Identity Framework for Everyone)を採用しています。SPIFFEは、クラウドやコンテナ化された環境で動作するサービスやアプリケーションに対して、標準化されたアイデンティティの枠組みを提供するためのオープンスタンダードで、従来のユーザー認証の代わりに、サービス(マイクロサービスやアプリケーション)同士が相互に信頼できるアイデンティティを持つように設計されており、SPIFF IDと呼ばれるアイデンティティを使用してmTLSによる認証と暗号化を実現します。SPIFFの詳細に関しては、[こちら](https://spiffe.io/docs/latest/spiffe-about/overview/)をご確認ください。
 
@@ -464,7 +470,7 @@ Waypoint proxyによって管理されるL7レベルのトラフィックに対�
 [セットアップ](#セットアップ)が完了していることを前提とします。
 
 ### Kialiグラフ設定
-HTTPトラフィックの状態を確認するために、TOP画面左のサイドメニューのGraphをクリックし、下記のとおり設定してください(設定済みの項目はスキップしてください。)
+HTTPトラフィックの状態を確認するために、TOP画面左のサイドメニューのTraffic Graphをクリックし、下記のとおり設定してください(設定済みの項目はスキップしてください。)
 - `Namespace`の`default`にチェック
 
 ![image](./image/kiali-graph-namespace.png)
