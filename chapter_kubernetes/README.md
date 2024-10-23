@@ -1794,12 +1794,16 @@ kubectl delete namespaces resource-test
 > - 動作確認は、ブラウザから以下のURLにアクセスすることで行います。
 >   - http://cndw-web.example.com
 > - プロビジョニング用のManifestではなく、なるべく各リソースごとに編集する形でトラブルシュートを実施してください。
->
->    ※意図しない形でプロビジョニング用のManifestをリプレイスしてしまうと、アプリケーションが正しく動作しなくなる恐れがあります。
 >   - (例1)`kubectl get pod xxx -o yaml > xxx.yaml`で生成したファイルを編集し、`kubectl replace -f xxx.yaml --force`でリプレイス
 >   - (例2)`kubectl edit svc xxx`で登録済みManifestを直接編集
+> - リソースの更新後もWeb画面の表示が変わらない場合があります。1-2分待ってからブラウザのリフレッシュを行なってください。
+> - 改修箇所は1箇所ではない可能性があります。また、構成図とエラーメッセージがヒントになる場合があります。
 
 
+以下のコマンドでアプリのデプロイを行なってください。
+```sh
+kubectl apply -f cndw-web.yaml
+```
 
 
 ### 16. おまけ(jsonpath)
