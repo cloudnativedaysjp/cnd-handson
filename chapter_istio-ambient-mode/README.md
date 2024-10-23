@@ -159,27 +159,27 @@ NAME      STATUS   AGE     LABELS
 default   Active   3m43s   istio.io/dataplane-mode=ambient,kubernetes.io/metadata.name=default
 ```
 
-Ambient mesh内でアプリケーションが正しく起動しているかを確認をするために疎通確認をします。Kubernetes cluster外からはアクセス出来ないため、handsonアプリケーションのKubernetes serviceをポートフォワードしてホスト側から疎通確認をします。
+Ambient mesh内でアプリケーションが正しく起動しているかを確認をするために疎通確認を行います。なお、Kubernetes cluster外からはアクセス出来ないため、handsonアプリケーションのKubernetes serviceをポートフォワードしてホスト側から疎通確認を行います。
 
 ```sh
 kubectl port-forward service/handson 8081:8080 >/dev/null &
 ```
 
-アプリケーションにアクセスをします。
+アプリケーションにアクセスします。
 
 ```sh
 curl -I http://127.0.0.1:8081/
-
 ```
-HTTP status code 200が返却されれば疎通確認完了です。HTTPステータスコードが5XXを返した場合は、`handson-blue` ワークロードを再起動して再度疎通確認を行ってください。
 
-(HTTP status codeが5XXの時のみ実施。)
+HTTPステータスコード200が返却されれば疎通確認完了です。HTTPステータスコードが5XXを返した場合は、`handson-blue` ワークロードを再起動して再度疎通確認を行ってください。
+
+(HTTPステータスコードが5XXの時のみ実施。)
 
 ```sh
 kubectl rollout restart deploy/handson-blue
 ```
 
-疎通確認完了後、port forwardを実行しているjobを停止してください。
+疎通確認完了後、port forwardを実行しているjobを停止します。
 
 ```sh
 jobs
@@ -825,7 +825,7 @@ kubectl delete -f app/curl.yaml
 kind delete cluster --name istio-ambient
 ```
 
-すでに[chapter_cluster-create](../chapter_cluster-create/README.md)でkindクラスターを作成していて、他のchapterに進む場合は、cluster削除後にKubernetes contextを`kind-kind`に設定してください。
+すでに[chapter_cluster-create](../chapter_cluster-create/README.md)でkindクラスターを作成していて、他のchapterに進む場合は、クラスター削除後にKubernetes contextを`kind-kind`に設定してください。
 
 ```sh
 kubectl config use-context kind-kind
