@@ -24,7 +24,7 @@ spec:
         app: rollout
     spec:
       containers:
-      - image: ryuichitakei/blue-app:1.0
+      - image: ryuichitakei/blue-app:1.1
         name: rollout-app
         ports:
         - containerPort: 80

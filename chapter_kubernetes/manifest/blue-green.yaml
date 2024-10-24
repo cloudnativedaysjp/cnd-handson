@@ -6,7 +6,7 @@ metadata:
   name: blue
 spec:
   containers:
-  - image: ryuichitakei/blue-app:1.0
+  - image: ryuichitakei/blue-app:1.1
     name: blue-app
     resources: {}
   dnsPolicy: ClusterFirst
@@ -22,7 +22,7 @@ metadata:
   name: green
 spec:
   containers:
-  - image: ryuichitakei/green-app:1.0
+  - image: ryuichitakei/green-app:1.1
     name: green-app
     resources: {}
   dnsPolicy: ClusterFirst
