@@ -22,7 +22,7 @@ Istioが提供する主な機能は下記のとおりです。
 - Istioサービスメッシュへの/からの出入口を含むすべてのトラフィックの自動メトリクス、ログ、トレース
 
 ### サービスメッシュとは
-サービスメッシュとは、サービス間通信を処理するための専用インフラストラクチャレイヤーです。これにより、透過的に観測性、トラフィック管理、セキュリティなどの機能をアプリケーションに組み込むことなく利用することが可能です。特にcloud nativeアプリケーションにおいてはKubernetesのようなオーケストレーターによって動的にワークロードがスケジューリングされるため、サービス間通信が複雑になります。この管理をアプリケーションではなくサービスメッシュが行うことにより、アプリケーションの管理、運用を容易にできます。
+サービスメッシュとは、サービス間通信を処理するための専用インフラストラクチャレイヤーです。これにより、透過的に観測性、トラフィック管理、セキュリティなどの機能をアプリケーションに組み込むことなく利用することが可能です。特にCloud NativeアプリケーションにおいてはKubernetesのようなオーケストレーターによって動的にワークロードがスケジューリングされるため、サービス間通信が複雑になります。この管理をアプリケーションではなくサービスメッシュが行うことにより、アプリケーションの管理、運用を容易にできます。
 
 ### Istioアーキテクチャ
 ![image](./image/istio-architecture.png)
@@ -296,7 +296,7 @@ NAME                                                             HOST      AGE
 destinationrule.networking.istio.io/http-request-based-routing   handson   31s
 ```
 
-`"handson: alpha1" `ヘッダー持つ、リクエストを流してみましょう。**ローカル端末から**下記コマンドを実行してください。
+`"handson: alpha1"`ヘッダーを持つ、リクエストを流してみましょう。**ローカル端末から**下記コマンドを実行してください。
 
 ```sh
 while :; do curl -s -w '\t%{http_code}\n' http://app.example.com:18080/color -H 'handson: alpha1';sleep 1;done
@@ -812,7 +812,7 @@ kubectl delete -f app/curl.yaml
 ```
 
 ## まとめ
-サービスメッシュを提供するIstioを使用することで、アプリケーションレイヤーではなくインフラレイヤーでサービス間のトラフィック管理を、またKialiを使用することでサービスメッシュの可視化をできます。本chapterではVirtual Service, Destination Ruleを使用したルーティング制御、Authorization Policyを使用した認可処理しか紹介していませんが、Istioには他にも[沢山の機能](https://istio.io/latest/docs/tasks/)がありますので、是非確認してみてください。
+サービスメッシュを提供するIstioを使用することで、アプリケーションレイヤーではなくインフラレイヤーでサービス間のトラフィック管理を、またKialiを使用することでサービスメッシュの可視化をできます。本chapterではVirtual Service, Destination Rule, Service Entryを使用したルーティング制御、Authorization Policyを使用した認可処理しか紹介していませんが、Istioには他にも[沢山の機能](https://istio.io/latest/docs/tasks/)がありますので、是非確認してみてください。
 
 ## 最終クリーンアップ
 `handson` namespaceをIstioサービスメッシュの管理外にします。
