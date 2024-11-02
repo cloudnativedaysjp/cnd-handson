@@ -202,7 +202,5 @@ main() {
   info "All tools have been installed successfully!"
 }
 
-sudo apt update -y && \
-sudo apt install -y jq
 cd "$(dirname "$0")" || err_on_exit "Failed to change directory"
 main
