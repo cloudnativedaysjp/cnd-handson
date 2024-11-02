@@ -821,7 +821,7 @@ kubectl get pod -o wide | grep init
 kubectl run tmp --restart=Never --rm -i --image=nginx:alpine -- curl <PodのIP>
 ```
 
-以下のように`CNDS2024!!`のメッセージが確認できます。
+以下のように`CNDW2024!!`のメッセージが確認できます。
 
 
 ```
@@ -830,7 +830,7 @@ kubectl run tmp --restart=Never --rm -i --image=nginx:alpine -- curl <PodのIP>
 
   % Total    % Received % Xferd  Average Speed   Time    Time     Time  Current
                                  Dload  Upload   Total   Spent    Left  Speed
-CNDS2024!!
+CNDW2024!!
 100    11  100    11    0     0   8094      0 --:--:-- --:--:-- --:--:-- 11000
 pod "tmp" deleted
 ```
@@ -1540,8 +1540,8 @@ ConfigMapは、機密性のないデータをキーと値のペアで保存す�
 環境固有の設定などをコンテナイメージから分離できるため、アプリケーションを簡単に移植できるようになります。
 
 但し、機密性や暗号化の機能を持たないため保存したいデータが機密情報である場合はSecretやサードパーティツールを使用する必要があります。
-今回は`CNDS2024 ConfigMap Handson`というHTML形式のデータをConfigMapに保存し、Podにマウントさせています。
-クライアントからのリクエストはマウントされたConfigMapのHTMLデータを参照するため、`CNDS2024 ConfigMap Handson`という文字列が返却されるはずです。
+今回は`CNDW2024 ConfigMap Handson`というHTML形式のデータをConfigMapに保存し、Podにマウントさせています。
+クライアントからのリクエストはマウントされたConfigMapのHTMLデータを参照するため、`CNDW2024 ConfigMap Handson`という文字列が返却されるはずです。
 
 
 
@@ -1564,7 +1564,7 @@ kubectl get pod -o wide
 ```
 
 最後にテンポラリのPodを作成し、curlでアクセスを試みます。
-`CNDS2024 ConfigMap Handson`という文字列が返却されると成功です。
+`CNDW2024 ConfigMap Handson`という文字列が返却されると成功です。
 
 ```sh
 kubectl run tmp --restart=Never --rm -i --image=nginx:alpine -- curl <PodのIPアドレス>
