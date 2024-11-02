@@ -68,7 +68,7 @@ manifestファイルはyaml形式もしくはjson形式がサポートされて�
 以下のコマンドを入力してください。
 
 ```sh
-cd manifest
+cd manifests
 kubectl apply -f test-deployment.yaml
 ```
 
