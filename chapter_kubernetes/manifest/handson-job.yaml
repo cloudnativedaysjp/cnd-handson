@@ -11,5 +11,5 @@ spec:
       - name: handson-job
         image: centos:latest
         command: ["echo"]
-        args: ["Welcome To the CNDS2024 Hands On Event!!"]
+        args: ["Welcome To the CNDW2024 Hands On Event!!"]
       restartPolicy: Never

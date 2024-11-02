@@ -11,7 +11,7 @@ HubbleはCiliumのために開発されたネットワークとセキュリテ�
 
 ![](image/ch05_hubble-components_01.png)
 
-（出典：https://isovalent.com/blog/post/hubble-series-re-introducing-hubble/）
+（ 出典：https://isovalent.com/blog/post/hubble-series-re-introducing-hubble/ ）
 
 - Hubble Server
   - 各NodeのCilium Agentに組み込まれており、Prometheusメトリクスやネットワークおよびアプリケーションプロトコルレベルでのフロー情報の可視性を提供します

@@ -1574,7 +1574,7 @@ kubectl run tmp --restart=Never --rm -i --image=nginx:alpine -- curl <PodのIP�
 
 ```sh
 kubectl delete pod configmap-pod
-kubectl delete pod handson-configmap
+kubectl delete configmap handson-configmap
 ```
 
 ## 14. Resources
@@ -1783,7 +1783,30 @@ kubectl delete -n resource-test resourcequotas test-resource-quota
 kubectl delete namespaces resource-test
 ```
 
-### 15. おまけ(jsonpath)
+### 15. トラブルシュート
+
+セクションの最後に、簡単なWebアプリケーションを使ったトラブルシュートに挑戦してみましょう。
+以下の構成図を参考にK8sの各リソースを適切に設定してください。
+
+![diagram](./image/cndw-tshoot-diagram.png)
+
+> [!NOTE]
+> - 動作確認は、ブラウザから以下のURLにアクセスすることで行います。
+>   - http://cndw-web.example.com
+> - プロビジョニング用のManifestではなく、なるべく各リソースごとに編集する形でトラブルシュートを実施してください。
+>   - (例1)`kubectl get pod xxx -o yaml > xxx.yaml`で生成したファイルを編集し、`kubectl replace -f xxx.yaml --force`でリプレイス
+>   - (例2)`kubectl edit svc xxx`で登録済みManifestを直接編集
+> - リソースの更新後もWeb画面の表示が変わらない場合があります。1-2分待ってからブラウザのリフレッシュを行なってください。
+> - 改修箇所は1箇所ではない可能性があります。また、構成図とエラーメッセージがヒントになる場合があります。
+
+
+以下のコマンドでアプリのデプロイを行なってください。
+```sh
+kubectl apply -f cndw-web.yaml
+```
+
+
+### 16. おまけ(jsonpath)
 
 jsonpathは、ワンライナーで欲しい情報のみを引き抜く際に便利な機能です。
 jsonpathでNodeの内部IPのみをファイルに書き出してみましょう。
