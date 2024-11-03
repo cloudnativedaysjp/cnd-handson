@@ -1781,16 +1781,13 @@ kubectl delete namespaces resource-test
 ### 15. トラブルシュート
 
 セクションの最後に、簡単なWebアプリケーションを使ったトラブルシュートに挑戦してみましょう。
-以下の構成図を参考にK8sの各リソースを適切に設定してください。
+構成図右下にあるcnd-web-appに接続し、適切なWebページを表示させることがゴールです。
 
 ![diagram](./image/cndw-tshoot-diagram.png)
 
 > [!NOTE]
 > - 動作確認は、ブラウザから以下のURLにアクセスすることで行います。
 >   - http://cndw-web.example.com
-> - プロビジョニング用のManifestではなく、なるべく各リソースごとに編集する形でトラブルシュートを実施してください。
->   - (例1)`kubectl get pod xxx -o yaml > xxx.yaml`で生成したファイルを編集し、`kubectl replace -f xxx.yaml --force`でリプレイス
->   - (例2)`kubectl edit svc xxx`で登録済みManifestを直接編集
 > - リソースの更新後もWeb画面の表示が変わらない場合があります。1-2分待ってからブラウザのリフレッシュを行なってください。
 > - 改修箇所は1箇所ではない可能性があります。また、構成図とエラーメッセージがヒントになる場合があります。
 
