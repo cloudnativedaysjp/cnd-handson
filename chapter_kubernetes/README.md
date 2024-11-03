@@ -13,9 +13,9 @@ Nodeの一覧が出力されるはずです。
 
 ```Log
 NAME                 STATUS   ROLES           AGE   VERSION
-kind-control-plane   Ready    control-plane   12d   v1.30.0
-kind-worker          Ready    <none>          12d   v1.30.0
-kind-worker2         Ready    <none>          312d   v1.30.0
+kind-control-plane   Ready    control-plane   32d   v1.31.0
+kind-worker          Ready    <none>          32d   v1.31.0
+kind-worker2         Ready    <none>          32d   v1.31.0
 ```
 
 Nodeが表示されない場合は、kubeconfigが設定されていない可能性があります。
@@ -46,8 +46,8 @@ kubectl version --client
 
 ```
 # 実行結果
-Client Version: v1.28.1
-Kustomize Version: v5.0.4-0.20230601165947-6ce0bf390ce3
+Client Version: v1.31.1
+Kustomize Version: v5.4.2
 ```
 
 続いて、chapter_kubernetesにcurrent directoryを移動します。
@@ -55,7 +55,6 @@ Kustomize Version: v5.0.4-0.20230601165947-6ce0bf390ce3
 ```sh
 cd ~/cnd-handson/chapter_kubernetes/
 ```
-
 
 ## 2. アプリケーションデプロイ
 
@@ -68,7 +67,7 @@ manifestファイルはyaml形式もしくはjson形式がサポートされて�
 以下のコマンドを入力してください。
 
 ```sh
-cd manifest
+cd manifests
 kubectl apply -f test-deployment.yaml
 ```
 
@@ -100,12 +99,9 @@ Forwarding from [::1]:8888 -> 80
 curl -I http://localhost:8888
 ```
 
-
 成功すると、リターンコード200が返却されるはずです。
 
-
 動作確認後、ctrl＋Cでポートフォワードを停止します。
-
 
 ### 2.3. Pod削除
 
@@ -119,7 +115,7 @@ kubectl delete pod <pod名>
 Pod名、及び削除されたかどうかは以下で調べることができます。
 
 ```sh
-kubectl get pod
+kubectl get pods
 ```
 
 上記の対応では、対象PodのRESTARTSのみがリセットされPodが削除できていないことがわかります。
@@ -143,7 +139,7 @@ kubectl delete deployment test
 
 ```sh
 kubectl get deployments
-kubectl get pod
+kubectl get pods
 ```
 
 ### 2.4. Tips
@@ -158,7 +154,6 @@ kubectl run <Pod名> --image=<image名>
 ```
 
 また、Manifestを1から書くことが難しい場合は、以下のようにdry-runとyaml出力を組み合わせてファイルに書き込むことでサンプルファイルを作成することができます。
-
 
 ```sh
 
@@ -225,7 +220,7 @@ kubectl apply -f hello-world.yaml
 以下のコマンドで確認すると、Podの作成が失敗していることがわかります。
 
 ```sh
-kubectl get pod
+kubectl get pods
 ```
 
 ```Log
@@ -307,7 +302,7 @@ Events:
 現状、Default NameSpaceにはSecretリソースが存在しないことを確認します。
 
 ```sh
-kubectl get secret
+kubectl get secrets
 ```
 
 ```
@@ -372,7 +367,7 @@ kubectl apply -f hello-world.yaml
 ImageのPullが成功し、Podが起動しているはずです。
 
 ```sh
-kubectl get pod
+kubectl get pods
 ```
 
 ## 4. ReplicaSetの仕組み
@@ -450,7 +445,7 @@ kubectl apply -f hello-world.yaml
 Podが2つに増えているか確認します。
 
 ```sh
-kubectl get pod
+kubectl get pods
 ```
 
 > 出力例
@@ -499,7 +494,7 @@ kubectl apply -f hello-world-service.yaml
 Serviceについては以下で確認が可能です。
 
 ```sh
-kubectl get service
+kubectl get services
 ```
 
 > 出力例
@@ -622,8 +617,8 @@ kubectl set image deployment/rollout rollout-app=ryuichitakei/green-app:1.0
 # 確認
 kubectl rollout status deployment 
 kubectl rollout history deployment 
-kubectl get pod
-kubectl get deployment
+kubectl get pods
+kubectl get deployments
 ```
 
 更新後、ブラウザで再度以下にアクセスを行うと`This app is Green`の表示に更新されていることが確認できます。
@@ -663,7 +658,7 @@ kubectl apply -f blue-green.yaml
 
 
 ```sh
-kubectl get pod,service,ingress
+kubectl get pods,services,ingress
 ```
 
 それぞれのリソースが正常に動作していることが確認できたら、ブラウザから以下のようにアクセスができるはずです。
@@ -770,7 +765,7 @@ kubectl apply -f handson-volume.yaml
 以下のコマンドで各リソースの確認を行います。
 
 ```sh
-kubectl get pv,pvc,pod
+kubectl get pv,pvc,pods
 kubectl describe pv handson-pv
 kubectl describe pvc handson-pvc
 ```
@@ -811,7 +806,7 @@ kubectl apply -f handson-init.yaml
 続いて、動作確認のためPodのIPを確認します。
 
 ```sh
-kubectl get pod -o wide | grep init
+kubectl get pods -o wide | grep init
 ```
 
 最後に一時的な確認Podを使ってcurlでのアクセス確認をしてみましょう。
@@ -821,7 +816,7 @@ kubectl get pod -o wide | grep init
 kubectl run tmp --restart=Never --rm -i --image=nginx:alpine -- curl <PodのIP>
 ```
 
-以下のように`CNDS2024!!`のメッセージが確認できます。
+以下のように`CNDW2024!!`のメッセージが確認できます。
 
 
 ```
@@ -830,7 +825,7 @@ kubectl run tmp --restart=Never --rm -i --image=nginx:alpine -- curl <PodのIP>
 
   % Total    % Received % Xferd  Average Speed   Time    Time     Time  Current
                                  Dload  Upload   Total   Spent    Left  Speed
-CNDS2024!!
+CNDW2024!!
 100    11  100    11    0     0   8094      0 --:--:-- --:--:-- --:--:-- 11000
 pod "tmp" deleted
 ```
@@ -1106,7 +1101,7 @@ kubectl run test --image=nginx
 ```
 
 ```sh
- kubectl get pod
+ kubectl get pods
 ```
 
 ```Log
@@ -1216,7 +1211,7 @@ kubectl apply -f readiness-pod.yaml
 対象のファイルが作成されていない状態ではPodがReadyのステータスにならないことがわかります。
 
 ```sh
-kubectl get pod
+kubectl get pods
 ```
 
 ```Log
@@ -1299,7 +1294,7 @@ kubectl apply -f liveness-pod.yaml
 Pod作成からしばらく経つと、`RESTARTS`のカウンタが上昇していくのが確認できます。
 
 ```sh
-watch -n 1 kubectl get pod
+watch -n 1 kubectl get pods
 ```
 
 動作確認後、リソースを削除します。
@@ -1341,7 +1336,7 @@ kubectl apply -f netpol-pod.yaml
 通信確認を行うためにPodに付与されているIPアドレスを確認します。
 
 ```sh
-kubectl get pod -o wide -L app | grep app
+kubectl get pods -o wide -L app | grep app
 ```
 
 以下のように、curlを使ってPod同士の通信確認をそれぞれ行なっていきます。
@@ -1479,7 +1474,7 @@ kubectl apply -f handson-cronjob.yaml
 1分ごとにJobが増えていくのが確認できます。
 
 ```sh
-watch -n 1 kubectl get pod
+watch -n 1 kubectl get pods
 ```
 
 今回はdateコマンドを実行するJobなので、日付が出力されているはずです。
@@ -1540,8 +1535,8 @@ ConfigMapは、機密性のないデータをキーと値のペアで保存す�
 環境固有の設定などをコンテナイメージから分離できるため、アプリケーションを簡単に移植できるようになります。
 
 但し、機密性や暗号化の機能を持たないため保存したいデータが機密情報である場合はSecretやサードパーティツールを使用する必要があります。
-今回は`CNDS2024 ConfigMap Handson`というHTML形式のデータをConfigMapに保存し、Podにマウントさせています。
-クライアントからのリクエストはマウントされたConfigMapのHTMLデータを参照するため、`CNDS2024 ConfigMap Handson`という文字列が返却されるはずです。
+今回は`CNDW2024 ConfigMap Handson`というHTML形式のデータをConfigMapに保存し、Podにマウントさせています。
+クライアントからのリクエストはマウントされたConfigMapのHTMLデータを参照するため、`CNDW2024 ConfigMap Handson`という文字列が返却されるはずです。
 
 
 
@@ -1560,11 +1555,11 @@ kubectl apply -f configmap-pod.yaml
 次に、PodにアクセスするためIPアドレスを調べます。以下のコマンドでPodに紐づくIPアドレスが判ります。
 
 ```sh
-kubectl get pod -o wide
+kubectl get pods -o wide
 ```
 
 最後にテンポラリのPodを作成し、curlでアクセスを試みます。
-`CNDS2024 ConfigMap Handson`という文字列が返却されると成功です。
+`CNDW2024 ConfigMap Handson`という文字列が返却されると成功です。
 
 ```sh
 kubectl run tmp --restart=Never --rm -i --image=nginx:alpine -- curl <PodのIPアドレス>
@@ -1642,7 +1637,7 @@ kubectl apply -f resource-test.yaml
 動作確認をすると、Podが起動していないことが確認できます。
 
 ```sh
-kubectl get pod -n resource-test
+kubectl get pods -n resource-test
 ```
 
 
@@ -1656,7 +1651,7 @@ No resources found in resource-test namespace.
 Deploymentも同様にREADYのPodが0であることが確認できます。
 
 ```sh
-kubectl get deployment -n resource-test
+kubectl get deployments -n resource-test
 ```
 
 
@@ -1762,7 +1757,7 @@ kubectl apply -f resource-test.yaml
 すると、Podが対象のnamespaceにデプロイされたことが確認できます。
 
 ```sh
-kubectl get pod -n resource-test 
+kubectl get pods -n resource-test 
 ```
 
 
@@ -1786,16 +1781,13 @@ kubectl delete namespaces resource-test
 ### 15. トラブルシュート
 
 セクションの最後に、簡単なWebアプリケーションを使ったトラブルシュートに挑戦してみましょう。
-以下の構成図を参考にK8sの各リソースを適切に設定してください。
+構成図右下にあるcnd-web-appに接続し、適切なWebページを表示させることがゴールです。
 
 ![diagram](./image/cndw-tshoot-diagram.png)
 
 > [!NOTE]
 > - 動作確認は、ブラウザから以下のURLにアクセスすることで行います。
 >   - http://cndw-web.example.com
-> - プロビジョニング用のManifestではなく、なるべく各リソースごとに編集する形でトラブルシュートを実施してください。
->   - (例1)`kubectl get pod xxx -o yaml > xxx.yaml`で生成したファイルを編集し、`kubectl replace -f xxx.yaml --force`でリプレイス
->   - (例2)`kubectl edit svc xxx`で登録済みManifestを直接編集
 > - リソースの更新後もWeb画面の表示が変わらない場合があります。1-2分待ってからブラウザのリフレッシュを行なってください。
 > - 改修箇所は1箇所ではない可能性があります。また、構成図とエラーメッセージがヒントになる場合があります。
 

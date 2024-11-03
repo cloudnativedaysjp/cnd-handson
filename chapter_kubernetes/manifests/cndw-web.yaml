@@ -8,9 +8,10 @@ metadata:
 spec:
   containers:
   - name: cndw-web-app
-    image: ryuichitakei/cndw-web-app:1.0
+    image: ryuichitakei/cndw-web-app:1.2
+    imagePullPolicy: Always
     ports:
-    - containerPort: 8080
+    - containerPort: 8888
     volumeMounts:
     - name: app-secret-volumes
       mountPath: "/opt/app-secret-volumes"
@@ -66,7 +67,7 @@ spec:
     name: mysql
   ports:
   - port: 3306
-    targetPort: 8080
+    targetPort: 8888
 
 ---
 
@@ -79,7 +80,7 @@ spec:
     name: dummy-app
   type: ClusterIP
   ports:
-  - port: 8080
+  - port: 8888
     targetPort: 80
 
 ---
@@ -99,7 +100,7 @@ spec:
           service:
             name: cndw-web-svc
             port:
-              number: 8080
+              number: 8888
 ---
 apiVersion: v1
 kind: Secret
