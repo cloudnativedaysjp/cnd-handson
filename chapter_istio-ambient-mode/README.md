@@ -13,17 +13,13 @@ Istioの新しいデータプレーンであるIstio ambient modeを使用して
 - [最終クリーンアップ](#最終クリーンアップ)
 
 ## 概要
-2023年2月に[main branchにマージ](https://github.com/istio/istio/pull/43422)されたIstio ambientモードは、サイドカーを使用しない新しいデータプレーンモードで、このモードで作成されるサービスメッシュをIstio ambient meshと呼びます。従来のサイドカーモードのIstioは多くの本番運用実績がありますが、データプレーンとアプリケーションの分離ができず、下記のような課題があげられています。
+Istio ambientモードは、サイドカーを使用しない新しいデータプレーンモードで、このモードで作成されるサービスメッシュをIstio ambient meshと呼びます。従来のサイドカーモードのIstioは多くの本番運用実績がありますが、データプレーンとアプリケーションの分離ができず、下記のような課題があげられています。
 
 - データプレーンはサイドカーとしてアプリケーションpodに注入されるため、Istioデータプレーンのインストール、アップグレード時はpodの再起動が必要になり、アプリケーションワークロードを阻害してしまう
 - データプレーンが提供する機能の選択ができないため、一部の機能(mTLS実装のみ等)しか使用しないワークロードにとっては不要なリソースをpodに確保する必要があり、全体のリソースを効率的に使用できなくなる
 - HTTP準拠でないアプリケーション実装をしている場合、解析エラーや、誤ったL7プロトコルの解釈を引き起こす可能性がある
 
-Istio ambientモードはこれらの問題を解決する目的で、Google, Solo.ioが主導して開発が始まりました。現在(2024年10月付)の最新バージョンはv1.23ですが、v1.22から[production-readyなベータ版](https://istio.io/latest/news/releases/1.22.x/announcing-1.22/#ambient-mode-now-in-beta)に昇格をしています。
-
-> [!IMPORTANT]
-> Istio ambientモードはproduction ready扱いにはなっていますが、依然としてアルファ版の機能、および今後のバージョンで追加予定の機能があります。よって、本番環境への導入はそれらを加味し、十分に検証を実施した上での検討を行なってください。
-> アルファ版の機能、および今後のロードマップに関しては[Istio公式ブログ](https://istio.io/latest/blog/2024/ambient-reaches-beta/)の`Alpha features`, `Roadmap`を確認してください。
+Istio ambientモードはこれらの問題を解決する目的で、Google, Solo.ioが主導して開発が始まりました。2023年2月に[main branchにマージ](https://github.com/istio/istio/pull/43422)されて以来、2024年5月にリリースされたv1.22で[production-readyなベータ版](https://istio.io/latest/news/releases/1.22.x/announcing-1.22/#ambient-mode-now-in-beta)となり、2024年11月にリリースされたv1.24でついに[GA](https://istio.io/latest/news/releases/1.24.x/announcing-1.24/#ambient-mode-is-generally-available)となりました。
 
 ## データプレーン構成
 L4、L7機能の全てを管理しているサイドカーモードとは異なり、ambientモードではデータプレーンの機能を2つの層に分けて管理をします。
