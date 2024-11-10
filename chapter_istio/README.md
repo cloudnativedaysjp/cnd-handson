@@ -22,7 +22,7 @@ Istioが提供する主な機能は下記のとおりです。
 - Istioサービスメッシュへの/からの出入口を含むすべてのトラフィックの自動メトリクス、ログ、トレース
 
 ### サービスメッシュとは
-サービスメッシュとは、サービス間通信を処理するための専用インフラストラクチャレイヤーです。これにより、透過的に観測性、トラフィック管理、セキュリティなどの機能をアプリケーションに組み込むことなく利用することが可能です。特にcloud nativeアプリケーションにおいてはKubernetesのようなオーケストレーターによって動的にワークロードがスケジューリングされるため、サービス間通信が複雑になります。この管理をアプリケーションではなくサービスメッシュが行うことにより、アプリケーションの管理、運用を容易にできます。
+サービスメッシュとは、サービス間通信を処理するための専用インフラストラクチャレイヤーです。これにより、透過的に観測性、トラフィック管理、セキュリティなどの機能をアプリケーションに組み込むことなく利用することが可能です。特にCloud NativeアプリケーションにおいてはKubernetesのようなオーケストレーターによって動的にワークロードがスケジューリングされるため、サービス間通信が複雑になります。この管理をアプリケーションではなくサービスメッシュが行うことにより、アプリケーションの管理、運用を容易にできます。
 
 ### Istioアーキテクチャ
 ![image](./image/istio-architecture.png)
@@ -116,7 +116,7 @@ kubectl get pods -n handson -l app=handson -o jsonpath={.items..spec..containers
 ```
 ```sh
 # 実行結果
-docker.io/istio/proxyv2:1.19.0
+docker.io/istio/proxyv2:1.23.2
 argoproj/rollouts-demo:blue
 
 # Tracingをopentelemetry管理している場合は下記も併せて表示されます。
@@ -175,7 +175,7 @@ kiali-by-nginx   nginx   kiali.example.com   10.96.88.164   80      2m5s
 
 ![image](./image/kiali-overview.png)
 
-Kialiダッシュボードのグラフ表示の設定を変更します。TOP画面左のサイドメニューの`Graph`をクリックし、画面上部にある表示項目を下記の通り設定してください。
+Kialiダッシュボードのグラフ表示の設定を変更します。TOP画面左のサイドメニューの`Traffic Graph`をクリックし、画面上部にある表示項目を下記の通り設定してください。
 - `Namespace`の`handson`にチェック
 
 ![image](./image/kiali-graph-namespace.png)
@@ -296,7 +296,7 @@ NAME                                                             HOST      AGE
 destinationrule.networking.istio.io/http-request-based-routing   handson   31s
 ```
 
-`"handson: alpha1" `ヘッダー持つ、リクエストを流してみましょう。**ローカル端末から**下記コマンドを実行してください。
+`"handson: alpha1"`ヘッダーを持つ、リクエストを流してみましょう。**ローカル端末から**下記コマンドを実行してください。
 
 ```sh
 while :; do curl -s -w '\t%{http_code}\n' http://app.example.com:18080/color -H 'handson: alpha1';sleep 1;done
@@ -364,7 +364,7 @@ Fault Injectionを利用することで、特定のリクエストに対して�
 
 Fault Injectionは、HTTPS(TLS)通信を対象には機能しないことに注意してください。暗号化されていない通信のみを対象として挿入する事ができます。
 
-それではいったnルーティング設定を一番シンプルな[simple-routing.yaml](./networking/simple-routing.yaml)に戻します。また、追加アプリケーションとしてデプロイした `handson-yellow` を削除しておきます。
+それではいったんルーティング設定を一番シンプルな[simple-routing.yaml](./networking/simple-routing.yaml)に戻します。また、追加アプリケーションとしてデプロイした `handson-yellow` を削除しておきます。
 
 ```sh
 kubectl delete -f networking/http-request-based-routing.yaml
@@ -373,7 +373,7 @@ kubectl delete -f ../chapter_cluster-create/manifest/app/deployment.yaml -n hand
 kubectl delete -f ../chapter_cluster-create/manifest/app/serviceaccount.yaml -n handson -l color=yellow
 ```
 
-実際にリクエストを流して、期待した通り50%ずつトラフィックが流れているかKialiで確認してみましょう。**ローカル端末から**下記コマンドを実行してください。
+実際にリクエストを流して、期待した通り `handson-blue` へトラフィックが流れているかKialiで確認してみましょう。**ローカル端末から**下記コマンドを実行してください。
 
 ```sh
 while :; do curl -s -o /dev/null -w '%{http_code}\t%{time_total}\n' http://app.example.com:18080;sleep 1;done
@@ -413,9 +413,8 @@ kubectl apply -f networking/simple-routing-inject-delay.yaml
 ```
 
 KialiでトラフィックのResponse Timeを確認してみましょう。 Service `handson` と、Deployment `handson-blue` の間の線をクリックしてください。<br>
-そうすると右側のパネルに`HTTP Request Response Time (ms)`が下記画面の様に表示されます。そしてマウスのフォーカスを合わせてP99(99%tile)をみてみると、1秒以内である事がわかりますv (見づらい場合は表示期間を伸ばしてみてください)。
+そうすると右側のパネルに`HTTP Request Response Time (ms)`が下記画面の様に表示されます。そしてマウスのフォーカスを合わせてP99(99%tile)をみてみると、1秒以内である事がわかります (見づらい場合は表示期間を伸ばしてみてください)。
 この遅延は、アプリケーション到達前のEnvoyの部分で遅延させているものなので、呼び出される側には影響がない事がわかります。
-
 ![image](./image/kiali-graph-fault-injection-delay.png)
 
 確認する事ができましたら、いったんリクエストを停止してください。
@@ -499,9 +498,9 @@ while :; do kubectl exec curl -n handson -- curl -s -o /dev/null -w '%{http_code
 下記のように表示されるはずです。HTTPS通信が確立できずエラーとなっています。
 
 ```sh
-000     OpenSSL SSL_connect: SSL_ERROR_SYSCALL in connection to example.com:443 
-000     OpenSSL SSL_connect: SSL_ERROR_SYSCALL in connection to example.com:443 
-000     OpenSSL SSL_connect: SSL_ERROR_SYSCALL in connection to example.com:443 
+000     OpenSSL SSL_connect: SSL_ERROR_SYSCALL in connection to example.com:443
+000     OpenSSL SSL_connect: SSL_ERROR_SYSCALL in connection to example.com:443
+000     OpenSSL SSL_connect: SSL_ERROR_SYSCALL in connection to example.com:443
 ```
 
 それでは、example.comのHTTPS通信をService Entryとして定義しましょう。
@@ -537,7 +536,6 @@ while :; do kubectl exec curl -n handson -- curl -s -o /dev/null -w '%{http_code
 ```
 
 Kiali dashboardからも確認してみましょう。リクエストを流した状態でブラウザから<http://kiali.example.com>にアクセスをしてください。`curl` のワークロードから `example.com` Serviceにアクセスできていることが確認できます。グラフが表示されない場合は、Kialiダッシュボード右上の青い`Refresh`ボタンを押して状態を更新してください。
-
 ![image](./image/kiali-graph-service-entry.png)
 
 ### クリーンアップ
@@ -546,7 +544,6 @@ Kiali dashboardからも確認してみましょう。リクエストを流し�
 kubectl delete -f ../chapter_cluster-create/manifest/app/serviceaccount.yaml -n handson -l color=yellow
 kubectl delete -f ../chapter_cluster-create/manifest/app/deployment.yaml -n handson -l color=yellow
 kubectl delete -f networking/simple-routing.yaml
-kubectl delete -f networking/service-entry-cloudnativedays.yaml 
 kubectl delete -f networking/gateway.yaml
 kubectl delete -f app/curl.yaml
 ```
@@ -666,7 +663,6 @@ curl-deny:  403
 ```
 
 改めてKiali dashboardから確認してみましょう。ブラウザから<http://kiali.example.com>にアクセスをしてください。しばらくすると、`curl-allow` ワークロードからのリクエストは許可されている一方で、`curl-deny` ワークロードからのリクエストは拒否されていることが確認できます(変化が見られない場合は、Kialiダッシュボード右上の青い`Refresh`ボタンを押して状態を更新してください)。
-
 ![image](./image/kiali-L4-authz-autholizationpolicy-applied.png)
 
 確認ができたら、リクエストを停止してください。
@@ -744,8 +740,8 @@ kubectl get authorizationpolicies -n handson -l content=layer7-authz
 ```
 ```sh
 # 実行結果
-NAME           AGE
-layer7-authz   2m24s
+NAME           ACTION   AGE
+layer7-authz   DENY     2m24s
 ```
 
 まずは確認のためにGETリクエストをします(明示的にGETを指定しています)。
@@ -816,7 +812,7 @@ kubectl delete -f app/curl.yaml
 ```
 
 ## まとめ
-サービスメッシュを提供するIstioを使用することで、アプリケーションレイヤーではなくインフラレイヤーでサービス間のトラフィック管理を、またKialiを使用することでサービスメッシュの可視化をできます。本chapterではVirtual Service, Destination Ruleを使用したルーティング制御、Authorization Policyを使用した認可処理しか紹介していませんが、Istioには他にも[沢山の機能](https://istio.io/latest/docs/tasks/)がありますので、是非確認してみてください。
+サービスメッシュを提供するIstioを使用することで、アプリケーションレイヤーではなくインフラレイヤーでサービス間のトラフィック管理を、またKialiを使用することでサービスメッシュの可視化をできます。本chapterではVirtual Service, Destination Rule, Service Entryを使用したルーティング制御、Authorization Policyを使用した認可処理しか紹介していませんが、Istioには他にも[沢山の機能](https://istio.io/latest/docs/tasks/)がありますので、是非確認してみてください。
 
 ## 最終クリーンアップ
 `handson` namespaceをIstioサービスメッシュの管理外にします。

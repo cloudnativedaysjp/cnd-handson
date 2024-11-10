@@ -1,3 +1,5 @@
 manager:
-  featureGates:
-    operator.autoinstrumentation.go
+  collectorImage:
+    repository: otel/opentelemetry-collector-contrib
+  extraArgs:
+    - --enable-go-instrumentation=true

@@ -1,0 +1,40 @@
+istio_namespace: istio-system
+auth:
+  strategy: anonymous
+deployment:
+  service_type: NodePort
+  image_pull_policy: IfNotPresent
+  ingress_enabled: false
+  pod_labels:
+    prometheus-monitor-ignore: ""
+  logger:
+    log_format: json
+  resources:
+    requests:
+      cpu: 100m
+      memory: 128Mi
+    limits:
+      cpu: 100m
+      memory: 128Mi
+external_services:
+  custom_dashboards:
+    enabled: false
+  grafana:
+    enabled: false
+  prometheus:
+    url: http://kube-prometheus-stack-prometheus.prometheus:9090
+  istio:
+    root_namespace: istio-system
+    url_service_version: http://istiod:15014/version
+  tracing:
+    enabled: false
+server:
+  node_port: 32766
+  observability:
+    metrics:
+      enabled: false
+# 新しいsigning_keyが毎apply/syncで作成されてしまうことが原因で、
+# kialiのhelm versionが毎回更新される(pod)が毎回再作成されることを
+# 回避するために、ダミー用のsigning_keyを指定する。
+login_token:
+  signing_key: "dummy key"

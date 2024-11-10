@@ -1,0 +1,44 @@
+global:
+  imagePullPolicy: IfNotPresent
+  logAsJson: true
+  defaultPodDisruptionBudget:
+    enabled: false
+pilot:
+  deploymentLabels:
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/part-of: istio-ambient
+  podLabels:
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/part-of: istio-ambient
+  autoscaleEnabled: false
+  resources:
+    requests:
+      cpu: 100m
+      memory: 128Mi
+    limits:
+      cpu: 100m
+      memory: 128Mi
+  env:
+    # cf.) https://istio.io/latest/docs/reference/commands/pilot-discovery/#envvars
+    PILOT_ENABLE_AMBIENT: "true"
+meshConfig:
+  defaultProviders:
+    metrics:
+    - prometheus
+  extensionProviders:
+  - name: prometheus
+    prometheus: {}
+  accessLogFile: /dev/stdout
+  accessLogEncoding: JSON
+  outboundTrafficPolicy:
+    mode: REGISTRY_ONLY
+telemetry:
+  enabled: false
+  v2:
+    enabled: false
+sidecarInjectorWebhook:
+  templates:
+    sidecar: ""
+    gateway: ""
+    grpc-simple: ""
+    grpc-agent: ""
