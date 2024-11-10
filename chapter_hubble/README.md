@@ -83,16 +83,46 @@ Hubble CLIを利用してHubble Relayにアクセスします。
 ```
 
 次に、Hubble RelayへのReachabilityを確保します。
-別のターミナルを開き、下記コマンドを実行することでReachabilityを確保できます。
+下記コマンドを実行することでReachabilityを確保できます。
 
 ```shell
-cilium hubble port-forward
+cilium hubble port-forward &
 ```
 
 > [!NOTE]
 > 
-> cilium hubble port-forwardコマンドを実行しても何も表示されません。
-> 別ターミナルを開き、以降を進めてください。
+> &をつけることによって、cilium hubble port-forwardコマンドをバックグラウンド実行しています。
+> 本ページのリソース削除手順にも記載の通り、終了時は必ずcilium hubble port-forwardコマンドを忘れずにkillしてください。
+
+下記コマンドでport-forwardがバックグラウンド実行されていることを確認します。
+
+```shell
+ps -eo pid,tty,cmd | grep "cilium hubble port-forward"
+```
+```shell
+ 9814 pts/0    cilium hubble port-forward
+11775 pts/0    grep --color=auto cilium hubble port-forward
+```
+
+> [!NOTE]
+>   
+> ciliumコマンドではなく、下記のようなkubectlコマンドを実行することでもReachabilityを確保可能です。
+> ```shell
+> kubectl port-forward -n kube-system deploy/hubble-relay 4245:4245 &
+> ```
+> ```
+> Forwarding from 127.0.0.1:4245 -> 4245
+> Forwarding from [::1]:4245 -> 4245
+> ```
+> 
+> port-forwardコマンドがバックグラウンドを実行されているかどうかは、下記コマンドで確認できます。
+> ```
+> ps -eo pid,tty,cmd | grep "kubectl port-forward -n kube-system deploy/hubble-relay"
+> ```
+> ```
+> 12294 pts/0    kubectl port-forward -n kube-system deploy/hubble-relay 4245:4245
+> 12427 pts/0    grep --color=auto kubectl port-forward -n kube-system deploy/hubble-relay
+> ```
 
 下記コマンドでStatusを確認し、HealthcheckがOKとなっていることを確認します。
 
@@ -105,14 +135,6 @@ Current/Max Flows: 7,479/12,285 (60.88%)
 Flows/s: 33.34
 Connected Nodes: 3/3
 ```
-
-> [!NOTE]
->   
-> ciliumコマンドではなく、下記のようなkubectlコマンドを実行することでもReachabilityを確保可能です。
-> ```shell
-> kubectl port-forward -n kube-system deploy/hubble-relay 4245 4245
-> ```
-
 
 Hubble Relay経由で取得したHubble Serverのフロー情報は、下記コマンドで出力できます。
 
@@ -220,14 +242,27 @@ kubectl exec -n handson curl -- /bin/sh -c "curl -s -o /dev/null https://event.c
 
 ![](./image/ch5-hubble-observe-04.png)
 
-また、上記の情報はHubble-UIからも確認可能です。
+また、上記の情報はHubble-UIにてhandsonのnamespaceからも確認可能です。
 
-![](./image/ch5-hubble-curl-01.png)
+![](./image/ch05-hubble-curl-01.png)
 
 
-確認が終わったら本章でデプロイしたリソースを削除しておきます。
+確認が終わったら、バックグラウンドで動かしたプロセスと本章でデプロイしたリソースを削除しておきます。
+まず、バックグラウンドで動かしたプロセスを再度確認します。
 
 ```shell
+ps -eo pid,tty,cmd | grep "cilium hubble port-forward"
+```
+```shell
+ 9814 pts/0    cilium hubble port-forward
+11775 pts/0    grep --color=auto cilium hubble port-forward
+```
+
+この例では、該当プロセス番号が9814だったため、プロセスを終了するkillコマンドで9814を指定します。
+その後、本章でデプロイしたリソースを削除します。
+
+```shell
+kill 9814
 kubectl delete -Rf manifest
 kubectl delete -n handson pod curl --force
 ```
