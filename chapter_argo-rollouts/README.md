@@ -440,9 +440,6 @@ Applications画面の場合は、一番右下の端に、
 ## Argo Rolloutsのクリーンアップ
 ### Argo CDを削除
 ```
-helmfile destroy -f  ../chapter_argocd/helm/helmfile.yaml
-kubectl delete -n argo-cd \
-    -f https://raw.githubusercontent.com/argoproj-labs/rollout-extension/v0.2.1/manifests/install.yaml
 kubectl delete namespace argo-cd
 ```
 ### Argo Rolloutsを削除
