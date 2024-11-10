@@ -110,10 +110,6 @@ ps -eo pid,tty,cmd | grep "cilium hubble port-forward"
 > ```shell
 > kubectl port-forward -n kube-system deploy/hubble-relay 4245:4245 &
 > ```
-> ```
-> Forwarding from 127.0.0.1:4245 -> 4245
-> Forwarding from [::1]:4245 -> 4245
-> ```
 > 
 > port-forwardコマンドがバックグラウンドを実行されているかどうかは、下記コマンドで確認できます。
 > ```
@@ -259,10 +255,14 @@ ps -eo pid,tty,cmd | grep "cilium hubble port-forward"
 ```
 
 この例では、該当プロセス番号が9814だったため、プロセスを終了するkillコマンドで9814を指定します。
-その後、本章でデプロイしたリソースを削除します。
 
 ```shell
 kill 9814
+```
+
+その後、本章でデプロイしたリソースを削除します。
+
+```shell
 kubectl delete -Rf manifest
 kubectl delete -n handson pod curl --force
 ```
