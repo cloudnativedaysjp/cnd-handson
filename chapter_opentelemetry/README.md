@@ -120,7 +120,7 @@ exporters:
   prometheusremotewrite:
     endpoint: "https:/kube-prometheus-stack-prometheus.prometheus.svc:8080/prometheus/remote/write"
     external_labels:
-      oteltest: cndt2023
+      oteltest: cndhandson
 
 service:
   pipelines:
@@ -150,7 +150,7 @@ OpenTelemetry Collectorをデプロイするには、OpenTelemetryCollectorリ�
 最後に、先ほど紹介したOpenTelemetry Collectorの設定を`.spec.config`に行っておきます。
 
 ```yaml
-apiVersion: opentelemetry.io/v1alpha1
+apiVersion: opentelemetry.io/v1beta1
 kind: OpenTelemetryCollector
 metadata:
   name: log-collector
@@ -163,7 +163,7 @@ spec:
     - name: host-log-volumes
       hostPath:
         path:  /tmp
-  config: |
+  config:
     receivers:
       filelog:
         include: [ /var/log/cndt-*.json ]
@@ -222,13 +222,13 @@ pod/log-collector-collector-gsd8a   1/1     Running   0          18h
 今回はホスト上の`/var/log/cndt-*.json`のログをまとめてくれるようになっているため、試しに下記の通り書き込んでみます。
 
 ```bash
-sudo docker exec -it kind-worker sh -c "echo '{\"key1\": \"value1\", \"key2\": \"value2\"}' >> /tmp/cndt-1.json"
+docker exec -it kind-worker sh -c "echo '{\"key1\": \"value1\", \"key2\": \"value2\"}' >> /tmp/cndt-1.json"
 ```
 
 その後、`file` Exporterによって出力されたファイルを見てみると、確かにReceiverで受け取ったログがExporterで出力されていることが確認できます。
 
 ```sh
-sudo docker exec -it kind-worker sh -c "cat /tmp/all.json  | jq ."
+docker exec -it kind-worker sh -c "cat /tmp/all.json  | jq ."
 ```
 
 ```json
@@ -302,13 +302,13 @@ sudo docker exec -it kind-worker sh -c "cat /tmp/all.json  | jq ."
 最後に、OpenTelemetry Collectorの設定を`.spec.config`に行っておきます。
 
 ```yaml
-apiVersion: opentelemetry.io/v1alpha1
+apiVersion: opentelemetry.io/v1beta1
 kind: OpenTelemetryCollector
 metadata:
   name: metrics-collector
 spec:
   mode: "daemonset"
-  config: |
+  config:
     receivers:
       hostmetrics:
         collection_interval: 30s
@@ -323,7 +323,7 @@ spec:
       prometheusremotewrite:
         endpoint: http://kube-prometheus-stack-prometheus.prometheus:9090/api/v1/write
         external_labels:
-          oteltest: cndt2023
+          oteltest: cndhandson
 
     service:
       pipelines:
@@ -349,7 +349,7 @@ kubectl get opentelemetrycollector metrics-collector
 ```sh
 # 実行結果
 NAME                MODE        VERSION   READY   AGE   IMAGE                                         MANAGEMENT
-metrics-collector   daemonset   0.98.0    1/1     44m   otel/opentelemetry-collector-contrib:0.98.0   managed
+metrics-collector   daemonset   0.108.0    1/1     44m   otel/opentelemetry-collector-contrib:0.108.0   managed
 ```
 
 ```sh
@@ -397,7 +397,7 @@ kubectl logs -l app.kubernetes.io/name=metrics-collector-collector -f
   * [debugexporter](https://github.com/open-telemetry/opentelemetry-collector/tree/main/exporter/debugexporter)
   * [prometheusremotewrite](https://github.com/open-telemetry/opentelemetry-collector-contrib/tree/main/exporter/prometheusremotewriteexporter)
 
-今回は簡単な例でしたが、OpenMetrics互換のエンドポイントからデータを取得し、Prometheus・Datadog・PubSubにデータをそれぞれ転送するといったユースケースにも対応できます。
+今回は簡単な例でしたが、[OpenMetrics](https://github.com/prometheus/OpenMetrics/tree/main)互換のエンドポイントからデータを取得し、Prometheus・Datadog・Google Cloud Pub/Subにデータをそれぞれ転送するといったユースケースにも対応できます。
 また、ScrapeしてRemote Writeするといったユースケースでは、Prometheusの代替にするために`prometheusreceiver`といったプラグインを利用することもできます。
 
 ![](image/metrics-collector-example.png)
@@ -449,7 +449,7 @@ kubectl -n jaeger get jaeger
 ```sh
 # 実行結果
 NAME     STATUS    VERSION   STRATEGY   STORAGE   AGE
-jaeger   Running   1.52.0    allinone   memory    10m
+jaeger   Running   1.57.0    allinone   memory    10m
 ```
 
 デプロイされたJaegerのUIは、`https://jaeger.example.com/search`から確認できます。
@@ -462,21 +462,21 @@ Jaegerは以前までは`jaeger`プロトコルを利用していましたが、
 
 
 ログの時と同様に、OpenTelemetryCollectorリソースを利用してKubernetesにデプロイします。
-今回はトレースデータの取得先ホスト上のメトリクスを取得するエージェントとして動作させる想定なため、`.spec.mode`にはdaemonsetを指定し、DaemonSetとして起動します。
+今回はトレースデータの取得先ホスト上のメトリクスを取得するエージェントとして動作させる想定なため、`.spec.mode`にはdeploymentを指定し、deploymentとして起動します。
 最後に、OpenTelemetry Collectorの設定を`.spec.config`に行っておきます。
 
 ```yaml
-apiVersion: opentelemetry.io/v1alpha1
+apiVersion: opentelemetry.io/v1beta1
 kind: OpenTelemetryCollector
 metadata:
   name: trace-collector
 spec:
   mode: "deployment"
-  config: |
+  config:
     receivers:
       otlp:
         protocols:
-          http:
+          http: {}
 
     processors: {}
 
@@ -523,7 +523,7 @@ NAME                                        READY   UP-TO-DATE   AVAILABLE   AGE
 deployment.apps/trace-collector-collector   1/1     1            1           10m
 
 NAME                                             READY   STATUS    RESTARTS   AGE
-pod/trace-collector-collector-5bbc5d7c47-jtscf   2/2     Running   0          88s
+pod/trace-collector-collector-5bbc5d7c47-jtscf   1/1    Running   0          88s
 
 NAME                                         TYPE        CLUSTER-IP      EXTERNAL-IP   PORT(S)    AGE
 service/trace-collector-collector            ClusterIP   10.96.172.252   <none>        4318/TCP   10m
