@@ -1,10 +1,10 @@
-apiVersion: opentelemetry.io/v1alpha1
+apiVersion: opentelemetry.io/v1beta1
 kind: OpenTelemetryCollector
 metadata:
   name: metrics-collector
 spec:
   mode: "daemonset"
-  config: |
+  config:
     receivers:
       hostmetrics:
         collection_interval: 30s
@@ -19,7 +19,7 @@ spec:
       prometheusremotewrite:
         endpoint: http://kube-prometheus-stack-prometheus.prometheus:9090/api/v1/write
         external_labels:
-          oteltest: cndt2023
+          oteltest: cndhandson
 
     service:
       pipelines:

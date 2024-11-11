@@ -1,0 +1,32 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: handson-init-container
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      id: handson-init-container
+  template:
+    metadata:
+      labels:
+        id: handson-init-container
+    spec:
+      volumes:
+      - name: web-content
+        emptyDir: {}
+      initContainers:
+      - name: init-con
+        image: busybox
+        command: ['sh', '-c', 'echo "CNDW2024!!" > /tmp/web-content/index.html']
+        volumeMounts:
+        - name: web-content
+          mountPath: /tmp/web-content
+      containers:
+      - image: nginx
+        name: web-content
+        volumeMounts:
+        - name: web-content
+          mountPath: /usr/share/nginx/html
+        ports:
+        - containerPort: 80

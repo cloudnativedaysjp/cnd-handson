@@ -3,8 +3,6 @@ repositories:
   url: https://helm.cilium.io
 - name: ingress-nginx
   url: https://kubernetes.github.io/ingress-nginx
-- name: metallb
-  url: https://metallb.github.io/metallb
 
 releases:
 - name: cilium
@@ -13,13 +11,6 @@ releases:
   version: 1.16.1
   values:
   - values/cilium.values.yaml
-- name: metallb
-  namespace: metallb-system
-  createNamespace: true
-  chart: metallb/metallb
-  version: 0.14.8
-  values:
-  - values/metallb.values.yaml
 - name: ingress-nginx
   namespace: ingress-nginx
   createNamespace: true
