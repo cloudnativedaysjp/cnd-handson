@@ -74,7 +74,7 @@ ValidatingWebhookの兼ね合いで`helmfile sync`が失敗することがある
 helmfile sync -f helm/helmfile.yaml
 ```
 
-monitoring NamespaceにデプロイされたOpenTelemetry OperatorのPodが起動していれば成功です。
+`monitoring` NamespaceにデプロイされたOpenTelemetry OperatorのPodが起動していれば成功です。
 
 ```sh
 kubectl -n monitoring get pods
@@ -162,7 +162,7 @@ spec:
   volumes:
     - name: host-log-volumes
       hostPath:
-        path:  /tmp
+        path: /tmp
   config:
     receivers:
       filelog:
@@ -277,7 +277,7 @@ docker exec -it kind-worker sh -c "cat /tmp/all.json  | jq ."
 }
 ```
 
-`/tmp/cndt-2023.json`など、正規表現にマッチするさまざまなファイル名に対してログを出力して`/tmp/all.json`が書き換わることも確認してみてください。
+`/tmp/cndt-1.json`など、正規表現にマッチするさまざまなファイル名に対してログを出力して`/tmp/all.json`が書き換わることも確認してみてください。
 また、余裕がある方は各種Receiver・ExporterのDocsを確認し、さまざまな処理やオプションを試してみてください。
 
 * 利用しているReceiver
@@ -462,7 +462,7 @@ Jaegerは以前までは`jaeger`プロトコルを利用していましたが、
 
 
 ログの時と同様に、OpenTelemetryCollectorリソースを利用してKubernetesにデプロイします。
-今回はトレースデータの取得先ホスト上のメトリクスを取得するエージェントとして動作させる想定なため、`.spec.mode`にはdeploymentを指定し、deploymentとして起動します。
+取得したトレースデータをデプロイした jaeger リソースに送ります。`.spec.mode`にはdeploymentを指定し起動します。
 最後に、OpenTelemetry Collectorの設定を`.spec.config`に行っておきます。
 
 ```yaml

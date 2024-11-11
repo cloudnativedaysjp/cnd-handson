@@ -1,7 +1,7 @@
 # Grafana Loki
 
 本章では[Grafana Loki](https://github.com/grafana/loki)（以降、Loki）について紹介します。
-本章を行うには[chapter_opentelemetry](https://github.com/cloudnativedaysjp/cnd-handson/tree/cndw2024/chapter_opentelemetry)を行う必要ああります。
+本章を行うには[chapter_opentelemetry](https://github.com/cloudnativedaysjp/cnd-handson/tree/cndw2024/chapter_opentelemetry)を行う必要あります。
 下記の流れで説明します。
 
 - Lokiの概要
