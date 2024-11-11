@@ -189,27 +189,25 @@ helmfile sync -f helm/helmfile.yaml
 マイクロサービスモードで動いているか確認します。
 
 ```bash
-kubectl get pods -n monitoring -l app.kubernetes.io/instance=pyroscope
+kubectl get pods -n monitoring | grep pyroscope
 ```
 
 ```bash
 # 実行結果
-NAME                                         READY   STATUS    RESTARTS   AGE
-pyroscope-agent-0                            2/2     Running   0          33s
-pyroscope-compactor-0                        1/1     Running   0          33s
-pyroscope-compactor-1                        1/1     Running   0          33s
-pyroscope-distributor-65cc858cb6-6mjq2       1/1     Running   0          33s
-pyroscope-ingester-0                         1/1     Running   0          33s
-pyroscope-ingester-1                         1/1     Running   0          33s
-pyroscope-minio-0                            0/1     Pending   0          33s
-pyroscope-minio-make-bucket-job-vlmhb        1/1     Running   0          33s
-pyroscope-querier-85855c9c5d-88dkj           1/1     Running   0          33s
-pyroscope-querier-85855c9c5d-cggfp           1/1     Running   0          33s
-pyroscope-querier-85855c9c5d-mt99w           1/1     Running   0          33s
-pyroscope-query-frontend-7b55fbf7f6-2cz8p    1/1     Running   0          33s
-pyroscope-query-scheduler-7497dd4996-v56z7   1/1     Running   0          33s
-pyroscope-store-gateway-0                    0/1     Running   0          33s
-pyroscope-store-gateway-1                    0/1     Running   0          33s
+pyroscope-alloy-0                            2/2     Running   0          29m
+pyroscope-compactor-0                        1/1     Running   0          27m
+pyroscope-compactor-1                        1/1     Running   0          27m
+pyroscope-distributor-7d6969bdb4-4x9jh       1/1     Running   0          5m29s
+pyroscope-ingester-0                         1/1     Running   0          27m
+pyroscope-ingester-1                         1/1     Running   0          27m
+pyroscope-minio-0                            1/1     Running   0          5m27s
+pyroscope-querier-7867466d84-gg5qg           1/1     Running   0          27m
+pyroscope-querier-7867466d84-nb2sd           1/1     Running   0          27m
+pyroscope-querier-7867466d84-xtc4z           1/1     Running   0          27m
+pyroscope-query-frontend-97bb84b78-mbpml     1/1     Running   0          5m28s
+pyroscope-query-scheduler-857746b8b6-mgph2   1/1     Running   0          5m28s
+pyroscope-store-gateway-0                    1/1     Running   0          27m
+pyroscope-store-gateway-1                    1/1     Running   0          27m
 ```
 
 マイクロサービスモードの場合、Grafanaのデータソースも、接続先をquery-frontendにする必要があります。下記に変更してください。
