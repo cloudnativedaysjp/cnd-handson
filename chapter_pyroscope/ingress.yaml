@@ -16,6 +16,6 @@ spec:
         pathType: Prefix
         backend:
           service:
-            name: pyroscope
+            name: pyroscope # マイクロサービスモードの場合pyroscope-query-frontendにする
             port:
               number: 4040

@@ -192,7 +192,6 @@ releases:
   namespace: pyroscope
   createNamespace: true
   chart: grafana/pyroscope
-  version: 1.5.0
   values:
   - values-micro-services.yaml # マイクロサービスモードを使用する場合使用
 ```
@@ -229,9 +228,13 @@ pyroscope-store-gateway-0                    0/1     Running   0          33s
 pyroscope-store-gateway-1                    0/1     Running   0          33s
 ```
 
-マイクロサービスモードの場合、Grafanaのデータソースも、接続先をquery-frontendにする必要があります。下記に変更してください。
+マイクロサービスモードの場合、Ingressのバックエンドサービス名と、Grafanaのデータソースも、接続先をquery-frontendにする必要があります。下記に変更してください。
 
-* HTTP>URL：http://pyroscope-query-frontend.monitoring.svc.cluster.local:4040
+* Grafanaデータソース
+    * HTTP>URL：http://pyroscope-query-frontend.monitoring.svc.cluster.local:4040
+* Ingressのバックエンドサービス
+    * `name: pyroscope`→`pyroscope-query-frontend`にする
+
 
 ## 参考文献
 
