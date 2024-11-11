@@ -1,6 +1,7 @@
 # Grafana Loki
 
 本章では[Grafana Loki](https://github.com/grafana/loki)（以降、Loki）について紹介します。
+本章を行うには[chapter_opentelemetry](https://github.com/cloudnativedaysjp/cnd-handson/tree/cndw2024/chapter_opentelemetry)を行う必要ああります。
 下記の流れで説明します。
 
 - Lokiの概要
@@ -124,7 +125,7 @@ Loki自体はシングルバイナリとなっており、実行時に`-target`�
 
 - オブジェクトストレージ
   - IndexとChunkのデータを格納するために利用します
-  - オブジェクトストレージとして、S3やGCPなどが利用できます
+  - オブジェクトストレージとして、AWS S3やGoogle Cloud Storageなどが利用できます
   - 図ではオブジェクトストレージとなっていますが、ファイルシステムも利用可能です
     - 推奨はされていません。詳細は[Manage storage](https://grafana.com/docs/loki/latest/operations/storage/#manage-storage)を参照してください
 - Memcached
@@ -323,11 +324,11 @@ Log Query Startersには、特定の文字列でフィルターしたログをlo
   - `Reduce > Mode` ... `Replace Non-numeric value`を`0`に設定
     - この設定をいれることで、値が無い場合は0とみなします
   - `Threshold` ... `IS ABOVE`を`100`に設定
-    - 100より大きい場合、アラートを発砲します
+    - 100より大きい場合、アラートを発報します
 - `Set evaluation behavior`
   - `Folder` ... New folderで`loki-alert`を作成
   - `Evaluation group` ... `New evaluation group` をクリックし、 `Evaluation group name` を `sample-grafana-alert-loki`, `Evaluation Interval` を `1m` に設定
-  - `Pending period` ... `0s`に設定（即時発砲）
+  - `Pending period` ... `0s`に設定（即時発報）
 - `Configure labels and notifications` ... `alert-route`と`slack`を設定
 - `Summary` ... 任意の文字列を追加
   - 他の参加者とアラートが被った場合でも、自分が設定したアラートだと識別できるように設定
@@ -338,7 +339,7 @@ Log Query Startersには、特定の文字列でフィルターしたログをlo
 > [!TIP]
 > アラートの発表状況は`http://grafana.example.com/alerting/list`から確認できます。
 > Datasoucesにlokiを指定すると、先ほど設定したアラートの状況が確認できます。
-> 通常はStateが`Normal`となっており、`Firing`となればアラートが発砲されている状態です。
+> 通常はStateが`Normal`となっており、`Firing`となればアラートが発報されている状態です。
 
 Slackにアラートが連携されることを確認したら、アラートの設定を削除しておきましょう
 `http://grafana.example.com/alerting/list?search=datasource:loki`にアクセスし、Moreから「Delete」を選択肢削除しておきます。

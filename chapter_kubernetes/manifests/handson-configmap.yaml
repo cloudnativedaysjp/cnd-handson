@@ -1,0 +1,19 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  labels:
+    name: handson-configmap
+  name: handson-configmap
+data:
+  index.html: |
+    <html>
+      <head>
+        <title>
+        CNDW2024 ConfigMap Handson
+        </title>
+      <body>
+        <h1>
+        CNDW2024 ConfigMap Handson
+        </h1>
+      </body>
+    </html>
