@@ -36,28 +36,27 @@ cilium status
  /¯¯\__/¯¯\    Cilium:             OK
  \__/¯¯\__/    Operator:           OK
  /¯¯\__/¯¯\    Envoy DaemonSet:    OK
- \__/¯¯\__/    Hubble Relay:       1 errors
+ \__/¯¯\__/    Hubble Relay:       OK
     \__/       ClusterMesh:        disabled
 
 DaemonSet              cilium-envoy       Desired: 3, Ready: 3/3, Available: 3/3
+Deployment             hubble-ui          Desired: 1, Ready: 1/1, Available: 1/1
+Deployment             hubble-relay       Desired: 1, Ready: 1/1, Available: 1/1
 Deployment             cilium-operator    Desired: 2, Ready: 2/2, Available: 2/2
 DaemonSet              cilium             Desired: 3, Ready: 3/3, Available: 3/3
-Deployment             hubble-relay       Desired: 1, Unavailable: 1/1
-Deployment             hubble-ui          Desired: 1, Ready: 1/1, Available: 1/1
 Containers:            cilium             Running: 3
-                       hubble-relay       Running: 1
+                       cilium-envoy       Running: 3
                        hubble-ui          Running: 1
                        cilium-operator    Running: 2
-                       cilium-envoy       Running: 3
+                       hubble-relay       Running: 1
 Cluster Pods:          8/8 managed by Cilium
 Helm chart version:    1.16.1
-Image versions         cilium             quay.io/cilium/cilium:v1.16.1@sha256:0b4a3ab41a4760d86b7fc945b8783747ba27f29dac30dd434d94f2c9e3679f39: 3
-                       hubble-relay       quay.io/cilium/hubble-relay:v1.16.1@sha256:2e1b4c739a676ae187d4c2bfc45c3e865bda2567cc0320a90cb666657fcfcc35: 1
+Image versions         hubble-relay       quay.io/cilium/hubble-relay:v1.16.1@sha256:2e1b4c739a676ae187d4c2bfc45c3e865bda2567cc0320a90cb666657fcfcc35: 1
+                       cilium             quay.io/cilium/cilium:v1.16.1@sha256:0b4a3ab41a4760d86b7fc945b8783747ba27f29dac30dd434d94f2c9e3679f39: 3
+                       cilium-envoy       quay.io/cilium/cilium-envoy:v1.29.7-39a2a56bbd5b3a591f69dbca51d3e30ef97e0e51@sha256:bd5ff8c66716080028f414ec1cb4f7dc66f40d2fb5a009fff187f4a9b90b566b: 3
                        hubble-ui          quay.io/cilium/hubble-ui:v0.13.1@sha256:e2e9313eb7caf64b0061d9da0efbdad59c6c461f6ca1752768942bfeda0796c6: 1
                        hubble-ui          quay.io/cilium/hubble-ui-backend:v0.13.1@sha256:0e0eed917653441fded4e7cdb096b7be6a3bddded5a2dd10812a27b1fc6ed95b: 1
                        cilium-operator    quay.io/cilium/operator-generic:v1.16.1@sha256:3bc7e7a43bc4a4d8989cb7936c5d96675dd2d02c306adf925ce0a7c35aa27dc4: 2
-                       cilium-envoy       quay.io/cilium/cilium-envoy:v1.29.7-39a2a56bbd5b3a591f69dbca51d3e30ef97e0e51@sha256:bd5ff8c66716080028f414ec1cb4f7dc66f40d2fb5a009fff187f4a9b90b566b: 3
-Errors:                hubble-relay       hubble-relay    1 pods of Deployment hubble-relay are not ready
 ```
 
 設定自体はすでに[chapter Cluster Create](./../chapter_cluster-create)で行っているため、Hubble-uiとHubble-relayが動作しています。
