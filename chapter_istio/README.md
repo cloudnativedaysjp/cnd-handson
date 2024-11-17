@@ -120,7 +120,7 @@ docker.io/istio/proxyv2:1.23.2
 argoproj/rollouts-demo:blue
 
 # Tracingをopentelemetry管理している場合は下記も併せて表示されます。
-ghcr.io/open-telemetry/opentelemetry-go-instrumentation/autoinstrumentation-go:v0.7.0-alpha
+ghcr.io/open-telemetry/opentelemetry-go-instrumentation/autoinstrumentation-go:v0.14.0-alpha
 ```
 `docker.io/istio/proxyv2`のイメージで動作しているコンテナがデータプレーンです。
 
@@ -448,7 +448,7 @@ curlコマンドを流しているコンソールでは、下記のように表�
 
 ### メッシュ外へのアクセス
 
-Istioのサービスメッシュでは、Envoy(ztunnel)が通信を仲介し、相互の通信の可視化や制御を実現しています。
+Istioのサービスメッシュでは、Envoyが通信を仲介し、相互の通信の可視化や制御を実現しています。
 SaaSとして提供されているデータベースへのアクセスや外部APIなどの通信の場合、プロキシ構成によって挙動が変わります。<br>
 参考：https://istio.io/latest/docs/tasks/traffic-management/egress/egress-control/
 
