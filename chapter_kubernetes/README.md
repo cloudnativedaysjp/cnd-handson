@@ -1798,6 +1798,19 @@ kubectl apply -f cndw-web.yaml
 ```
 
 
+動作確認後、リソースを削除します。
+
+```sh
+kubectl delete pod cndw-web-app
+kubectl delete pod dummy-app
+kubectl delete pod mysql
+kubectl delete service cndw-web-svc
+kubectl delete service mysql-svc
+kubectl delete ingress cndw-web-ing
+kubectl delete secret app-secret
+```
+
+
 ### 16. おまけ(jsonpath)
 
 jsonpathは、ワンライナーで欲しい情報のみを引き抜く際に便利な機能です。
