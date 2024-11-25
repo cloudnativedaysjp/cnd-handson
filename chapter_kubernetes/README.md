@@ -541,7 +541,7 @@ kubectl get ingress
 > 出力例
 
 ```Log
-NAME                  CLASS   HOSTS                     ADDRESS        PORTS   AGE
+NAME                  CLASS   HOSTS                                         ADDRESS        PORTS   AGE
 hello-world-ingress   nginx   hello-world.vmXX.handson.cloudnativedays.jp   10.96.246.72   80      17m
 ```
 

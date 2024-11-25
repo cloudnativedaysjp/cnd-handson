@@ -146,7 +146,7 @@ kubectl get gw,virtualservices -n handson
 NAME                                  AGE
 gateway.networking.istio.io/handson   18s
 
-NAME                                                GATEWAYS      HOSTS                 AGE
+NAME                                                GATEWAYS      HOSTS                                     AGE
 virtualservice.networking.istio.io/simple-routing   ["handson"]   ["app.vmXX.handson.cloudnativedays.jp"]   25s
 ```
 
@@ -167,7 +167,7 @@ kubectl get ingresses -n istio-system -l app=kiali
 ```
 ```sh
 # 実行結果
-NAME             CLASS   HOSTS               ADDRESS        PORTS   AGE
+NAME             CLASS   HOSTS                                   ADDRESS        PORTS   AGE
 kiali-by-nginx   nginx   kiali.vmXX.handson.cloudnativedays.jp   10.96.88.164   80      2m5s
 ```
 
@@ -243,7 +243,7 @@ kubectl get virtualservices,destinationrules -n handson
 ```
 ```sh
 # 実行結果
-NAME                                                      GATEWAYS      HOSTS                 AGE
+NAME                                                      GATEWAYS      HOSTS                                     AGE
 virtualservice.networking.istio.io/weight-based-routing   ["handson"]   ["app.vmXX.handson.cloudnativedays.jp"]   35s
 
 NAME                                                       HOST      AGE
@@ -289,7 +289,7 @@ kubectl get virtualservices,destinationrules -n handson
 ```
 ```sh
 # 実行結果
-NAME                                                            GATEWAYS      HOSTS                 AGE
+NAME                                                            GATEWAYS      HOSTS                                     AGE
 virtualservice.networking.istio.io/http-request-based-routing   ["handson"]   ["app.vmXX.handson.cloudnativedays.jp"]   31s
 
 NAME                                                             HOST      AGE

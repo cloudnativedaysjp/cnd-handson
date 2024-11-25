@@ -371,7 +371,7 @@ service/handson   ClusterIP   10.96.108.237   <none>        80/TCP    25m
 NAME                      READY   UP-TO-DATE   AVAILABLE   AGE
 deployment.apps/handson   1/1     1            1           25m
 
-NAME                                             CLASS   HOSTS                              ADDRESS        PORTS   AGE
+NAME                                             CLASS   HOSTS                                                  ADDRESS        PORTS   AGE
 ingress.networking.k8s.io/app-ingress-by-nginx   nginx   dev.kustomize.argocd.vmXX.handson.cloudnativedays.jp   10.96.185.74   80      25m
 ```
 
@@ -418,7 +418,7 @@ service/handson   ClusterIP   10.96.183.12   <none>        80/TCP    25m
 NAME                      READY   UP-TO-DATE   AVAILABLE   AGE
 deployment.apps/handson   2/2     2            2           25m
 
-NAME                                             CLASS   HOSTS                              ADDRESS        PORTS   AGE
+NAME                                             CLASS   HOSTS                                                  ADDRESS        PORTS   AGE
 ingress.networking.k8s.io/app-ingress-by-nginx   nginx   prd.kustomize.argocd.vmXX.handson.cloudnativedays.jp   10.96.185.74   80      25m
 ```
 
@@ -476,7 +476,7 @@ service/handson   ClusterIP   10.96.139.198   <none>        80/TCP    23m
 NAME                      READY   UP-TO-DATE   AVAILABLE   AGE
 deployment.apps/handson   1/1     1            1           23m
 
-NAME                                             CLASS   HOSTS                     ADDRESS        PORTS   AGE
+NAME                                             CLASS   HOSTS                                         ADDRESS        PORTS   AGE
 ingress.networking.k8s.io/app-ingress-by-nginx   nginx   helm.argocd.vmXX.handson.cloudnativedays.jp   10.96.185.74   80      23m
 ```
 
