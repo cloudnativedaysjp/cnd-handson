@@ -14,7 +14,7 @@ chapter_prometheusで導入したkube-prometheus-stackによって、すでにGr
 基本的なモニタリングをすぐに開始できます。
 
 実際にどのようなDashboardがあるか見てみましょう。
-お使いのブラウザで <http://grafana.example.com/dashboards> にアクセスしてみてください。
+お使いのブラウザで <http://grafana.vmXX.handson.cloudnativedays.jp/dashboards> にアクセスしてみてください。
 以下のようなDashboardが用意されているはずです。
 
 - AlertManager Overview ... AlertManagerに関する基本的な情報
@@ -68,7 +68,7 @@ Grafanaでは手作業でDashboardを作成する以外に、
 - <https://grafana.com/grafana/dashboards/16611-cilium-metrics/>
 - <https://grafana.com/grafana/dashboards/13539-hubble/>
 
-まずは <http://grafana.example.com/dashboards> にアクセスし、 `New` ボタンのプルダウンメニューから `New folder` をクリックし、
+まずは <http://grafana.vmXX.handson.cloudnativedays.jp/dashboards> にアクセスし、 `New` ボタンのプルダウンメニューから `New folder` をクリックし、
 `ingress-nginx` というフォルダ名で作成します。
 
 ![image](./image/dashboards.png)
@@ -108,7 +108,7 @@ Grafanaでは、さまざまなデータ可視化のソースを利用できま�
 <https://grafana.com/docs/grafana/latest/datasources/#built-in-core-data-sources>
 
 kube-prometheus-stackをインストールした段階では、デフォルトのDatasourceとしてPrometheusとAlertmanagerの設定が入っています。
-これにより、 <http://grafana.example.com/explore> でPromQLを書きこんでメトリクスを表示したり、
+これにより、 <http://grafana.vmXX.handson.cloudnativedays.jp/explore> でPromQLを書きこんでメトリクスを表示したり、
 Datasourceから読み取れるメトリクスからDashboardを構築できます。
 
 ## Variablesについて
@@ -139,7 +139,7 @@ DashboardやGrafana Alertingでは、Dashboard Panelやアラートの内容文�
 7. アラートを流すチャンネルを選択し、 `Allow` をクリックする
 8. `Webhook URL` をコピーする
 
-Grafana側では <http://grafana.example.com/alerting/notifications> にアクセスして、
+Grafana側では <http://grafana.vmXX.handson.cloudnativedays.jp/alerting/notifications> にアクセスして、
 右側の `Add contact point` ボタンをクリックします。
 
 ![image](./image/contact-points.png)
@@ -163,7 +163,7 @@ Grafana側では <http://grafana.example.com/alerting/notifications> にアク�
 Contact Pointを追加しただけでは新規にアラートを追加しても、さきほどのContact Pointに向けて発報できません。
 それを実現するために、Notification Policyを作成する必要があります。
 
-<http://grafana.example.com/alerting/routes> にアクセスし、 `New child policy` のボタンをクリックします。
+<http://grafana.vmXX.handson.cloudnativedays.jp/alerting/routes> にアクセスし、 `New child policy` のボタンをクリックします。
 
 ![image](./image/notifications.png)
 
@@ -179,7 +179,7 @@ Contact Pointを追加しただけでは新規にアラートを追加しても�
 ### サンプルアラートの作成
 
 最後に、具体的なアラートの作成を行います。
-<http://grafana.example.com/alerting/list> にアクセスし、 `New alert rule` のボタンをクリックします。
+<http://grafana.vmXX.handson.cloudnativedays.jp/alerting/list> にアクセスし、 `New alert rule` のボタンをクリックします。
 以下1~5の内容を設定し、最後に右上の `Save rule and exit` ボタンをクリックします。
 
 1. Enter alert rule name
@@ -189,7 +189,7 @@ Contact Pointを追加しただけでは新規にアラートを追加しても�
 
 2. Define query and alert condition
   - `Metric` ... `nginx_ingress_controller_requests`
-  - `Label filter` ... `host = app.example.com`
+  - `Label filter` ... `host = app.vmXX.handson.cloudnativedays.jp`
   - `Operation` ... 以下を順に設定
     - `Range Functions > Avg over time` をクリックし、 `Range` を `1m` に設定
     - `Binary Operations > Less than` をクリックし、 `Value` を `10` に設定
@@ -211,12 +211,12 @@ Contact Pointを追加しただけでは新規にアラートを追加しても�
 ![image](./image/add-alert-rule-4.png)
 
 5. Add annotaions
-  - `Summary` ... `app.example.com has not received requests over 10 times`
-  - `Description` ... `app.example.com has not received {{ $labels.method }} requests 10 times`
+  - `Summary` ... `app.vmXX.handson.cloudnativedays.jp has not received requests over 10 times`
+  - `Description` ... `app.vmXX.handson.cloudnativedays.jp has not received {{ $labels.method }} requests 10 times`
 
 ![image](./image/add-alert-rule-5.png)
 
-このアラートは、1分間隔で取得した、 `app.example.com` に対するリクエスト数が10以上でなければアラートを発報するというルールになっています。
+このアラートは、1分間隔で取得した、 `app.vmXX.handson.cloudnativedays.jp` に対するリクエスト数が10以上でなければアラートを発報するというルールになっています。
 5分程度経過すると、無事にアラートが発報されると思います。
 
 > [!TIP]

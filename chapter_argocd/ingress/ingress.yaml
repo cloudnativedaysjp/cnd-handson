@@ -8,7 +8,7 @@ metadata:
 spec:
   ingressClassName: nginx
   rules:
-  - host: argocd.example.com
+  - host: argocd.vmXX.handson.cloudnativedays.jp
     http:
       paths:
       - path: /

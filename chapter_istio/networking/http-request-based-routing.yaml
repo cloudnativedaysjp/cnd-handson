@@ -7,7 +7,7 @@ metadata:
     content: http-request-based-routing
 spec:
   hosts:
-  - app.example.com
+  - app.vmXX.handson.cloudnativedays.jp
   gateways:
   - handson
   http:
@@ -37,7 +37,7 @@ spec:
     redirect:
       uri: /maintenance.html
       redirectCode: 302
-      authority: "app.example.com"
+      authority: "app.vmXX.handson.cloudnativedays.jp"
 ---
 apiVersion: networking.istio.io/v1beta1
 kind: DestinationRule

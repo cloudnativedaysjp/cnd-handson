@@ -213,10 +213,10 @@ Ingressリソースを利用するためには、`ingressClassName`フィール�
 kubectl apply -f manifest/ingress.yaml
 ```
 
-`app.cilium.example.com`の名前解決が可能な端末から、curlコマンドでHTTPステータスコード200が返ってくることを確認します。
+`app.cilium.vmXX.handson.cloudnativedays.jp`の名前解決が可能な端末から、curlコマンドでHTTPステータスコード200が返ってくることを確認します。
 
 ```shell
-curl -I app.cilium.example.com:8080
+curl -I app.cilium.vmXX.handson.cloudnativedays.jp:8080
 ```
 
 下記のような応答が返ってきます。

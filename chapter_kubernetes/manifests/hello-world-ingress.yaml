@@ -5,7 +5,7 @@ metadata:
 spec:
   ingressClassName: nginx
   rules:
-  - host: hello-world.example.com
+  - host: hello-world.vmXX.handson.cloudnativedays.jp
     http:
       paths:
       - pathType: Prefix

@@ -193,7 +193,7 @@ kill %1
 ```
 
 ### メッシュの可視化
-Kialiを用いてIstioサービスメッシュ内のトラフィックを見てみましょう。Kialiはすでにインストールされており、外部からアクセス出来るようになっています。ブラウザから<http://kiali-ambient.example.com:28080>にアクセスをしてKialiダッシュボードが表示されることを確認してください。
+Kialiを用いてIstioサービスメッシュ内のトラフィックを見てみましょう。Kialiはすでにインストールされており、外部からアクセス出来るようになっています。ブラウザから<http://kiali-ambient.vmXX.handson.cloudnativedays.jp:28080>にアクセスをしてKialiダッシュボードが表示されることを確認してください。
 
 ![image](./image/kiali-overview.png)
 
@@ -590,7 +590,7 @@ while :; do kubectl exec curl -- curl -s -o /dev/null handson:8080 -w '%{http_co
 .
 ```
 
-Kiali dashboardからも確認してみましょう。リクエストを流した状態でブラウザから<http://kiali-ambient.example.com:28080>にアクセスをしてください。`curl` podから`handson-blue`ワークロードにアクセス出来ていることが確認できます(緑色の矢印はHTTP通信を表しています)。グラフが表示されない場合は、Kialiダッシュボード右上の青いRefreshボタンを押して状態を更新してください。
+Kiali dashboardからも確認してみましょう。リクエストを流した状態でブラウザから<http://kiali-ambient.vmXX.handson.cloudnativedays.jp:28080>にアクセスをしてください。`curl` podから`handson-blue`ワークロードにアクセス出来ていることが確認できます(緑色の矢印はHTTP通信を表しています)。グラフが表示されない場合は、Kialiダッシュボード右上の青いRefreshボタンを押して状態を更新してください。
 
 ![image](./image/kiali-L7-authz-autholizationpolicy-notapplied.png)
 
@@ -655,7 +655,7 @@ while :; do kubectl exec curl -- curl -X POST -s -o /dev/null -d '{}' -w '%{http
 .
 ```
 
-改めてKiali dashboardから確認してみましょう。ブラウザから<http://kiali-ambient.example.com:28080>にアクセスをしてください。しばらくすると、`curl` ワークロードからのPOSTリクエストは拒否されていることが確認できます(赤色の矢印は4XXのエラーを表しています)。グラフに変化が見られない場合は、Kialiダッシュボード右上の青い`Refresh`ボタンを押して状態を更新してください。
+改めてKiali dashboardから確認してみましょう。ブラウザから<http://kiali-ambient.vmXX.handson.cloudnativedays.jp:28080>にアクセスをしてください。しばらくすると、`curl` ワークロードからのPOSTリクエストは拒否されていることが確認できます(赤色の矢印は4XXのエラーを表しています)。グラフに変化が見られない場合は、Kialiダッシュボード右上の青い`Refresh`ボタンを押して状態を更新してください。
 
 ![image](./image/kiali-L7-authz-autholizationpolicy-applied.png)
 

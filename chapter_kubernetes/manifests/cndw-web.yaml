@@ -91,7 +91,7 @@ metadata:
 spec:
   ingressClassName: nginx
   rules:
-  - host: cndw-web.example.com
+  - host: cndw-web.vmXX.handson.cloudnativedays.jp
     http:
       paths:
       - pathType: Prefix
