@@ -489,50 +489,57 @@ NAME   READY   STATUS    RESTARTS   AGE
 curl   2/2     Running   0          26s
 ```
 
-メッシュ内に存在する、`curl` Podから、メッシュ外に存在する https://example.com/ にアクセスしてみましょう。
+メッシュ内に存在する、`curl` Podから、メッシュ外に存在する <https://cloudnativedays.jp> にアクセスしてみましょう。
 
 ```sh
-while :; do kubectl exec curl -n handson -- curl -s -o /dev/null -w '%{http_code}\t%{errormsg}\n' https://example.com/ ;sleep 1;done 2>/dev/null
+while :; do kubectl exec curl -n handson -- curl -s -o /dev/null -w '%{http_code}\t%{errormsg}\n' https://cloudnativedays.jp/ ;sleep 1;done 2>/dev/null
 ```
 
 下記のように表示されるはずです。HTTPS通信が確立できずエラーとなっています。
 
 ```sh
-000     OpenSSL SSL_connect: SSL_ERROR_SYSCALL in connection to example.com:443
-000     OpenSSL SSL_connect: SSL_ERROR_SYSCALL in connection to example.com:443
-000     OpenSSL SSL_connect: SSL_ERROR_SYSCALL in connection to example.com:443
+# 実行結果(curlのバージョンによって出力が異なる場合があります。)
+000     TLS connect error: error:00000000:lib(0)::reason(0)
+000     TLS connect error: error:00000000:lib(0)::reason(0)
+000     TLS connect error: error:00000000:lib(0)::reason(0)
+.
+.
+.
 ```
 
-それでは、example.comのHTTPS通信をService Entryとして定義しましょう。
+それでは、Service Entryを適用して、メッシュ外へ通信ができようにしましょう。
 
 ```sh
-kubectl apply -f networking/service-entry-example-com.yaml
+kubectl apply -f networking/service-entry.yaml
 ```
 
 作成されるリソースは下記のとおりです。
 
 ```sh
-kubectl get serviceentries -n handson -l content=example.com
+kubectl get serviceentries -n handson
 ```
 
 ```sh
-NAME                                                        HOSTS             LOCATION        RESOLUTION   AGE
-serviceentry.networking.istio.io/external-cloudnativedays   ["example.com"]   MESH_EXTERNAL   NONE         24s
+NAME                 HOSTS                    LOCATION        RESOLUTION   AGE
+cloudnativedays-jp   ["cloudnativedays.jp"]   MESH_EXTERNAL   NONE         22m
 ```
 
 実際にリクエストを流して、期待したトラフィックが流れているかKialiで確認してみましょう。下記コマンドを実行してください。
 
 ```sh
-while :; do kubectl exec curl -n handson -- curl -s -o /dev/null -w '%{http_code}\t%{time_total}\t%{errormsg}\n' https://example.com/ ;sleep 1;done 2>/dev/null
+while :; do kubectl exec curl -n handson -- curl -s -o /dev/null -w '%{http_code}\t%{errormsg}\n' https://cloudnativedays.jp/ ;sleep 1;done 2>/dev/null
 ```
 
 コンソールには下記のように表示されるはずです。
 
 ```sh
-200     0.418102
-200     0.373627
-200     0.216627
-200     0.632720
+# 実行結果(curlのバージョンによって出力が異なる場合があります。)
+200
+200
+200
+.
+.
+.
 ```
 
 Kiali dashboardからも確認してみましょう。リクエストを流した状態でブラウザから<http://kiali.example.com>にアクセスをしてください。`curl` のワークロードから `example.com` Serviceにアクセスできていることが確認できます。グラフが表示されない場合は、Kialiダッシュボード右上の青い`Refresh`ボタンを押して状態を更新してください。
@@ -546,6 +553,7 @@ kubectl delete -f ../chapter_cluster-create/manifest/app/deployment.yaml -n hand
 kubectl delete -f networking/simple-routing.yaml
 kubectl delete -f networking/gateway.yaml
 kubectl delete -f app/curl.yaml
+kubectl delete -f networking/service-entry.yaml
 ```
 
 ## 認可制御
