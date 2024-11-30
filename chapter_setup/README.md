@@ -30,9 +30,9 @@ for PORT in 22 80 443 8080 8443 18080 18443 28080 28443; do
   --port ${PORT}
 done
 
-# インスタンスの起動（Ubuntu 22.04 image）
+# インスタンスの起動（Ubuntu 22.04 image update 20240701）
 aws ec2 run-instances \
-  --image-id ami-09a81b370b76de6a2 \
+  --image-id ami-0162fe8bfebb6ea16 \
   --count 1 \
   --instance-type t2.xlarge \
   --block-device-mappings '[{"DeviceName":"/dev/sda1","Ebs":{"VolumeSize":50}}]' \
@@ -55,7 +55,7 @@ aws ec2 describe-instances \
 
 ```
 sudo apt-get update
-sudo apt-get install -y curl vim git unzip gnupg lsb-release ca-certificates dstat
+sudo apt-get install -y curl vim git unzip gnupg lsb-release ca-certificates dstat jq
 curl -fsSL https://download.docker.com/linux/ubuntu/gpg | sudo gpg --dearmor -o /usr/share/keyrings/docker-archive-keyring.gpg
 echo "deb [arch=$(dpkg --print-architecture) signed-by=/usr/share/keyrings/docker-archive-keyring.gpg] https://download.docker.com/linux/ubuntu $(lsb_release -cs) stable" | sudo tee /etc/apt/sources.list.d/docker.list > /dev/null
 sudo apt-get update
@@ -79,6 +79,7 @@ YOUR_VM_IP_ADDRESS    rollout.example.com
 YOUR_VM_IP_ADDRESS    blue.example.com
 YOUR_VM_IP_ADDRESS    green.example.com
 YOUR_VM_IP_ADDRESS    app.example.com
+YOUR_VM_IP_ADDRESS    cndw-web.example.com
 YOUR_VM_IP_ADDRESS    prometheus.example.com
 YOUR_VM_IP_ADDRESS    grafana.example.com
 YOUR_VM_IP_ADDRESS    jaeger.example.com

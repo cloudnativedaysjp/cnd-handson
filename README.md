@@ -1,9 +1,7 @@
-# Co-located Hands-on Event by CNDS2024 Committee
-『一日で学ぶクラウドネイティブ技術実践ハンズオン』by CloudNative Days Summer 2024 実行委員会のドキュメントです。
+# Co-located Hands-on Event by CNDW2024 Committee
+CloudNative Days Winter 2024 実行委員会による『一日で学ぶクラウドネイティブ技術実践ハンズオン』のドキュメントです。
 
-このハンズオンでは、Docker・Kubernetes・Prometheus・Grafana・OpenTelemetry・Argo CD・Argo Rollouts・Istio・Cilium・Hubble Loki Tempo Pyroscopeといったよく利用されるクラウドネイティブな OSS について触れることができるハンズオンです。
-これらの OSS についての第一歩を学び、これから先の学習のきっかけにしてください。
-
+Docker、Kubernetes、Prometheus、Grafanaなど、クラウドネイティブな環境でよく利用されるOSSを対象としたハンズオンです。このハンズオンを通して、これらのOSSについての基本的な使い方を学び、今後の学習のきっかけにしてください。
 
 ## Chapter
 準備用chapter＋全15chapterから構成されています。
@@ -18,7 +16,7 @@
 - [chapter_istio](./chapter_istio/)
 - [chapter_cilium](./chapter_cilium/)
 - [chapter_argo-rollouts](./chapter_argo-rollouts/)
-- [chapter_istio-ambientmesh](./chapter_istio-ambientmesh/)
+- [chapter_istio-ambient-mode](./chapter_istio-ambient-mode/)
 - [chapter_hubble](./chapter_hubble/)
 - [chapter_loki](./chapter_loki/)
 - [chapter_tempo](./chapter_tempo/)
@@ -41,7 +39,7 @@ flowchart TD
     istio[chapter_istio]
     cilium[chapter_cilium]
     argorollouts[chapter_argo-rollouts]
-    istioambient[chapter_istio-ambientmesh]
+    istioambient[chapter_istio-ambient-mode]
     hubble[chapter_hubble]
     loki[chapter_loki]
     tempo[chapter_tempo]

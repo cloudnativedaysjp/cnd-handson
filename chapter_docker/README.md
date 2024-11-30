@@ -105,7 +105,7 @@ Docker version 26.1.4, build 5650f9b
 
 
 ```Bash
-docker login
+docker login -u <ユーザ名>
 ```
 
 
