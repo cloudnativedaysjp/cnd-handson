@@ -66,7 +66,7 @@ HelmはKubernetes用のパッケージマネージャーであり、Helmfileを�
 configオプションで`kind-config.yaml`を指定してKubernetesクラスターを作成します。
 
 ```shell
-sudo kind create cluster --config=kind-config.yaml
+kind create cluster --config=kind-config.yaml
 ```
 
 コマンドを実行すると以下のような情報が出力されます。
@@ -98,30 +98,25 @@ Have a nice day! 👋
 >
 > # ubuntu ユーザー（一般ユーザー）で実行する場合
 > mkdir ~/.kube
-> sudo kind get kubeconfig > ~/.kube/config
+> kind get kubeconfig > ~/.kube/config
 > ```
 
 最後に、下記のコンポーネントをデプロイします。
 
 - [Gateway API](https://gateway-api.sigs.k8s.io/)
 - [Cilium](https://cilium.io/)
-- [Metallb](https://metallb.universe.tf/)
 - [Ingress NGINX Controller](https://github.com/kubernetes/ingress-nginx)
 
 Gateway APIはKubernetesクラスター外からKubernetesクラスター内のServiceへのトラフィックを管理するためのものです。
 Ciliumについては[chapter_cilium](../chapter_cilium/)で説明するのでそちらを参照してください。
-MetallbはKind上のクラスターでServiceリソースのType:LoadBalancerを利用するためにインストールします。
 Ingress NGINX Controllerはインターネットからkind上のServiceリソースへ通信をルーティングするためにインストールします。
 各コンポーネントの詳細については上記リンクをご参照ください。
 
 まず、最初にGateway APIのCRDをデプロイします。
 
 ```shell
-kubectl apply -f https://raw.githubusercontent.com/kubernetes-sigs/gateway-api/v1.0.0/config/crd/standard/gateway.networking.k8s.io_gatewayclasses.yaml
-kubectl apply -f https://raw.githubusercontent.com/kubernetes-sigs/gateway-api/v1.0.0/config/crd/standard/gateway.networking.k8s.io_gateways.yaml
-kubectl apply -f https://raw.githubusercontent.com/kubernetes-sigs/gateway-api/v1.0.0/config/crd/standard/gateway.networking.k8s.io_httproutes.yaml
-kubectl apply -f https://raw.githubusercontent.com/kubernetes-sigs/gateway-api/v1.0.0/config/crd/standard/gateway.networking.k8s.io_referencegrants.yaml
-kubectl apply -f https://raw.githubusercontent.com/kubernetes-sigs/gateway-api/v1.0.0/config/crd/experimental/gateway.networking.k8s.io_tlsroutes.yaml
+kubectl apply -f https://github.com/kubernetes-sigs/gateway-api/releases/download/v1.1.0/standard-install.yaml
+kubectl apply -f https://github.com/kubernetes-sigs/gateway-api/releases/download/v1.1.0/experimental-install.yaml
 ```
 
 Gateway API以外のコンポーネントはhelmfileコマンドを利用することでデプロイできます。
@@ -134,18 +129,6 @@ helmfile sync -f helm/helmfile.yaml
 >
 > Kubernetesのイングレスコントローラーとして、Ingress NGINX Controllerをインストールしていますが、Cilium自体もKubernetes Ingressリソースをサポートしています。
 > こちらに関しては、[chapter_cilium](../chapter_cilium/)にて説明します。
-
-Metallbに関しては、追加で`IPAddressPool`と`L2Advertisement`をデプロイする必要があります。
-
-```shell
-kubectl apply -f manifest/metallb.yaml
-```
-
-> [!WARNING]
->
-> manifest/metallb.yamlでデプロイしたIPAddressPoolリソースの`spec.addresses`に設定する値は、docker kindネットワークのアドレス帯から選択する必要があります。
-> 今回は`manifest/metallb.yaml`既に設定済みのため意識する必要はありせんが、別環境でMetallbを設定するときには注意してください。
-> 詳細は[Loadbalancer](https://kind.sigs.k8s.io/docs/user/loadbalancer/)を参照してください。
 
 ## kubectlコマンドのシェル補完の有効化
 

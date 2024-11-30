@@ -1,6 +1,6 @@
 # Build
 # 
-FROM golang:1.19.3 AS stage
+FROM golang:latest AS stage
 
 WORKDIR /app
 COPY ./app /app
@@ -11,7 +11,7 @@ RUN go mod init server \
 # 
 # Deploy
 # 
-FROM gcr.io/distroless/base-debian11
+FROM gcr.io/distroless/base-debian12
 
 WORKDIR /app
 COPY --from=stage /app/server /app/server

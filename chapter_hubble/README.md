@@ -11,7 +11,7 @@ HubbleはCiliumのために開発されたネットワークとセキュリテ�
 
 ![](image/ch05_hubble-components_01.png)
 
-（出典：https://isovalent.com/blog/post/hubble-series-re-introducing-hubble/）
+（ 出典：https://isovalent.com/blog/post/hubble-series-re-introducing-hubble/ ）
 
 - Hubble Server
   - 各NodeのCilium Agentに組み込まれており、Prometheusメトリクスやネットワークおよびアプリケーションプロトコルレベルでのフロー情報の可視性を提供します
@@ -35,25 +35,28 @@ cilium status
     /¯¯\
  /¯¯\__/¯¯\    Cilium:             OK
  \__/¯¯\__/    Operator:           OK
- /¯¯\__/¯¯\    Envoy DaemonSet:    disabled (using embedded mode)
+ /¯¯\__/¯¯\    Envoy DaemonSet:    OK
  \__/¯¯\__/    Hubble Relay:       OK
     \__/       ClusterMesh:        disabled
 
+DaemonSet              cilium-envoy       Desired: 3, Ready: 3/3, Available: 3/3
+Deployment             hubble-ui          Desired: 1, Ready: 1/1, Available: 1/1
 Deployment             hubble-relay       Desired: 1, Ready: 1/1, Available: 1/1
 Deployment             cilium-operator    Desired: 2, Ready: 2/2, Available: 2/2
 DaemonSet              cilium             Desired: 3, Ready: 3/3, Available: 3/3
-Deployment             hubble-ui          Desired: 1, Ready: 1/1, Available: 1/1
-Containers:            cilium-operator    Running: 2
+Containers:            cilium             Running: 3
+                       cilium-envoy       Running: 3
                        hubble-ui          Running: 1
+                       cilium-operator    Running: 2
                        hubble-relay       Running: 1
-                       cilium             Running: 3
-Cluster Pods:          12/12 managed by Cilium
-Helm chart version:    1.14.2
-Image versions         cilium             quay.io/cilium/cilium:v1.14.2@sha256:6263f3a3d5d63b267b538298dbeb5ae87da3efacf09a2c620446c873ba807d35: 3
-                       cilium-operator    quay.io/cilium/operator-generic:v1.14.2@sha256:52f70250dea22e506959439a7c4ea31b10fe8375db62f5c27ab746e3a2af866d: 2
-                       hubble-ui          quay.io/cilium/hubble-ui-backend:v0.12.0@sha256:8a79a1aad4fc9c2aa2b3e4379af0af872a89fcec9d99e117188190671c66fc2e: 1
-                       hubble-ui          quay.io/cilium/hubble-ui:v0.12.0@sha256:1c876cfa1d5e35bc91e1025c9314f922041592a88b03313c22c1f97a5d2ba88f: 1
-                       hubble-relay       quay.io/cilium/hubble-relay:v1.14.2@sha256:a89030b31f333e8fb1c10d2473250399a1a537c27d022cd8becc1a65d1bef1d6: 1
+Cluster Pods:          8/8 managed by Cilium
+Helm chart version:    1.16.1
+Image versions         hubble-relay       quay.io/cilium/hubble-relay:v1.16.1@sha256:2e1b4c739a676ae187d4c2bfc45c3e865bda2567cc0320a90cb666657fcfcc35: 1
+                       cilium             quay.io/cilium/cilium:v1.16.1@sha256:0b4a3ab41a4760d86b7fc945b8783747ba27f29dac30dd434d94f2c9e3679f39: 3
+                       cilium-envoy       quay.io/cilium/cilium-envoy:v1.29.7-39a2a56bbd5b3a591f69dbca51d3e30ef97e0e51@sha256:bd5ff8c66716080028f414ec1cb4f7dc66f40d2fb5a009fff187f4a9b90b566b: 3
+                       hubble-ui          quay.io/cilium/hubble-ui:v0.13.1@sha256:e2e9313eb7caf64b0061d9da0efbdad59c6c461f6ca1752768942bfeda0796c6: 1
+                       hubble-ui          quay.io/cilium/hubble-ui-backend:v0.13.1@sha256:0e0eed917653441fded4e7cdb096b7be6a3bddded5a2dd10812a27b1fc6ed95b: 1
+                       cilium-operator    quay.io/cilium/operator-generic:v1.16.1@sha256:3bc7e7a43bc4a4d8989cb7936c5d96675dd2d02c306adf925ce0a7c35aa27dc4: 2
 ```
 
 設定自体はすでに[chapter Cluster Create](./../chapter_cluster-create)で行っているため、Hubble-uiとHubble-relayが動作しています。
@@ -83,16 +86,42 @@ Hubble CLIを利用してHubble Relayにアクセスします。
 ```
 
 次に、Hubble RelayへのReachabilityを確保します。
-別のターミナルを開き、下記コマンドを実行することでReachabilityを確保できます。
+下記コマンドを実行することでReachabilityを確保できます。
 
 ```shell
-cilium hubble port-forward
+cilium hubble port-forward &
 ```
 
 > [!NOTE]
 > 
-> cilium hubble port-forwardコマンドを実行しても何も表示されません。
-> 別ターミナルを開き、以降を進めてください。
+> &をつけることによって、cilium hubble port-forwardコマンドをバックグラウンド実行しています。
+> 本ページのリソース削除手順にも記載の通り、終了時は必ずcilium hubble port-forwardコマンドを忘れずにkillしてください。
+
+下記コマンドでport-forwardがバックグラウンド実行されていることを確認します。
+
+```shell
+ps -eo pid,tty,cmd | grep "cilium hubble port-forward"
+```
+```shell
+ 9814 pts/0    cilium hubble port-forward
+11775 pts/0    grep --color=auto cilium hubble port-forward
+```
+
+> [!NOTE]
+>   
+> ciliumコマンドではなく、下記のようなkubectlコマンドを実行することでもReachabilityを確保可能です。
+> ```shell
+> kubectl port-forward -n kube-system deploy/hubble-relay 4245:4245 &
+> ```
+> 
+> port-forwardコマンドがバックグラウンドを実行されているかどうかは、下記コマンドで確認できます。
+> ```
+> ps -eo pid,tty,cmd | grep "kubectl port-forward -n kube-system deploy/hubble-relay"
+> ```
+> ```
+> 12294 pts/0    kubectl port-forward -n kube-system deploy/hubble-relay 4245:4245
+> 12427 pts/0    grep --color=auto kubectl port-forward -n kube-system deploy/hubble-relay
+> ```
 
 下記コマンドでStatusを確認し、HealthcheckがOKとなっていることを確認します。
 
@@ -105,14 +134,6 @@ Current/Max Flows: 7,479/12,285 (60.88%)
 Flows/s: 33.34
 Connected Nodes: 3/3
 ```
-
-> [!NOTE]
->   
-> ciliumコマンドではなく、下記のようなkubectlコマンドを実行することでもReachabilityを確保可能です。
-> ```shell
-> kubectl port-forward -n kube-system deploy/hubble-relay 4245 4245
-> ```
-
 
 Hubble Relay経由で取得したHubble Serverのフロー情報は、下記コマンドで出力できます。
 
@@ -220,12 +241,29 @@ kubectl exec -n handson curl -- /bin/sh -c "curl -s -o /dev/null https://event.c
 
 ![](./image/ch5-hubble-observe-04.png)
 
-また、上記の情報はHubble-UIからも確認可能です。
+また、上記の情報はHubble-UIにてhandsonのnamespaceからも確認可能です。
 
-![](./image/ch5-hubble-curl-01.png)
+![](./image/ch05-hubble-curl-01.png)
 
 
-確認が終わったら本章でデプロイしたリソースを削除しておきます。
+確認が終わったら、バックグラウンドで動かしたプロセスと本章でデプロイしたリソースを削除しておきます。
+まず、バックグラウンドで動かしたプロセスを再度確認します。
+
+```shell
+ps -eo pid,tty,cmd | grep "cilium hubble port-forward"
+```
+```shell
+ 9814 pts/0    cilium hubble port-forward
+11775 pts/0    grep --color=auto cilium hubble port-forward
+```
+
+この例では、該当プロセス番号が9814だったため、プロセスを終了するkillコマンドで9814を指定します。
+
+```shell
+kill 9814
+```
+
+その後、本章でデプロイしたリソースを削除します。
 
 ```shell
 kubectl delete -Rf manifest

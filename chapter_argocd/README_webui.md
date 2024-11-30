@@ -117,7 +117,7 @@ kubectl -n argo-cd get secret argocd-initial-admin-secret -o jsonpath="{.data.pa
 
 同期させるGitのレポジトリを登録します。
 
-Settings - > Repositories と進み CONEECT REPOをクリックします
+Settings - > Repositories と進み CONEECT REPOをクリックします。
 ![CONEECT REPO](./image/setup/add-repo-setting.png)
 上の画面上で各項目を次のように設定
 ```
@@ -280,7 +280,10 @@ Applications画面の場合は、一番右下の端に、
 kubectl delete namespace argocd-demo argocd-kustomize-dev argocd-kustomize-prd argocd-helm
 ```
 
-最後に、argocd自体も削除します
+最後に、argocd自体も削除します。
+
+*Argo-RolloutsのChapterに進む場合は削除しないでください。* 
+
 ```
 kubectl delete namespace argo-cd
 ```

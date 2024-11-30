@@ -82,8 +82,8 @@ kubectl exec -n kube-system ds/cilium -c cilium-agent -- cilium version
 下記のようにバージョンが確認できます。
 
 ```shell
-Client: 1.15.4 9b3f9a8c 2024-04-11T17:25:42-04:00 go version go1.21.9 linux/amd64
-Daemon: 1.15.4 9b3f9a8c 2024-04-11T17:25:42-04:00 go version go1.21.9 linux/amd64
+Client: 1.16.1 68579055 2024-08-13T13:29:59+00:00 go version go1.22.5 linux/amd64
+Daemon: 1.16.1 68579055 2024-08-13T13:29:59+00:00 go version go1.22.5 linux/amd64
 ```
 
 この章ではCiliumの機能として下記について説明します。
@@ -105,7 +105,7 @@ ServiceMeshに関しては、まず初めに、CiliumのIngressClassを設定し
 - [Cilium: L7-Aware Traffic Management/Examples](https://docs.cilium.io/en/stable/network/servicemesh/l7-traffic-management/#examples)
 
 > [!NOTE]
-> 
+>
 > Observabilityについては[chapter_hubble](../chapter_hubble/)にて説明します。
 
 ## Networking
@@ -139,7 +139,7 @@ kubectl run curl-deny  -n handson --image=curlimages/curl --labels="app=curl-den
 ![](image/ch4-1.png)
 
 
-現状はNetwork Policyの設定を行っていないので、`curl-allow`/`curl-deny`の両方から`/`と`/color`にアクセスできます。
+現状は何も設定を行っていないので、`curl-allow`/`curl-deny`の両方から`/`と`/color`にアクセスできます。
 また、HTTPステータスコードはすべて200が返ってきます。
 
 ```shell
@@ -166,16 +166,17 @@ curl-deny  -> /color: 200
 kubectl apply -f manifest/cnp.yaml
 ```
 
-実際にアクセスし確認すると、想定通りの動作になっていることが分かります。
+`CiliumNetworkPolicy`リソースをデプロイした後に先ほどと同じコマンドを打ってみてください。
 
-```sh
+```shell
 kubectl exec -n handson curl-allow -- /bin/sh -c "echo -n 'curl-allow -> /     : ';curl -s -o /dev/null handson:8080 -w '%{http_code}\n'"
 kubectl exec -n handson curl-allow -- /bin/sh -c "echo -n 'curl-allow -> /color: ';curl -s -o /dev/null handson:8080/color -w '%{http_code}\n'"
 kubectl exec -n handson curl-deny  -- /bin/sh -c "echo -n 'curl-deny  -> /     : ';curl -s -o /dev/null handson:8080 -w '%{http_code}\n'"
 kubectl exec -n handson curl-deny  -- /bin/sh -c "echo -n 'curl-deny  -> /color: ';curl -s -o /dev/null handson:8080/color -w '%{http_code}\n'"
 ```
 
-期待通り、`/`にアクセスしたcurl-denyのみHTTPステータスコード403が返ってくることを確認します。
+すると、curl-denyから`/`へのアクセスがHTTPステータスコード403でできなくなっています。
+このように、Ciliumでは、`CiliumNetworkPolicy`を利用することで、L7のトラフィック制御が可能です。
 
 ```shell
 curl-allow -> /     : 200
@@ -185,7 +186,7 @@ curl-deny  -> /color: 200
 ```
 
 > [!NOTE]
-> 
+>
 > L3/L4のポリシーとL7のポリシーでルール違反の際の挙動が変わります。
 > L3/L4のポリシーに違反した場合は、パケットがDropされますが、L7のポリシー違反の場合は、HTTP 403 Access Deniedが返されます。
 > 上記の例ではパスベースの制御が行われており、L7ポリシーのルール違反になるため、HTTP 403 Access Deniedとなります。
@@ -200,7 +201,7 @@ kubectl delete -f manifest/cnp.yaml
 
 ### Ingress
 
-CiliumはIngressリソースのサポートをしており、第1章でIngress NGINX Controllerをデプロイしましたが、Ingress NGINX Controllerを使わずともCilium単体でIngressリソースを利用できます。
+CiliumはIngressリソースをサポートしており、第1章でIngress NGINX Controllerをデプロイしましたが、Ingress NGINX Controllerを使わずとも、Cilium単体でIngressリソースを利用できます。
 Ingressリソースを利用するためには、CiliumのHelm Chartで`ingressController.enabled: true`を指定する必要があります。
 この設定はすでに[chapter_cluster-create](../chapter_cluster-create/)で行っており、現時点でIngressリソースは利用できる状態になっています。
 詳細については[Kubernetes Ingress Support](https://docs.cilium.io/en/stable/network/servicemesh/ingress/)を参照ください。
@@ -233,7 +234,7 @@ server: envoy
 
 ### Gateway API
 
-CiliumはGatweay APIをサポートしており、Gatway APIを利用することで、トラフィックの分割、ヘッダー変更、URLの書き換えなどのより高度なルーティング機能を利用することが可能です。
+CiliumはGateway APIをサポートしており、Gateway APIを利用することで、トラフィックの分割、ヘッダー変更、URLの書き換えなどのより高度なルーティング機能を利用することが可能です。
 この節ではGateway APIを利用したトラフックの分割を行います。
 Gateway APIの詳細は[Kubernetes Gateway API](https://gateway-api.sigs.k8s.io/)を参照してください。
 
@@ -263,30 +264,70 @@ kubectl get gateway,httproute,svc -n handson
 
 ```shell
 NAME                                         CLASS    ADDRESS        PROGRAMMED   AGE
-gateway.gateway.networking.k8s.io/color-gw   cilium   172.24.0.200   True         52s
+gateway.gateway.networking.k8s.io/color-gw   cilium                  True         52s
 
 NAME                                                HOSTNAMES   AGE
 httproute.gateway.networking.k8s.io/color-route-1               52s
 
 NAME                              TYPE           CLUSTER-IP      EXTERNAL-IP    PORT(S)        AGE
-service/cilium-gateway-color-gw   LoadBalancer   10.96.50.28     172.24.0.200   80:32720/TCP   52s
+service/cilium-gateway-color-gw   LoadBalancer   10.96.50.28     <pending>   80:32720/TCP   52s
 service/handson                   ClusterIP      10.96.131.226   <none>         8080/TCP       24m
 service/handson-blue              ClusterIP      10.96.164.242   <none>         8080/TCP       113s
 service/handson-yellow            ClusterIP      10.96.189.95    <none>         8080/TCP       113s
 ```
 
-作成されたServiceリソースのIPアドレスを取得します。
+ここで、`Type:Loadbalancer`のEXTERNAL-IPが`<pending>`表示になっていることが分かります。
+Serviceリソースの`Type:Loadbalancer`とは、awsやGoogle Cloudなどのクラウドプロバイダーで利用できる外部のロードバランサーを利用するためのリソースになります。
+そのため、別途ロードバランサーが必要になるのですが、今回のハンズオン環境では用意していないので、`<pending>`表示のまま固まっています。
+
+クラウドプロバイダーで利用できる外部のロードバランサーと説明しましたが、オンプレミスやローカルの開発環境でも`Type:Loadbalancer`を利用することは可能です。
+やり方はいろいろありますが、有名なものとしては[MetalLB](https://metallb.universe.tf/)を利用する方法があげられます。
+今回はせっかくCiliumについて学んでいるので、Cilium v1.14からサポートが始まった[L2 Announcement](https://docs.cilium.io/en/latest/network/l2-announcements/)を利用してみましょう。
+
+> [!NOTE]
+>
+> L2 Announcementの詳細についてはここで解説しませんが、より深く知りたい方は
+> [公式ドキュメント: L2 Announcement](https://docs.cilium.io/en/latest/network/l2-announcements/)や[Cilium L2 Announcement を使ってみる](https://sreake.com/blog/learn-about-cilium-l2-announcement)を参照してください。
+
+> [!WARNING]
+>
+> ハンズオン作成時点で、L2 Announcementはβ機能なので本番利用には注意が必要です。
+
+L2 Announcementを利用するためには、現行の設定に加えて、追加で`CiliumL2AnnouncementPolicy`と`CiliumLoadBalancerIPPool`を設定する必要があります。
+下記コマンドでリソースを適用しましょう。
+
+```shell
+kubectl apply -f manifest/l2announcement.yaml
+```
+
+再度Serviceリソースの`Type:Loadbalancer`を確認すると、EXTERNAL-IPが振られていることが分かります。
+docker network kindのIP帯を設定しているため、dockerを起動しているホストからのみアクセスすることが可能です。
+
+```shell
+kubectl get svc -n handson
+```
+
+```shell
+NAME                      TYPE           CLUSTER-IP      EXTERNAL-IP    PORT(S)        AGE
+cilium-gateway-color-gw   LoadBalancer   10.96.36.91     172.18.0.200   80:30183/TCP   12m
+handson                   ClusterIP      10.96.238.128   <none>         8080/TCP       24m
+handson-blue              ClusterIP      10.96.244.167   <none>         8080/TCP       23m
+handson-yellow            ClusterIP      10.96.80.215    <none>         8080/TCP       23m
+```
+
+> [!WARNING]
+>
+> manifest/l2announcement.yamlでデプロイした`CiliumLoadBalancerIPPool`リソースの`spec.blocks`に設定する値は、docker kindネットワークのアドレス帯から選択する必要があります。
+> 今回は既に設定済みのため意識する必要はありせんが、別環境でL2 Announcementを利用するときには注意してください。
+
+
+Serviceリソースの`Type:Loadbalancer`のIPアドレスを取得します。
 
 ```shell
 LB_IP=$(kubectl get -n handson svc -l io.cilium.gateway/owning-gateway=color-gw -o=jsonpath='{.items[0].status.loadBalancer.ingress[0].ip}')
 ```
 
-> [!WARNING]
-> 
-> LB_IPは第1章で導入したIPAddressPoolのspec.addressesのアドレスになります。
-> 今回のハンズオンでは、docker network kindのIP帯を設定しているため、dockerを起動しているホストからのみアクセスすることが可能です。
-
-LBのIPアドレス宛に10回ほどアクセスし、おおよそ9:1に分散していることを確認します。
+取得したIPアドレス宛に10回ほどアクセスし、おおよそ9:1に分散していることを確認します。
 
 ```shell
 for in in {1..10}; do \
@@ -303,7 +344,7 @@ kubectl delete -f manifest/gateway_api.yaml
 ```
 
 > [!NOTE]
-> 
+>
 > 今回のようなルーティング機能はCilium Service Meshの機能を利用しても提供することができます。
 > 次節でCilium Service Meshを利用したトラフィック分割のデモを説明します。
 
@@ -324,25 +365,28 @@ Envoy DaemonSetがdisabledであれば、Cilium AgentにEnvoyが埋め込まれ�
     /¯¯\
  /¯¯\__/¯¯\    Cilium:             OK
  \__/¯¯\__/    Operator:           OK
- /¯¯\__/¯¯\    Envoy DaemonSet:    disabled (using embedded mode)
+ /¯¯\__/¯¯\    Envoy DaemonSet:    OK
  \__/¯¯\__/    Hubble Relay:       OK
     \__/       ClusterMesh:        disabled
 
-Deployment             hubble-relay       Desired: 1, Ready: 1/1, Available: 1/1
 Deployment             cilium-operator    Desired: 2, Ready: 2/2, Available: 2/2
-DaemonSet              cilium             Desired: 3, Ready: 3/3, Available: 3/3
+DaemonSet              cilium-envoy       Desired: 3, Ready: 3/3, Available: 3/3
+Deployment             hubble-relay       Desired: 1, Ready: 1/1, Available: 1/1
 Deployment             hubble-ui          Desired: 1, Ready: 1/1, Available: 1/1
+DaemonSet              cilium             Desired: 3, Ready: 3/3, Available: 3/3
 Containers:            cilium-operator    Running: 2
+                       cilium-envoy       Running: 3
                        hubble-ui          Running: 1
                        hubble-relay       Running: 1
                        cilium             Running: 3
-Cluster Pods:          12/12 managed by Cilium
-Helm chart version:    1.14.2
-Image versions         cilium             quay.io/cilium/cilium:v1.14.2@sha256:6263f3a3d5d63b267b538298dbeb5ae87da3efacf09a2c620446c873ba807d35: 3
-                       cilium-operator    quay.io/cilium/operator-generic:v1.14.2@sha256:52f70250dea22e506959439a7c4ea31b10fe8375db62f5c27ab746e3a2af866d: 2
-                       hubble-ui          quay.io/cilium/hubble-ui-backend:v0.12.0@sha256:8a79a1aad4fc9c2aa2b3e4379af0af872a89fcec9d99e117188190671c66fc2e: 1
-                       hubble-ui          quay.io/cilium/hubble-ui:v0.12.0@sha256:1c876cfa1d5e35bc91e1025c9314f922041592a88b03313c22c1f97a5d2ba88f: 1
-                       hubble-relay       quay.io/cilium/hubble-relay:v1.14.2@sha256:a89030b31f333e8fb1c10d2473250399a1a537c27d022cd8becc1a65d1bef1d6: 1
+Cluster Pods:          21/21 managed by Cilium
+Helm chart version:    
+Image versions         hubble-relay       quay.io/cilium/hubble-relay:v1.16.1@sha256:2e1b4c739a676ae187d4c2bfc45c3e865bda2567cc0320a90cb666657fcfcc35: 1
+                       cilium             quay.io/cilium/cilium:v1.16.1@sha256:0b4a3ab41a4760d86b7fc945b8783747ba27f29dac30dd434d94f2c9e3679f39: 3
+                       cilium-operator    quay.io/cilium/operator-generic:v1.16.1@sha256:3bc7e7a43bc4a4d8989cb7936c5d96675dd2d02c306adf925ce0a7c35aa27dc4: 2
+                       cilium-envoy       quay.io/cilium/cilium-envoy:v1.29.7-39a2a56bbd5b3a591f69dbca51d3e30ef97e0e51@sha256:bd5ff8c66716080028f414ec1cb4f7dc66f40d2fb5a009fff187f4a9b90b566b: 3
+                       hubble-ui          quay.io/cilium/hubble-ui:v0.13.1@sha256:e2e9313eb7caf64b0061d9da0efbdad59c6c461f6ca1752768942bfeda0796c6: 1
+                       hubble-ui          quay.io/cilium/hubble-ui-backend:v0.13.1@sha256:0e0eed917653441fded4e7cdb096b7be6a3bddded5a2dd10812a27b1fc6ed95b: 1
 ```
 
 Envoyの設定は、CRDとして定義された`CiliumEnvoyConfig`と`CiliumCllusterwideEnvoyConfig`を利用することで、L7トラフィック制御が可能です。

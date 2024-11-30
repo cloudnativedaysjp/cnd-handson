@@ -1,0 +1,13 @@
+global:
+  imagePullPolicy: IfNotPresent
+  logAsJson: true
+cni:
+  resources:
+    requests:
+      cpu: 200m
+      memory: 256Mi
+    limits:
+      cpu: 200m
+    memory: 256Mi
+  ambient:
+    enabled: true

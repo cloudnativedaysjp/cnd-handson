@@ -1,0 +1,66 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  annotations:
+    deployment.kubernetes.io/revision: "1"
+  labels:
+    app: 
+  name: rollout
+spec:
+  replicas: 4
+  selector:
+    matchLabels:
+      app: rollout
+  minReadySeconds: 10
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxSurge: 25%
+      maxUnavailable: 0
+  template:
+    spec:
+    metadata:
+      labels:
+        app: rollout
+    spec:
+      containers:
+      - image: ryuichitakei/blue-app:1.1
+        name: rollout-app
+        ports:
+        - containerPort: 80
+---
+apiVersion: v1
+kind: Service
+metadata:
+  creationTimestamp: null
+  labels:
+    app: rollout
+  name: rollout-service
+spec:
+  ports:
+  - port: 80
+    protocol: TCP
+    targetPort: 80
+  selector:
+    app: rollout
+  type: ClusterIP
+status:
+  loadBalancer: {}
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: rollout-ingress
+spec:
+  ingressClassName: nginx
+  rules:
+  - host: rollout.example.com
+    http:
+      paths:
+      - pathType: Prefix
+        path: "/"
+        backend:
+          service:
+            name: rollout-service
+            port:
+              number: 80

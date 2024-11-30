@@ -5,9 +5,16 @@
 ## Prometheusについて
 
 Prometheusはモニタリング/アラートに関する基盤として利用することができるOSSです(元はSoundCloud)。
-2016年にCloud Native Computing Foundation Projectに加わり、現在はGraduatedとなっています。
+監視対象のメトリクス情報を時系列データとして収集し、保存します。
+メトリクス情報は、ラベルと呼ばれるキーと値のペアで指定された対象から記録された情報をタイムスタンプと共に保存されます。
+そして、Prometheusは、2016年にCloud Native Computing Foundation Projectに加わり、現在はGraduatedとなっています。
 
 メトリクス収集についてはプル型アーキテクチャ(PushGatewayという仕組みによってサービスからプッシュも可能)によって実現されています。
+Prometheusのアーキテクチャは以下の通りです。
+例えば、閾値監視でメモリなど閾値を越えた場合に、Alert Managerと連携してAlertを出すことも可能ですし、
+Grafanaなどの可視化ツールと連携でき、収集したデータを簡単に可視化することが可能です。
+
+![image](./image/architecture.png)
 
 ## PromQLについて
 
@@ -79,7 +86,8 @@ spec:
 
 ### ServiceMonitorの設定
 
-`ServiceMonitor`オブジェクトは、サービスのエンドポイントからメトリクスを収集することができます。
+`ServiceMonitor`オブジェクトは、Serviceリソースに基づいてエンドポイントからメトリクスを収集することができます。
+ 具体的には,Serviceオブジェクトに紐づくPodを検出し、そのPodからのメトリクスを収集する場合に便利です。
 
 ```yaml
 apiVersion: monitoring.coreos.com/v1
@@ -98,7 +106,8 @@ spec:
 
 ### PodMonitorの設定
 
-`PodMonitor`オブジェクトは、個々のポッドから直接メトリクスを収集することができます。
+`PodMonitor`オブジェクトは、KubernetesのPodリソースを監視するためのカスタムリソースです。こちらはServiceを介さず、直接Podを監視するために使用されます。
+ 個々のPodからメトリクスを収集する場合に便利です。
 
 ```yaml
 apiVersion: monitoring.coreos.com/v1
@@ -295,7 +304,7 @@ spec:
 kubectl apply -f manifests/ingress-nginx-servicemonitor.yaml
 ```
 
-<http://prometheus.example.com/graph> を開き (またはリロードして)、PromQL入力欄に ngi と入力し、nginx のメトリクスが追加されているのを確認しましょう。
+<http://prometheus.example.com/graph> を開き (またはリロードして)、PromQL入力欄に ngi と入力し、nginx のメトリクスが追加されているのを確認しましょう。※表示に数分かかります。
 
 ![image](https://github.com/kubernetes/ingress-nginx/blob/main/docs/images/prometheus-dashboard1.png)
 
