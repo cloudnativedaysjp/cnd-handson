@@ -1,6 +1,8 @@
 # CI/CD
 ## 概要
 この章では、CI/CDについて理解し、現在のCloud Nativeの実環境でなぜ利用されているか、そしてなぜ必要かを説明します。
+現在、Continuous Delivery Fundation(https://cd.foundation/)が設立され、CI/CDのベストプラクティスなど業界仕様をさらに推進しています。
+
 
 CI/CDについてですが、CIは、(Continuous Integration：継続的なインテグレーション)の略称で、  
 開発者がアプリケーション開発から統合(Intergration)まで、必要なプロセスを自動化します。  
