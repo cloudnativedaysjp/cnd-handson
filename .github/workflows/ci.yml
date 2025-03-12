@@ -1,0 +1,16 @@
+# ワークフロー名を「example workflow」に設定
+name: example workflow
+# リポジトリにPushされたらActionsを実行する
+on: push
+jobs:
+  # ジョブ名を「echo」に設定
+  echo:
+    # ランナーOSをUbuntuの最新に設定
+    runs-on: ubuntu-latest
+    steps:
+      # ジョブ内で実行する処理を列挙
+      # uses: はActionとして公開されている処理を呼び出す
+      # actions/checkoutを実行してランナーOS上にリポジトリをクローンする
+      - uses: actions/checkout@v4
+      # run: はシェルコマンドを実行する
+      - run: echo 'hello world'
