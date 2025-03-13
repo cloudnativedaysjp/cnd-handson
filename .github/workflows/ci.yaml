@@ -1,29 +1,19 @@
-name: CI Demo for deployment.yaml
+name: Watch Deployment Changes
 
 on:
   push:
-    paths:
-      - 'chapter_argocd/app/default/deployment.yaml'
     branches:
-      - main
-  pull_request:
+      - cndw2024  # 監視対象のブランチ
     paths:
-      - 'chapter_argocd/app/default/deployment.yaml'
-    branches:
-      - main
+      - 'chapter_argocd/app/default/deployment.yaml'  # 監視対象のファイル
 
 jobs:
-  check-deployment:
+  detect-deployment-change:
     runs-on: ubuntu-latest
 
     steps:
-      - name: リポジトリをチェックアウト
+      - name: Checkout repository
         uses: actions/checkout@v4
 
-      - name: 変更を検知
-        run: echo "chapter_argocd/app/default/deployment.yaml が変更されました！"
-
-      - name: YAML 構文チェック
-        uses: ibiqlik/action-yamllint@v3
-        with:
-          file_or_dir: "chapter_argocd/app/default/deployment.yaml".
+      - name: Notify Change
+        run: echo "chapter_argocd/app/default/deployment.yaml has been modified!"
