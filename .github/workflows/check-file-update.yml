@@ -4,6 +4,9 @@ on:
   push:
     branches:
       - cndw2024
+  create:
+    branches:
+      - cndw2024/*  # 新しいブランチが cndw2024/ で始まる場合にトリガー
 
 jobs:
   check-file-update:
