@@ -1,0 +1,22 @@
+name: Validate Deployment YAML
+
+on:
+  push:
+    paths:
+      - 'chapter_argocd/app/default/deployment.yaml'
+  pull_request:
+    paths:
+      - 'chapter_argocd/app/default/deployment.yaml'
+
+jobs:
+  validate-yaml:
+    runs-on: ubuntu-latest
+    steps:
+      - name: リポジトリをチェックアウト
+        uses: actions/checkout@v4
+
+      - name: YAML Linter のセットアップ
+        run: pip install yamllint
+
+      - name: deployment.yaml を検証
+        run: yamllint chapter_argocd/app/default/deployment.yaml
