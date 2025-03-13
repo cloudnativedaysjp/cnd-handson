@@ -1,0 +1,22 @@
+name: Validate a.yaml
+
+on:
+  push:
+    paths:
+      - 'a.yaml'
+  pull_request:
+    paths:
+      - 'a.yaml'
+
+jobs:
+  validate-yaml:
+    runs-on: ubuntu-latest
+    steps:
+      - name: リポジトリをチェックアウト
+        uses: actions/checkout@v4
+
+      - name: YAML Linter のセットアップ
+        run: pip install yamllint
+
+      - name: a.yaml を検証
+        run: yamllint a.yaml
