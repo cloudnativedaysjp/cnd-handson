@@ -1,0 +1,30 @@
+name: Check File Update
+
+on:
+  push:
+    branches:
+      - cndw2024
+
+jobs:
+  check-file-update:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v2
+        with:
+          fetch-depth: 0  # Ensure the full history is fetched
+
+      - name: Get the list of changed files
+        id: changed-files
+        run: |
+          git diff --name-only ${{ github.event.before }} ${{ github.sha }} > changed_files.txt
+          cat changed_files.txt
+
+      - name: Check if specific file has changed
+        run: |
+          if grep -q "chapter_argocd/app/default/deployment.yaml" changed_files.txt; then
+            echo "The file has been updated."
+            # Place the actions you want to perform if the file has been updated here
+          else
+            echo "The file has not been updated."
+          fi
