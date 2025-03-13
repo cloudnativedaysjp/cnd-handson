@@ -26,4 +26,4 @@ jobs:
       - name: YAML 構文チェック
         uses: ibiqlik/action-yamllint@v3
         with:
-          file_or_dir: "chapter_argocd/app/default/deployment.yaml".
+          file_or_dir: "chapter_argocd/app/default/deployment.yaml"
