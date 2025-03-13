@@ -5,12 +5,12 @@ on:
     paths:
       - 'chapter_argocd/app/default/deployment.yaml'
     branches:
-      - main
+      - cndw2024
   pull_request:
     paths:
       - 'chapter_argocd/app/default/deployment.yaml'
     branches:
-      - main
+      - cndw2024
 
 jobs:
   check-deployment:
