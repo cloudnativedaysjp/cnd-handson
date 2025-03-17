@@ -5,24 +5,24 @@ on:
     branches:
       - main  # 監視対象ブランチ
     paths:
-      - chapter_argocd/app/default/deployment.yaml  # 監視ファイル
+      - chapter_argocd/app/default/deployment.yaml  # 監視対象ファイル
 
 jobs:
   detect-and-validate-change:
     runs-on: ubuntu-latest
 
     steps:
-      # 1. ソースコードをチェックアウト
+      # 1. ソースコードを完全にチェックアウト
       - name: Checkout Code
         uses: actions/checkout@v3
         with:
-          fetch-depth: 0  # フルクローンで履歴を取得
+          fetch-depth: 0  # フル履歴を取得して差分を正確に取得
 
       # 2. タグ変更を検出
       - name: Check Deployment Image Changes
         id: check_image_changes
         run: |
-          # 差分を取得
+          # 差分の取得
           if git rev-parse --verify HEAD^ >/dev/null 2>&1; then
               DIFF_CMD="git diff HEAD^ HEAD -- chapter_argocd/app/default/deployment.yaml"
           else
@@ -30,12 +30,16 @@ jobs:
           fi
           DIFF_OUTPUT=$($DIFF_CMD || true)
 
-          # デバッグ用に差分出力
+          # 差分内容を出力（デバッグ用）
           echo "Debug: Raw DIFF_OUTPUT:"
           echo "$DIFF_OUTPUT"
 
-          # 抽出される差分行のチェック（フィルタあり）
-          CHANGED_IMAGE=$(echo "$DIFF_OUTPUT" | grep '^+.*image:argoproj/rollouts-demo:' | sed -E 's/^.*image:argoproj\/rollouts-demo:(.*)$/\1/' | tr -d '\r')
+          # 差分の行をフィルタリング（デバッグ用）
+          echo "Debug: Filtered Diff Lines:"
+          echo "$DIFF_OUTPUT" | awk '/^\+.*image:argoproj\/rollouts-demo:/'
+
+          # イメージタグの抽出
+          CHANGED_IMAGE=$(echo "$DIFF_OUTPUT" | awk '/^\+.*image:argoproj\/rollouts-demo:/ { gsub(/.*image:argoproj\/rollouts-demo:/, "", $0); print $0 }' | tr -d '\r')
           echo "Debug: Extracted Image Tag is '$CHANGED_IMAGE'"
 
           # タグが抽出できない場合
