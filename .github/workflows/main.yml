@@ -15,7 +15,7 @@ jobs:
       - name: Checkout Code
         uses: actions/checkout@v3
         with:
-          fetch-depth: 0  # 必要な履歴を完全に取得
+          fetch-depth: 0  # フル履歴を取得して差分を確実に解析
 
       - name: Check Deployment Image Changes
         id: check_image_changes
@@ -34,11 +34,11 @@ jobs:
 
           # 差分行をフィルタリング（デバッグ用）
           echo "Debug: Filtered Diff Lines:"
-          FILTERED_LINES=$(echo "$DIFF_OUTPUT" | grep '^+.*image:argoproj/rollouts-demo:')
+          FILTERED_LINES=$(echo "$DIFF_OUTPUT" | grep '^\+\s*- image:argoproj/rollouts-demo:')
           echo "$FILTERED_LINES"
 
           # イメージタグの抽出
-          CHANGED_IMAGE=$(echo "$FILTERED_LINES" | awk '{gsub(/.*image:argoproj\/rollouts-demo:/, ""); print $0}' | tr -d '\r')
+          CHANGED_IMAGE=$(echo "$FILTERED_LINES" | sed -E 's/^\+\s*- image:argoproj\/rollouts-demo:(.*)$/\1/' | tr -d '\r')
           echo "Debug: Extracted Image Tag is '$CHANGED_IMAGE'"
 
           # タグが抽出できない場合のスキップ処理
