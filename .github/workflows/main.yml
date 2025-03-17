@@ -3,23 +3,21 @@ name: Detect Deployment Image Change
 on:
   push:
     branches:
-      - main  # 対象のブランチ
+      - main
     paths:
-      - chapter_argocd/app/default/deployment.yaml  # 対象のファイル
+      - chapter_argocd/app/default/deployment.yaml
 
 jobs:
   detect-and-validate-change:
     runs-on: ubuntu-latest
 
     steps:
-      # 1. ソースコードをチェックアウト
       - name: Checkout Code
         uses: actions/checkout@v3
         with:
-          fetch-depth: 0  # 過去の履歴を取得
+          fetch-depth: 0  # 完全な履歴を取得
 
-      # 2. イメージ変更をチェック
-      - name: Detect Deployment Image Changes
+      - name: Check Deployment Image Changes
         run: |
           # 差分取得コマンド（通常のコミットか初回コミットかで分岐）
           if git rev-parse --verify HEAD^ >/dev/null 2>&1; then
@@ -33,16 +31,16 @@ jobs:
           echo "Debug: Full DIFF_OUTPUT:"
           echo "$DIFF_OUTPUT"
 
-          # デバッグ: 差分行をフィルタリング
-          FILTERED_LINES=$(echo "$DIFF_OUTPUT" | grep '^\+[[:space:]]*- image:argoproj/rollouts-demo:')
+          # 差分行をフィルタリング（行頭に "+" のある "- image:argoproj/rollouts-demo" 行）
+          FILTERED_LINES=$(echo "$DIFF_OUTPUT" | grep '^\+[[:space:]]*- image:.*argoproj/rollouts-demo:')
           echo "Debug: Filtered Diff Lines:"
           echo "$FILTERED_LINES"
 
           # タグを抽出
-          CHANGED_IMAGE=$(echo "$FILTERED_LINES" | sed -E 's/^\+[[:space:]]*- image:argoproj\/rollouts-demo:(.*)$/\1/' | tr -d '\r')
+          CHANGED_IMAGE=$(echo "$FILTERED_LINES" | sed -E 's/^\+[[:space:]]*- image:.*argoproj\/rollouts-demo:(.*)$/\1/' | tr -d '\r')
           echo "Debug: Extracted Image Tag is '$CHANGED_IMAGE'"
 
-          # タグが抽出できなかった場合のスキップ処理
+          # 抽出されたタグがない場合のスキップ処理
           if [ -z "$CHANGED_IMAGE" ]; then
               echo "No image tag found in the changes. Skipping workflow."
               exit 0
