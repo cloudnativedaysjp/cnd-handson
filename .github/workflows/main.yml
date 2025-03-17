@@ -2,8 +2,8 @@ name: Detect Deployment Image Change
 
 on:
   push:
-    branches:
-      - main
+    branches-ignore:
+      - '' # 空の値で「すべてのブランチ」を対象に設定
     paths:
       - chapter_argocd/app/default/deployment.yaml
 
@@ -15,11 +15,11 @@ jobs:
       - name: Checkout Code
         uses: actions/checkout@v3
         with:
-          fetch-depth: 0  # 完全な履歴を取得
+          fetch-depth: 0  # 全履歴をクローン
 
-      - name: Check Deployment Image Changes
+      - name: Detect Deployment Image Changes
         run: |
-          # 差分取得コマンド（通常のコミットか初回コミットかで分岐）
+          # 差分取得コマンドの分岐（通常コミットか初回コミットかを判定）
           if git rev-parse --verify HEAD^ >/dev/null 2>&1; then
               DIFF_CMD="git diff HEAD^ HEAD -- chapter_argocd/app/default/deployment.yaml"
           else
@@ -27,26 +27,26 @@ jobs:
           fi
           DIFF_OUTPUT=$($DIFF_CMD || true)
 
-          # デバッグ: 差分全体を出力
+          # ログ: 差分全体を出力
           echo "Debug: Full DIFF_OUTPUT:"
           echo "$DIFF_OUTPUT"
 
-          # 差分行をフィルタリング（行頭に "+" のある "- image:argoproj/rollouts-demo" 行）
+          # 差分行をフィルタリング（フィルタ条件: `+` が含まれる `image:argoproj/rollouts-demo` の行）
           FILTERED_LINES=$(echo "$DIFF_OUTPUT" | grep '^\+[[:space:]]*- image:.*argoproj/rollouts-demo:')
           echo "Debug: Filtered Diff Lines:"
           echo "$FILTERED_LINES"
 
-          # タグを抽出
+          # イメージタグを抽出
           CHANGED_IMAGE=$(echo "$FILTERED_LINES" | sed -E 's/^\+[[:space:]]*- image:.*argoproj\/rollouts-demo:(.*)$/\1/' | tr -d '\r')
           echo "Debug: Extracted Image Tag is '$CHANGED_IMAGE'"
 
-          # 抽出されたタグがない場合のスキップ処理
+          # タグが抽出されない場合のスキップ処理
           if [ -z "$CHANGED_IMAGE" ]; then
               echo "No image tag found in the changes. Skipping workflow."
               exit 0
           fi
 
-          # タグが無効な場合の警告
+          # 無効なタグ検出
           if [ "$CHANGED_IMAGE" != "blue" ] && [ "$CHANGED_IMAGE" != "green" ]; then
               echo "===================================="
               echo "⚠️ WARNING: Invalid Image Tag Detected."
@@ -54,18 +54,13 @@ jobs:
               echo "File: chapter_argocd/app/default/deployment.yaml"
               echo "===================================="
               echo "Detected Invalid Image Version: $CHANGED_IMAGE" | tee -a INVALID_IMAGE_ALERT.log
-              echo "change_type=invalid" >> $GITHUB_ENV
               exit 1
           fi
 
-          # 青タグの場合
+          # タグが有効な場合は正常終了処理
           if [ "$CHANGED_IMAGE" == "blue" ]; then
-              echo "Detected a valid image tag: blue"
-              echo "change_type=blue" >> $GITHUB_ENV
+              echo "Detected valid image tag: blue"
           fi
-
-          # 緑タグの場合
           if [ "$CHANGED_IMAGE" == "green" ]; then
-              echo "Detected a valid image tag: green"
-              echo "change_type=green" >> $GITHUB_ENV
+              echo "Detected valid image tag: green"
           fi
