@@ -6,19 +6,53 @@ on:
       - main
     paths:
       - chapter_argocd/app/default/deployment.yaml
+
 jobs:
   detect-and-validate-change:
     runs-on: ubuntu-latest
 
     steps:
+      # 1. Gitリポジトリを完全にチェックアウト
       - name: Checkout Code
         uses: actions/checkout@v3
+        with:
+          fetch-depth: 0  # 履歴全体を取得する
 
+      # 2. イメージ変更のチェック
       - name: Check for Image Changes
         id: check_image_changes
+        shell: bash
         run: |
-          # `deployment.yaml` の変更内容を取得
-          CHANGED_IMAGE=$(git diff HEAD^ HEAD -- chapter_argocd/app/default/deployment.yaml | grep '\- image:' | awk '{print $3}' | cut -d':' -f2 | tr -d '\r')
+          # 初回コミットかどうかの判定
+          if git rev-parse --verify HEAD^ >/dev/null 2>&1; then
+              echo "Normal commit detected."
+              DIFF_CMD="git diff HEAD^ HEAD -- chapter_argocd/app/default/deployment.yaml"
+          else
+              echo "Initial commit detected."
+              DIFF_CMD="git show HEAD -- chapter_argocd/app/default/deployment.yaml"
+          fi
+
+          # 差分を取得
+          DIFF_OUTPUT=$($DIFF_CMD || true)
+
+          # 差分が空の場合のスキップ処理
+          if [ -z "$DIFF_OUTPUT" ]; then
+              echo "No changes detected in 'deployment.yaml'. Skipping workflow."
+              exit 0
+          fi
+
+          echo "File diff:"
+          echo "$DIFF_OUTPUT"
+
+          # イメージタグの取得
+          CHANGED_IMAGE=$(echo "$DIFF_OUTPUT" | grep '\- image:' | awk '{print $3}' | cut -d':' -f2 | tr -d '\r')
+
+          # イメージタグが空か判定
+          if [ -z "$CHANGED_IMAGE" ]; then
+              echo "No image tag found in the changes. Skipping workflow."
+              exit 0
+          fi
+
           echo "Detected Changed Image: $CHANGED_IMAGE"
 
           # blue / green のタグを判定
@@ -29,7 +63,7 @@ jobs:
               echo "Detected a valid image tag: green"
               echo "change_type=green" >> $GITHUB_ENV
           else
-              # 無効なタグがあった場合のログを出力
+              # 無効なタグの場合の警告ログ
               echo "===================================="
               echo "⚠️ WARNING: Invalid Image Tag Detected"
               echo "Detected Unsupported Image Tag: $CHANGED_IMAGE"
@@ -37,10 +71,8 @@ jobs:
               echo "Please ensure the image tag is either 'blue' or 'green'."
               echo "===================================="
 
-              # 詳細ログを保存
+              # 詳細ログを記録して失敗させる
               echo "Detected Invalid Image Version: $CHANGED_IMAGE" | tee -a INVALID_IMAGE_ALERT.log
               echo "change_type=invalid" >> $GITHUB_ENV
-
-              # ワークフローを失敗させる
               exit 1
           fi
