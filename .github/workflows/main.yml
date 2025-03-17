@@ -12,42 +12,55 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
+      # 1. ソースコードを完全にチェックアウト
       - name: Checkout Code
         uses: actions/checkout@v3
+        with:
+          fetch-depth: 0  # 完全な履歴を取得
 
+      # 2. 修正箇所を確認
       - name: Check for Image Changes
         id: check_image_changes
         run: |
-          # デバッグ用ファイル差分出力
-          echo "File diff:"
-          git diff HEAD^ HEAD -- chapter_argocd/app/default/deployment.yaml
-
-          # 差分がない場合のスキップ処理
-          if [ -z "$(git diff HEAD^ HEAD -- chapter_argocd/app/default/deployment.yaml)" ]; then
-            echo "No changes detected in 'deployment.yaml'. Skipping workflow."
-            exit 0
+          # 初回コミットかどうかの判定
+          if git rev-parse --verify HEAD^ >/dev/null 2>&1; then
+              echo "Normal commit detected."
+              DIFF_RESULT=$(git diff HEAD^ HEAD -- chapter_argocd/app/default/deployment.yaml || true)
+          else
+              echo "Initial commit detected."
+              DIFF_RESULT=$(git diff --no-index -- chapter_argocd/app/default/deployment.yaml || true)
           fi
 
+          # 差分がない場合のスキップ処理
+          if [ -z "$DIFF_RESULT" ]; then
+              echo "No changes detected in 'deployment.yaml'. Skipping workflow."
+              exit 0
+          fi
+
+          echo "File diff:"
+          echo "$DIFF_RESULT"
+
           # イメージタグの取得
-          CHANGED_IMAGE=$(git diff HEAD^ HEAD -- chapter_argocd/app/default/deployment.yaml | grep '\- image:' | awk '{print $3}' | cut -d':' -f2 | tr -d '\r')
+          CHANGED_IMAGE=$(echo "$DIFF_RESULT" | grep '\- image:' | awk '{print $3}' | cut -d':' -f2 | tr -d '\r')
           echo "Detected Changed Images: $CHANGED_IMAGE"
 
           # イメージタグが空の場合
           if [ -z "$CHANGED_IMAGE" ]; then
-            echo "No image tag detected in the changes. Exiting the workflow."
-            exit 0
+              echo "No image tag detected in the changes. Exiting the workflow."
+              exit 0
           fi
 
           # blue / green のタグを判定
           if echo "$CHANGED_IMAGE" | grep -q "blue"; then
-            echo "Detected Blue tag"
-            echo "change_type=blue" >> $GITHUB_ENV
+              echo "Detected Blue tag"
+              echo "change_type=blue" >> $GITHUB_ENV
           elif echo "$CHANGED_IMAGE" | grep -q "green"; then
-            echo "Detected Green tag"
-            echo "change_type=green" >> $GITHUB_ENV
+              echo "Detected Green tag"
+              echo "change_type=green" >> $GITHUB_ENV
           else
-            # 無効タグの場合の警告のみ
-            echo "Warning: Unsupported image tag detected: $CHANGED_IMAGE"
-            echo "Change type: Invalid" | tee -a INVALID_IMAGE_ALERT.log
-            echo "change_type=invalid" >> $GITHUB_ENV
+              # 無効タグの場合の警告のみ
+              echo "Warning: Unsupported image tag detected: $CHANGED_IMAGE"
+              echo "Change type: Invalid" | tee -a INVALID_IMAGE_ALERT.log
+              echo "change_type=invalid" >> $GITHUB_ENV
+              exit 1
           fi
