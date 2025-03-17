@@ -1,3 +1,11 @@
+name: Detect Deployment Image Change
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - chapter_argocd/app/default/deployment.yaml
 jobs:
   detect-and-validate-change:
     runs-on: ubuntu-latest
