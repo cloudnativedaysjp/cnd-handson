@@ -185,7 +185,7 @@ kubectl -n argo-cd get secret argocd-initial-admin-secret -o jsonpath="{.data.pa
 ## Argo CDへログイン
 こちらは自身の端末で実施してください。
 ```
-argocd login --insecure argocd.example.com
+argocd login --insecure argocd.example.com --username admin --password xxxxx
 ```
 ログイン成功時
 ```
