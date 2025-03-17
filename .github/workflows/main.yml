@@ -12,7 +12,7 @@ jobs:
     runs-on: ubuntu-latest  # 実行環境
 
     steps:
-      # 1. Gitリポジトリのチェックアウト
+      # 1. Gitリポジトリを完全にチェックアウト
       - name: Checkout Code
         uses: actions/checkout@v3
         with:
@@ -37,8 +37,13 @@ jobs:
           echo "Debug: Raw DIFF_OUTPUT:"
           echo "$DIFF_OUTPUT"
 
+          # 差分の行をフィルタリング（デバッグ用）
+          FILTERED_DIFF=$(echo "$DIFF_OUTPUT" | grep '^+.*image:argoproj/rollouts-demo:')
+          echo "Debug: Filtered Diff Lines:"
+          echo "$FILTERED_DIFF"
+
           # イメージタグの抽出
-          CHANGED_IMAGE=$(echo "$DIFF_OUTPUT" | grep '^\+.*image:' | awk -F'image:argoproj/rollouts-demo:' '{if (NF>1) print $2}' | tr -d '\r')
+          CHANGED_IMAGE=$(echo "$DIFF_OUTPUT" | grep '^+.*image:argoproj/rollouts-demo:' | sed -E 's/^.*image:argoproj\/rollouts-demo:(.*)$/\1/' | tr -d '\r')
 
           echo "Debug: Extracted Image Tag is '$CHANGED_IMAGE'"
 
