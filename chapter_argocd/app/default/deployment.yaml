@@ -21,7 +21,7 @@ spec:
         app: handson
     spec:
       containers:
-      - image: argoproj/rollouts-demo:blu9
+      - image: argoproj/rollouts-demo:blu99
         imagePullPolicy: IfNotPresent
         name: handson
         ports:
