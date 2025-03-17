@@ -3,7 +3,7 @@ name: Detect Deployment Image Change
 on:
   push:
     branches:
-      - cndw2024
+      - main
     paths:
       - chapter_argocd/app/default/deployment.yaml
 
