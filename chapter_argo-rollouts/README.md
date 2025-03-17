@@ -95,6 +95,8 @@ Canary Releaseは、新旧混在状態を制御し、本番環境において限
 ### Blue/Green Deployment
  Applicationsの画面において + NEW APPをクリックします![Applications](./image/analysis/application.png)
 上の画面上で各項目を次のように設定します。
+
+**web版**
   ```
   GENERAL
     Application Name: blue-green
@@ -108,6 +110,10 @@ Canary Releaseは、新旧混在状態を制御し、本番環境において限
     DESTINATION
       Cluster URL: https://kubernetes.default.svc
       Namespace: blue-green
+  ```
+  **cli版**
+  ```
+  argocd app create blue-green --repo chapter_argocdでforkした自分のリポジトリのURL --sync-option CreateNamespace=true --path chapter_argo-rollouts/app/blue-green --dest-server https://kubernetes.default.svc --dest-namespace blue-green --revision main
   ```
  設定できたら、CREATEをクリックして、下記のように表示されていることを確認してください。
   ![create](image/BG/blue-green-create.png)
@@ -187,6 +193,10 @@ Applications画面の場合は、一番右下の端に、
       Cluster URL: https://kubernetes.default.svc
       Namespace: canary
   ```
+  **cli版**
+  ```
+  argocd app create canary --repo chapter_argocdでforkした自分のリポジトリのURL --sync-option CreateNamespace=true --path chapter_argo-rollouts/app/canary --dest-server https://kubernetes.default.svc --dest-namespace canary --revision main
+  ```
  設定できたら、CREATEをクリックして、下記のように表示されていることを確認してください。
   ![create](./image/canary/canary-create.png)
   ![create2](./image/canary/canary-create2.png)
@@ -262,6 +272,8 @@ Applications画面の場合は、一番右下の端に、
 Applicationsの画面において + NEW APPをクリックします
 ![Applications](./image/analysis/application.png)
 上の画面上で各項目を次のように設定します。
+
+  **web**
   ```
   GENERAL
     Application Name: job
@@ -275,6 +287,10 @@ Applicationsの画面において + NEW APPをクリックします
     DESTINATION
       Cluster URL: https://kubernetes.default.svc
       Namespace: job-analysis
+  ```
+  **cli版**
+  ```
+  argocd app create job-analysis --repo chapter_argocdでforkした自分のリポジトリのURL --sync-option CreateNamespace=true --path chapter_argo-rollouts/analysis/job --dest-server https://kubernetes.default.svc --dest-namespace job-analysis --revision main
   ```
 設定できたら、CREATEをクリックして、下記のように表示されていることを確認してください
 ![create](./image/analysis/job-create.png)
@@ -322,6 +338,8 @@ Analysis実行時にリクエストを送信し、レスポンスの内容にて
 Applicationsの画面において + NEW APPをクリックします
 ![Applications](./image/analysis/application.png)
 上の画面上で各項目を次のように設定します。
+
+**web**
   ```
   GENERAL
     Application Name: web
@@ -335,6 +353,10 @@ Applicationsの画面において + NEW APPをクリックします
     DESTINATION
       Cluster URL: https://kubernetes.default.svc
       Namespace: web-analysis
+  ```
+**cli版**
+  ```
+    argocd app create web-analysis --repo chapter_argocdでforkした自分のリポジトリのURL --sync-option CreateNamespace=true --path chapter_argo-rollouts/analysis/web --dest-server https://kubernetes.default.svc --dest-namespace web-analysis --revision main
   ```
 設定できたら、CREATEをクリックして、下記のように表示されていることを確認してください
 ![create](./image/analysis/web-create.png)
@@ -394,6 +416,10 @@ Applicationsの画面において + NEW APPをクリックします
     DESTINATION
       Cluster URL: https://kubernetes.default.svc
       Namespace: prometheus-analysis
+  ```
+  **cli版**
+  ```
+    argocd app create prometheus-analysis --repo chapter_argocdでforkした自分のリポジトリのURL --sync-option CreateNamespace=true --path  chapter_argo-rollouts/analysis/prometheus --dest-server https://kubernetes.default.svc --dest-namespace prometheus-analysis --revision main
   ```
 設定できたら、CREATEをクリックして、下記のように表示されていることを確認してください。
 ![create](./image/analysis/prometheus-create.png)
