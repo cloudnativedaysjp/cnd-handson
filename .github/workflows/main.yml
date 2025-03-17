@@ -3,24 +3,25 @@ name: Detect Deployment Image Change
 on:
   push:
     branches:
-      - main
+      - main  # 対象のブランチ
     paths:
-      - chapter_argocd/app/default/deployment.yaml
+      - chapter_argocd/app/default/deployment.yaml  # 対象のファイル
 
 jobs:
   detect-and-validate-change:
     runs-on: ubuntu-latest
 
     steps:
+      # 1. ソースコードをチェックアウト
       - name: Checkout Code
         uses: actions/checkout@v3
         with:
-          fetch-depth: 0  # フル履歴を取得して差分を確実に解析
+          fetch-depth: 0  # 過去の履歴を取得
 
-      - name: Check Deployment Image Changes
-        id: check_image_changes
+      # 2. イメージ変更をチェック
+      - name: Detect Deployment Image Changes
         run: |
-          # 差分を取得
+          # 差分取得コマンド（通常のコミットか初回コミットかで分岐）
           if git rev-parse --verify HEAD^ >/dev/null 2>&1; then
               DIFF_CMD="git diff HEAD^ HEAD -- chapter_argocd/app/default/deployment.yaml"
           else
@@ -28,33 +29,27 @@ jobs:
           fi
           DIFF_OUTPUT=$($DIFF_CMD || true)
 
-          # デバッグ用に差分全体を出力
+          # デバッグ: 差分全体を出力
           echo "Debug: Full DIFF_OUTPUT:"
           echo "$DIFF_OUTPUT"
 
-          # 差分行をフィルタリング（デバッグ用）
+          # デバッグ: 差分行をフィルタリング
+          FILTERED_LINES=$(echo "$DIFF_OUTPUT" | grep '^\+[[:space:]]*- image:argoproj/rollouts-demo:')
           echo "Debug: Filtered Diff Lines:"
-          FILTERED_LINES=$(echo "$DIFF_OUTPUT" | grep '^\+\s*- image:argoproj/rollouts-demo:')
           echo "$FILTERED_LINES"
 
-          # イメージタグの抽出
-          CHANGED_IMAGE=$(echo "$FILTERED_LINES" | sed -E 's/^\+\s*- image:argoproj\/rollouts-demo:(.*)$/\1/' | tr -d '\r')
+          # タグを抽出
+          CHANGED_IMAGE=$(echo "$FILTERED_LINES" | sed -E 's/^\+[[:space:]]*- image:argoproj\/rollouts-demo:(.*)$/\1/' | tr -d '\r')
           echo "Debug: Extracted Image Tag is '$CHANGED_IMAGE'"
 
-          # タグが抽出できない場合のスキップ処理
+          # タグが抽出できなかった場合のスキップ処理
           if [ -z "$CHANGED_IMAGE" ]; then
               echo "No image tag found in the changes. Skipping workflow."
               exit 0
           fi
 
-          # 青か緑かの条件判定
-          if [ "$CHANGED_IMAGE" == "blue" ]; then
-              echo "Detected a valid image tag: blue"
-              echo "change_type=blue" >> $GITHUB_ENV
-          elif [ "$CHANGED_IMAGE" == "green" ]; then
-              echo "Detected a valid image tag: green"
-              echo "change_type=green" >> $GITHUB_ENV
-          else
+          # タグが無効な場合の警告
+          if [ "$CHANGED_IMAGE" != "blue" ] && [ "$CHANGED_IMAGE" != "green" ]; then
               echo "===================================="
               echo "⚠️ WARNING: Invalid Image Tag Detected."
               echo "Unsupported Image Tag: $CHANGED_IMAGE"
@@ -63,4 +58,16 @@ jobs:
               echo "Detected Invalid Image Version: $CHANGED_IMAGE" | tee -a INVALID_IMAGE_ALERT.log
               echo "change_type=invalid" >> $GITHUB_ENV
               exit 1
+          fi
+
+          # 青タグの場合
+          if [ "$CHANGED_IMAGE" == "blue" ]; then
+              echo "Detected a valid image tag: blue"
+              echo "change_type=blue" >> $GITHUB_ENV
+          fi
+
+          # 緑タグの場合
+          if [ "$CHANGED_IMAGE" == "green" ]; then
+              echo "Detected a valid image tag: green"
+              echo "change_type=green" >> $GITHUB_ENV
           fi
