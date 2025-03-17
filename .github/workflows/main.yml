@@ -3,27 +3,27 @@ name: Detect Deployment Image Change
 on:
   push:
     branches:
-      - main
+      - main  # 監視対象ブランチ
     paths:
-      - chapter_argocd/app/default/deployment.yaml
+      - chapter_argocd/app/default/deployment.yaml  # 監視対象ファイル
 
 jobs:
   detect-and-validate-change:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-latest  # ワークフローが実行される環境
 
     steps:
-      # 1. Gitリポジトリを完全にチェックアウト
+      # 1. Gitリポジトリを完全にチェックアウトする
       - name: Checkout Code
         uses: actions/checkout@v3
         with:
-          fetch-depth: 0  # 履歴全体を取得する
+          fetch-depth: 0  # 履歴全体を取得（`HEAD^` に対応するため）
 
-      # 2. イメージ変更のチェック
+      # 2. 変更箇所のチェック
       - name: Check for Image Changes
         id: check_image_changes
         shell: bash
         run: |
-          # 初回コミットかどうかの判定
+          # 差分の取得コマンドを初回コミット対応で分岐
           if git rev-parse --verify HEAD^ >/dev/null 2>&1; then
               echo "Normal commit detected."
               DIFF_CMD="git diff HEAD^ HEAD -- chapter_argocd/app/default/deployment.yaml"
@@ -35,44 +35,48 @@ jobs:
           # 差分を取得
           DIFF_OUTPUT=$($DIFF_CMD || true)
 
-          # 差分が空の場合のスキップ処理
+          echo "Debug: DIFF_OUTPUT is"
+          echo "$DIFF_OUTPUT"
+
+          # 差分が空の場合はワークフローをスキップ
           if [ -z "$DIFF_OUTPUT" ]; then
               echo "No changes detected in 'deployment.yaml'. Skipping workflow."
               exit 0
           fi
 
-          echo "File diff:"
-          echo "$DIFF_OUTPUT"
+          # イメージタグを抽出
+          CHANGED_IMAGE=$(echo "$DIFF_OUTPUT" | grep '^\+.*image:' | sed -n 's/^.*image:argoproj\/rollouts-demo://p' | tr -d '\r')
 
-          # イメージタグの取得
-          CHANGED_IMAGE=$(echo "$DIFF_OUTPUT" | grep '\- image:' | awk '{print $3}' | cut -d':' -f2 | tr -d '\r')
+          echo "Debug: Extracted Image Tag - $CHANGED_IMAGE"
 
-          # イメージタグが空か判定
+          # イメージタグが空の場合はスキップ
           if [ -z "$CHANGED_IMAGE" ]; then
               echo "No image tag found in the changes. Skipping workflow."
               exit 0
           fi
 
-          echo "Detected Changed Image: $CHANGED_IMAGE"
-
           # blue / green のタグを判定
-          if echo "$CHANGED_IMAGE" | grep -q "blue"; then
+          if [ "$CHANGED_IMAGE" == "blue" ]; then
               echo "Detected a valid image tag: blue"
               echo "change_type=blue" >> $GITHUB_ENV
-          elif echo "$CHANGED_IMAGE" | grep -q "green"; then
+          elif [ "$CHANGED_IMAGE" == "green" ]; then
               echo "Detected a valid image tag: green"
               echo "change_type=green" >> $GITHUB_ENV
           else
-              # 無効なタグの場合の警告ログ
+              # 無効なタグの場合に警告を表示
               echo "===================================="
               echo "⚠️ WARNING: Invalid Image Tag Detected"
               echo "Detected Unsupported Image Tag: $CHANGED_IMAGE"
               echo "File: chapter_argocd/app/default/deployment.yaml"
               echo "Please ensure the image tag is either 'blue' or 'green'."
               echo "===================================="
-
-              # 詳細ログを記録して失敗させる
               echo "Detected Invalid Image Version: $CHANGED_IMAGE" | tee -a INVALID_IMAGE_ALERT.log
               echo "change_type=invalid" >> $GITHUB_ENV
               exit 1
           fi
+
+      # 3. ワークフローの出力（カスタムログ）
+      - name: Summary
+        run: |
+          echo "Workflow completed."
+          echo "Change Type: ${{ env.change_type }}"
