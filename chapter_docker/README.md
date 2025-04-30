@@ -146,7 +146,7 @@ docker stop <container id>
 
 
 ```sh
-cd hands-on-app/hapter_docker
+cd hands-on-app/chapter_docker
 pwd
 ```
 
