@@ -131,11 +131,12 @@ GENERAL
 
 ↑の赤枠クリックするとを詳細がみれます。
 そして、**SYNCHRONIZE** をクリックしてください。  
-少し待つと、ステータスが**HealthyとSynced**になることを確認してください。
+ステータスが**HealthyとSynced**になることを確認してください。
 
 ![image](image/status2.png)
 
 ![image](image/status3.png)
 
-
+---
+## ここまでで Frontend　アプリがきちんと導入された状態にになります。
 
