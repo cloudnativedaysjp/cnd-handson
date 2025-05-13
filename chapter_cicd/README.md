@@ -60,27 +60,31 @@ Argo CDを利用するため、GitHubへPush等が必要となり、それをト
 
 ![image](image/fork1.png)
 
-**forkをクリック**をして、Create a new forkで、名前を指定して自分のリポジトリへforkさせます。
-**create fork**をクリックします。  
+**forkをクリック**をして、Create a new forkで、名前を指定して自分のリポジトリへforkさせます。  
 
 ![image](image/fork2.png)
 
+**create fork**をクリックします。  
 自分のリポジトリを確認し、cnd-handson-infraがforkされていることを確認します。  
 
 ![image](image/fork3.png)
 
-ここからは、Argo CDの詳細については、[ArgoCD](https://github.com/cloudnativedaysjp/cnd-handson/blob/main/chapter_argocd/README_webui.md)が動作している  
-前提で解説していきます。動作していない場合には、上記リンクからインストールを実施してください。  
+ここからは、Argo CDの詳細については、[ArgoCD](https://github.com/cloudnativedaysjp/cnd-handson/blob/main/chapter_argocd/README_webui.md)が動作している前提で解説していきます。  
+動作していない場合には、上記リンクからインストールを実施してください。  
 Argo CDのWebGUIへログインできれば問題ないです。  
 
 ## Argo CDのWebページへログイン
 Argo CDのWebページへログインし、先ほどForkしたリポジトリを同期させます。  
 
+**左のタブのSetting**をクリックし、**Repositories**をクリックします。
+
 ![image](image/repository1.png)
 
-**左のタブのSetting**をクリックし、**Repositories**をクリックします。  
+**CONNECT REOP**をクリックします。
 
 ![image](image/repository2.png)
+
+以下ように自分の設定あうように設定していきます。  
 
 ![image](image/repository3.png)
 
@@ -116,21 +120,22 @@ GENERAL
     Namespace: cicd-namespace
 ```
 
-設定できたら、CREATEをクリックして、下記のように表示されていることを確認して下さい。　　
+設定できたら、**CREATE**をクリックして、下記のように表示されていることを確認して下さい。　　
 
 ![image](image/apps1.png)
 
-ページ上部にあるSYNCをクリックして、無事デプロイされると下記のように表示されていることを確認して下さい。  
-そして、**SYNCHRONIZE** をクリックしてください。  
-少し待つと、ステータスが**HealthyとSynced**になることを確認してください。
+ページ上部にある**SYNC**をクリックして、無事デプロイされると下記のように表示されていることを確認して下さい。  
+
 
 ![image](image/status1.png)
 
 ↑の赤枠クリックするとを詳細がみれます。
+そして、**SYNCHRONIZE** をクリックしてください。  
+少し待つと、ステータスが**HealthyとSynced**になることを確認してください。
 
 ![image](image/status2.png)
 
-
+![image](image/status3.png)
 
 
 
