@@ -138,5 +138,5 @@ GENERAL
 ![image](image/status3.png)
 
 ---
-## ここまでで Frontend　アプリがきちんと導入された状態にになります。
+## ここまでで　Frontendアプリがきちんと導入された状態にになります。
 
