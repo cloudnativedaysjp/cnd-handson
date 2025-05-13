@@ -42,3 +42,95 @@ CI/CDについてですが、 **CI** は、(**Continuous Integration：継続的
 
 <参照: クラウドネイティブで実現するマイクロサービス開発・運用 実践ガイド>
 
+---
+
+今回は、CICDのCD部分に焦点を当てて説明します。  
+ハンズオンのChapter_argocdにある、ArcoCDを使っていきます。  
+ArgoCDの詳細については、[こちら](https://github.com/cloudnativedaysjp/cnd-handson/blob/main/chapter_argocd/README_webui.md)を参照ください。  
+
+# 今回利用するリポジトリの準備  
+## Gitリポジトリの準備(ローカル環境)
+
+Argo CDを利用するため、GitHubへPush等が必要となり、それをトリガーとして利用します。  
+このハンズオンのリポジトリをforkし、準備します。
+
+[cnd-handson-infra](https://github.com/cloudnativedaysjp/cnd-handson-infra)
+↑をクリックし、forkを実施していきます。  
+実際には、その中の**chapter_cicd/apps/frontend**を利用して、展開していきます。  
+
+![image](image/fork1.png)
+
+**forkをクリック**をして、Create a new forkで、名前を指定して自分のリポジトリへforkさせます。
+**create fork**をクリックします。  
+
+![image](image/fork2.png)
+
+自分のリポジトリを確認し、cnd-handson-infraがforkされていることを確認します。  
+
+![image](image/fork3.png)
+
+ここからは、Argo CDの詳細については、[ArgoCD](https://github.com/cloudnativedaysjp/cnd-handson/blob/main/chapter_argocd/README_webui.md)が動作している  
+前提で解説していきます。動作していない場合には、上記リンクからインストールを実施してください。  
+Argo CDのWebGUIへログインできれば問題ないです。  
+
+## Argo CDのWebページへログイン
+Argo CDのWebページへログインし、先ほどForkしたリポジトリを同期させます。  
+
+![image](image/repository1.png)
+
+**左のタブのSetting**をクリックし、**Repositories**をクリックします。  
+
+![image](image/repository2.png)
+
+![image](image/repository3.png)
+
+```
+GENERAL
+Choose your connection method: VIA HTTPS
+Type: git
+Project: default
+Repository URL: https://github.com/自身のアカウント名/cnd-handson-infra
+```
+最後、** + CONNECT REPO **をクリックします。  
+うまく繋がると、CONNECTIOM STATUSが **Successful** になります。  
+
+## デモアプリをArgo CD上にデプロイ（Frontendアプリの実装）
+デモアプリのデプロイを行い、Argo CDの一連の操作を行います。
+
+![image](image/app_deploy1.png)
+
+![image](image/app_deploy2.png)
+
+```
+GENERAL
+  Application Name: cicd-demo
+  Project Name: default
+  SYNC POLICY: Manual
+  SYNC OPTIONS: AUTO CREATE NAMESPACE [v]
+  SOURCE
+    Repository URL: https://github.com/自身のアカウント名/cnd-handson-infra
+    Revision: main
+    Path: chapter_cicd/apps/frontend
+  DESTINATION
+    Cluster URL: https://kubernetes.default.svc
+    Namespace: cicd-namespace
+```
+
+設定できたら、CREATEをクリックして、下記のように表示されていることを確認して下さい。　　
+
+![image](image/apps1.png)
+
+ページ上部にあるSYNCをクリックして、無事デプロイされると下記のように表示されていることを確認して下さい。  
+そして、**SYNCHRONIZE** をクリックしてください。  
+少し待つと、ステータスが**HealthyとSynced**になることを確認してください。
+
+![image](image/status1.png)
+
+↑の赤枠クリックするとを詳細がみれます。
+
+![image](image/status2.png)
+
+
+
+
+
