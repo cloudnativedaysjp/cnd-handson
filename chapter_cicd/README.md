@@ -146,11 +146,11 @@ func convertToProtoProject(project *model.Project) *projectpb.Project {
 	return &projectpb.Project{
 		Id:          project.ID.String(),
 		Name:        project.Name,
--    	Description: project.Description,
+-		Description: project.Description,
 +	Description: project.Description,
 		OwnerId:     project.OwnerID.String(),
 		CreatedAt:   timestamppb.New(project.CreatedAt),
--       UpdatedAt:   timestamppb.New(project.UpdatedAt),
+-		UpdatedAt:   timestamppb.New(project.UpdatedAt),
 +	UpdatedAt:   timestamppb.New(project.UpdatedAt),
 	}
 }
@@ -210,21 +210,21 @@ git checkout -b test-fail-test
 
 ```diff go
 import (
-+    "strings"
-     "time"
- 
-     "github.com/cloudnativedaysjp/cnd-handson-app/backend/project/internal/project/model"
-     "github.com/cloudnativedaysjp/cnd-handson-app/backend/project/internal/project/repository"
-     "github.com/google/uuid"
-     "google.golang.org/grpc/codes"
-     "google.golang.org/grpc/status"
- )
+	"strings"
+	"time"
+
+	"github.com/cloudnativedaysjp/cnd-handson-app/backend/project/internal/project/model"
+	"github.com/cloudnativedaysjp/cnd-handson-app/backend/project/internal/project/repository"
+	"github.com/google/uuid"
+	"google.golang.org/grpc/codes"
+	"google.golang.org/grpc/status"
+)
 
 (中略)
 
 	project := model.Project{
 		ID:          uuid.New(), // 新規UUIDを生成
--       Name:        name, 
+-		Name:        name, 
 +		Name:        strings.ToLower(name), // バグ: 大文字を小文字に変換
 		Description: description,
 		OwnerID:     ownerID,
