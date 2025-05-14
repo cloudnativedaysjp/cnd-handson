@@ -46,24 +46,24 @@ CI/CDについてですが、 **CI** は、(**Continuous Integration：継続的
 
 ### 準備：サンプルアプリケーションのフォーク
 
-以下のリポジトリをご自身のリポジトリとしてフォークします。
-
+Webブラウザから以下のリポジトリへアクセスします。
 
 ```bash
 https://github.com/cloudnativedaysjp/cnd-handson-app
 ```
 
+このリポジトリをご自身のGitHubアカウントのリポジトリへフォークします。
 ![image](image/fork.jpg)
 
 
-フォークが完了したら、ローカル環境にクローンします。
+フォークが完了したら、ローカル環境へクローンします。
 
 ```bash
 git clone https://github.com/<あなたのGitHubユーザー名>/cnd-handson-app.git
 cd cnd-handson-app
 ```
 
-フォークしたご自身のリポジトリの`Actions`タブからGithub Actionsを有効化してください。
+フォークしたご自身のリポジトリの`Actions`タブからGitHub Actionsを有効化してください。
 ![image](image/enable_workflows.jpg)
 
 ### CIパイプライン
@@ -92,7 +92,7 @@ Lintツールは、コード内の潜在的なエラー、バグ、スタイル�
 
 LintとFormatチェックは以下のタイミングで実行すると効果的です。
 
-1. **ローカル開発中**: 開発者が自分のマシンでコードを書いている最中にlinterやformatterを適用する
+1. **ローカル開発中**: 開発者が自分のマシンでコードを書いている最中にLinterやFormatterを適用する
 2. **コミット前**: Git hooks（pre-commit）を使って、問題のあるコードがリポジトリに入るのを防ぐ
 3. **CIパイプラインの初期段階**: プッシュ時に自動的に実行
 
@@ -104,7 +104,7 @@ LintとFormatチェックは以下のタイミングで実行すると効果的�
 
 
 ブランチを作成します。
-```
+```bash
 git checkout -b lint-format-fail-test
 ```
 
@@ -139,7 +139,7 @@ GitHub上でリポジトリの`Actions`タブを開き、ワークフローの`G
 ### 実践： Format
 
 次にFormatエラーの動作を確認してみましょう。先ほどと同じファイル
-`backend/project/internal/project/handler/project.go`のコードのインデントを崩してみましょう。
+`backend/project/internal/project/handler/project.go`のコードのインデントをあえて崩してみましょう。
 
 ```diff go
 func convertToProtoProject(project *model.Project) *projectpb.Project {
@@ -170,14 +170,13 @@ GitHub上でリポジトリの`Actions`タブを開き、ワークフローの`G
 
 ![image](image/format_error.jpg)
 
-`backend/project/internal/project/handler/project.go`のコードのインデントを戻しておきましょう。
+`backend/project/internal/project/handler/project.go`のインデントを戻しておきましょう。
 
 ### Lintとフォーマットのまとめ
 
-- Lintとフォーマットチェックは、コード品質を維持するための重要
-- 早い段階で実施することで、問題の発見と修正のコストを低減
-- チーム開発において、コードの一貫性と品質を保つ
-- CIパイプラインの最初の防衛線として機能
+- コード品質を維持できる
+- 開発の早い段階で実施することで、問題発見と修正コストを低減できる
+- チーム開発において、コードの一貫性と品質を保つことができる
 
 ## テスト
 
@@ -193,14 +192,12 @@ GitHub上でリポジトリの`Actions`タブを開き、ワークフローの`G
 
 1. **開発の早期段階**: コード実装と並行して早い段階でテストを書くことで、設計の問題を早期に発見できる
 2. **コード変更後**: 新機能の追加や既存コードの修正後に実行し、リグレッションを防止する
-3. **CIパイプライン内**: コードがマージされる前に自動的に実行し、問題のある変更が本流に入るのを防ぐ
+3. **CIパイプライン内**: コードがマージされる前に自動的に実行し、問題のある変更がmainブランチへ入るのを防ぐ
 
 
 ### 実践：テスト
 
-故意にバグを混入してみましょう。
-
-ブランチを作成します。
+故意にバグを混入してみましょう。まずブランチを作成します。
 ```
 git checkout -b test-fail-test
 ```
@@ -225,7 +222,7 @@ import (
 	project := model.Project{
 		ID:          uuid.New(), // 新規UUIDを生成
 -		Name:        name, 
-+		Name:        strings.ToLower(name), // バグ: 大文字を小文字に変換
++		Name:        strings.ToLower(name), // bug: 大文字を小文字に変換
 		Description: description,
 		OwnerID:     ownerID,
 		CreatedAt:   time.Now(),
