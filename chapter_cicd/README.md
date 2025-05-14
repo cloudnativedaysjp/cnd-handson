@@ -121,13 +121,8 @@ type projectService struct {
 }
 ```
 
-変更をコミットしてプッシュします。
-
-```bash
-git add .
 git commit -m "test: lint errors"
 git push --set-upstream origin lint-format-fail-test
-```
 
 GitHub上でリポジトリの`Actions`タブを開き、ワークフローの`Go lint and format(project)`の実行結果を確認します。
 未使用の変数があるためLintチェックが失敗し、ワークフローは失敗で終了します。
@@ -259,18 +254,53 @@ GitHub上でActionsタブを開き、`Go Test (project)`からテストが失敗
 
 ## ビルドとコンテナイメージの作成
 
-CIの最終段階として、アプリケーションをビルドし、コンテナイメージを作成するプロセスがあります。このステップが成功すると、Argo CDなどのCDツールによって後続のデプロイプロセスで使用できる準備が整います。
+> [!CAUTION]
+> ghcrへのpushで発生する403エラー要修正
+
+CIの最終段階として、アプリケーションをビルドしコンテナイメージを作成するプロセスがあります。このステップが成功するとArgo CDなどのCDツールによって後続のデプロイプロセスで使用できる準備が整います。
 
 ### アプリケーションのビルド
 
-アプリケーションのビルドステップでは、依存関係のインストール、コードの最適化、静的ファイルの生成などが行われます。
+アプリケーションのビルドステップでは、依存関係のインストール、静的ファイルの生成などが行われます。
 
 ### コンテナイメージの作成
 
-Dockerイメージの作成は、アプリケーションを動作環境に依存せず実行できるようにするための重要なステップです。GitHub Actionsを使って、コンテナイメージを自動的に作成し、コンテナレジストリに公開できます。
+コンテナイメージの作成は、アプリケーションを動作環境に依存せず実行できるようにするための重要なステップです。このハンズオンでは、GitHub Actionsを使ってコンテナイメージを自動的に作成し、コンテナレジストリ（GitHub Container Registry）へプッシュします。
 
+まずはブランチを作成します。
 
-（時間があれば各自のリポジトリのpackagesへdockerイメージをpushするコンテンツを追加）
+```bash
+git checkout main
+git checkout -b build-and-push
+```
+
+ルートディレクトリの`README.md`へ任意の内容を追記します。
+```diff md
+# cnd-handson-app
+『一日で学ぶクラウドネイティブ技術実践ハンズオン』by CloudNative Days 実行委員会 アプリケーションリポジトリ
+
++ Hello, CI/CD world!
+```
+
+変更をコミットしてプッシュします。
+
+```bash
+git add .
+git commit -m "update readme"
+git push --set-upstream origin build-and-push
+```
+
+プッシュしたブランチをmainブランチへマージするPullRequestを作成します。
+![image](image/build-and-push-pr.jpg)
+`base repository`はフォークしたご自身のリポジトリを指定してください。
+
+作成したPRをmainブランチへマージします。
+
+![image](image/merge-pr.jpg)
+
+![image](image/comfirm-merge-pr.jpg)
+
+ghcrへのpushで発生する403エラー要修正
 
 ## まとめ
 
