@@ -46,79 +46,131 @@ CI/CDについてですが、 **CI** は、(**Continuous Integration：継続的
 
 ### 準備：サンプルアプリケーションのフォーク
 
-以下のリポジトリをフォークして、ハンズオンの準備をします：
+以下のリポジトリをご自身のリポジトリとしてフォークします。
+
 
 ```bash
-# 以下のURLにアクセスしてリポジトリをフォーク
 https://github.com/cloudnativedaysjp/cnd-handson-app
 ```
 
-フォークが完了したら、ローカル環境にクローンします：
+![image](image/fork.jpg)
+
+
+フォークが完了したら、ローカル環境にクローンします。
 
 ```bash
 git clone https://github.com/<あなたのGitHubユーザー名>/cnd-handson-app.git
 cd cnd-handson-app
 ```
 
-### CIパイプラインの構造
+フォークしたご自身のリポジトリの`Actions`タブからGithub Actionsを有効化してください。
+![image](image/enable_workflows.jpg)
 
-フォークしたリポジトリには、以下のCIパイプラインが設定されています：
+### CIパイプライン
 
-1. **コードチェック**: コードの品質チェック（lint, format）
-2. **テスト**: 単体テストと統合テスト
-3. **ビルド**: アプリケーションのビルドとコンテナイメージの作成
+フォークしたリポジトリには、以下のCIパイプラインが設定されています。
 
-これらは全てGitHub Actionsのワークフローとして定義されており、`.github/workflows/`ディレクトリに配置されています。
+1. コードの品質チェック（Lint, Format）
+2. テスト
+3. ビルドとコンテナイメージの作成
 
-## Lintとフォーマットチェック
+これらはすべてGitHub Actionsのワークフローとして定義されており、`.github/workflows/`ディレクトリに配置されています。
+
+## コードの品質チェック（Lint, Format）
 
 ### Lintとは
 
-Lintツールは、コード内の潜在的なエラー、バグ、スタイルの問題、疑わしい構造などを検出するためのツールです。コードの品質を向上させ、バグを減らすために使われます。
+コードの品質を向上させ、バグを減らすために行います。
+Lintツールは、コード内の潜在的なエラー、バグ、スタイルの問題、疑わしい構造などを検出するためのツールです。
 
-### フォーマットチェックとは
+### Formatチェックとは
 
-コードフォーマッターは、コードを一貫したスタイルで書くことを強制するツールです。チーム内でコーディングスタイルを統一し、読みやすさと保守性を高めるために使用されます。
+チーム内でコーディングスタイルを統一し、読みやすさと保守性を高めます。
+コードフォーマッターは、コードの一貫性を保つためのツールです。
 
 ### 最適な実施タイミング
 
-Lintとフォーマットチェックは以下のタイミングで実行すると効果的です：
+LintとFormatチェックは以下のタイミングで実行すると効果的です。
 
 1. **ローカル開発中**: 開発者が自分のマシンでコードを書いている最中にlinterやformatterを適用する
 2. **コミット前**: Git hooks（pre-commit）を使って、問題のあるコードがリポジトリに入るのを防ぐ
-3. **CIパイプラインの初期段階**: プッシュやプルリクエスト作成時に自動的に実行
+3. **CIパイプラインの初期段階**: プッシュ時に自動的に実行
 
 早い段階でこれらのチェックを行うことで、問題を早期に発見し、修正コストを低減できます。
 
 ### 実践：Lint
 
-ローカルで開発中やコミット前にチェックすることが一般的ですが、このハンズオンではサンプルアプリケーションにLintエラーを含むコードを追加、プッシュしてGitHub Actionsがどのように動作するかを確認します。
+ローカルで開発中やコミット前にチェックすることが一般的ですが、このハンズオンではサンプルアプリケーションにLintエラーを含むコードをプッシュしてGitHub Actionsがどのように動作するかを確認します。
 
 
-1. `fronend/Error.js`というファイルを作成して以下のコードを追加します：
-
-```jsx
-// TODO: Lintエラーを含むサンプルコードを追記
+ブランチを作成します。
+```
+git checkout -b lint-format-fail-test
 ```
 
-2. 変更をコミットしてプッシュします：
+
+`backend/project/internal/project/handler/project.go`の`import`文の後に以下のコードを追加します。
+
+```diff go
++ // 未使用の変数を追加
++ var unusedVariable  =  "this will cause lint error"
+
+// projectService はプロジェクトサービスの実装
+type projectService struct {
+	repo repository.ProjectRepository
+}
+```
+
+変更をコミットしてプッシュします。
 
 ```bash
 git add .
-git commit -m "Add component with lint errors"
-git push origin main
+git commit -m "test: lint errors"
+git push --set-upstream origin lint-format-fail-test
 ```
 
-3. GitHub上でリポジトリのActionsタブを開き、ワークフローの実行結果を確認します。
-   Lintチェックが失敗しているはずです。
+GitHub上でリポジトリの`Actions`タブを開き、ワークフローの`Go lint and format(project)`の実行結果を確認します。
+未使用の変数があるためLintチェックが失敗し、ワークフローは失敗で終了します。
 
-4. エラーメッセージを確認し、どのような問題が検出されたのか理解しましょう。
+![image](image/lint_error.jpg)
 
-5. 問題を修正したコードを作成し、再度プッシュして成功するか確認します：
+先ほど追加した未使用の変数はコードから削除しておきましょう。
 
-```jsx
-// TODO: Lintチェックが成功するサンプルコードを追記
+### 実践： Format
+
+次にFormatエラーの動作を確認してみましょう。先ほどと同じファイル
+`backend/project/internal/project/handler/project.go`のコードのインデントを崩してみましょう。
+
+```diff go
+func convertToProtoProject(project *model.Project) *projectpb.Project {
+	return &projectpb.Project{
+		Id:          project.ID.String(),
+		Name:        project.Name,
+-    	Description: project.Description,
++	Description: project.Description,
+		OwnerId:     project.OwnerID.String(),
+		CreatedAt:   timestamppb.New(project.CreatedAt),
+-       UpdatedAt:   timestamppb.New(project.UpdatedAt),
++	UpdatedAt:   timestamppb.New(project.UpdatedAt),
+	}
+}
 ```
+
+変更をコミットしてプッシュします。
+
+```bash
+git add .
+git commit -m "test: format errors"
+git push --set-upstream origin lint-format-fail-test
+```
+
+リポジトリへプッシュするとワークフローが実行されます。
+GitHub上でリポジトリの`Actions`タブを開き、ワークフローの`Go lint and format(project)`の実行結果を確認します。
+インデントが揃っていないためFormatチェックが失敗します。
+
+![image](image/format_error.jpg)
+
+`backend/project/internal/project/handler/project.go`のコードのインデントを戻しておきましょう。
 
 ### Lintとフォーマットのまとめ
 
@@ -131,7 +183,7 @@ git push origin main
 
 ### テストの種類と役割
 
-ソフトウェアテストには様々な種類、例えば以下のようなテストがあります：
+ソフトウェアテストには様々な種類、例えば以下のようなテストがあります。
 
 1. **単体テスト**: 個々の機能やメソッドが正しく動作するかをテスト
 2. **統合テスト**: 複数のコンポーネントが連携して正しく動作するかをテスト
@@ -143,45 +195,64 @@ git push origin main
 2. **コード変更後**: 新機能の追加や既存コードの修正後に実行し、リグレッションを防止する
 3. **CIパイプライン内**: コードがマージされる前に自動的に実行し、問題のある変更が本流に入るのを防ぐ
 
+
 ### 実践：テスト
 
-1. アプリケーションに新しい機能を追加し、対応するテストを意図的に失敗させます：
+故意にバグを混入してみましょう。
 
-```javascript
-// TODO: テストが失敗するサンプルコードを追記
+ブランチを作成します。
+```
+git checkout -b test-fail-test
 ```
 
-2. そして、対応するテストファイルを作成します：
+`/backend/project/internal/project/service/project.go`を以下のように修正します。
 
-```javascript
-// TODO: テストが失敗するサンプルコードを追記
+
+```diff go
+import (
++    "strings"
+     "time"
+ 
+     "github.com/cloudnativedaysjp/cnd-handson-app/backend/project/internal/project/model"
+     "github.com/cloudnativedaysjp/cnd-handson-app/backend/project/internal/project/repository"
+     "github.com/google/uuid"
+     "google.golang.org/grpc/codes"
+     "google.golang.org/grpc/status"
+ )
+
+(中略)
+
+	project := model.Project{
+		ID:          uuid.New(), // 新規UUIDを生成
+-       Name:        name, 
++		Name:        strings.ToLower(name), // バグ: 大文字を小文字に変換
+		Description: description,
+		OwnerID:     ownerID,
+		CreatedAt:   time.Now(),
+		UpdatedAt:   time.Now(),
+	}
 ```
 
-3. 変更をコミットしてプッシュします：
+変更をコミットしてプッシュします。
 
 ```bash
 git add .
-git commit -m "Add calculator functionality with failing test"
-git push origin main
+git commit -m "test: failing test"
+git push --set-upstream origin test-fail-test
 ```
 
-4. GitHub上でActionsタブを開き、テストが失敗することを確認します。
+プッシュしたブランチをmainブランチへマージするPullRequestを作成します。
+`base repository`はフォークしたご自身のリポジトリを指定してください。
 
-5. 実装を修正し、テストが成功するようにします：
+![image](image/pull_request.jpg)
 
-```javascript
-// TODO: テストが成功するサンプルコードを追記
-```
+PRを作成するとテストのワークフローが実行されます。
+GitHub上でActionsタブを開き、`Go Test (project)`からテストが失敗したことを確認します。
 
-6. 修正をコミットしてプッシュします：
+![image](image/test_error.jpg)
 
-```bash
-git add .
-git commit -m "Fix calculator implementation"
-git push origin main
-```
-
-7. テストが成功することを確認します。
+テストが期待する結果は`CloudNative Days`ですが、先ほど大文字を小文字へ変換する修正を加えたのが原因で、結果が`cloudnative days`となりテストが失敗しました。
+このようにテストをCIへ組み込むことでリリース前にバグに気がつ区ことができます。
 
 ### テストのまとめ
 
@@ -197,22 +268,16 @@ CIの最終段階として、アプリケーションをビルドし、コンテ
 
 アプリケーションのビルドステップでは、依存関係のインストール、コードの最適化、静的ファイルの生成などが行われます。
 
-```bash
-# 例：Reactアプリケーションのビルド
-npm ci  # クリーンインストール
-npm run build
-```
-
 ### コンテナイメージの作成
 
-Docker イメージの作成は、アプリケーションを動作環境に依存せず実行できるようにするための重要なステップです。GitHub Actionsを使って、コンテナイメージを自動的に作成し、コンテナレジストリに公開することができます。
+Dockerイメージの作成は、アプリケーションを動作環境に依存せず実行できるようにするための重要なステップです。GitHub Actionsを使って、コンテナイメージを自動的に作成し、コンテナレジストリに公開できます。
 
 
 （時間があれば各自のリポジトリのpackagesへdockerイメージをpushするコンテンツを追加）
 
 ## まとめ
 
-この章では、CI(継続的インテグレーション)の基本概念と、GitHub Actionsを使った実践的な実装方法を学びました。重要ポイントを押さえておきましょう：
+この章では、CI（継続的インテグレーション）の基本概念と、GitHub Actionsを使った実践的な実装方法を学びました。重要ポイントを押さえておきましょう：
 
 1. CIは開発フローを自動化し、品質を向上させるための重要な手法
 2. Lintとフォーマットチェックは、早期にコード品質の問題を発見するのに役立つ
