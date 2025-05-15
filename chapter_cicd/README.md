@@ -55,7 +55,6 @@ https://github.com/cloudnativedaysjp/cnd-handson-app
 このリポジトリをご自身のGitHubアカウントのリポジトリへフォークします。
 ![image](image/fork.jpg)
 
-
 フォーク完了後にローカル環境へクローンします。
 
 ```bash
@@ -63,6 +62,7 @@ git clone https://github.com/<あなたのGitHubユーザー名>/cnd-handson-app
 cd cnd-handson-app
 ```
 
+もし別名でフォークした場合は`cnd-handson-app.git`の部分を修正してください。
 フォークしたご自身のリポジトリの`Actions`タブからGitHub Actionsを有効化してください。
 ![image](image/enable_workflows.jpg)
 
@@ -260,9 +260,6 @@ GitHub上でActionsタブを開き`Go Test (project)`からテストが失敗し
 
 ## ビルドとコンテナイメージの作成
 
-> [!CAUTION]
-> `FIXME: ghcrへのpushで403エラー発生`
-
 CIの最終段階として、アプリケーションをビルドしコンテナイメージを作成するプロセスがあります。このステップが成功するとArgo CDなどのCDツールによって後続のデプロイプロセスで使用できる準備が整います。
 
 ### アプリケーションのビルド
@@ -297,18 +294,21 @@ git push --set-upstream origin build-and-push
 ```
 
 プッシュしたブランチをmainブランチへマージするPull Requestを作成します。
-![image](image/build-and-push-pr.jpg)
+![image](image/build_and_push_pr.jpg)
 
 > [!WARNING]  
 > マージ先の`base repository`はフォークしたご自身のリポジトリを指定してください。
 
 作成したPRをmainブランチへマージします。
 
-![image](image/merge-pr.jpg)
+![image](image/merge_pr.jpg)
 
-![image](image/comfirm-merge-pr.jpg)
+![image](image/comfirm_merge_pr.jpg)
 
-ghcrへのpushで発生する403エラー要修正
+アプリケーションのビルドが行われ、Dockerイメージがコンテナレジストリへプッシュされます。（Package数は実際の数と異なります）
+![image](image/display_package.jpg)
+
+これによりArgo CDなどのCDツールによって後続のデプロイプロセスで使用できる準備が整いました。
 
 ## まとめ
 
