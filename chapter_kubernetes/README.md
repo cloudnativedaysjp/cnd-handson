@@ -53,7 +53,11 @@ Kustomize Version: v5.4.2
 続いて、chapter_kubernetesにcurrent directoryを移動します。
 
 ```sh
-cd ~/cnd-handson/chapter_kubernetes/
+git clone https://github.com/cloudnativedaysjp/cnd-handson-infra.git
+```
+
+```sh
+cd ~/cnd-handson-infra/chapter_kubernetes/
 ```
 
 ## 2. アプリケーションデプロイ
