@@ -100,8 +100,8 @@ podのimageが、` - image: ghcr.io/cloudnativedaysjp/cnd-handson-app/frontend:l
 
 
 ---
-## ここまでで　Frontendアプリがきちんと導入された状態にになります。
-では、Frontendのページへアクセスしてみます。  
+## ここまででFrontendアプリがきちんと導入された状態
+Frontendのページへアクセスしてみます。  
 `http://app.cicd.example.com/login`  
 すると以下のログイン画面がでてきます。  
 
