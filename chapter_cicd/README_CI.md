@@ -275,7 +275,7 @@ GitHub上で`Actions`タブを開き、最新のワークフローの結果を�
 ワークフローが成功していることを確認します。
 ![image](image/application_build_result.jpg)
 
-GitHub Container RegistryへDockerイメージがコンテナレジストリへプッシュされました。
+Dockerイメージがプッシュされました。
 ![image](image/display_package.jpg)
 
 これでArgo CDなどのCDツールによって後続のデプロイプロセスで使用できる準備が整いました。
