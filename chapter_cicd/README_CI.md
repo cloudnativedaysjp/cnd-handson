@@ -14,6 +14,9 @@ https://github.com/cloudnativedaysjp/cnd-handson-app
 このリポジトリをご自身のGitHubアカウントのリポジトリへフォークします。
 ![image](image/fork.jpg)
 
+![image](image/create_fork.jpg)
+
+
 フォーク完了後にローカル環境へクローンします。
 
 ```bash
@@ -22,7 +25,7 @@ cd cnd-handson-app
 ```
 
 もし別名でフォークした場合は`cnd-handson-app.git`の部分を修正してください。
-フォークしたご自身のリポジトリの`Actions`タブからGitHub Actionsを有効化してください。
+フォークしたご自身のリポジトリの`Actions`タブから`I understand my workflows...`のボタンをクリックしてGitHub Actionsを有効化してください。
 ![image](image/enable_workflows.jpg)
 
 ### CIパイプライン
@@ -161,12 +164,12 @@ GitHub上でリポジトリの`Actions`タブを開き、ワークフローの`G
 git checkout -b test-fail-test
 ```
 
-`/backend/project/internal/project/service/project.go`を以下のように修正します。
+`backend/project/internal/project/service/project.go`を以下のように修正します。
 
 
 ```diff go
 import (
-	"strings"
++	"strings"
 	"time"
 
 	"github.com/cloudnativedaysjp/cnd-handson-app/backend/project/internal/project/model"
@@ -204,7 +207,7 @@ git push --set-upstream origin test-fail-test
 ![image](image/pull_request.jpg)
 
 PRを作成するとテストのワークフローが実行されます。
-GitHub上でActionsタブを開き`Go Test (project)`からテストが失敗したことを確認します。
+GitHub上で`Actions`タブを開き`Go Test (project)`からテストが失敗したことを確認します。
 
 ![image](image/test_error.jpg)
 
@@ -264,10 +267,18 @@ git push --set-upstream origin build-and-push
 
 ![image](image/comfirm_merge_pr.jpg)
 
-アプリケーションのビルドが行われ、Dockerイメージがコンテナレジストリへプッシュされます。（Package数は実際の数と異なります）
+PRをマージするとアプリケーションのビルドが行われ、GitHub Container RegistryへDockerイメージがプッシュされます。
+GitHub上で`Actions`タブを開き、最新のワークフローの結果をクリックします。
+
+![image](image/application_build.jpg)
+
+ワークフローが成功していることを確認します。
+![image](image/application_build_result.jpg)
+
+GitHub Container RegistryへDockerイメージがコンテナレジストリへプッシュされました。
 ![image](image/display_package.jpg)
 
-これによりArgo CDなどのCDツールによって後続のデプロイプロセスで使用できる準備が整いました。
+これでArgo CDなどのCDツールによって後続のデプロイプロセスで使用できる準備が整いました。
 
 ## まとめ
 
