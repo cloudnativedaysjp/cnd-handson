@@ -39,14 +39,15 @@ CI/CDについてですが、 **CI** は、(**Continuous Integration：継続的
 組み合わせた利用事例が増えています。ArgoCDが多く利用される理由としては、GUIを通して設定が可能であり、  
 且つステータスの確認やSync状況などを確認できる優位性があるためです。  
 
+ここからは実際にCI/CDで分けてハンズオンを行っていきます。  
 
 <参照: クラウドネイティブで実現するマイクロサービス開発・運用 実践ガイド>
 
 
-# CICDのCI部分の動作確認
+## CICDのCI部分の動作確認
 
 [CI(Continuous Integration)のハンズオン手順](./README_CI.md)
 
-# CICDのCD部分の動作確認
+## CICDのCD部分の動作確認
 
 [CD(Continuous Delivery)のハンズオン手順](./README_CD.md)
