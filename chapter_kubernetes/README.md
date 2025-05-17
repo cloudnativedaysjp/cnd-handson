@@ -1603,7 +1603,7 @@ kubectl delete namespaces resource-test
 
 > [!NOTE]
 > - 動作確認は、ブラウザから以下のURLにアクセスすることで行います。
->   - http://cndw-web.example.com
+>   - http://cnd-web.example.com
 > - リソースの更新後もWeb画面の表示が変わらない場合があります。1-2分待ってからブラウザのリフレッシュを行なってください。
 > - 改修箇所は1箇所ではない可能性があります。また、構成図とエラーメッセージがヒントになる場合があります。
 
@@ -1617,12 +1617,12 @@ kubectl apply -f cnd-web.yaml
 動作確認後、リソースを削除します。
 
 ```sh
-kubectl delete pod cndw-web-app
+kubectl delete pod cnd-web-app
 kubectl delete pod dummy-app
 kubectl delete pod mysql
-kubectl delete service cndw-web-svc
+kubectl delete service cnd-web-svc
 kubectl delete service mysql-svc
-kubectl delete ingress cndw-web-ing
+kubectl delete ingress cnd-web-ing
 kubectl delete secret app-secret
 ```
 
