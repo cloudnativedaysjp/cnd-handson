@@ -12,11 +12,12 @@ Argo CDを利用するため、GitHubへPush等が必要となり、それをト
 
 [cnd-handson-infra](https://github.com/cloudnativedaysjp/cnd-handson-infra)  
 ↑をクリックし、forkを実施していきます。  
-実際には、その中の**chapter_cicd/apps/frontend**を利用して、展開していきます。  
+実際には、その中の**chapter_cicd/apps/frontend**のアプリを利用してハンズオンしていきます。
+
+**fork**をクリックをして、Create a new forkで、名前を指定して自分のリポジトリへforkさせます。  
 
 ![image](image/fork1.png)
 
-**forkをクリック**をして、Create a new forkで、名前を指定して自分のリポジトリへforkさせます。  
 
 ![image](image/fork2.png)
 
