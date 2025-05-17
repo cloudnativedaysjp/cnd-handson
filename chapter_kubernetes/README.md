@@ -53,10 +53,6 @@ Kustomize Version: v5.4.2
 続いて、chapter_kubernetesにcurrent directoryを移動します。
 
 ```sh
-git clone https://github.com/cloudnativedaysjp/cnd-handson-infra.git
-```
-
-```sh
 cd ~/cnd-handson-infra/chapter_kubernetes/
 ```
 
@@ -170,8 +166,8 @@ kubectl run <pod名> --image=<image名> --dry-run=client -o yaml > <ファイル
 ReplicaSetは稼働しているPod数を明示的に指定し、それを維持するためのリソースです。
 2.アプリケーションデプロイの章でも体感していただきましたが、指定したReplica数を維持するために
 自動的にPodの作成、削除が行われます。
-現在、みなさんのManifestにはReplica数1が設定されています。
-そのため、起動しているPodも1つになっているはずです。
+先ほどのManifestにはReplica数1が設定されています。
+そのため、起動たPodも1つだったはずです。
 
 ```Yaml
 apiVersion: apps/v1
@@ -180,26 +176,25 @@ metadata:
   annotations:
     deployment.kubernetes.io/revision: "1"
   labels:
-    app: hello-world
-  name: hello-world
+    app: test
+  name: test
 spec:
-  replicas: 1 #ここが1になっている 
+  replicas: 1 #ここが1になっている
   selector:
     matchLabels:
-      app: hello-world
+      app: test
   template:
     spec:
+      restartPolicy: OnFailure
     metadata:
       labels:
-        app: hello-world
+        app: test
     spec:
       containers:
-      - image: ryuichitakei/hello-world:1.0
-        name: hello-world
+      - image: nginx:latest
+        name: test
         ports:
         - containerPort: 80
-      imagePullSecrets:
-      - name: dockerhub-secret
 ```
 
 では以下のようにManifestを修正し、再度Manifestを登録しなおしてみます。
@@ -211,30 +206,29 @@ metadata:
   annotations:
     deployment.kubernetes.io/revision: "1"
   labels:
-    app: hello-world
-  name: hello-world
+    app: test
+  name: test
 spec:
-  replicas: 2 # 修正
+  replicas: 2 #2に修正
   selector:
     matchLabels:
-      app: hello-world
+      app: test
   template:
     spec:
+      restartPolicy: OnFailure
     metadata:
       labels:
-        app: hello-world
+        app: test
     spec:
       containers:
-      - image: ryuichitakei/hello-world:1.0
-        name: hello-world
+      - image: nginx:latest
+        name: test
         ports:
         - containerPort: 80
-      imagePullSecrets:
-      - name: dockerhub-secret
 ```
 
 ```sh
-kubectl apply -f hello-world.yaml
+kubectl apply -f test-deployment.yaml
 ```
 
 Podが2つに増えているか確認します。
@@ -247,8 +241,8 @@ kubectl get pods
 
 ```Log
 NAME                           READY   STATUS    RESTARTS   AGE
-hello-world-5b48b68bb6-bh27l   1/1     Running   0          2m12s
-hello-world-5b48b68bb6-ftwtz   1/1     Running   0          23s
+test-5cdf547c4f-8z5h9   1/1     Running   0          10s
+test-5cdf547c4f-wvzbt   1/1     Running   0          10s
 ```
 
 ## 5. Podの外部公開
