@@ -93,6 +93,12 @@ GENERAL
 
 ![image](image/status3.png)
 
+![image](image/podstatus1.png)
+
+podのimageが、` - image: ghcr.io/cloudnativedaysjp/cnd-handson-app/frontend:latest`  
+になっていること。
+
+
 ---
 ## ここまでで　Frontendアプリがきちんと導入された状態にになります。
 では、Frontendのページへアクセスしてみます。  
@@ -134,6 +140,10 @@ ArgoCDの画面に戻り、この状態で既存で動いているFrontendの変
 **SYNC**をクリックして、**SYNCHRONIZE**をクリックします。  
 
 ![image](image/argo11.png)
+
+
+podのimageが、` - image: ghcr.io/cloudnativedaysjp/cnd-handson-app/frontend:latest`  
+になっていること。
 
 この状態で、新しく**Frontend**のアプリが更新されました。  
 では、Frontendのページへアクセスしてみます。  
