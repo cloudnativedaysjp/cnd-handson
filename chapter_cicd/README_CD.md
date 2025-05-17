@@ -136,6 +136,14 @@ Frontendのページへアクセスしてみます。
 ` - image: ghcr.io/cloudnativedaysjp/cnd-handson-app/frontend-v1:latest`  
 に変更し、`Commit Changes`します。  
 
+><注釈>
+>ソフトウェアのVerupの場合以下のように、Version管理をしていく形が多いですが、  
+このハンズオンでは、Frontendのアプリ自身を明示的に変更しているため、latest版で作成しています。  
+` - image: ghcr.io/cloudnativedaysjp/cnd-handson-app/frontend:v1.0`   
+` - image: ghcr.io/cloudnativedaysjp/cnd-handson-app/frontend:v1.1`  
+  
+
+
 ![image](image/repo2.png)
 
 ArgoCDの画面に戻り、この状態で既存で動いているFrontendの変更をKickします。  
