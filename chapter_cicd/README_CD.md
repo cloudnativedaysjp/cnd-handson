@@ -1,6 +1,7 @@
 
-このドキュメントは、CICDのCD部分に焦点を当てて説明します。  
-ハンズオンのChapter_argocdにある、ArcoCDを使っていきます。  
+このドキュメントは、CD(Countinuous Delivery)のハンズオン資料になります。  
+ハンズオンのChapter_argocdにある、ArcoCDを利用して実施していきます。  
+そのため、ArgoCDをインストールしていない場合には、以下サイトからインストールを実施してください。  
 ArgoCDの詳細については、[こちら](https://github.com/cloudnativedaysjp/cnd-handson/blob/main/chapter_argocd/README_webui.md)を参照ください。  
 
 # 今回利用するリポジトリの準備  
