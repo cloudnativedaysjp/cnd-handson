@@ -1,5 +1,7 @@
 # CI/CD
 
+
+
 ## 概要
 この章では、CI/CDについて理解し、現在のCloud Nativeの実環境でなぜ利用されているか、そしてなぜ必要かを説明します。
 現在、Continuous Delivery Fundation (https://cd.foundation/) が設立され、CI/CDのベストプラクティスなど業界仕様をさらに推進しています。
@@ -139,4 +141,47 @@ GENERAL
 
 ---
 ## ここまでで　Frontendアプリがきちんと導入された状態にになります。
+では、Frontendのページへアクセスしてみます。  
+`http://app.cicd.example.com/login`  
+すると以下のログイン画面がでてきます。  
+
+![image](image/applogin1.png)
+
+※メールアドレス、パスワードは、任意で入力してください。
+認証機能を今回は動かしていないため、メールアドレス/パスワードを  
+適当な文字列を入力することでログインできるようにしています。  
+その後、**ログイン**をクリック。
+
+```
+例
+メールアドレス: a@a
+パスワード: 12345
+```
+
+すると、以下の**青いバー**の画面が表示されます。  
+
+![image](image/login1.png)
+
+ここまでで、Frontendのアプリケーションが動作しているところまで確認できました。
+では、CDの部分の動作を確認していきます。  
+今回は先ほどforkしたリポジトリを直接変更します。  
+
+![image](image/repo1.png)
+
+ここで、  
+` - image: ghcr.io/cloudnativedaysjp/cnd-handson-app/frontend:latest`  
+を  
+` - image: ghcr.io/cloudnativedaysjp/cnd-handson-app/frontend-v1:latest`  
+に変更し、`Commit Changes`します。  
+
+![image](image/repo2.png)
+
+ArgoCDの画面に戻り、この状態で既存で動いているFrontendの変更をKickします。
+**SYNC**をクリックして、**SYNCHRONIZE**をクリックします。  
+
+![image](image/argo11.png)
+
+
+
+
 
