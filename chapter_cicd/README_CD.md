@@ -55,8 +55,9 @@ Repository URL: https://github.com/自身のアカウント名/cnd-handson-infra
 最後、** + CONNECT REPO **をクリックします。  
 うまく繋がると、CONNECTIOM STATUSが **Successful** になります。  
 
-## デモアプリをArgo CD上にデプロイ（Frontendアプリの実装）
-デモアプリのデプロイを行い、Argo CDの一連の操作を行います。
+## FrontendアプリをArgo CD上にデプロイ
+Frontendのデプロイを行い、Argo CDの一連の操作を行います。
+**+ NEW APP**をクリックし、設定をしていきます。
 
 ![image](image/app_deploy1.png)
 
@@ -77,17 +78,18 @@ GENERAL
     Namespace: cicd-namespace
 ```
 
-設定できたら、**CREATE**をクリックして、下記のように表示されていることを確認して下さい。　　
+設定できたら、**CREATE**をクリックして、下記のように表示されていることを確認して下さい。
+**Missing, OutofSync**であること 
 
 ![image](image/apps1.png)
 
-ページ上部にある**SYNC**をクリックして、無事デプロイされると下記のように表示されていることを確認して下さい。  
-
+↑で作成したアプリ**SYNC**をクリックしてください。  
+そして、**SYNCHRONIZE**
+それにより正式にデプロイされます。  
 
 ![image](image/status1.png)
 
 ↑の赤枠クリックするとを詳細がみれます。
-そして、**SYNCHRONIZE** をクリックしてください。  
 ステータスが**HealthyとSynced**になることを確認してください。
 
 ![image](image/status2.png)
@@ -99,9 +101,8 @@ GENERAL
 podのimageが、` - image: ghcr.io/cloudnativedaysjp/cnd-handson-app/frontend:latest`  
 になっていること。
 
-
 ---
-## ここまででFrontendアプリがきちんと導入された状態
+## Frontendのアプリのデプロイが完了
 Frontendのページへアクセスしてみます。  
 `http://app.cicd.example.com/login`  
 すると以下のログイン画面がでてきます。  
