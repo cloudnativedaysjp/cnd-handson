@@ -146,7 +146,7 @@ docker stop <container id>
 
 
 ```sh
-cd hands-on-app/chapter_docker/hands-on
+cd ~/cnd-handson/chapter_docker/hands-on
 pwd
 ```
 
@@ -159,7 +159,7 @@ docker buildコマンドではPush先のリポジトリを指定し、任意の�
 
 
 ```sh
-docker build -t <DockerHubのユーザ名>/<リポジトリ名>:<任意のタグ名> .
+docker build -t <DockerHubのユーザ名など>/<リポジトリ名>:<任意のタグ名> .
 ```
 
 以下のコマンドで、作成したDocker Imageをコンテナアプリケーションとして起動します。
