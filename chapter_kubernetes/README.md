@@ -264,20 +264,20 @@ apiVersion: v1
 kind: Service
 metadata:
   labels:
-    app: hello-world
-  name: hello-world-service
+    app: test
+  name: test-service
 spec:
   ports:
   - port: 80
     protocol: TCP
     targetPort: 80
   selector:
-    app: hello-world
+    app: test
   type: ClusterIP
 ```
 
 ```sh
-kubectl apply -f hello-world-service.yaml
+kubectl apply -f test-service.yaml
 ```
 
 Serviceについては以下で確認が可能です。
@@ -289,8 +289,7 @@ kubectl get services
 > 出力例
 
 ```Log
-NAME                  TYPE        CLUSTER-IP     EXTERNAL-IP   PORT(S)   AGE
-hello-world-service   ClusterIP   10.96.110.56   <none>        80/TCP    16m
+test-service   ClusterIP   10.96.123.57   <none>        80/TCP    16s
 ```
 
 続いてIngressリソースを作成します。
@@ -301,7 +300,7 @@ Serviceリソース同様、予め用意されているManifestを使用しま�
 apiVersion: networking.k8s.io/v1
 kind: Ingress
 metadata:
-  name: hello-world-ingress
+  name: test-ingress
 spec:
   ingressClassName: nginx
   rules:
@@ -312,13 +311,13 @@ spec:
         path: "/"
         backend:
           service:
-            name: hello-world-service
+            name: test-service
             port:
               number: 80
 ```
 
 ```sh
-kubectl apply -f hello-world-ingress.yaml 
+kubectl apply -f test-ingress.yaml 
 ```
 
 作成したIngressは以下で確認が可能です。
@@ -330,8 +329,8 @@ kubectl get ingress
 > 出力例
 
 ```Log
-NAME                  CLASS   HOSTS                     ADDRESS        PORTS   AGE
-hello-world-ingress   nginx   hello-world.example.com   10.96.246.72   80      17m
+NAME           CLASS   HOSTS                     ADDRESS        PORTS   AGE
+test-ingress   nginx   hello-world.example.com   10.96.42.249   80      2m6s
 ```
 
 ### 5.2. 動作確認
@@ -346,10 +345,9 @@ Hello Worldの文字が表示されたら成功です。
 動作確認後、リソースを削除します。
 
 ```
-kubectl delete ingress hello-world-ingress
-kubectl delete service hello-world-service
-kubectl delete deployment hello-world
-kubectl delete secret dockerhub-secret
+kubectl delete ingress test-ingress
+kubectl delete service test-service
+kubectl delete deployment test
 ```
 
 ## 6. アプリケーションの更新
@@ -399,7 +397,7 @@ Pod更新前の状態では、`This app is Blue`の画面が表示がされて�
 
 ```sh
 # 適用
-kubectl set image deployment/rollout rollout-app=ryuichitakei/green-app:1.0
+kubectl set image deployment/rollout rollout-app=ghcr.io/cloudnativedaysjp/green-app:1.0
 ```
 
 ```sh
@@ -436,6 +434,35 @@ kubectl delete ingress rollout-ingress
 古い環境と新しい環境を混在させ、ルーティングなどによってトラフィックを制御し、ダウンタイム無しで環境を切り替えます。
 今回はIngressのHost名によって、新旧どちらのアプリケーションにもアクセスできるような環境を用意しています。
 
+```Yaml
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: blue-green
+spec:
+  ingressClassName: nginx
+  rules:
+  - host: blue.example.com
+    http:
+      paths:
+      - pathType: Prefix
+        path: "/"
+        backend:
+          service:
+            name: blue-service
+            port:
+              number: 80
+  - host: green.example.com
+    http:
+      paths:
+      - pathType: Prefix
+        path: "/"
+        backend:
+          service:
+            name: green-service
+            port:
+              number: 80
+```
 
 まずは、対象のManifestを適用します。
 
@@ -583,7 +610,7 @@ PodはKubernetesにおける最小の単位ですが、その実態は複数(単
 また、init containerと呼ばれる一時的な用途のコンテナを作成することも可能です。
 
 今回はinit containerの動作を確認してみましょう。
-このシナリオでは、起動時に作成されるコンテナ(Init Container)が'CNDT2024!!'というメッセージを出力するコンテンツを作成しマウント先のボリュームに保存します。
+このシナリオでは、起動時に作成されるコンテナ(Init Container)が`Welcome to the CND Handson!!`というメッセージを出力するコンテンツを作成しマウント先のボリュームに保存します。
 その後、nginxが起動しInit Containerが作成したコンテンツを参照することで、nginxにアクセスした際に上記メッセージが返却されます。
 
 まずは以下のManifestをapplyします。
@@ -605,7 +632,7 @@ kubectl get pods -o wide | grep init
 kubectl run tmp --restart=Never --rm -i --image=nginx:alpine -- curl <PodのIP>
 ```
 
-以下のように`CNDW2024!!`のメッセージが確認できます。
+以下のように`Welcome to the CND Handson!!`のメッセージが確認できます。
 
 
 ```
@@ -890,7 +917,7 @@ kubectl run test --image=nginx
 ```
 
 ```sh
- kubectl get pods
+kubectl get pods
 ```
 
 ```Log
@@ -1324,8 +1351,8 @@ ConfigMapは、機密性のないデータをキーと値のペアで保存す�
 環境固有の設定などをコンテナイメージから分離できるため、アプリケーションを簡単に移植できるようになります。
 
 但し、機密性や暗号化の機能を持たないため保存したいデータが機密情報である場合はSecretやサードパーティツールを使用する必要があります。
-今回は`CNDW2024 ConfigMap Handson`というHTML形式のデータをConfigMapに保存し、Podにマウントさせています。
-クライアントからのリクエストはマウントされたConfigMapのHTMLデータを参照するため、`CNDW2024 ConfigMap Handson`という文字列が返却されるはずです。
+今回は`CND ConfigMap Handson`というHTML形式のデータをConfigMapに保存し、Podにマウントさせています。
+クライアントからのリクエストはマウントされたConfigMapのHTMLデータを参照するため、`CND ConfigMap Handson`という文字列が返却されるはずです。
 
 
 
@@ -1348,7 +1375,7 @@ kubectl get pods -o wide
 ```
 
 最後にテンポラリのPodを作成し、curlでアクセスを試みます。
-`CNDW2024 ConfigMap Handson`という文字列が返却されると成功です。
+`CND ConfigMap Handson`という文字列が返却されると成功です。
 
 ```sh
 kubectl run tmp --restart=Never --rm -i --image=nginx:alpine -- curl <PodのIPアドレス>
@@ -1583,7 +1610,7 @@ kubectl delete namespaces resource-test
 
 以下のコマンドでアプリのデプロイを行なってください。
 ```sh
-kubectl apply -f cndw-web.yaml
+kubectl apply -f cnd-web.yaml
 ```
 
 
