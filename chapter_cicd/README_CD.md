@@ -124,13 +124,13 @@ Frontendのページへアクセスしてみます。
 
 ![image](image/login1.png)
 
-ここまでで、Frontendのアプリケーションが動作しているところまで確認できました。
-では、CDの部分の動作を確認していきます。  
+ここまでで、Frontendのアプリケーションが動作しているところまで確認できました。  
+では、CD(Continuous Delivery)の部分の動作を確認していきます。  
 今回は先ほどforkしたリポジトリを直接変更します。  
 
 ![image](image/repo1.png)
 
-ここで、  
+ここで最初に設定されているimageを新しいバージョンのアプリケーションへ変更します。  
 ` - image: ghcr.io/cloudnativedaysjp/cnd-handson-app/frontend:latest`  
 を  
 ` - image: ghcr.io/cloudnativedaysjp/cnd-handson-app/frontend-v1:latest`  
@@ -145,7 +145,7 @@ ArgoCDの画面に戻り、この状態で既存で動いているFrontendの変
 
 ![image](image/app_ver2.png)
 
-podのimageが、` - image: ghcr.io/cloudnativedaysjp/cnd-handson-app/frontend:latest`  
+podのimageが、` - image: ghcr.io/cloudnativedaysjp/cnd-handson-app/frontend-v1:latest`  
 になっていること。
 
 この状態で、新しく**Frontend**のアプリが更新されました。  
@@ -156,7 +156,8 @@ podのimageが、` - image: ghcr.io/cloudnativedaysjp/cnd-handson-app/frontend:l
 
 ![image](image/login2.png)
 
-これで、Githubの設定変更をトリガーとしてアプリケーションが更新されるという、
-CD部分のハンズオンが完了になります。
+これで、Githubのリポジトリにあるファイルから新イメージへ設定変更し、　　
+その変更がトリガーとなりアプリケーション更新されるというCD(Continuous Deliver)のハンズオンです。  
+
 
 
