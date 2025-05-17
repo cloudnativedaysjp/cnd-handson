@@ -176,12 +176,20 @@ GENERAL
 
 ![image](image/repo2.png)
 
-ArgoCDの画面に戻り、この状態で既存で動いているFrontendの変更をKickします。
+ArgoCDの画面に戻り、この状態で既存で動いているFrontendの変更をKickします。  
 **SYNC**をクリックして、**SYNCHRONIZE**をクリックします。  
 
 ![image](image/argo11.png)
 
+この状態で、新しく**Frontend**のアプリが更新されました。  
+では、Frontendのページへアクセスしてみます。  
+`http://app.cicd.example.com/login`  
+先ほど同様に入力し、ログインします。  
+すると、以下の**青いバー**の画面が表示されます。  
 
+![image](image/login2.png)
 
+これで、Githubの設定変更をトリガーとしてアプリケーションが更新されるという、
+CD部分のハンズオンが完了になります。
 
 
