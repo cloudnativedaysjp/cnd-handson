@@ -83,8 +83,8 @@ GENERAL
 
 ![image](image/apps1.png)
 
-↑で作成したアプリ**SYNC**をクリックしてください。  
-そして、**SYNCHRONIZE**
+↑で作成したアプリの**SYNC**をクリックしてください。  
+そして、**SYNCHRONIZE**をクリックしてください。
 それにより正式にデプロイされます。  
 
 ![image](image/status1.png)
