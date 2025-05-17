@@ -10,7 +10,7 @@ ArgoCDの詳細については、[こちら](https://github.com/cloudnativedaysj
 Argo CDを利用するため、GitHubへPush等が必要となり、それをトリガーとして利用します。  
 このハンズオンのリポジトリをforkし、準備します。
 
-[cnd-handson-infra](https://github.com/cloudnativedaysjp/cnd-handson-infra)
+[cnd-handson-infra](https://github.com/cloudnativedaysjp/cnd-handson-infra)  
 ↑をクリックし、forkを実施していきます。  
 実際には、その中の**chapter_cicd/apps/frontend**を利用して、展開していきます。  
 
@@ -141,6 +141,7 @@ ArgoCDの画面に戻り、この状態で既存で動いているFrontendの変
 
 ![image](image/argo11.png)
 
+![image](image/podstatus2.png)
 
 podのimageが、` - image: ghcr.io/cloudnativedaysjp/cnd-handson-app/frontend:latest`  
 になっていること。
