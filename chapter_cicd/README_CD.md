@@ -93,7 +93,7 @@ GENERAL
 
 ![image](image/status3.png)
 
-![image](image/podstatus1.png)
+![image](image/app_ver1.png)
 
 podのimageが、` - image: ghcr.io/cloudnativedaysjp/cnd-handson-app/frontend:latest`  
 になっていること。
@@ -141,7 +141,7 @@ ArgoCDの画面に戻り、この状態で既存で動いているFrontendの変
 
 ![image](image/argo11.png)
 
-![image](image/podstatus2.png)
+![image](image/app_ver2.png)
 
 podのimageが、` - image: ghcr.io/cloudnativedaysjp/cnd-handson-app/frontend:latest`  
 になっていること。
