@@ -185,7 +185,7 @@ ArgoCDの画面に戻り、この状態で既存で動いているFrontendの変
 では、Frontendのページへアクセスしてみます。  
 `http://app.cicd.example.com/login`  
 先ほど同様に入力し、ログインします。  
-すると、以下の**青いバー**の画面が表示されます。  
+すると、以下の**黒いバー**の画面が表示されます。  
 
 ![image](image/login2.png)
 
