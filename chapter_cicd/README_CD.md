@@ -52,7 +52,7 @@ Type: git
 Project: default
 Repository URL: https://github.com/自身のアカウント名/cnd-handson-infra
 ```
-最後、** + CONNECT REPO **をクリックします。  
+最後、**+ CONNECT REPO**をクリックします。  
 うまく繋がると、CONNECTIOM STATUSが **Successful** になります。  
 
 ## FrontendアプリをArgo CD上にデプロイ
@@ -78,8 +78,8 @@ GENERAL
     Namespace: cicd-namespace
 ```
 
-設定できたら、**CREATE**をクリックして、下記のように表示されていることを確認して下さい。
-**Missing, OutofSync**であること 
+設定できたら、**CREATE**をクリックして、下記の表示の通り、**MissingとOutofSync**であることを確認して下さい。
+ 
 
 ![image](image/apps1.png)
 
@@ -99,7 +99,7 @@ GENERAL
 ![image](image/app_ver1.png)
 
 podのimageが、` - image: ghcr.io/cloudnativedaysjp/cnd-handson-app/frontend:latest`  
-になっていること。
+になっていることが確認できます。
 
 ---
 ## Frontendのアプリのデプロイが完了
@@ -157,7 +157,7 @@ podのimageが、` - image: ghcr.io/cloudnativedaysjp/cnd-handson-app/frontend-v
 ![image](image/login2.png)
 
 これで、Githubのリポジトリにあるファイルから新イメージへ設定変更し、　　
-その変更がトリガーとなりアプリケーション更新されるというCD(Continuous Deliver)のハンズオンです。  
+その変更がトリガーとなりアプリケーション更新されるというCD(Continuous Delivery)のハンズオンです。  
 
 
 
