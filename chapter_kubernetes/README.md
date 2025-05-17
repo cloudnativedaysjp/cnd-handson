@@ -1599,7 +1599,7 @@ kubectl delete namespaces resource-test
 セクションの最後に、簡単なWebアプリケーションを使ったトラブルシュートに挑戦してみましょう。
 構成図右下にあるcnd-web-appに接続し、適切なWebページを表示させることがゴールです。
 
-![diagram](./image/cndw-tshoot-diagram.png)
+![diagram](./image/cnd-tshoot-diagram.png)
 
 > [!NOTE]
 > - 動作確認は、ブラウザから以下のURLにアクセスすることで行います。
