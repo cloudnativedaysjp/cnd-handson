@@ -85,6 +85,7 @@ YOUR_VM_IP_ADDRESS    grafana.example.com
 YOUR_VM_IP_ADDRESS    jaeger.example.com
 YOUR_VM_IP_ADDRESS    argocd.example.com
 YOUR_VM_IP_ADDRESS    app.argocd.example.com
+YOUR_VM_IP_ADDRESS    app.cicd.example.com
 YOUR_VM_IP_ADDRESS    dev.kustomize.argocd.example.com
 YOUR_VM_IP_ADDRESS    prd.kustomize.argocd.example.com
 YOUR_VM_IP_ADDRESS    helm.argocd.example.com
