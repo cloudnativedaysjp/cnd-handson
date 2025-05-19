@@ -53,7 +53,7 @@ Kustomize Version: v5.4.2
 続いて、chapter_kubernetesにcurrent directoryを移動します。
 
 ```sh
-cd ~/cnd-handson/chapter_kubernetes/
+cd ~/cnd-handson-infra/chapter_kubernetes/
 ```
 
 ## 2. アプリケーションデプロイ
@@ -160,223 +160,14 @@ kubectl run <Pod名> --image=<image名>
 kubectl run <pod名> --image=<image名> --dry-run=client -o yaml > <ファイル名>
 ```
 
-## 3. オリジナルコンテナデプロイ (Secretの活用)
 
-### 3.1. Deployment Manifestの修正
-
-続いて、前回DockerHubにPushしたオリジナルのImageを使い
-Podを作成していきます。
-
-まずはmanifestを編集します。
-
-```sh
-vi hello-world.yaml
-```
-
-
-```Yaml
-apiVersion: apps/v1
-kind: Deployment
-metadata:
-  annotations:
-    deployment.kubernetes.io/revision: "1"
-  labels:
-    app: hello-world
-  name: hello-world
-spec:
-  replicas: 1
-  selector:
-    matchLabels:
-      app: hello-world
-  template:
-    spec:
-    metadata:
-      labels:
-        app: hello-world
-    spec:
-      containers:
-      - image: <DockerHubのユーザ名>/<リポジトリ名>:<タグ名>
-        imagePullPolicy: Always
-        name: hello-world
-        ports:
-        - containerPort: 80
-```
-
-以下を、ご自身のDockerHubのユーザ名、リポジトリ名、タグに変更してください。
-
-```
-      - image: <DockerHubのユーザ名>/<リポジトリ名>:<タグ名>
-```
-
-
-### 3.2. Deploymentの適用
-
-デプロイを試みます。
-
-```sh
-kubectl apply -f hello-world.yaml
-```
-
-以下のコマンドで確認すると、Podの作成が失敗していることがわかります。
-
-```sh
-kubectl get pods
-```
-
-```Log
-NAME                           READY   STATUS         RESTARTS   AGE
-hello-world-69db5b6c68-xdktt   0/1     ErrImagePull   0          4s
-```
-
-このようなエラーが起こった場合は、原因の解析にPodの詳細出力が役立つ場合があります。
-以下のコマンドを入力します。
-
-```sh
-kubectl describe pod hello-world
-```
-
-```Log
-# 実行結果
-
-Name:             hello-world-69db5b6c68-xdktt
-Namespace:        default
-Priority:         0
-Service Account:  default
-Node:             kind-worker/172.18.0.2
-Start Time:       Tue, 07 May 2024 05:25:55 +0000
-Labels:           app=hello-world
-                  pod-template-hash=69db5b6c68
-Annotations:      <none>
-Status:           Pending
-IP:               10.0.0.58
-IPs:
-  IP:           10.0.0.58
-Controlled By:  ReplicaSet/hello-world-69db5b6c68
-Containers:
-  hello-world:
-    Container ID:   
-    Image:          ryuichitakei/hello-world:1.0
-    Image ID:       
-    Port:           80/TCP
-    Host Port:      0/TCP
-    State:          Waiting
-      Reason:       ImagePullBackOff
-    Ready:          False
-    Restart Count:  0
-    Environment:    <none>
-    Mounts:
-      /var/run/secrets/kubernetes.io/serviceaccount from kube-api-access-5hq2z (ro)
-Conditions:
-  Type              Status
-  Initialized       True 
-  Ready             False 
-  ContainersReady   False 
-  PodScheduled      True 
-Volumes:
-  kube-api-access-5hq2z:
-    Type:                    Projected (a volume that contains injected data from multiple sources)
-    TokenExpirationSeconds:  3607
-    ConfigMapName:           kube-root-ca.crt
-    ConfigMapOptional:       <nil>
-    DownwardAPI:             true
-QoS Class:                   BestEffort
-Node-Selectors:              <none>
-Tolerations:                 node.kubernetes.io/not-ready:NoExecute op=Exists for 300s
-                             node.kubernetes.io/unreachable:NoExecute op=Exists for 300s
-Events:
-  Type     Reason     Age                From               Message
-  ----     ------     ----               ----               -------
-  Normal   Scheduled  93s                default-scheduler  Successfully assigned default/hello-world-69db5b6c68-xdktt to kind-worker
-  Normal   BackOff    22s (x4 over 91s)  kubelet            Back-off pulling image "ryuichitakei/hello-world:1.0"
-  Warning  Failed     22s (x4 over 91s)  kubelet            Error: ImagePullBackOff
-  Normal   Pulling    8s (x4 over 93s)   kubelet            Pulling image "ryuichitakei/hello-world:1.0"
-  Warning  Failed     7s (x4 over 91s)   kubelet            Failed to pull image "ryuichitakei/hello-world:1.0": rpc error: code = Unknown desc = failed to pull and unpack image "docker.io/ryuichitakei/hello-world:1.0": failed to resolve reference "docker.io/ryuichitakei/hello-world:1.0": pull access denied, repository does not exist or may require authorization: server message: insufficient_scope: authorization failed
-  Warning  Failed     7s (x4 over 91s)   kubelet            Error: ErrImagePull
-```
-### 3.3. Secretの追加
-
-上記のログから、最終的にImageのPullに失敗しErrorになっているのがわかります。
-この原因は、格納されているリポジトリがプライベート設定であることです。
-外部公開されていないイメージをPullしたい場合は、Secretと呼ばれる認証情報を格納するためのリソース指定が必要です。
-
-現状、Default NameSpaceにはSecretリソースが存在しないことを確認します。
-
-```sh
-kubectl get secrets
-```
-
-```
-# 実行結果
-No resources found in  default namespace.
-```
-
-今回はそれぞれのnamespaceにPodをデプロイする想定なので、namespace毎に認証情報が必要です。namespaceから外のリソースは互いに干渉しないため、それぞれのnamespace内でのみ認証情報の共有が有効となります。
-今回のケースでは、ImageをPullする際にこのSecretを使うようManifestに指示を書くことでプライベートリポジトリからもImageのPullが可能になります。
-では、`dockerhub-secret`という名前のsecretリソースを作成してみましょう。
-
-以下のコマンドでSecretを作成します。
-
-```sh
-kubectl create secret docker-registry dockerhub-secret --docker-username=<DockerHubのユーザ名> --docker-password='<Dockerhubのパスワード>'
-```
-
-### 3.4. SecretをDeploymentで利用
-
-先ほどのManifestに、Secretに関する指示を追記します。
-
-```sh
-vi hello-world.yaml
-``` 
-
-```Yaml
-apiVersion: apps/v1
-kind: Deployment
-metadata:
-  annotations:
-    deployment.kubernetes.io/revision: "1"
-  labels:
-    app: hello-world
-  name: hello-world
-spec:
-  replicas: 1
-  selector:
-    matchLabels:
-      app: hello-world
-  template:
-    spec:
-    metadata:
-      labels:
-        app: hello-world
-    spec:
-      containers:
-      - image: <DockerHubのユーザ名>/<リポジトリ名>:<タグ>
-        imagePullPolicy: Always
-        name: hello-world
-        ports:
-        - containerPort: 80
-      imagePullSecrets: # 追記
-      - name: dockerhub-secret # 追記
-```
-
-先ほど作成したPodの設定を更新します。
-
-```sh
-kubectl apply -f hello-world.yaml
-```
-
-ImageのPullが成功し、Podが起動しているはずです。
-
-```sh
-kubectl get pods
-```
-
-## 4. ReplicaSetの仕組み
+## 3. ReplicaSetの仕組み
 
 ReplicaSetは稼働しているPod数を明示的に指定し、それを維持するためのリソースです。
 2.アプリケーションデプロイの章でも体感していただきましたが、指定したReplica数を維持するために
 自動的にPodの作成、削除が行われます。
-現在、みなさんのManifestにはReplica数1が設定されています。
-そのため、起動しているPodも1つになっているはずです。
+先ほどのManifestにはReplica数1が設定されています。
+そのため、起動たPodも1つだったはずです。
 
 ```Yaml
 apiVersion: apps/v1
@@ -385,26 +176,25 @@ metadata:
   annotations:
     deployment.kubernetes.io/revision: "1"
   labels:
-    app: hello-world
-  name: hello-world
+    app: test
+  name: test
 spec:
-  replicas: 1 #ここが1になっている 
+  replicas: 1 #ここが1になっている
   selector:
     matchLabels:
-      app: hello-world
+      app: test
   template:
     spec:
+      restartPolicy: OnFailure
     metadata:
       labels:
-        app: hello-world
+        app: test
     spec:
       containers:
-      - image: ryuichitakei/hello-world:1.0
-        name: hello-world
+      - image: nginx:latest
+        name: test
         ports:
         - containerPort: 80
-      imagePullSecrets:
-      - name: dockerhub-secret
 ```
 
 では以下のようにManifestを修正し、再度Manifestを登録しなおしてみます。
@@ -416,30 +206,29 @@ metadata:
   annotations:
     deployment.kubernetes.io/revision: "1"
   labels:
-    app: hello-world
-  name: hello-world
+    app: test
+  name: test
 spec:
-  replicas: 2 # 修正
+  replicas: 2 #2に修正
   selector:
     matchLabels:
-      app: hello-world
+      app: test
   template:
     spec:
+      restartPolicy: OnFailure
     metadata:
       labels:
-        app: hello-world
+        app: test
     spec:
       containers:
-      - image: ryuichitakei/hello-world:1.0
-        name: hello-world
+      - image: nginx:latest
+        name: test
         ports:
         - containerPort: 80
-      imagePullSecrets:
-      - name: dockerhub-secret
 ```
 
 ```sh
-kubectl apply -f hello-world.yaml
+kubectl apply -f test-deployment.yaml
 ```
 
 Podが2つに増えているか確認します。
@@ -452,8 +241,8 @@ kubectl get pods
 
 ```Log
 NAME                           READY   STATUS    RESTARTS   AGE
-hello-world-5b48b68bb6-bh27l   1/1     Running   0          2m12s
-hello-world-5b48b68bb6-ftwtz   1/1     Running   0          23s
+test-5cdf547c4f-8z5h9   1/1     Running   0          10s
+test-5cdf547c4f-wvzbt   1/1     Running   0          10s
 ```
 
 ## 5. Podの外部公開
@@ -475,20 +264,20 @@ apiVersion: v1
 kind: Service
 metadata:
   labels:
-    app: hello-world
-  name: hello-world-service
+    app: test
+  name: test-service
 spec:
   ports:
   - port: 80
     protocol: TCP
     targetPort: 80
   selector:
-    app: hello-world
+    app: test
   type: ClusterIP
 ```
 
 ```sh
-kubectl apply -f hello-world-service.yaml
+kubectl apply -f test-service.yaml
 ```
 
 Serviceについては以下で確認が可能です。
@@ -500,8 +289,7 @@ kubectl get services
 > 出力例
 
 ```Log
-NAME                  TYPE        CLUSTER-IP     EXTERNAL-IP   PORT(S)   AGE
-hello-world-service   ClusterIP   10.96.110.56   <none>        80/TCP    16m
+test-service   ClusterIP   10.96.123.57   <none>        80/TCP    16s
 ```
 
 続いてIngressリソースを作成します。
@@ -512,7 +300,7 @@ Serviceリソース同様、予め用意されているManifestを使用しま�
 apiVersion: networking.k8s.io/v1
 kind: Ingress
 metadata:
-  name: hello-world-ingress
+  name: test-ingress
 spec:
   ingressClassName: nginx
   rules:
@@ -523,13 +311,13 @@ spec:
         path: "/"
         backend:
           service:
-            name: hello-world-service
+            name: test-service
             port:
               number: 80
 ```
 
 ```sh
-kubectl apply -f hello-world-ingress.yaml 
+kubectl apply -f test-ingress.yaml 
 ```
 
 作成したIngressは以下で確認が可能です。
@@ -541,8 +329,8 @@ kubectl get ingress
 > 出力例
 
 ```Log
-NAME                  CLASS   HOSTS                     ADDRESS        PORTS   AGE
-hello-world-ingress   nginx   hello-world.example.com   10.96.246.72   80      17m
+NAME           CLASS   HOSTS                     ADDRESS        PORTS   AGE
+test-ingress   nginx   hello-world.example.com   10.96.42.249   80      2m6s
 ```
 
 ### 5.2. 動作確認
@@ -557,10 +345,9 @@ Hello Worldの文字が表示されたら成功です。
 動作確認後、リソースを削除します。
 
 ```
-kubectl delete ingress hello-world-ingress
-kubectl delete service hello-world-service
-kubectl delete deployment hello-world
-kubectl delete secret dockerhub-secret
+kubectl delete ingress test-ingress
+kubectl delete service test-service
+kubectl delete deployment test
 ```
 
 ## 6. アプリケーションの更新
@@ -610,7 +397,7 @@ Pod更新前の状態では、`This app is Blue`の画面が表示がされて�
 
 ```sh
 # 適用
-kubectl set image deployment/rollout rollout-app=ryuichitakei/green-app:1.0
+kubectl set image deployment/rollout rollout-app=ghcr.io/cloudnativedaysjp/green-app:1.0
 ```
 
 ```sh
@@ -647,6 +434,35 @@ kubectl delete ingress rollout-ingress
 古い環境と新しい環境を混在させ、ルーティングなどによってトラフィックを制御し、ダウンタイム無しで環境を切り替えます。
 今回はIngressのHost名によって、新旧どちらのアプリケーションにもアクセスできるような環境を用意しています。
 
+```Yaml
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: blue-green
+spec:
+  ingressClassName: nginx
+  rules:
+  - host: blue.example.com
+    http:
+      paths:
+      - pathType: Prefix
+        path: "/"
+        backend:
+          service:
+            name: blue-service
+            port:
+              number: 80
+  - host: green.example.com
+    http:
+      paths:
+      - pathType: Prefix
+        path: "/"
+        backend:
+          service:
+            name: green-service
+            port:
+              number: 80
+```
 
 まずは、対象のManifestを適用します。
 
@@ -794,7 +610,7 @@ PodはKubernetesにおける最小の単位ですが、その実態は複数(単
 また、init containerと呼ばれる一時的な用途のコンテナを作成することも可能です。
 
 今回はinit containerの動作を確認してみましょう。
-このシナリオでは、起動時に作成されるコンテナ(Init Container)が'CNDT2024!!'というメッセージを出力するコンテンツを作成しマウント先のボリュームに保存します。
+このシナリオでは、起動時に作成されるコンテナ(Init Container)が`Welcome to the CND Handson!!`というメッセージを出力するコンテンツを作成しマウント先のボリュームに保存します。
 その後、nginxが起動しInit Containerが作成したコンテンツを参照することで、nginxにアクセスした際に上記メッセージが返却されます。
 
 まずは以下のManifestをapplyします。
@@ -816,7 +632,7 @@ kubectl get pods -o wide | grep init
 kubectl run tmp --restart=Never --rm -i --image=nginx:alpine -- curl <PodのIP>
 ```
 
-以下のように`CNDW2024!!`のメッセージが確認できます。
+以下のように`Welcome to the CND Handson!!`のメッセージが確認できます。
 
 
 ```
@@ -1101,7 +917,7 @@ kubectl run test --image=nginx
 ```
 
 ```sh
- kubectl get pods
+kubectl get pods
 ```
 
 ```Log
@@ -1535,8 +1351,8 @@ ConfigMapは、機密性のないデータをキーと値のペアで保存す�
 環境固有の設定などをコンテナイメージから分離できるため、アプリケーションを簡単に移植できるようになります。
 
 但し、機密性や暗号化の機能を持たないため保存したいデータが機密情報である場合はSecretやサードパーティツールを使用する必要があります。
-今回は`CNDW2024 ConfigMap Handson`というHTML形式のデータをConfigMapに保存し、Podにマウントさせています。
-クライアントからのリクエストはマウントされたConfigMapのHTMLデータを参照するため、`CNDW2024 ConfigMap Handson`という文字列が返却されるはずです。
+今回は`CND ConfigMap Handson`というHTML形式のデータをConfigMapに保存し、Podにマウントさせています。
+クライアントからのリクエストはマウントされたConfigMapのHTMLデータを参照するため、`CND ConfigMap Handson`という文字列が返却されるはずです。
 
 
 
@@ -1559,7 +1375,7 @@ kubectl get pods -o wide
 ```
 
 最後にテンポラリのPodを作成し、curlでアクセスを試みます。
-`CNDW2024 ConfigMap Handson`という文字列が返却されると成功です。
+`CND ConfigMap Handson`という文字列が返却されると成功です。
 
 ```sh
 kubectl run tmp --restart=Never --rm -i --image=nginx:alpine -- curl <PodのIPアドレス>
@@ -1783,30 +1599,30 @@ kubectl delete namespaces resource-test
 セクションの最後に、簡単なWebアプリケーションを使ったトラブルシュートに挑戦してみましょう。
 構成図右下にあるcnd-web-appに接続し、適切なWebページを表示させることがゴールです。
 
-![diagram](./image/cndw-tshoot-diagram.png)
+![diagram](./image/cnd-tshoot-diagram.svg)
 
 > [!NOTE]
 > - 動作確認は、ブラウザから以下のURLにアクセスすることで行います。
->   - http://cndw-web.example.com
+>   - http://cnd-web.example.com
 > - リソースの更新後もWeb画面の表示が変わらない場合があります。1-2分待ってからブラウザのリフレッシュを行なってください。
 > - 改修箇所は1箇所ではない可能性があります。また、構成図とエラーメッセージがヒントになる場合があります。
 
 
 以下のコマンドでアプリのデプロイを行なってください。
 ```sh
-kubectl apply -f cndw-web.yaml
+kubectl apply -f cnd-web.yaml
 ```
 
 
 動作確認後、リソースを削除します。
 
 ```sh
-kubectl delete pod cndw-web-app
+kubectl delete pod cnd-web-app
 kubectl delete pod dummy-app
 kubectl delete pod mysql
-kubectl delete service cndw-web-svc
+kubectl delete service cnd-web-svc
 kubectl delete service mysql-svc
-kubectl delete ingress cndw-web-ing
+kubectl delete ingress cnd-web-ing
 kubectl delete secret app-secret
 ```
 

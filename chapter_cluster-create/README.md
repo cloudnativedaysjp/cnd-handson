@@ -19,6 +19,12 @@ Ciliumの詳細は[chapter_cilium](../chapter_cilium/)にて説明します。
 - [Helm](https://helm.sh/ja/)
 - [Helmfile](https://helmfile.readthedocs.io/en/latest/)
 
+この章での作業ディレクトリは以下です。
+
+```sh
+cd cnd-handson/chapter_cluster-create/
+```
+
 kindはDockerを使用してローカル環境にKubernetesクラスターを構築するためのツールになります。
 また、kubectlはKubernetes APIを使用してKubernetesクラスターのコントロールプレーンと通信をするためのコマンドラインツールです。
 Cilium CLIはCiliumが動作しているKubernetesクラスターの管理やトラブルシュート等を行うためのコマンドラインツールになります。
