@@ -6,6 +6,6 @@ releases:
 - name: argo-rollouts
   namespace: argo-rollouts
   chart: argo/argo-rollouts
-  version: 2.39.1
+  version: 2.40.3
   values:
   - values.yaml
