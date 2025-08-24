@@ -9,10 +9,10 @@ repositories:
 releases:
 - name: istio-base
   chart: istio-official/base
-  version: 1.23.2
+  version: 1.27.0
 - name: istiod
   chart: istio-official/istiod
-  version: 1.23.2
+  version: 1.27.0
   namespace: istio-system
   createNamespace: true
   wait: true
@@ -21,7 +21,7 @@ releases:
 - name: istio-ztunnel
   namespace: istio-system
   chart: istio-official/ztunnel
-  version: 1.23.2
+  version: 1.27.0
   wait: true
   needs:
   - istio-system/istiod
@@ -30,7 +30,7 @@ releases:
 - name: istio-cni
   namespace: istio-system
   chart: istio-official/cni
-  version: 1.23.2
+  version: 1.27.0
   wait: true
   needs:
   - istio-system/istiod
