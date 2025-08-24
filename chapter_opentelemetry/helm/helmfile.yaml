@@ -10,7 +10,7 @@ releases:
 - name: cert-manager
   namespace: cert-manager
   chart: jetstack/cert-manager
-  version: v1.15.3
+  version: v1.18.2
   values:
   - values/cert-manager.values.yaml
 - name: opentelemetry-operator
