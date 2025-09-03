@@ -7,7 +7,7 @@ set -o errexit
 # Versions of the tools to install
 readonly KIND_VERSION="v0.30.0"
 readonly KUBECTL_VERSION="v1.34.0"
-readonly CILIUM_CLI_VERSION="v0.18.06"
+readonly CILIUM_CLI_VERSION="v0.18.6"
 readonly HELM_VERSION="v3.18.6"
 readonly HELMFILE_VERSION="1.1.5"
 # Output colors
