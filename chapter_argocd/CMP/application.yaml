@@ -1,0 +1,11 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: cmp-promtheus
+  namespace: argocd-cmp
+spec:
+  project: default
+  source:
+    repoURL: https://github.com/cloudnativedaysjp/cnd-handson.git
+    targetRevision: HEAD
+    path: chapter_prometheus/helm
