@@ -65,7 +65,8 @@ kubectl get -n kube-system -l app.kubernetes.io/part-of=cilium ds,deploy
 
 ```shell
 NAME                    DESIRED   CURRENT   READY   UP-TO-DATE   AVAILABLE   NODE SELECTOR            AGE
-daemonset.apps/cilium   3         3         3       3            3           kubernetes.io/os=linux   113m
+daemonset.apps/cilium         3         3         3       3            3           kubernetes.io/os=linux   113m
+daemonset.apps/cilium-envoy   3         3         3       3            3           kubernetes.io/os=linux   113m
 
 NAME                              READY   UP-TO-DATE   AVAILABLE   AGE
 deployment.apps/cilium-operator   2/2     2            2           113m
@@ -82,8 +83,8 @@ kubectl exec -n kube-system ds/cilium -c cilium-agent -- cilium version
 下記のようにバージョンが確認できます。
 
 ```shell
-Client: 1.16.1 68579055 2024-08-13T13:29:59+00:00 go version go1.22.5 linux/amd64
-Daemon: 1.16.1 68579055 2024-08-13T13:29:59+00:00 go version go1.22.5 linux/amd64
+Client: 1.18.1 e8a7070f 2025-08-13T14:47:02+00:00 go version go1.24.6 linux/amd64
+Daemon: 1.18.1 e8a7070f 2025-08-13T14:47:02+00:00 go version go1.24.6 linux/amd64
 ```
 
 この章ではCiliumの機能として下記について説明します。
@@ -95,7 +96,7 @@ Daemon: 1.16.1 68579055 2024-08-13T13:29:59+00:00 go version go1.22.5 linux/amd6
   - Gateway API
   - Traffic Management
 
-Networkingに関しては、Netowrk Policyを利用した特定のPodに対するL7のトラフィック制御を行います。
+Networkingに関しては、Network Policyを利用した特定のPodに対するL7のトラフィック制御を行います。
 ServiceMeshに関しては、まず初めに、CiliumのIngressClassを設定したIngressリソースを利用するデモを行います。
 次に、トラフィックを9:1に分割するデモをGateway APIとCiliumのEnvoy Configを利用した2パターン説明します。
 今回はトラフィック分割のデモのみですが、他にもヘッダー変更、URLの書き換えなど行うことができます。
@@ -318,7 +319,7 @@ handson-yellow            ClusterIP      10.96.80.215    <none>         8080/TCP
 > [!WARNING]
 >
 > manifest/l2announcement.yamlでデプロイした`CiliumLoadBalancerIPPool`リソースの`spec.blocks`に設定する値は、docker kindネットワークのアドレス帯から選択する必要があります。
-> 今回は既に設定済みのため意識する必要はありせんが、別環境でL2 Announcementを利用するときには注意してください。
+> 今回は既に設定済みのため意識する必要はありませんが、別環境でL2 Announcementを利用するときには注意してください。
 
 
 Serviceリソースの`Type:Loadbalancer`のIPアドレスを取得します。
@@ -380,13 +381,13 @@ Containers:            cilium-operator    Running: 2
                        hubble-relay       Running: 1
                        cilium             Running: 3
 Cluster Pods:          21/21 managed by Cilium
-Helm chart version:    
-Image versions         hubble-relay       quay.io/cilium/hubble-relay:v1.16.1@sha256:2e1b4c739a676ae187d4c2bfc45c3e865bda2567cc0320a90cb666657fcfcc35: 1
-                       cilium             quay.io/cilium/cilium:v1.16.1@sha256:0b4a3ab41a4760d86b7fc945b8783747ba27f29dac30dd434d94f2c9e3679f39: 3
-                       cilium-operator    quay.io/cilium/operator-generic:v1.16.1@sha256:3bc7e7a43bc4a4d8989cb7936c5d96675dd2d02c306adf925ce0a7c35aa27dc4: 2
-                       cilium-envoy       quay.io/cilium/cilium-envoy:v1.29.7-39a2a56bbd5b3a591f69dbca51d3e30ef97e0e51@sha256:bd5ff8c66716080028f414ec1cb4f7dc66f40d2fb5a009fff187f4a9b90b566b: 3
-                       hubble-ui          quay.io/cilium/hubble-ui:v0.13.1@sha256:e2e9313eb7caf64b0061d9da0efbdad59c6c461f6ca1752768942bfeda0796c6: 1
-                       hubble-ui          quay.io/cilium/hubble-ui-backend:v0.13.1@sha256:0e0eed917653441fded4e7cdb096b7be6a3bddded5a2dd10812a27b1fc6ed95b: 1
+Helm chart version:    1.18.1
+Image versions         cilium             quay.io/cilium/cilium:v1.18.1@sha256:65ab17c052d8758b2ad157ce766285e04173722df59bdee1ea6d5fda7149f0e9: 3
+                       cilium-envoy       quay.io/cilium/cilium-envoy:v1.34.4-1754895458-68cffdfa568b6b226d70a7ef81fc65dda3b890bf@sha256:247e908700012f7ef56f75908f8c965215c26a27762f296068645eb55450bda2: 3
+                       cilium-operator    quay.io/cilium/operator-generic:v1.18.1@sha256:97f4553afa443465bdfbc1cc4927c93f16ac5d78e4dd2706736e7395382201bc: 2
+                       hubble-relay       quay.io/cilium/hubble-relay:v1.18.1@sha256:7e2fd4877387c7e112689db7c2b153a4d5c77d125b8d50d472dbe81fc1b139b0: 1
+                       hubble-ui          quay.io/cilium/hubble-ui-backend:v0.13.2@sha256:a034b7e98e6ea796ed26df8f4e71f83fc16465a19d166eff67a03b822c0bfa15: 1
+                       hubble-ui          quay.io/cilium/hubble-ui:v0.13.2@sha256:9e37c1296b802830834cc87342a9182ccbb71ffebb711971e849221bd9d59392: 1
 ```
 
 Envoyの設定は、CRDとして定義された`CiliumEnvoyConfig`と`CiliumCllusterwideEnvoyConfig`を利用することで、L7トラフィック制御が可能です。
@@ -398,7 +399,7 @@ Envoyの[Supported API versions](https://www.envoyproxy.io/docs/envoy/latest/api
 
 この節では、`envoy.filters.http.router`を利用したトラフィックシフトを行います。
 
-`handson-blue"`に10%、`handson-yellow`に90%のトラフィックを流すように設定します。
+`handson-blue`に10%、`handson-yellow`に90%のトラフィックを流すように設定します。
 
 ```shell
 kubectl apply -f manifest/cec.yaml
