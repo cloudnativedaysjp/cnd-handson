@@ -2,7 +2,7 @@ apiVersion: v1
 kind: ConfigMap
 metadata:
   name: helmfile-plugin-config
-  namespace: argocd
+  namespace: argo-cd
 data:
   plugin.yaml: |
     apiVersion: argoproj.io/v1alpha1
