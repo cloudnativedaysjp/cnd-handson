@@ -16,6 +16,7 @@ spec:
         pathType: Prefix
         backend:
           service:
+            name: pyroscope-query-frontend
             name: pyroscope
             port:
               number: 4040
