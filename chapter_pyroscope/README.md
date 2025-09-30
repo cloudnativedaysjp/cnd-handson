@@ -70,9 +70,9 @@ cd chapter_pyroscope
 Kubernetesクラスタ上にPyroscopeをインストールします。
 ここでは、grafanaのHelm Chartから利用します。
 
-Pyroscopeでは、モノリシックモードと、マイクロサービスモードという、2つのデプロイ方式が選択できます。ここでは、モノリシックモードで動かしてみます。
+Pyroscopeでは、モノリシックモードと、マイクロサービスモードという、2つのデプロイ方式が選択できます。本章ではデフォルトでマイクロサービスモードを採用します。
 
-用意されているhelmfile.yamlおよびvalues.yamlを利用して、 `helmfile sync` を実行し、Pyroscopeをインストールしましょう。
+用意されているhelmfile.yamlおよび `helm/values-micro-services.yaml` を利用して、 `helmfile sync` を実行し、Pyroscopeをインストールしましょう。
 
 ```bash
 helmfile sync -f helm/helmfile.yaml
@@ -85,10 +85,21 @@ kubectl get pods -n monitoring -l app.kubernetes.io/instance=pyroscope
 ```
 
 ```bash
-# 実行結果
-NAME                READY   STATUS    RESTARTS   AGE
-pyroscope-0         1/1     Running   0          22s
-pyroscope-alloy-0   2/2     Running   0          22s
+# 実行結果（マイクロサービスモード）
+pyroscope-alloy-0                            2/2     Running   0          29m
+pyroscope-compactor-0                        1/1     Running   0          27m
+pyroscope-compactor-1                        1/1     Running   0          27m
+pyroscope-distributor-7d6969bdb4-4x9jh       1/1     Running   0          5m29s
+pyroscope-ingester-0                         1/1     Running   0          27m
+pyroscope-ingester-1                         1/1     Running   0          27m
+pyroscope-minio-0                            1/1     Running   0          5m27s
+pyroscope-querier-7867466d84-gg5qg           1/1     Running   0          27m
+pyroscope-querier-7867466d84-nb2sd           1/1     Running   0          27m
+pyroscope-querier-7867466d84-xtc4z           1/1     Running   0          27m
+pyroscope-query-frontend-97bb84b78-mbpml     1/1     Running   0          5m28s
+pyroscope-query-scheduler-857746b8b6-mgph2   1/1     Running   0          5m28s
+pyroscope-store-gateway-0                    1/1     Running   0          27m
+pyroscope-store-gateway-1                    1/1     Running   0          27m
 ```
 
 
@@ -107,7 +118,7 @@ kubectl apply -f ingress.yaml
 ## Grafanaへのデータソース追加
 chapter_grafanaで構築したGrafanaに、Pyroscopeのデータソースを追加します。
 * Data sourse：Grafana Pyroscope
-* HTTP>URL：http://pyroscope.monitoring.svc.cluster.local:4040
+* HTTP>URL：http://pyroscope-query-frontend.monitoring.svc.cluster.local:4040
 
 ![image](./image/grafana-datasource.png)
 
@@ -116,7 +127,7 @@ chapter_grafanaで構築したGrafanaに、Pyroscopeのデータソースを追�
 datasources:
   - name: Grafana Pyroscope
     type: grafana-pyroscope-datasource
-    url: http://pyroscope.monitoring.svc.cluster.local:4040
+    url: http://pyroscope-query-frontend.monitoring.svc.cluster.local:4040
 ```
 
 ## Grafanaからのプロファイル参照
@@ -168,66 +179,28 @@ GrafanaのExplore([http://grafana.example.com/explore](http://grafana.example.co
 ## まとめ
 当ハンズオンでは、プロファイルとは何かという原理・原則的な話から、実際にGrafanaLabsのPyroscopeを使ったプロファイリングの実装を、手短に説明してみました。プロファイルは、アプリケーションのどのプログラムがパフォーマンスに影響しているかを、一発で見つけることに貢献します。また、メトリクスはもちろん、トレース、ログとの紐付けなども期待できますので、ぜひ実装にチャレンジしてみてください。
 
-## 番外編：マイクロサービスモードで動かしたいとき
-マイクロサービスモードで動かしたい場合は以下を実行してください。
+## 参考: モノリシックモードで動かす場合
+本章はマイクロサービスモードを前提としますが、参考としてモノリシックモードの手順も記載します。
 
-vim等で、`helmfile.yaml`の`values`のコメントアウトをはずします。
-
+1) `helm/helmfile.yaml` の `values` を一時的にコメントアウトし、`values-micro-services.yaml` を無効化します。
 ```helmfile.yaml
 releases:
 - name: pyroscope
-  namespace: pyroscope
+  namespace: monitoring
   createNamespace: true
   chart: grafana/pyroscope
-  version: 1.7.1
-  values:
-  - values-micro-services.yaml # マイクロサービスモードを使用する場合使用
+  version: 1.15.0
+  # values:
+  # - values-micro-services.yaml
 ```
 
-`helmfile sync`を再実行します。
+2) 再デプロイします。
 ```bash
 helmfile sync -f helm/helmfile.yaml
 ```
 
-マイクロサービスモードで動いているか確認します。
-
-```bash
-kubectl get pods -n monitoring | grep pyroscope
-```
-
-```bash
-# 実行結果
-pyroscope-alloy-0                            2/2     Running   0          29m
-pyroscope-compactor-0                        1/1     Running   0          27m
-pyroscope-compactor-1                        1/1     Running   0          27m
-pyroscope-distributor-7d6969bdb4-4x9jh       1/1     Running   0          5m29s
-pyroscope-ingester-0                         1/1     Running   0          27m
-pyroscope-ingester-1                         1/1     Running   0          27m
-pyroscope-minio-0                            1/1     Running   0          5m27s
-pyroscope-querier-7867466d84-gg5qg           1/1     Running   0          27m
-pyroscope-querier-7867466d84-nb2sd           1/1     Running   0          27m
-pyroscope-querier-7867466d84-xtc4z           1/1     Running   0          27m
-pyroscope-query-frontend-97bb84b78-mbpml     1/1     Running   0          5m28s
-pyroscope-query-scheduler-857746b8b6-mgph2   1/1     Running   0          5m28s
-pyroscope-store-gateway-0                    1/1     Running   0          27m
-pyroscope-store-gateway-1                    1/1     Running   0          27m
-```
-
-> [!NOTE]
-> マイクロサービスモードでは、ストレージサービスの指定が必要で、ここではMinIOというオブジェクトストレージサーバが採用されます。
-> ハンズオン用では、[values-micro-services.yaml](https://raw.githubusercontent.com/grafana/pyroscope/main/operations/pyroscope/helm/pyroscope/values-micro-services.yaml)を元に、要求リソースを小さくして作成しています。
-
-`ingress.yaml`の`.spec.rules.http.paths.backend.service.name`を`pyroscope-query-frontend`へ修正してください。
+3) Ingress のバックエンドServiceを `pyroscope` に戻します（`ingress.yaml`）。
 ```ingress.yaml
-apiVersion: networking.k8s.io/v1
-kind: Ingress
-metadata:
-  name: pyroscope-ingress-by-nginx
-  namespace: monitoring
-  annotations:
-    nginx.ingress.kubernetes.io/ssl-redirect: "false"
-spec:
-  ingressClassName: nginx
   rules:
   - host: pyroscope.example.com
     http:
@@ -236,20 +209,22 @@ spec:
         pathType: Prefix
         backend:
           service:
-            name: pyroscope-query-frontend
+            # name: pyroscope-query-frontend # マイクロサービスモードで指定するservice名
+            name: pyroscope # モノリシックモードの場合はこちらに変更
             port:
               number: 4040
 ```
 
-変更を反映してください。
+4) Pod例（モノリシック）：
 ```bash
-kubectl apply -f ingress.yaml
+pyroscope-0         1/1     Running   0          22s
+pyroscope-alloy-0   2/2     Running   0          22s
 ```
 
-chapter_grafanaで構築したGrafanaのデータソースも、接続先を`pyroscope-query-frontend`へ変更してください。
-
-* Data sourse：Grafana Pyroscope
-* HTTP>URL：http://pyroscope-query-frontend.monitoring.svc.cluster.local:4040
+5) Grafana のデータソースURL例（モノリシック）：
+```
+http://pyroscope.monitoring.svc.cluster.local:4040
+```
 
 ## 参考文献
 

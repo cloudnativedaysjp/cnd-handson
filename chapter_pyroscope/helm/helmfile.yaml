@@ -7,6 +7,6 @@ releases:
   namespace: monitoring
   createNamespace: true
   chart: grafana/pyroscope
-  version: 1.7.1
-  # values:
-  # - values-micro-services.yaml # マイクロサービスモードを使用する場合使用
+  version: 1.15.0
+  values:
+  - values-micro-services.yaml # マイクロサービスモードを使用
