@@ -201,6 +201,12 @@ helmfile sync -f helm/helmfile.yaml
 
 3) Ingress のバックエンドServiceを `pyroscope` に戻します（`ingress.yaml`）。
 ```ingress.yaml
+  rules:
+  - host: pyroscope.example.com
+    http:
+      paths:
+      - path: /
+        pathType: Prefix
         backend:
           service:
             # name: pyroscope-query-frontend # マイクロサービスモードで指定するservice名
