@@ -106,18 +106,22 @@ data:
 実際にConfigMapをデプロイします。
 
 ```sh
-kubectl apply -f ./CMP/helmfile-cmp-configmap.yaml
+kubectl apply -f ./cmp/patch/helmfile-cmp.yaml
+```
+```sh
+# 実行結果
+configmap/helmfile-plugin-config created
 ```
 
 ConfigMapが作成されたことを確認します。
 
 ```sh
-kubectl -n argocd get configmap cmp-plugin
+kubectl -n argo-cd get configmap helmfile-plugin-config 
 ```
 ```sh
 # 実行結果
-NAME         DATA   AGE
-cmp-plugin   1      10s
+NAME                     DATA   AGE
+helmfile-plugin-config   1      57s
 ```
 
 ### argocd-repo-serverへのSidecar追加
@@ -162,13 +166,18 @@ spec:
 kubectl patchコマンドを使用してargocd-repo-serverにSidecarを追加します。
 
 ```sh
-kubectl patch deployment argocd-repo-server -n argocd --patch-file ./CMP/helmfile-cmp-patch.yaml
+kubectl patch deployment argo-cd-argocd-repo-server -n argo-cd --patch-file ./cmp/patch/argocd-repo-server-patch.yaml 
+```
+
+```sh
+# 実行結果
+deployment.apps/argo-cd-argocd-repo-server patched
 ```
 
 Podが再起動され、Sidecarコンテナが追加されたことを確認します。
 
 ```sh
-kubectl -n argocd get pods -l app.kubernetes.io/name=argocd-repo-server
+kubectl get pods -l app.kubernetes.io/name=argocd-repo-server -n argo-cd
 ```
 ```sh
 # 実行結果
@@ -179,7 +188,7 @@ argocd-repo-server-7f5c8d9b8c-abc12   2/2     Running   0          30s
 Podの詳細を確認すると、`helmfile-cmp`コンテナが追加されていることがわかります。
 
 ```sh
-kubectl -n argocd describe pod -l app.kubernetes.io/name=argocd-repo-server
+kubectl -n argo-cd describe pod -l app.kubernetes.io/name=argocd-repo-server
 ```
 
 ## CMPの適用方法～Helmfile編～
@@ -225,7 +234,7 @@ repoServer:
 values.yamlを配置します。
 
 ```sh
-cp ./CMP/values.yaml ./helm/values.yaml
+cp ./cmp/values.yaml ./helm/values.yaml
 ```
 
 Helmfileを使用してArgoCDをデプロイします。
@@ -237,46 +246,42 @@ helmfile sync -f helm/helmfile.yaml
 デプロイが完了したら、argocd-repo-serverのPodを確認します。
 
 ```sh
-kubectl -n argocd get pods -l app.kubernetes.io/name=argocd-repo-server
+kubectl -n argo-cd get pods -l app.kubernetes.io/name=argocd-repo-server
 ```
 ```sh
 # 実行結果
-NAME                                  READY   STATUS    RESTARTS   AGE
-argocd-repo-server-7f5c8d9b8c-xyz34   2/2     Running   0          1m
+NAME                                          READY   STATUS    RESTARTS   AGE
+argo-cd-argocd-repo-server-86985f8c4b-6x7bp   2/2     Running   0          15m
 ```
 
 ## CMPを使用したアプリケーションのデプロイ
 
 CMPが正しく設定されたら、実際にHelmfileを使用するApplicationリソースを作成してみましょう。
-今回は、Prometheusをデプロイする例を試します。
+今回は、Pyroscopeをデプロイする例を試します。
 
 ### Applicationリソースの作成
 
-CMPを使用するApplicationリソースでは、`plugin`フィールドにプラグイン名を指定します。
+CMPを明示的に使用するApplicationリソースでは、`plugin`フィールドにプラグイン名を指定します。
+Discoverで自動検知してくれるので必須ではないです。
 
 ```yaml
 apiVersion: argoproj.io/v1alpha1
 kind: Application
 metadata:
-  name: prometheus
-  namespace: argocd
+  name: cmp-pyroscope
+  namespace: argo-cd
 spec:
+  destination:
+    namespace: monitoring
+    server: 'https://kubernetes.default.svc'
   project: default
   source:
-    repoURL: https://github.com/your-org/your-repo
-    targetRevision: main
-    path: prometheus
-    plugin:
-      name: helmfile
-  destination:
-    server: https://kubernetes.default.svc
-    namespace: prometheus
+    repoURL: https://github.com/cloudnativedaysjp/cnd-handson.git
+    targetRevision: HEAD
+    path: chapter_pyroscope/helm
   syncPolicy:
-    automated:
-      prune: true
-      selfHeal: true
     syncOptions:
-    - CreateNamespace=true
+      - CreateNamespace=true
 ```
 
 この設定のポイントは以下のとおりです。
@@ -289,32 +294,46 @@ spec:
 
 ArgoCD Web UIからもCMPを使用するアプリケーションを作成できます。
 
-1. `http://argocd.example.com/` にアクセス
-2. `+ NEW APP`ボタンをクリック
-3. Application Nameに`prometheus`を入力
-4. Projectは`default`を選択
-5. Sync Policyで`AUTOMATIC`を選択
-6. Repository URLにGitリポジトリのURLを入力
-7. Pathに`prometheus`を入力
-8. Plugin欄で`helmfile`を選択
-9. Cluster URLで`https://kubernetes.default.svc`を選択
-10. Namespaceに`prometheus`を入力
-11. `CREATE`ボタンをクリック
+Applicationsの画面において + NEW APPをクリックします。
 
-![](./image/argocd-cmp-webui.png)
+![Applications](./image/demoapp/new-app.png)
+
+上の画面上で各項目を次のように設定します。
+```
+GENERAL
+  Application Name: pyroscope
+  Project Name: default
+  SYNC POLICY: Manual
+  SYNC OPTIONS: AUTO CREATE NAMESPACE [v]
+SOURCE
+  Repository URL: https://github.com/自身のアカウント名/cnd-handson
+  Revision: main
+  Path: chapter_pyroscope/helm
+DESTINATION
+  Cluster URL: https://kubernetes.default.svc
+  Namespace: monitoring
+```
+![](./image/cmp/argocd-cmp-webui.png)
+
+SYNC APPSをクリックしてアプリケーションのデプロイを実行してください。
 
 ### CLIでのアプリケーション作成
 
 ArgoCD CLIを使用してアプリケーションを作成することもできます。
 
 ```sh
-argocd app create prometheus \
-  --repo https://github.com/your-org/your-repo \
-  --path prometheus \
+argocd app create pyroscope \
+  --repo https://github.com/cloudnativedaysjp/cnd-handson.git \
+  --path chapter_pyroscope/helm \
   --dest-server https://kubernetes.default.svc \
-  --dest-namespace prometheus \
-  --sync-policy automated \
-  --config-management-plugin helmfile
+  --dest-namespace monitoring \
+  --sync-policy automated
+```
+
+```sh
+# 実行結果
+{"level":"warning","msg":"Failed to invoke grpc call. Use flag --grpc-web in grpc calls. To avoid this warning message, use flag --grpc-web.","time":"2025-09-30T11:40:27+09:00"}
+application 'pyroscope' created
 ```
 
 ### YAMLファイルでのアプリケーション作成
@@ -322,13 +341,11 @@ argocd app create prometheus \
 YAMLファイルを使用してアプリケーションを作成する方法が最も再現性が高く推奨されます。
 
 ```sh
-kubectl apply -f ./CMP/application.yaml
+kubectl apply -f ./cmp/application.yaml
 ```
-
-または、ArgoCD CLIを使用することもできます。
-
 ```sh
-argocd app create -f ./CMP/application.yaml
+# 実行結果
+application.argoproj.io/cmp-pyroscope created
 ```
 
 ### 結果の確認
@@ -336,37 +353,43 @@ argocd app create -f ./CMP/application.yaml
 Applicationが作成されると、ArgoCDが自動的にGitリポジトリを監視し、helmfileを使用してマニフェストを生成・適用します。
 
 ```sh
-kubectl -n argocd get application prometheus
+kubectl -n argo-cd get application pyroscope
 ```
 ```sh
 # 実行結果
-NAME         SYNC STATUS   HEALTH STATUS
-prometheus   Synced        Healthy
+NAME        SYNC STATUS   HEALTH STATUS
+pyroscope   Synced        Healthy
 ```
 
 ArgoCD Web UIでアプリケーションの詳細を確認できます。
-`http://argocd.example.com/applications/prometheus` にアクセスすると、デプロイされたリソースの状態が視覚化されます。
+`http://argocd.example.com/applications/pyroscope` にアクセスすると、デプロイされたリソースの状態が視覚化されます。
 
-![](./image/argocd-cmp-application.png)
+![](./image/cmp/argocd-cmp-application.png)
 
 実際にデプロイされたリソースを確認します。
 
 ```sh
-kubectl -n prometheus get all
+kubectl -n monitoring get all
 ```
 ```sh
 # 実行結果
-NAME                                      READY   STATUS    RESTARTS   AGE
-pod/prometheus-server-7f5c8d9b8c-abc12    1/1     Running   0          2m
+NAME                    READY   STATUS    RESTARTS   AGE
+pod/pyroscope-0         1/1     Running   0          2m30s
+pod/pyroscope-alloy-0   2/2     Running   0          2m30s
 
-NAME                        TYPE        CLUSTER-IP      EXTERNAL-IP   PORT(S)    AGE
-service/prometheus-server   ClusterIP   10.96.123.456   <none>        9090/TCP   2m
+NAME                              TYPE        CLUSTER-IP    EXTERNAL-IP   PORT(S)     AGE
+service/pyroscope                 ClusterIP   10.96.7.235   <none>        4040/TCP    2m30s
+service/pyroscope-alloy           ClusterIP   10.96.111.9   <none>        12345/TCP   2m30s
+service/pyroscope-alloy-cluster   ClusterIP   None          <none>        12345/TCP   2m30s
+service/pyroscope-headless        ClusterIP   None          <none>        4040/TCP    2m30s
+service/pyroscope-memberlist      ClusterIP   None          <none>        7946/TCP    2m30s
 
-NAME                                READY   UP-TO-DATE   AVAILABLE   AGE
-deployment.apps/prometheus-server   1/1     1            1           2m
+NAME                               READY   AGE
+statefulset.apps/pyroscope         1/1     2m30s
+statefulset.apps/pyroscope-alloy   1/1     2m30s
 ```
 
-HelmfileでデプロイされたPrometheusが正常に動作していることが確認できたら成功です！
+HelmfileでデプロイされたPyroscopeが正常に動作していることが確認できたら成功です！
 
 ## より高度なCMPの活用例
 
