@@ -6,7 +6,7 @@ configs:
     plugins:
       helmfile-plugin:
         discover:
-          fileName: "helmfile.yaml"   
+          fileName: "helmfile.yaml"
         init:
           command: [sh, -c]
           args: 

@@ -73,8 +73,8 @@ Patchを使用してCMPを適用する方法を説明します。
 apiVersion: v1
 kind: ConfigMap
 metadata:
-  name: cmp-plugin
-  namespace: argocd
+  name: helmfile-plugin-config
+  namespace: argo-cd
 data:
   plugin.yaml: |
     apiVersion: argoproj.io/v1alpha1
@@ -89,12 +89,13 @@ data:
         command: [sh, -c]
         args:
           - |
-            helmfile init
+            echo "Initializing..."
+            helmfile deps
       generate:
         command: [sh, -c]
         args:
           - |
-            helmfile template
+            helmfile template -q --include-crds --skip-deps
 ```
 
 このConfigMapは以下の情報を定義しています。
@@ -133,21 +134,22 @@ helmfile-plugin-config   1      57s
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: argocd-repo-server
-  namespace: argocd
+  name: argo-cd-argocd-repo-server
+  namespace: argo-cd
 spec:
   template:
     spec:
-      volumes:
-      - name: cmp-plugin
-        configMap:
-          name: cmp-plugin
-      - name: custom-tools
-        emptyDir: {}
       containers:
       - name: helmfile-cmp
-        image: ghcr.io/helmfile/helmfile:latest
         command: [/var/run/argocd/argocd-cmp-server]
+        image: ghcr.io/helmfile/helmfile:latest
+        env:
+        - name: HELM_CACHE_HOME
+          value: /tmp/helm/cache
+        - name: HELM_CONFIG_HOME
+          value: /tmp/helm/config
+        - name: HELM_DATA_HOME
+          value: /tmp/helm/data
         securityContext:
           runAsNonRoot: true
           runAsUser: 999
@@ -156,11 +158,17 @@ spec:
           name: var-files
         - mountPath: /home/argocd/cmp-server/plugins
           name: plugins
-        - mountPath: /home/argocd/cmp-server/config/plugin.yaml
+        - mountPath: /home/argocd/cmp-server/config/plugin.yaml 
           subPath: plugin.yaml
-          name: cmp-plugin
+          name: helmfile-plugin-config
         - mountPath: /tmp
           name: cmp-tmp
+      volumes:
+      - configMap:
+          name: helmfile-plugin-config
+        name: helmfile-plugin-config
+      - emptyDir: {}
+        name: cmp-tmp
 ```
 
 kubectl patchコマンドを使用してargocd-repo-serverにSidecarを追加します。

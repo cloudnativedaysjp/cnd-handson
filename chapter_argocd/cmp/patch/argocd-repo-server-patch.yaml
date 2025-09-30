@@ -30,7 +30,7 @@ spec:
           name: var-files
         - mountPath: /home/argocd/cmp-server/plugins
           name: plugins
-        - mountPath: /home/argocd/cmp-server/config/plugin.yaml 
+        - mountPath: /home/argocd/cmp-server/config/plugin.yaml
           subPath: plugin.yaml
           name: helmfile-plugin-config
         # v2.4以降では、repo-serverコンテナと同じtmpボリュームをマウントは禁止

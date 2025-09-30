@@ -11,9 +11,11 @@ data:
       name: helmfile
     spec:
       version: v1.0
+      discover:
+        fileName: "helmfile.yaml"
       init:
         command: [sh, -c]
-        args: 
+        args:
           - |
             echo "Initializing..."
             helmfile deps
@@ -23,5 +25,3 @@ data:
           - |
             # helmfile の出力
             helmfile template -q --include-crds --skip-deps
-      discover:
-        fileName: "helmfile.yaml"
