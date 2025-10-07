@@ -1,6 +1,6 @@
 #!/bin/bash
 
-HUBBLE_VERSION=v1.16.1
+HUBBLE_VERSION=v1.18.0
 
 # Install hubble CLI
 # See: https://docs.cilium.io/en/stable/gettingstarted/hubble_setup/#install-the-hubble-client
