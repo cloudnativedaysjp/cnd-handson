@@ -2,11 +2,11 @@
 
 [What is Cilium](https://cilium.io/get-started/)で説明されるように、CiliumはKubernetesクラスターやその他のクラウドネイティブ環境にネットワーキング、セキュリティ、可観測性を提供するオープンソースプロジェクトです。
 Ciliumの基盤となっているのは、eBPFと呼ばれるLinuxカーネルの技術であり、セキュリティや可視性、ネットワーク制御ロジックをLinuxカーネルに動的に挿入することが可能です。
-eBPFについては[eBPF.io](https://ebpf.io/)をご確認ください。
+eBPFについては[eBPF.io](https://ebpf.io/ja/)をご確認ください。
 
-![](https://github.com/cilium/cilium/blob/36b7802b2e5c3e5a3f262b53a5d7abe8bbac18c4/Documentation/images/cilium-overview.png)
+![](https://github.com/cilium/cilium/blob/main/Documentation/images/cilium-overview.png)
 
-(出典：https://github.com/cilium/cilium/blob/36b7802b2e5c3e5a3f262b53a5d7abe8bbac18c4/Documentation/images/cilium-overview.png)
+(出典：https://github.com/cilium/cilium/blob/main/Documentation/images/cilium-overview.png)
 
 ## CNI (Container Network Interface)
 
@@ -29,7 +29,7 @@ Cilium以外にもCNIとして提供されているプラグインは数多く�
   - セキュリティポリシーやセグメンテーションの管理が可能です
   - また、ポリシードリブンで柔軟な通信制御も可能です
   - 大規模かつ複雑なネットワーク環境がある場合や、セキュリティポリシーを重視し、通信の制御が必要な場合に適しています
-- [Weave](https://github.com/weaveworks/weave)
+- [Weave](https://github.com/weaveworks/weave)(アーカイブ済)
   - メッシュネットワークを提供し、コンテナの動的な発見が可能です
   - オーバーレイネットワークをサポートしており、シンプルで軽量な設計です
   - 動的なワークロードディスカバリが必要な場合や、シンプルで効率的なネットワーキングが求められる場合に適しています
@@ -45,7 +45,7 @@ Ciliumは下記の主要コンポーネントで構成されています。
 - Operator
   - Kubernetesクラスター全体に対して実行されるタスクの管理を行います
   - 構成にもよりますが、一時的に利用できなくてもKubernetesクラスターは機能し続けます
-- Client(CLI)
+- Debug Client(CLI)
   - Cilium Agentとともにインストールされるコマンドラインツールです
   - 同じノード上で動作するCilium AgentのREST APIと対話を行うことができ、Agentの状態やステータスの検査ができます
   - Ciliumのインストールや管理、トラブルシュートなどに使用されるCLIとは別物になります
@@ -53,7 +53,7 @@ Ciliumは下記の主要コンポーネントで構成されています。
   - PodがNode上でスケジュールまたは終了される時にKubernetesによって呼び出されます
   - Cilium APIと対話し、ネットワーキング/ロードバランシング/ネットワークポリシーを提供するために必要な設定を起動します
 
-chapter Cluster Createで導入したCiliumに対して、上記のコンポーネントを簡単に確認してみます。
+[chapter Cluster Create](../chapter_cluster-create/)で導入したCiliumに対して、上記のコンポーネントを簡単に確認してみます。
 
 最初にAgentはDaemonSetリソース、OperatorはDeploymentリソースとしてデプロイされていることを確認します。
 
