@@ -43,7 +43,8 @@ kubectl apply -f ./manifest/application_argocdupdate.yaml
 
 ・ <b>argocdupdate<b>のアプリが新しく作成されていることを確認  
 
-```
+
+<details><summary>Manifestの説明</summary>
 Manifestについては、nginxのバージョン 1.27.0がインストールします。
 
 Image Updater用アノテーション（自動イメージ更新の設定）
@@ -68,7 +69,7 @@ Image Updaterは1分ごとにこのApplicationをスキャンして、ghcr.io/ng
 セマンティック範囲（>=1.27.0 <1.28.0）でより新しいタグが見つかれば、write-back-method=argocdに従い、
 Applicationのバージョンを（内部的にspec.sourceのイメージ指定）を直接更新します。 (1.27.0 → 1.27.xのLatestへ) 
 Argo CDはその更新を検知し、自動SyncによりDeploymentのコンテナイメージを新しいタグへ差し替えます。  
-```
+</details>
 
 ![image](image/updater2.png)
 ![image](image/updater3.png)
@@ -91,8 +92,55 @@ kubectl apply -f ./manifest/argocd_image_uploader.yaml
 ![image](image/updater6.png)
 ![image](image/updater7.png)
 
+<details><summary>Manifestの説明</summary>
+「Argo CD Image Updaterをargo-cd名前空間にデプロイして、Argo CDのApplicationを監視・自動更新できるようにするためのmanifestです。
+構成要素と役割は次の通りです。  
 
+ServiceAccount  
+ 名前: argocd-image-updater（namespace: argo-cd）  
 
+UpdaterのPodが使うサービスアカウント  
+RBAC  
+ Role/RoleBinding（namespace: argo-cd）  
+ configmaps/secretsのget/list/watchを許可（Updaterが自分の設定CM/Secretを読むため）  
+ ClusterRole/ClusterRoleBinding（クラスタ全体）  
+ applications（argoproj.io）のget/list/watch/update/patchを許可（Applicationの監視・更新に必要）  
+ eventsのcreateを許可（イベント出力用）  
+ ConfigMap（設定）  
+ argocd-image-updater-config（namespace: argo-cd）  
+ applications_api: kubernetes  
+ UpdaterがArgo CDのAPIトークンなしでKubernetes API経由でApplicationを読むモード  
+ argocd.server_addr: argo-cd-argocd-server.argo-cd.svc:443  
+ argocd.insecure: "true"  
+ 自己署名TLSの検証を緩める設定（APIモードに切り替える場合に有効）  
+ interval: "1m"（1分間隔でチェック）  
+ log.level: "debug"（詳細ログ）  
+ kube.events: "true"（イベント出力）  
+ registries.conf: GHCRを明示（公開利用で認証不要）  
+ git.commit-message-template: Git書き戻し時のコミットメッセージテンプレート（argocdモードでは未使用）  
+ argocd-image-updater-ssh-config（任意）  
+ SSHでGitを使う場合のssh_config（HTTPSなら不要）  
+ argocd-ssh-known-hosts-cm（任意）  
+ SSHのknown_hostsを格納（SSHを使わないなら空でも問題なし）  
+ Secret（任意）  
+ argocd-image-updater-secret  
+  ARGOCD_TOKEN（APIモードで使う場合のみ）やWebhook用シークレットの収納。今回のKubernetesモードでは未設定でOK  
+Deployment（本体）  
+ イメージ: quay.io/argoprojlabs/argocd-image-updater:v0.17.0  
+          args: ["run"]（v0.17系の起動方法）  
+      
+  
+  Updaterがargo-cd内のApplicationをKubernetes APIで定期スキャン（1分間隔）  
+  対象Applicationに付けたアノテーション（image-list、update-strategy、semver、write-back-methodなど）に従って、利用イメージを自動更新  
+  write-back-methodをargocdにすれば、Git認証なしでApplicationの設定を直接更新して反映可能  
+  write-back-methodをgitに切り替える場合は、Argo CD側にRepository認証（Secretやargocd repo add）が必要    
+</details>
+  
+```
+Updater起動確認
+kubectl -n argo-cd rollout status deploy/argocd-image-updater
+kubectl -n argo-cd logs deploy/argocd-image-updater -f
+```
 
 
 
