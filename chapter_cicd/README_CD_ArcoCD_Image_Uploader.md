@@ -41,7 +41,7 @@ name/alphabetical: タグ名をアルファベット順に並べ、辞書順で�
 
 
 ## 既存のArgoCDにあるアプリケーションの確認
-・　chapter_argocdを実施した場合、アプリがすでに一つあります。
+chapter_argocdを実施した場合、アプリがすでに一つあります。
 
 ![image](image/updater1.png)
 
@@ -54,7 +54,22 @@ name/alphabetical: タグ名をアルファベット順に並べ、辞書順で�
 kubectl apply -f ./manifest/application_argocdupdate.yaml
 ```
 
-・ <b>argocdupdate<b>のアプリが新しく作成されていることを確認  
+設定したmanifestが反映していること
+```
+kubectl get deployment,pod -n argocd-demo
+```
+```
+kubectl get deployment,pod -n argocd-demo
+NAME                           READY   UP-TO-DATE   AVAILABLE   AGE
+deployment.apps/argocdupdate   1/1     1            1           3h28m    <----
+deployment.apps/handson        1/1     1            1           4h37m
+
+NAME                               READY   STATUS    RESTARTS   AGE
+pod/argocdupdate-6f968f7cc-jjhg9   1/1     Running   0          3h28m    <----
+pod/handson-954b5b8f6-bk2xg        1/1     Running   0          4h37m
+```
+
+ <b>argocdupdate<b>のアプリが新しく作成されていることを確認  
 
 
 <details><summary>Manifestの説明</summary>
@@ -75,11 +90,11 @@ argocd-image-updater.argoproj.io/app.semver: ">=1.27.0 <1.28.0"
 　1.27系の最新（例: 1.27.4など）に自動追随する範囲指定
 
 argocd-image-updater.argoproj.io/interval: "1m"
-　・このアプリに対して1分間隔で新しいタグがないかチェック
+　このアプリに対して1分間隔で新しいタグがないかチェック
 
 全体的なmanifestの動きとしては、Argo CDは指定Gitのchapter_cicd/appを監視・同期し、argocd-demoにアプリを展開します。  
 Image Updaterは1分ごとにこのApplicationをスキャンして、ghcr.io/nginxinc/nginx-unprivilegedのタグを取得。  
-セマンティック範囲（>=1.27.0 <1.28.0）でより新しいタグが見つかれば、write-back-method=argocdに従い、
+xでより新しいタグが見つかれば、write-back-method=argocdに従い、
 Applicationのバージョンを（内部的にspec.sourceのイメージ指定）を直接更新します。 (1.27.0 → 1.27.xのLatestへ) 
 Argo CDはその更新を検知し、自動SyncによりDeploymentのコンテナイメージを新しいタグへ差し替えます。  
 </details>
@@ -151,9 +166,20 @@ Deployment（本体）
   
 ```
 Updater起動確認
-kubectl -n argo-cd rollout status deploy/argocd-image-updater
 kubectl -n argo-cd logs deploy/argocd-image-updater -f
 ```
 
-
-
+すると、以下の様にコンテナイメージを検知して、その中で条件(>=1.27.0 <1.28.0)に合致するものを探し、自動更新がされる形になります。
+```
+(ログの抜粋)
+time="2025-10-20T07:56:02Z" level=debug msg="found 268 from 268 tags eligible for consideration" image="ghcr.io/nginxinc/nginx-unprivileged:1.27.0"　
+time="2025-10-20T07:56:02Z" level=info msg="Setting new image to ghcr.io/nginxinc/nginx-unprivileged:1.27.4" alias=app application=argocdupdate image_name=nginxinc/nginx-unprivileged image_tag=1.27.0 registry=ghcr.io
+time="2025-10-20T07:56:02Z" level=info msg="Successfully updated image 'ghcr.io/nginxinc/nginx-unprivileged:1.27.0' to 'ghcr.io/nginxinc/nginx-unprivileged:1.27.4', but pending spec update (dry run=false)" alias=app application=argocdupdate image_name=nginxinc/nginx-unprivileged image_tag=1.27.0 registry=ghcr.io
+time="2025-10-20T07:56:02Z" level=debug msg="Using commit message: "
+time="2025-10-20T07:56:02Z" level=info msg="Committing 1 parameter update(s) for application argocdupdate" application=argocdupdate
+time="2025-10-20T07:56:02Z" level=debug msg="Applications listed: 2"
+time="2025-10-20T07:56:02Z" level=debug msg="Found application: argocd-demo in namespace argo-cd"
+time="2025-10-20T07:56:02Z" level=debug msg="Found application: argocdupdate in namespace argo-cd"
+time="2025-10-20T07:56:02Z" level=debug msg="Application argocdupdate matches the pattern"
+time="2025-10-20T07:56:02Z" level=info msg="Successfully updated the live application spec" application=argocdupdate
+```
