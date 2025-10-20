@@ -21,10 +21,10 @@ Annotationとして付与します。その後、ArgoCD Image Updaterは、ArgoC
 ArgoCDとの密接な統合により、Sync Windows や Application リソースに対するRBAC 認可などの高度な機能も完全にサポートされています。  
 
 ## ArgoCD Image Updaterが動作する条件
-・　ArgoCDが動作していること
-・　マニフェストが、KustomizeやHelmで管理させれていること
-・　コンテナイメージリポジトリに使う認証情報は、ArgoCD Image updaterと同じクラスター上で存在すること
-・　ArgoCD Image Updaterでは、Rollback機能がないため、ArgoCD側で対応、Roadmap上にはあるがまだ未定。
+ArgoCDが動作していること
+マニフェストが、KustomizeやHelmで管理させれていること
+コンテナイメージリポジトリに使う認証情報は、ArgoCD Image updaterと同じクラスター上で存在すること
+ArgoCD Image Updaterでは、Rollback機能がないため、ArgoCD側で対応、Roadmap上にはあるがまだ未定。
 
 ## 今回のハンズオンについて
 Nginx 1.27.0をArgoCD Image Uploderにて監視する様にし、  
