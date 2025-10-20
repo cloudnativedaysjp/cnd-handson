@@ -26,6 +26,19 @@ ArgoCDとの密接な統合により、Sync Windows や Application リソース
 ・　コンテナイメージリポジトリに使う認証情報は、ArgoCD Image updaterと同じクラスター上で存在すること
 ・　ArgoCD Image Updaterでは、Rollback機能がないため、ArgoCD側で対応、Roadmap上にはあるがまだ未定。
 
+## 今回のハンズオンについて
+Nginx 1.27.0をArgoCD Image Uploderにて監視する様にし、  
+Nginxのレジストリにある、1.27.x台の最新Latest版へ更新するハンズオンとしています。  
+ハンズオンなのでわかりやすい形で実施していますが、もちろん時前で管理しているアプリケーションの   
+バージョン変更している環境での導入が可能です。  
+https://argocd-image-updater.readthedocs.io/en/stable/basics/update-strategies/  
+
+### バージョン管理の検知条件
+semver: セマンティックバージョニング（意味のあるバージョン規則）の制約を考慮して、利用可能な最新バージョンへ更新する  
+latest/newest-build: レジストリ上で最も新しくビルドされたイメージに更新する  
+digest: 指定したバージョン（タグ名）は固定したまま、そのタグの最新のSHAダイジェストに更新する  
+name/alphabetical: タグ名をアルファベット順に並べ、辞書順で最も後ろ（順位が高い）に来るタグへ更新する 
+
 
 ## 既存のArgoCDにあるアプリケーションの確認
 ・　chapter_argocdを実施した場合、アプリがすでに一つあります。
