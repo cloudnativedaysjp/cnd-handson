@@ -210,7 +210,7 @@ ArgoCD上で、<B>HISTORU AND ROLLBACK </>をクリック
 ![image](image/updater13.png)
 
 これで Rollback は終了です。  
-もし、またpodを最新ものにしたい場合には、rollback または pod削除をすると、最新版の version 1.27.4に変わります。  　　
+もし、またpodを最新ものにしたい場合には、rollback または pod削除をすると、最新版の version 1.27.4に変わります。  
 (as of 10/21　の最新版なので、ハンズオン時には変更になる可能性あり)
 
 
