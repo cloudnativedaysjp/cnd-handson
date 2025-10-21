@@ -49,6 +49,9 @@ chapter_argocdを実施した場合、アプリがすでに一つあります。
 ## ArgoCD Image Updaterで管理するアプリケーションを作成
 
 ・以下のmanifestの中で、レポジトリ設定があるため、自分のレポジトリに修正してください。
+```
+    repoURL: https://github.com/<自分のrepository>/cnd-handson.git → この部分を修正してください
+```
 
 ```
 kubectl apply -f ./manifest/application_argocdupdate.yaml
@@ -56,16 +59,19 @@ kubectl apply -f ./manifest/application_argocdupdate.yaml
 
 設定したmanifestが反映していること
 ```
-kubectl get application -n argo-cd
+kubectl get deploy,pod -n argocd-demo
 ```
 ```
-NAME           SYNC STATUS   HEALTH STATUS
-argocd-demo    Synced        Healthy
-argocdupdate   Unknown       Healthy   <-まだSyncedになっていないこと
+NAME                           READY   UP-TO-DATE   AVAILABLE   AGE
+deployment.apps/argocdupdate   1/1     1            1           8s    <-
+deployment.apps/handson        1/1     1            1           8m5s
+
+NAME                                READY   STATUS    RESTARTS   AGE
+pod/argocdupdate-57b44bc99c-whh8b   1/1     Running   0          8s  <-
+pod/handson-954b5b8f6-288v5         1/1     Running   0          8m4s
 ```
 
  <b>argocdupdate<b>のアプリが新しく作成されていることを確認  
-
 
 <details><summary>Manifestの説明</summary>
 Manifestについては、nginxのバージョン 1.27.0がインストールします。
