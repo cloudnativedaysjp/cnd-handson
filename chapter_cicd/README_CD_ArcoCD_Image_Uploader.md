@@ -190,4 +190,31 @@ time="2025-10-20T07:56:02Z" level=info msg="Successfully updated the live applic
 また、Webhook連携なども記載がありますので、ご興味がある方はぜひ確認いただければと思います。  
 https://argocd-image-updater.readthedocs.io/en/stable/
 
+## アプリケーションをrollbackする場合 (現状 ArgoCD Image UpdaterではRoadmapのため、ArgoCD上で対応します)
+
+ArgoCD上で、<B>HISTORU AND ROLLBACK </>をクリック  
+![image](image/updater8.png)
+
+そこで、<B>Source Parameters</Bをクリックし、RollbackしたいVersionを確認する  
+![image](image/updater9.png)
+
+"..."をクリックして、"Rollback"　→ "OK"　をクリック  
+![image](image/updater10.png)
+
+![image](image/updater11.png)
+
+すると、Rollbackされて、podが今回の場合、Version 1.27.4 → 1.27.0　に戻ります  
+
+![image](image/updater12.png)
+
+![image](image/updater13.png)
+
+これで Rollback は終了です。
+
+
+
+
+
+
+
 
