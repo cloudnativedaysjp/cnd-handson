@@ -56,17 +56,12 @@ kubectl apply -f ./manifest/application_argocdupdate.yaml
 
 設定したmanifestが反映していること
 ```
-kubectl get deployment,pod -n argocd-demo
+kubectl get application -n argo-cd
 ```
 ```
-kubectl get deployment,pod -n argocd-demo
-NAME                           READY   UP-TO-DATE   AVAILABLE   AGE
-deployment.apps/argocdupdate   1/1     1            1           3h28m    <----
-deployment.apps/handson        1/1     1            1           4h37m
-
-NAME                               READY   STATUS    RESTARTS   AGE
-pod/argocdupdate-6f968f7cc-jjhg9   1/1     Running   0          3h28m    <----
-pod/handson-954b5b8f6-bk2xg        1/1     Running   0          4h37m
+NAME           SYNC STATUS   HEALTH STATUS
+argocd-demo    Synced        Healthy
+argocdupdate   Unknown       Healthy   <-まだSyncedになっていないこと
 ```
 
  <b>argocdupdate<b>のアプリが新しく作成されていることを確認  
