@@ -187,7 +187,7 @@ time="2025-10-20T07:56:02Z" level=info msg="Successfully updated the live applic
 
 上記にて、ArgoCDで動作しているアプリケーションが、コンテナイメージのバージョンアップを検知することより、　　
 既存で動作しているアプリケーションの自動アップデートがされた形になります。　　
-また、Webhook連携なども記載がありますので、ご興味がある方はぜひ確認いただければと思います。　　
+また、Webhook連携なども記載がありますので、ご興味がある方はぜひ確認いただければと思います。  
 https://argocd-image-updater.readthedocs.io/en/stable/
 
 
