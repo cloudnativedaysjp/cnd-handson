@@ -11,7 +11,7 @@
 
 ## 概要
 ### Istioとは
-Istioはサービスメッシュを実現するためのオープンソースのソフトウェアです。Google, IBM, Lyftによって2017年に開発が開始されましたが、現在多くのコントリビューターによって開発が進めらているCNCFのgraduatedプロジェクトです。Istioを使用することで、アプリケーションにほとんど、または全く変更を加えることなく、マイクロサービス構成のアプリケーションにサービスメッシュを追加することが可能です。
+Istioはサービスメッシュを実現するためのオープンソースのソフトウェアです。Google, IBM, Lyftによって2017年に開発が開始されましたが、現在多くのコントリビューターによって開発が進められているCNCFのgraduatedプロジェクトです。Istioを使用することで、アプリケーションにほとんど、または全く変更を加えることなく、マイクロサービス構成のアプリケーションにサービスメッシュを追加することが可能です。
 
 Istioが提供する主な機能は下記のとおりです。
 
@@ -61,9 +61,9 @@ kubectl get services,deployments -n istio-system
 ```sh
 # 実行結果
 NAME                           TYPE        CLUSTER-IP      EXTERNAL-IP   PORT(S)                                 AGE
-service/istio-ingressgateway   NodePort    10.96.73.231    <none>        18080:32080/TCP,18443:32443/TCP         55m
-service/istiod                 ClusterIP   10.96.238.211   <none>        15010/TCP,15012/TCP,443/TCP,15014/TCP   55m
-service/kiali                  ClusterIP   10.96.160.114   <none>        20001/TCP                               55m
+service/istio-ingressgateway   NodePort    10.96.122.216   <none>        18080:32080/TCP,18443:32443/TCP         22s
+service/istiod                 ClusterIP   10.96.40.78     <none>        15010/TCP,15012/TCP,443/TCP,15014/TCP   32s
+service/kiali                  ClusterIP   10.96.87.237    <none>        20001/TCP,9090/TCP                      33s
 
 NAME                                   READY   UP-TO-DATE   AVAILABLE   AGE
 deployment.apps/istio-ingressgateway   1/1     1            1           55m
@@ -97,12 +97,21 @@ kubectl rollout restart deployment/handson-blue -n handson
 kubectl get services,pods -n handson -l app=handson
 ```
 
+# 実行結果
+```powershell
+NAME              TYPE        CLUSTER-IP     EXTERNAL-IP   PORT(S)    AGE
+service/handson   ClusterIP   10.96.110.71   <none>        8080/TCP   14m
+
+NAME                               READY   STATUS    RESTARTS   AGE
+pod/handson-blue-9f785dfb9-jfpzp   2/2     Running   0          27s
+```
+
 > [!NOTE]
 >
 > chapter_opentelemetryで[traceをopentelemetryで管理する例](../chapter_opentelemetry/README.md#trace-をopentelemetryで管理する例)を実装している場合はコンテナ数は3になります。
 
 ```sh
-＃ 実行結果
+# 実行結果
 NAME              TYPE        CLUSTER-IP      EXTERNAL-IP   PORT(S)   AGE
 service/handson   ClusterIP   10.96.191.153   <none>        80/TCP    3m36s
 
@@ -116,7 +125,7 @@ kubectl get pods -n handson -l app=handson -o jsonpath={.items..spec..containers
 ```
 ```sh
 # 実行結果
-docker.io/istio/proxyv2:1.23.2
+docker.io/istio/proxyv2:1.27.0
 argoproj/rollouts-demo:blue
 
 # Tracingをopentelemetry管理している場合は下記も併せて表示されます。
@@ -263,7 +272,7 @@ while :; do curl -s -o /dev/null -w '%{http_code}\n' http://app.example.com:1808
 kubectl patch virtualservice weight-based-routing -n handson --type merge --patch-file networking/weight-based-routing-patch.yaml
 ```
 
-しばらくすると、新しいアプリケーションにトラッフィックが100%ルーティングされていることが確認できます(変化が見られない場合は、Kialiダッシュボード右上の青い`Refresh`ボタンを押して状態を更新してください)。
+しばらくすると、新しいアプリケーションにトラフィックが100%ルーティングされていることが確認できます(変化が見られない場合は、Kialiダッシュボード右上の青い`Refresh`ボタンを押して状態を更新してください)。
 ![image](./image/kiali-graph-weigh-based-routing-0-100.png)
 
 確認ができたらリクエストを停止してください。
@@ -497,6 +506,8 @@ while :; do kubectl exec curl -n handson -- curl -s -o /dev/null -w '%{http_code
 
 下記のように表示されるはずです。HTTPS通信が確立できずエラーとなっています。
 
+FIXME: 自分のEC2環境では'000	Send failure: Broken pipe'と表示された。環境によって異なるかもしれない。
+
 ```sh
 # 実行結果(curlのバージョンによって出力が異なる場合があります。)
 000     TLS connect error: error:00000000:lib(0)::reason(0)
@@ -542,7 +553,7 @@ while :; do kubectl exec curl -n handson -- curl -s -o /dev/null -w '%{http_code
 .
 ```
 
-Kiali dashboardからも確認してみましょう。リクエストを流した状態でブラウザから<http://kiali.example.com>にアクセスをしてください。`curl` のワークロードから `example.com` Serviceにアクセスできていることが確認できます。グラフが表示されない場合は、Kialiダッシュボード右上の青い`Refresh`ボタンを押して状態を更新してください。
+Kiali dashboardからも確認してみましょう。リクエストを流した状態でブラウザから<http://kiali.example.com>にアクセスをしてください。`curl` のワークロードから `cloudnativedays.jp` へアクセスできていることが確認できます。グラフが表示されない場合は、Kialiダッシュボード右上の青い`Refresh`ボタンを押して状態を更新してください。
 ![image](./image/kiali-graph-service-entry.png)
 
 ### クリーンアップ
@@ -636,8 +647,8 @@ kubectl get authorizationpolicies -n handson -l content=layer4-authz
 ```
 ```sh
 # 実行結果
-NAME           AGE
-layer4-authz   27s
+NAME           ACTION   AGE
+layer4-authz   DENY     18s
 ```
 
 再度リクエストをします。
