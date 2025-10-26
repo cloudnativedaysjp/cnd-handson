@@ -98,7 +98,7 @@ kubectl get services,pods -n handson -l app=handson
 ```
 
 # 実行結果
-```powershell
+```sh
 NAME              TYPE        CLUSTER-IP     EXTERNAL-IP   PORT(S)    AGE
 service/handson   ClusterIP   10.96.110.71   <none>        8080/TCP   14m
 
@@ -553,7 +553,7 @@ while :; do kubectl exec curl -n handson -- curl -s -o /dev/null -w '%{http_code
 .
 ```
 
-Kiali dashboardからも確認してみましょう。リクエストを流した状態でブラウザから<http://kiali.example.com>にアクセスをしてください。`curl` のワークロードから `cloudnativedays.jp` へアクセスできていることが確認できます。グラフが表示されない場合は、Kialiダッシュボード右上の青い`Refresh`ボタンを押して状態を更新してください。
+Kiali dashboardからも確認してみましょう。リクエストを流した状態でブラウザから<http://kiali.example.com>にアクセスをしてください。`curl` のワークロードから `cloudnativedays.jp`へアクセスできていることが確認できます。グラフが表示されない場合は、Kialiダッシュボード右上の青い`Refresh`ボタンを押して状態を更新してください。
 ![image](./image/kiali-graph-service-entry.png)
 
 ### クリーンアップ
