@@ -1,0 +1,45 @@
+# argocd-repo-server-patch.yaml
+# https://argo-cd.readthedocs.io/en/stable/operator-manual/config-management-plugins/#register-the-plugin-sidecar
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: argo-cd-argocd-repo-server
+  namespace: argo-cd
+spec:
+  template:
+    spec:
+      containers:
+      - name: helmfile-cmp
+        command: [/var/run/argocd/argocd-cmp-server] # エントリーポイントはArgo CDの軽量CMPサーバー（argocd-cmp-server）
+        image: ghcr.io/helmfile/helmfile:latest # 利用したいプラグインのイメージを使用
+        env:
+        - name: HELM_CACHE_HOME
+          value: /tmp/helm/cache
+        - name: HELM_CONFIG_HOME
+          value: /tmp/helm/config
+        - name: HELM_DATA_HOME
+          value: /tmp/helm/data
+        securityContext:
+          runAsNonRoot: true
+          runAsUser: 999
+        volumeMounts:
+        # エントリポイント用のバイナリ
+        # repo-serverとcmp-serverのプロセス間通信
+        # repo-serverとcmp-serverのクローンしたレポジトリ用
+        - mountPath: /var/run/argocd
+          name: var-files
+        - mountPath: /home/argocd/cmp-server/plugins
+          name: plugins
+        - mountPath: /home/argocd/cmp-server/config/plugin.yaml
+          subPath: plugin.yaml
+          name: helmfile-plugin-config
+        # v2.4以降では、repo-serverコンテナと同じtmpボリュームをマウントは禁止
+        # ファイルシステムの分離により、パストラバーサル攻撃を軽減
+        - mountPath: /tmp
+          name: cmp-tmp
+      volumes:
+      - configMap: #CMPの設定をconfigMapから取得
+          name: helmfile-plugin-config
+        name: helmfile-plugin-config
+      - emptyDir: {} # ファイルシステムを分離のため
+        name: cmp-tmp

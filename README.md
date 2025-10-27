@@ -1,5 +1,5 @@
-# Co-located Hands-on Event by CNDS2025 Committee
-CloudNative Days Summer 2025 実行委員会による『一日で学ぶクラウドネイティブ技術実践ハンズオン』のドキュメントです。
+# Co-located Hands-on Event by CNDW2025 Committee
+CloudNative Days Winter 2025 実行委員会による『一日で学ぶクラウドネイティブ技術実践ハンズオン』のドキュメントです。
 
 Docker、Kubernetes、Prometheus、Grafana、ArgCDなど、クラウドネイティブな環境でよく利用されるOSSを対象としたハンズオンです。このハンズオンを通して、これらのOSSについての基本的な使い方を学び、今後の学習のきっかけにしてください。
 
