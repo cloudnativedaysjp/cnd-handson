@@ -62,7 +62,7 @@ server:
       - name: rollout-extension
         env:
           - name: EXTENSION_URL
-            value: https://github.com/argoproj-labs/rollout-extension/releases/download/v0.3.4/extension.tar
+            value: https://github.com/argoproj-labs/rollout-extension/releases/download/v0.3.7/extension.tar
 ```
 helmファイルの更新を行います。
 ```sh
