@@ -641,9 +641,9 @@ kubectl run tmp --restart=Never --rm -i --image=nginx:alpine -- curl <PodのIP>
 
   % Total    % Received % Xferd  Average Speed   Time    Time     Time  Current
                                  Dload  Upload   Total   Spent    Left  Speed
-CNDW2024!!
-100    11  100    11    0     0   8094      0 --:--:-- --:--:-- --:--:-- 11000
-pod "tmp" deleted
+100    11  100    11    0     0   4776      0 --:--:-- --:--:-- --:--:--  5500
+CNDW2025!!
+pod "tmp" deleted from default namespace
 ```
 
 動作確認後、リソースを削除します。
