@@ -1,0 +1,23 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: argocdupdate
+  labels:
+    app: argocdupdate
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: argocdupdate
+  template:
+    metadata:
+      labels:
+        app: argocdupdate
+    spec:
+      containers:
+      - name: argocdupdate
+        image: ghcr.io/nginxinc/nginx-unprivileged:1.27.0
+        imagePullPolicy: IfNotPresent
+        ports:
+        - containerPort: 8080
+          name: http
