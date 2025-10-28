@@ -159,7 +159,7 @@ helmfile sync -f helm/helmfile.yaml
 kubectl get all -n prometheus
 ```
 
-```
+```bash
 # 実行結果
 NAME                                                            READY   STATUS    RESTARTS   AGE
 pod/alertmanager-kube-prometheus-stack-alertmanager-0           2/2     Running   0          40s
@@ -363,7 +363,7 @@ kubectl apply -f manifests/ingress-nginx-servicemonitor.yaml
 <http://prometheus.example.com/graph> を開き (またはリロードして)、PromQL入力欄に ngi のように入力し、nginx のメトリクスが追加されているのを確認しましょう。
 ※ServiceMonitorをapplyしてから反映（メトリクスが追加）されるまでに数分かかります。
 
-![image](https://github.com/kubernetes/ingress-nginx/blob/main/docs/images/prometheus-dashboard1.png)
+![image](https://raw.githubusercontent.com/kubernetes/ingress-nginx/blob/main/docs/images/prometheus-dashboard1.png)
 
 ## PromQL実例集
 
