@@ -201,8 +201,8 @@ kubectl get opentelemetrycollector
 ```
 ```sh
 # 実行結果
-NAME            MODE        VERSION   READY   AGE    IMAGE                                          MANAGEMENT
-log-collector   daemonset   0.108.0           102s   otel/opentelemetry-collector-contrib:0.108.0   managed
+NAME            MODE        VERSION   READY   AGE   IMAGE                                          MANAGEMENT
+log-collector   daemonset   0.131.1   2/2     46s   otel/opentelemetry-collector-contrib:0.131.1   managed
 ```
 
 ```sh
@@ -222,7 +222,7 @@ pod/log-collector-collector-gsd8a   1/1     Running   0          18h
 今回はホスト上の`/var/log/cndt-*.json`のログをまとめてくれるようになっているため、試しに下記の通り書き込んでみます。
 
 ```bash
-docker exec -it kind-worker sh -c "echo '{\"key1\": \"value1\", \"key2\": \"value2\"}' >> /tmp/cndt-1.json"
+docker exec -it kind-worker sh -c "echo '{\"key1\": \"value1\", \"key2\": \"value2\"}' >> /tmp/cnd-1.json"
 ```
 
 その後、`file` Exporterによって出力されたファイルを見てみると、確かにReceiverで受け取ったログがExporterで出力されていることが確認できます。
@@ -262,7 +262,7 @@ docker exec -it kind-worker sh -c "cat /tmp/all.json  | jq ."
                 {
                   "key": "log.file.name",
                   "value": {
-                    "stringValue": "cndt-1.json"
+                    "stringValue": "cnd-1.json"
                   }
                 },
               ],
@@ -348,8 +348,8 @@ kubectl get opentelemetrycollector metrics-collector
 ```
 ```sh
 # 実行結果
-NAME                MODE        VERSION   READY   AGE   IMAGE                                         MANAGEMENT
-metrics-collector   daemonset   0.108.0    1/1     44m   otel/opentelemetry-collector-contrib:0.108.0   managed
+NAME                MODE        VERSION   READY   AGE   IMAGE                                          MANAGEMENT
+metrics-collector   daemonset   0.131.1   2/2     4s    otel/opentelemetry-collector-contrib:0.131.1   managed
 ```
 
 ```sh
@@ -383,7 +383,7 @@ kubectl logs -l app.kubernetes.io/name=metrics-collector-collector -f
 次に、実際にGrafana上からメトリクスを確認してみましょう。
 `http://grafana.example.com/explore` に接続し、`system_cpu_time_seconds_total`のメトリクスを確認してみます。
 今回利用している`hostmetrics` Receiverで取得しているメトリクスには[Host Metrics Receiver](https://github.com/open-telemetry/opentelemetry-collector-contrib/blob/main/receiver/hostmetricsreceiver/internal/scraper/cpuscraper/documentation.md)のページから確認できます。
-`exporters.prometheusremotewrite.external_labels`の設定で`oteltest=cndt2023`のラベルを付与しているため、ラベルの指定をすることでOpenTelemetry Colelctorが出力したメトリクスのみに絞ることも可能です。
+`exporters.prometheusremotewrite.external_labels`の設定で`oteltest=cndhandson`のラベルを付与しているため、ラベルの指定をすることでOpenTelemetry Colelctorが出力したメトリクスのみに絞ることも可能です。
 
 ![](./image/grafana-metrics-collector-setting.png)
 
@@ -449,7 +449,7 @@ kubectl -n jaeger get jaeger
 ```sh
 # 実行結果
 NAME     STATUS    VERSION   STRATEGY   STORAGE   AGE
-jaeger   Running   1.57.0    allinone   memory    10m
+jaeger   Running   1.61.0    allinone   memory    11s
 ```
 
 デプロイされたJaegerのUIは、`https://jaeger.example.com/search`から確認できます。
@@ -512,7 +512,7 @@ kubectl get opentelemetrycollector trace-collector
 ```sh
 # 実行結果
 NAME              MODE         VERSION   READY   AGE   IMAGE                                          MANAGEMENT
-trace-collector   deployment   0.108.0   1/1     9s    otel/opentelemetry-collector-contrib:0.108.0   managed
+trace-collector   deployment   0.131.1   1/1     5s    otel/opentelemetry-collector-contrib:0.131.1   managed
 ```
 ```sh
 kubectl get deployments,pods,services -l app.kubernetes.io/name=trace-collector-collector
