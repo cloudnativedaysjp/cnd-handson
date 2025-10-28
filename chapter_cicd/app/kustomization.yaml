@@ -1,0 +1,9 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+namespace: argocd-demo
+resources:
+  - deployment.yaml
+  - service.yaml
+images:
+  - name: ghcr.io/nginxinc/nginx-unprivileged
+    newTag: 1.27.0
