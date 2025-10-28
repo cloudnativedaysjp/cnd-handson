@@ -8,13 +8,13 @@ releases:
 - name: cilium
   namespace: kube-system
   chart: cilium/cilium
-  version: 1.16.1
+  version: 1.18.1
   values:
   - values/cilium.values.yaml
 - name: ingress-nginx
   namespace: ingress-nginx
   createNamespace: true
   chart: ingress-nginx/ingress-nginx
-  version: 4.11.2
+  version: 4.13.1
   values:
   - values/ingress-nginx.values.yaml
