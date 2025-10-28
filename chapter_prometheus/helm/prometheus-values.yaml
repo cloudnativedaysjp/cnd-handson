@@ -1,8 +1,4 @@
 grafana:
-  image:
-    # 脆弱性報告により、Grafanaだけバージョン変更
-    # cf.) https://grafana.com/security/security-advisories/cve-2024-9264/
-    tag: 11.2.2-security-01
   adminUser: admin
   adminPassword: handson_saiko!
   dashboardProviders:
