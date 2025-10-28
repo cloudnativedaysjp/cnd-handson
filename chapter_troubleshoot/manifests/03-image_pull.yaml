@@ -1,0 +1,42 @@
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: imagepull-demo
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: nginx-app
+  namespace: imagepull-demo
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: nginx
+  template:
+    metadata:
+      labels:
+        app: nginx
+    spec:
+      containers:
+      - name: nginx
+        # 問題: Bitnamiは特定バージョンのタグを削除する方針に変更したため、
+        # 特定バージョンを指定するとイメージが見つからなくなる
+        image: bitnami/nginx:1.25.0
+        ports:
+        - containerPort: 8080
+        env:
+        - name: NGINX_HTTP_PORT_NUMBER
+          value: "8080"
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: nginx-service
+  namespace: imagepull-demo
+spec:
+  selector:
+    app: nginx
+  ports:
+  - port: 80
+    targetPort: 8080
