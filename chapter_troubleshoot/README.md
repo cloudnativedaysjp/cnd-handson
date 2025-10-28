@@ -40,6 +40,18 @@
 
 ## 1. ConfigMapの設定が間違ってる
 
+### 環境構築
+
+まず、問題を再現するためのリソースをデプロイします。
+
+```bash
+# マニフェストを適用
+kubectl apply -f manifests/01-configmap.yaml
+
+# リソースが作成されたことを確認
+kubectl get all -n configmap-demo
+```
+
 <details>
 <summary>🔍 問題の詳細を見る</summary>
 
@@ -129,6 +141,18 @@ kubectl logs <pod-name> -n configmap-demo | grep -E "DB_HOST|LOG_LEVEL"
 
 **問題**: メモリのlimit設定が不適切でPodがOOM Killされる
 
+### 環境構築
+
+まず、問題を再現するためのリソースをデプロイします。
+
+```bash
+# マニフェストを適用
+kubectl apply -f manifests/02-oom.yaml
+
+# リソースが作成されたことを確認
+kubectl get all -n oom-demo
+```
+
 <details>
 <summary>🔍 問題の詳細を見る</summary>
 
@@ -206,6 +230,18 @@ kubectl top pod -n oom-demo
 ## 3. ImageがPullできない！
 
 **問題**: コンテナイメージのPullに失敗してPodが起動しない（Bitnamiのタグ削除問題）
+
+### 環境構築
+
+まず、問題を再現するためのリソースをデプロイします。
+
+```bash
+# マニフェストを適用
+kubectl apply -f manifests/03-image_pull.yaml
+
+# リソースが作成されたことを確認
+kubectl get all -n imagepull-demo
+```
 
 <details>
 <summary>🔍 問題の詳細を見る</summary>
@@ -303,6 +339,24 @@ kubectl get pod <pod-name> -n imagepull-demo -o jsonpath='{.spec.containers[0].i
 ## 4. Podがスケジュールされない！
 
 **問題**: tolerationsの設定ミスでPodがスケジュールされない
+
+### 環境構築
+
+まず、問題を再現するためのリソースをデプロイします。
+
+```bash
+# NodeにTaintを設定（<node-name>は実際のNode名に置き換えてください）
+kubectl taint nodes <node-name> workload=batch:NoSchedule
+
+# Taintが設定されたことを確認
+kubectl describe node <node-name> | grep Taint
+
+# マニフェストを適用
+kubectl apply -f manifests/04-scheduling.yaml
+
+# リソースが作成されたことを確認
+kubectl get all -n scheduling-demo
+```
 
 <details>
 <summary>🔍 問題の詳細を見る</summary>
@@ -402,6 +456,19 @@ kubectl taint nodes <node-name> workload=batch:NoSchedule-
 ## 5. Ingressが繋がらない！
 
 **問題**: Ingressがnamespaceを跨いで別のnamespaceのServiceに接続できない
+
+### 環境構築
+
+まず、問題を再現するためのリソースをデプロイします。
+
+```bash
+# マニフェストを適用
+kubectl apply -f manifests/05-ingress.yaml
+
+# リソースが作成されたことを確認
+kubectl get all -n frontend
+kubectl get all -n backend
+```
 
 <details>
 <summary>🔍 問題の詳細を見る</summary>
