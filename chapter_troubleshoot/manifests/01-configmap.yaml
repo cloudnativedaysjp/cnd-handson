@@ -47,7 +47,7 @@ spec:
           valueFrom:
             configMapKeyRef:
               name: app-config
-              key: db_host  # 正しくは database_host
+              key: database_host  # 正しくは database_host
         - name: DB_PORT
           valueFrom:
             configMapKeyRef:
@@ -62,7 +62,7 @@ spec:
         - name: LOG_LEVEL
           valueFrom:
             configMapKeyRef:
-              name: application-config  # 正しくは app-config
+              name: app-config  # 正しくは app-config
               key: log_level
 ---
 apiVersion: v1

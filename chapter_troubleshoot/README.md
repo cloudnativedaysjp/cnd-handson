@@ -345,6 +345,14 @@ kubectl get pod <pod-name> -n imagepull-demo -o jsonpath='{.spec.containers[0].i
 まず、問題を再現するためのリソースをデプロイします。
 
 ```bash
+# セットアップスクリプトを実行（single node cluster用に自動化）
+./scripts/setup-04-scheduling.sh
+```
+
+<details>
+<summary>手動でセットアップする場合</summary>
+
+```bash
 # NodeにTaintを設定（<node-name>は実際のNode名に置き換えてください）
 kubectl taint nodes <node-name> workload=batch:NoSchedule
 
@@ -357,6 +365,8 @@ kubectl apply -f manifests/04-scheduling.yaml
 # リソースが作成されたことを確認
 kubectl get all -n scheduling-demo
 ```
+
+</details>
 
 <details>
 <summary>🔍 問題の詳細を見る</summary>
