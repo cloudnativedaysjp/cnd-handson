@@ -484,7 +484,7 @@ ingress.networking.k8s.io/app-ingress-by-nginx   nginx   helm.argocd.example.com
 http://helm.argocd.example.com
 アクセスして青いタイルのアプリが動いていることが確認できます。
 
-## 作成したリソースの削除
+## 作成したリソースの削除（chapter_cicdを実施する場合には、削除せずSkipしてください）
 作成したアプリケーションを削除します。
 ```
 argocd app delete argocd-demo
