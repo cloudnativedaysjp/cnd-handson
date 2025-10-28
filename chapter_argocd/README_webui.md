@@ -258,7 +258,7 @@ GENERAL
 http://helm.argocd.example.com
 アクセスして確認してみてください。Helmを使ってデプロイが出来ている事が確認できます。
 
-## 作成したリソースの削除
+## 作成したリソースの削除　（chapter_cicdを実施する場合には、削除せずSkipしてください）
 各アプリのDELETEをクリックします
 
 Applications画面の場合は、一番右下の端に、

@@ -45,3 +45,7 @@ CI/CDについてですが、 **CI** は、(**Continuous Integration：継続的
 ## CICDのCD部分の動作確認
 
 [CD(Continuous Delivery)のハンズオン手順](./README_CD.md)
+
+## CICDのCD部分の動作確認(ArgoCD Image Updater機能)
+
+[CD(Continuous Delivery)のArgoCD Image Uploaderのハンズオン手順](./README_CD_ArcoCD_Image_Uploader.md)

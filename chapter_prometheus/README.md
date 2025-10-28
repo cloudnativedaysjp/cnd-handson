@@ -1,25 +1,28 @@
 # Prometheus
 
-この章では、Kubernetes上での様々なメトリクスの基盤としてPrometheusを紹介し、実際に導入してみます。
+この章では、Kubernetes上での様々なメトリクスの監視ツールであるPrometheusを紹介し、実際に導入してみます。
 
 ## Prometheusについて
 
-Prometheusはモニタリング/アラートに関する基盤として利用することができるOSSです(元はSoundCloud)。
-監視対象のメトリクス情報を時系列データとして収集し、保存します。
-メトリクス情報は、ラベルと呼ばれるキーと値のペアで指定された対象から記録された情報をタイムスタンプと共に保存されます。
-そして、Prometheusは、2016年にCloud Native Computing Foundation Projectに加わり、現在はGraduatedとなっています。
+Prometheusはモニタリング/アラートに関する基盤として利用することができるOSSです。  
+2012年にSoundCloud社のエンジニアによって開発され、2016年にCNCF (Cloud Native Computing Foundation) Projectに加わり、現在は「Graduated」となっています。
 
-メトリクス収集についてはプル型アーキテクチャ(PushGatewayという仕組みによってサービスからプッシュも可能)によって実現されています。
+Prometheusでは、監視対象のメトリクス情報を時系列データとして収集し、保存します。  
+メトリクス情報は、ラベルと呼ばれるキーと値のペアで指定された対象から記録された情報をタイムスタンプと共に保存されます。
+
+メトリクス収集についてはプル型アーキテクチャによって実現されており、対象システムから能動的にメトリクス（計測データ）を収集する点が特徴です。Prometheusではプル型の収集を、スクレイプ（Scrape）と呼称しています。
+また、サービスからのプッシュも、PushGatewayというバッチジョブの仕組みまたは、Prometheus Remote-Write APIエンドポイントへ直接リクエストすることにより可能です。
 Prometheusのアーキテクチャは以下の通りです。
-例えば、閾値監視でメモリなど閾値を越えた場合に、Alert Managerと連携してAlertを出すことも可能ですし、
-Grafanaなどの可視化ツールと連携でき、収集したデータを簡単に可視化することが可能です。
 
 ![image](./image/architecture.png)
 
+独自のクエリ言語「PromQL」を備えており、閾値監視でメモリなど閾値を越えた場合に、Alert Managerと連携してAlertを出すことも可能であり、また、Grafanaといった可視化ツールと連携することで収集したデータを簡単に可視化することが可能です。  
+これらにより、リアルタイム性の高いモニタリングを実現する重要なツールとして普及しています。
+
 ## PromQLについて
 
-Prometheusが提供するメトリクスのクエリ言語で、多次元的にラベルがつけられた時系列データに対して様々な計算を適用可能になっています。
-例えば、以下の式では特定の環境で、GET以外のHTTPリクエストメソッドを持つリクエスト数のデータを取得することができます。
+Prometheusが提供するメトリクスのクエリ言語で、多次元的にラベルがつけられた時系列データに対して様々な計算を適用することが可能です。
+例えば以下の式では、特定の環境で、GET以外のHTTPリクエストメソッドを持つリクエスト数のデータを取得することができます。
 
 ```text
 http_requests_total{environment=~"staging|testing|development",method!="GET"}
@@ -27,26 +30,22 @@ http_requests_total{environment=~"staging|testing|development",method!="GET"}
 
 ## Prometheus Operatorについて
 
-Prometheus Operatorは、Prometheusや関連する監視コンポーネントを管理やKubernetesネイティブなデプロイメントを提供します。
-このプロジェクトの目的は、KubernetesクラスターのPrometheusベースの監視スタックの設定を簡素化し、自動化することにあります。
+Prometheus Operatorは、Prometheusや関連する監視コンポーネントのデプロイメントと管理をKubernetesネイティブな方法で提供します。  
 
-Prometheus Operatorには以下の特徴があります。
+KubernetesクラスタのPrometheusベースの監視スタックの設定を簡素化および自動化することを目的としており、以下のような特徴があります。
 
-Kubernetesカスタムリソース：Kubernetesのカスタムリソースを使用して、PrometheusやAlertmanager、関連するコンポーネントをデプロイし、管理します。
-
-簡素化されたデプロイメント設定：Prometheusの基本設定であるバージョン、永続性、保持ポリシー、KubernetesリソースのReplicaなどを設定することができます。
-
-Prometheusターゲット設定：Prometheus固有の言語を学ぶ必要なく、Kubernetesラベルクエリに基づいて監視ターゲット設定を自動的に生成します。
+* Kubernetesカスタムリソース：Kubernetesのカスタムリソースを使用して、PrometheusやAlertmanager、関連するコンポーネントをデプロイし、管理します。
+* 簡素化されたデプロイメント設定：Prometheusの基本設定であるバージョン、永続性、保持ポリシー、KubernetesリソースのReplicaなどを設定することができます。
+* Prometheusターゲット設定：Prometheus固有の言語を学ぶ必要なく、Kubernetesラベルクエリに基づいて監視ターゲット設定を自動的に生成します。
 
 ![image](https://prometheus-operator.dev/img/architecture.png)
 
 ### メトリクスの収集
 
-メトリクスを収集するために、Prometheus Operator は `ServiceMonitor`や`PodMonitor`を使用して、監視対象のサービスを指定します。
-
+メトリクスを収集するために、Prometheus Operator は `ServiceMonitor`や`PodMonitor`を使用して、監視対象のサービスを指定します。  
 これにより、CPUやメモリ使用率、HTTPリクエスト数、レイテンシーなどのメトリクスを追跡できます。
 
-例として、replicaが3つでport`8080`で以下のようなアプリケーションが公開されていることに前提に説明していきます。
+例として、replicaが3つでport`8080`で以下のようなアプリケーションが公開されていることを前提として説明していきます。
 
 ```yaml
 apiVersion: apps/v1
@@ -86,8 +85,8 @@ spec:
 
 ### ServiceMonitorの設定
 
-`ServiceMonitor`オブジェクトは、Serviceリソースに基づいてエンドポイントからメトリクスを収集することができます。
- 具体的には,Serviceオブジェクトに紐づくPodを検出し、そのPodからのメトリクスを収集する場合に便利です。
+`ServiceMonitor`オブジェクトは、Serviceリソースに基づいて、対象のエンドポイントからメトリクスを収集することができます。  
+具体的には、Serviceオブジェクトに紐づくPodを検出し、そのPodからのメトリクスを収集する場合に便利です。
 
 ```yaml
 apiVersion: monitoring.coreos.com/v1
@@ -106,8 +105,8 @@ spec:
 
 ### PodMonitorの設定
 
-`PodMonitor`オブジェクトは、KubernetesのPodリソースを監視するためのカスタムリソースです。こちらはServiceを介さず、直接Podを監視するために使用されます。
- 個々のPodからメトリクスを収集する場合に便利です。
+`PodMonitor`オブジェクトは、KubernetesのPodリソースを監視するためのカスタムリソースです。こちらはServiceを介さず、直接Podを監視するために使用されます。  
+個々のPodからメトリクスを収集する場合に便利です。
 
 ```yaml
 apiVersion: monitoring.coreos.com/v1
@@ -126,14 +125,17 @@ spec:
 
 ![image](https://prometheus.io/assets/grafana_prometheus.png)
 
-## 実践: kube-prometheus-stackのインストール
+---
+
+## 実践: Prometheusの導入
+### Helmでインストール
 
 KubernetesクラスタにPrometheusをインストールする方法として、
 Prometheusおよび各種ExporterをDaemonset等でデプロイする方法もありますが、
-ここではkube-prometheus-stackというHelm Chartを利用したいと思います。
+ここではkube-prometheus-stackというHelm Chartを利用します。
 
-kube-prometheus-stackでは以下のようなコンポーネントをまとめてインストールすることができ、
-各種設定もvalues.yamlで宣言的におこなうことができるため、導入/管理が比較的かんたんに実現できます。
+kube-prometheus-stackでは、以下のようなコンポーネントをまとめてインストールすることができ、
+YAML形式で宣言的に各種設定ができるため、導入/管理が比較的容易に実現できます。
 
 - Prometheus
 - Grafana
@@ -142,34 +144,73 @@ kube-prometheus-stackでは以下のようなコンポーネントをまとめ�
 - Node Exporter
 - Prometheus Operator
 
-用意されているhelmfile.yamlおよびvalues.yamlを利用して、 `helmfile sync` を実行しreleaseをインストールしましょう。
+helmfile.yaml、およびその中で指定している prometheus-values.yaml を利用して、`helmfile sync` を実行し、release(Helmの管理単位)をインストールしましょう。
 
 ```bash
+cat helm/helmfile.yaml
+
 helmfile sync -f helm/helmfile.yaml
 ```
 
-実際に各種サービスが起動しているか確認してみましょう。
+実際に各種サービスが起動しているか確認してみましょう。  
+各Podの「STATUS」が`Running`になっており、「READY」が`1/1`,`2/2`,`3/3`となっていれば問題ありません。
 
 ```bash
-kubectl get pods -n prometheus
+kubectl get all -n prometheus
 ```
 
 ```bash
 # 実行結果
-alertmanager-kube-prometheus-stack-alertmanager-0           2/2     Running   0          92s
-kube-prometheus-stack-grafana-5f4bf8df47-5csmk              3/3     Running   0          100s
-kube-prometheus-stack-kube-state-metrics-776cff966c-x4v7w   1/1     Running   0          100s
-kube-prometheus-stack-operator-fdc594c4d-6896k              1/1     Running   0          100s
-kube-prometheus-stack-prometheus-node-exporter-7972j        1/1     Running   0          100s
-kube-prometheus-stack-prometheus-node-exporter-dbkqx        1/1     Running   0          100s
-kube-prometheus-stack-prometheus-node-exporter-jqk58        1/1     Running   0          100s
-kube-prometheus-stack-prometheus-node-exporter-tm89f        1/1     Running   0          100s
-prometheus-kube-prometheus-stack-prometheus-0               2/2     Running   0          92s
+NAME                                                            READY   STATUS    RESTARTS   AGE
+pod/alertmanager-kube-prometheus-stack-alertmanager-0           2/2     Running   0          40s
+pod/kube-prometheus-stack-grafana-7ddf785959-87xlh              3/3     Running   0          48s
+pod/kube-prometheus-stack-kube-state-metrics-55cb9c8889-4c9qq   1/1     Running   0          48s
+pod/kube-prometheus-stack-operator-77975fd5b8-r6tdl             1/1     Running   0          48s
+pod/kube-prometheus-stack-prometheus-node-exporter-b462n        1/1     Running   0          49s
+pod/kube-prometheus-stack-prometheus-node-exporter-fpfm8        1/1     Running   0          49s
+pod/kube-prometheus-stack-prometheus-node-exporter-qrphj        1/1     Running   0          49s
+pod/prometheus-kube-prometheus-stack-prometheus-0               2/2     Running   0          40s
+
+NAME                                                     TYPE        CLUSTER-IP      EXTERNAL-IP   PORT(S)                      AGE
+service/alertmanager-operated                            ClusterIP   None            <none>        9093/TCP,9094/TCP,9094/UDP   40s
+service/kube-prometheus-stack-alertmanager               ClusterIP   xx.xx.xx.xx    <none>        9093/TCP,8080/TCP            49s
+service/kube-prometheus-stack-grafana                    ClusterIP   xx.xx.xx.xx    <none>        80/TCP                       49s
+service/kube-prometheus-stack-kube-state-metrics         ClusterIP   xx.xx.xx.xx    <none>        8080/TCP                     49s
+service/kube-prometheus-stack-operator                   ClusterIP   xx.xx.xx.xx   <none>        443/TCP                      49s
+service/kube-prometheus-stack-prometheus                 ClusterIP   xx.xx.xx.xx   <none>        9090/TCP,8080/TCP            49s
+service/kube-prometheus-stack-prometheus-node-exporter   ClusterIP   xx.xx.xx.xx    <none>        9100/TCP                     49s
+service/prometheus-operated                              ClusterIP   None            <none>        9090/TCP                     40s
+
+NAME                                                            DESIRED   CURRENT   READY   UP-TO-DATE   AVAILABLE   NODE SELECTOR            AGE
+daemonset.apps/kube-prometheus-stack-prometheus-node-exporter   3         3         3       3            3           kubernetes.io/os=linux   49s
+
+NAME                                                       READY   UP-TO-DATE   AVAILABLE   AGE
+deployment.apps/kube-prometheus-stack-grafana              1/1     1            1           49s
+deployment.apps/kube-prometheus-stack-kube-state-metrics   1/1     1            1           49s
+deployment.apps/kube-prometheus-stack-operator             1/1     1            1           49s
+
+NAME                                                                  DESIRED   CURRENT   READY   AGE
+replicaset.apps/kube-prometheus-stack-grafana-7ddf785959              1         1         1       49s
+replicaset.apps/kube-prometheus-stack-kube-state-metrics-55cb9c8889   1         1         1       49s
+replicaset.apps/kube-prometheus-stack-operator-77975fd5b8             1         1         1       49s
+
+NAME                                                               READY   AGE
+statefulset.apps/alertmanager-kube-prometheus-stack-alertmanager   1/1     40s
+statefulset.apps/prometheus-kube-prometheus-stack-prometheus       1/1     40s
+```
+
+Prometheusのバージョンは、コンテナイメージのタグやPodのログで確認することができます。
+```bash
+kubectl get pods -n prometheus -l app.kubernetes.io/name=prometheus -o jsonpath='{.items[0].spec.containers[?(@.name=="prometheus")].image}'; echo
+```
+
+```bash
+kubectl logs -n prometheus $(kubectl get pods -n prometheus -l app.kubernetes.io/name=prometheus -o jsonpath='{.items[0].metadata.name}') -c prometheus | grep "version"
 ```
 
 ### Ingressによるサービスの公開
 
-続いて、PrometheusやGrafana等の各UIをIngressで公開していきます。
+続いて、PrometheusやGrafana等の各UIをIngressで公開していきます。  
 すでにIngress NGINX Controllerがデプロイされていると思うので、以下のような設定でIngressをデプロイして公開します。
 
 ```yaml
@@ -222,24 +263,39 @@ spec:
 kubectl apply -f ingress.yaml
 ```
 
+### Web UIへアクセス 
 実際にそれぞれのUIが公開されているか確認してみましょう。
-ブラウザで  <http://prometheus.example.com> と <http://grafana.example.com> にアクセスしてみてください。
 
-Grafanaではユーザログインが必要ですが、先程設定したvalues.yamlの内容でログインできます( `username: admin, password: handson_saiko!` )
-values.yamlに記載した認証情報でログインできなかった場合は、
-以下のコマンドを実行してパスワードを確認し、ログインしてください。
+```bash
+kubectl get ingress -n prometheus
+```
+
+```bash
+# 実行結果
+NAME                          CLASS   HOSTS                    ADDRESS         PORTS   AGE
+grafana-ingress-by-nginx      nginx   grafana.example.com      xx.xx.xx.xx   80      58m
+prometheus-ingress-by-nginx   nginx   prometheus.example.com   xx.xx.xx.xx   80      58m
+```
+
+ローカル端末のブラウザから <http://prometheus.example.com> と <http://grafana.example.com> にアクセスしてみましょう。  
+※[chapter_setup](https://github.com/cloudnativedaysjp/cnd-handson/tree/main/chapter_setup)にてローカル端末のhostsファイルに`prometheus.example.com` と `grafana.example.com`が登録されている前提です。
+
+Grafanaではユーザログインが必要ですが、Helm設定した prometheus-values.yaml の内容でログインできます。(`username: admin, password: handson_saiko!`)  
+values.yamlに記載した認証情報でログインできなかった場合は、以下のコマンドを実行してパスワードを確認し、ログインしてください。
 
 ```bash
 kubectl get secrets -n prometheus kube-prometheus-stack-grafana -o json | jq -r .data[\"admin-password\"] | base64 -d; echo
 ```
 
+---
+
 ## 実践: Prometheus Web UIを触ってみよう
 
 ### PromQL
 
-Prometheus Web UIでは、PromQLを利用してインタラクティブに簡単なモニタリングをおこなうことができます。
-ここではkube-prometheus-stackがデフォルトでインストールするExporterの様子を掴むために、
-実際にPromQLを使ってメトリクスを見てみましょう。
+Prometheus Web UIでは、独自のクエリ言語である「PromQL」を利用してインタラクティブに簡単なモニタリングを行うことができます。
+ここではkube-prometheus-stackがデフォルトでインストールするExporterの様子を掴むために、実際にPromQLを使ってメトリクスを見てみましょう。
+
 PromQLの詳細な仕様についてはこちらを御覧ください。
 
 > https://prometheus.io/docs/prometheus/latest/querying/basics/
@@ -250,7 +306,7 @@ PromQLの詳細な仕様についてはこちらを御覧ください。
 ![image](./image/go_goroutines.png)
 
 これは、Go言語で実装されたExporterでよく公開されている、現在のgoroutineの発行数となるメトリックです。
-これはGaugeとなっているので、単調増加ではなく微妙に増減しているのが確認できます。
+これは「Gauge」となっているので、単調増加ではなく微妙に増減しているのが確認できます。
 後ほど、いくつかのPromQL実践例を紹介します。
 
 ### Alerts
@@ -263,14 +319,14 @@ kube-prometheus-stackでデフォルトで導入されているアラートル�
 
 ### Status
 
-現在稼働しているPrometheusの状態確認がおこなえます。
+現在稼働しているPrometheusの状態確認をすることができます。  
 以下のスクリーンショットでは、scrape_configに設定されたexporterに対するスクレイプが正しくおこなえているかどうか等の情報が表示されています。
 
 <http://prometheus.example.com/targets>
 
 ![image](./image/targets.png)
 
-## 実践: Ingress NGINX Controllerからメトリクスを収集する
+## 実践: Ingress NGINX Controllerからメトリクスを収集
 
 ここでは、`Ingress NGINX Controller`のメトリクスをPrometheusとGrafanaによる収集方法を説明します。
 
@@ -278,7 +334,7 @@ kube-prometheus-stackでデフォルトで導入されているアラートル�
 
 ### Nginx Ingressのメトリクスを外部公開する
 
-Ingress NGINX Controllerのメトリクスを外部公開するために、ServiceMonitorを作成し、PrometheusがIngress NGINX Controllerのメトリクスを取得するようにします。
+Ingress NGINX Controllerのメトリクスを外部公開するために、ServiceMonitorを作成し、PrometheusがIngress NGINX Controllerのメトリクスを取得できるようにします。
 
 ```yaml
 apiVersion: monitoring.coreos.com/v1
@@ -304,9 +360,10 @@ spec:
 kubectl apply -f manifests/ingress-nginx-servicemonitor.yaml
 ```
 
-<http://prometheus.example.com/graph> を開き (またはリロードして)、PromQL入力欄に ngi と入力し、nginx のメトリクスが追加されているのを確認しましょう。※表示に数分かかります。
+<http://prometheus.example.com/graph> を開き (またはリロードして)、PromQL入力欄に ngi のように入力し、nginx のメトリクスが追加されているのを確認しましょう。
+※ServiceMonitorをapplyしてから反映（メトリクスが追加）されるまでに数分かかります。
 
-![image](https://github.com/kubernetes/ingress-nginx/blob/main/docs/images/prometheus-dashboard1.png)
+![image](https://raw.githubusercontent.com/kubernetes/ingress-nginx/blob/main/docs/images/prometheus-dashboard1.png)
 
 ## PromQL実例集
 

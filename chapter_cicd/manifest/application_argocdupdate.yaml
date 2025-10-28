@@ -1,0 +1,25 @@
+# 02-application-argocdupdate.yaml
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: argocdupdate
+  namespace: argo-cd
+  annotations:
+    argocd-image-updater.argoproj.io/image-list: app=ghcr.io/nginxinc/nginx-unprivileged
+    argocd-image-updater.argoproj.io/write-back-method: argocd
+    argocd-image-updater.argoproj.io/app.update-strategy: semver
+    argocd-image-updater.argoproj.io/app.semver: ">=1.27.0 <1.28.0"
+    argocd-image-updater.argoproj.io/interval: "1m"
+spec:
+  project: default
+  source:
+    repoURL: https://github.com/<自分のrepository>/cnd-handson.git
+    targetRevision: main
+    path: chapter_cicd/app
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: argocd-demo
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true
