@@ -3,12 +3,6 @@ kind: Namespace
 metadata:
   name: scheduling-demo
 ---
-# このマニフェストを適用する前に、以下のコマンドでNodeにtaintを設定してください:
-# kubectl taint nodes <node-name> workload=batch:NoSchedule
-#
-# 確認方法:
-# kubectl describe node <node-name> | grep Taint
----
 apiVersion: apps/v1
 kind: Deployment
 metadata:
@@ -36,8 +30,6 @@ spec:
             memory: "128Mi"
             cpu: "200m"
       tolerations:
-      # 問題: tolerationの設定が間違っている！
-      # effectがNoExecuteになっているが、NodeのtaintはNoSchedule
       - key: "workload"
         operator: "Equal"
         value: "batch"

@@ -23,7 +23,6 @@ spec:
         image: polinux/stress:1.0.4
         command: ["stress"]
         args:
-        # 256MBのメモリを消費しようとする
         - "--vm"
         - "1"
         - "--vm-bytes"
@@ -35,7 +34,6 @@ spec:
             memory: "64Mi"
             cpu: "100m"
           limits:
-            # 問題: メモリlimitが低すぎてOOM Killされる！
             memory: "128Mi"
             cpu: "200m"
 ---

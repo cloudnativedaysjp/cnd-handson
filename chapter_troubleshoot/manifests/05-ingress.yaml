@@ -100,7 +100,6 @@ spec:
         pathType: Prefix
         backend:
           service:
-            # 問題: 異なるnamespaceのServiceを直接参照できない！
             name: backend-service
             port:
               number: 8080

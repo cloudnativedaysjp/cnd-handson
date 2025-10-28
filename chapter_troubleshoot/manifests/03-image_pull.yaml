@@ -20,8 +20,6 @@ spec:
     spec:
       containers:
       - name: nginx
-        # 問題: Bitnamiは特定バージョンのタグを削除する方針に変更したため、
-        # 特定バージョンを指定するとイメージが見つからなくなる
         image: bitnami/nginx:1.25.0
         ports:
         - containerPort: 8080
