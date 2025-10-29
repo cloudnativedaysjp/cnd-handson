@@ -75,7 +75,7 @@ pod/argocdupdate-57b44bc99c-whh8b   1/1     Running   0          8s  <-
 pod/handson-954b5b8f6-288v5         1/1     Running   0          8m4s
 ```
 
- <b>argocdupdate<b>のアプリが新しく作成されていることを確認  
+ <b>argocdupdate</b>のアプリが新しく作成されていることを確認  
 
 <details><summary>Manifestの説明</summary>
 Manifestについては、nginxのバージョン 1.27.0がインストールします。
