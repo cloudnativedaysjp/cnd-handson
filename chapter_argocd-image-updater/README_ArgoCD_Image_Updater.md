@@ -54,7 +54,7 @@ chapter_argocdを実施した場合、アプリがすでに一つ、または複
                                 ^^^^^^^^^^^^^^^^^
 ```
 こちらに記載されているものが上記の設定部分になります。
-![image](image/updater14.png)
+![image](image/updater15.png)
 
 修正したyamlファイルをapplyします。  
 ```
