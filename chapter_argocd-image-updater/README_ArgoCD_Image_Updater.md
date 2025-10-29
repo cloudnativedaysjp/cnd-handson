@@ -34,31 +34,32 @@ Nginxのレジストリにある、1.27.x台の最新Latest版へ更新するハ
 https://argocd-image-updater.readthedocs.io/en/stable/basics/update-strategies/  
 
 ### バージョン管理の検知条件
-semver: セマンティックバージョニング（意味のあるバージョン規則）の制約を考慮して、利用可能な最新バージョンへ更新する  
-latest/newest-build: レジストリ上で最も新しくビルドされたイメージに更新する  
-digest: 指定したバージョン（タグ名）は固定したまま、そのタグの最新のSHAダイジェストに更新する  
-name/alphabetical: タグ名をアルファベット順に並べ、辞書順で最も後ろ（順位が高い）に来るタグへ更新する 
+semver: セマンティックバージョニング（意味のあるバージョン規則）の制約を考慮して、利用可能な最新バージョンへ更新します  
+latest/newest-build: レジストリ上で最も新しくビルドされたイメージに更新します  
+digest: 指定したバージョン（タグ名）は固定したまま、そのタグの最新のSHAダイジェストに更新します  
+name/alphabetical: タグ名をアルファベット順に並べ、辞書順で最も後ろ（順位が高い）に来るタグへ更新します   
 
 ## 既存のArgoCDにあるアプリケーションの確認
-chapter_argocdを実施した場合、アプリがすでに一つあります。
+chapter_argocdを実施した場合、アプリがすでに一つ、または複数動作しています。(以下は１つ動いている例です)  
 
 ![image](image/updater1.png)
 
 
 ## ArgoCD Image Updaterで管理するアプリケーションを作成
 
-・以下のgit cloneしたフォルダの `chapter_argocd-image-updater/manifest`の中にある、`application_argocdupdate.yaml`に  
-レポジトリ設定があるため、自分のレポジトリ設定に修正してください。
+以下のgit cloneしたcnd-handsonフォルダの `chapter_argocd-image-updater/manifest`の中にある、`application_argocdupdate.yaml`に  
+レポジトリ設定があるため、自分のレポジトリ設定に修正してください。  
 ```
     repoURL: https://github.com/<自分のrepository>/cnd-handson.git → この部分を修正してください
                                 ^^^^^^^^^^^^^^^^^
 ```
 修正したyamlファイルをapplyします。  
 ```
+cd cnd-handson/chapter_argocd-image-updater
 kubectl apply -f ./manifest/application_argocdupdate.yaml
 ```
 
-設定したmanifestが反映していること
+設定したmanifestが反映されていること
 ```
 kubectl get deploy,pod -n argocd-demo
 ```
