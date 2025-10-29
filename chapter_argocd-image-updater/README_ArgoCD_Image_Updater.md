@@ -48,7 +48,7 @@ chapter_argocdを実施した場合、アプリがすでに一つあります。
 
 ## ArgoCD Image Updaterで管理するアプリケーションを作成
 
-・以下のgit cloneしたフォルダの `cnd-handson/chapter_argo-image-updater/manifest`の中にある、`application_argocdupdate.yaml`に  
+・以下のgit cloneしたフォルダの `cnd-handson/chapter_argocd-image-updater/manifest`の中にある、`application_argocdupdate.yaml`に  
 レポジトリ設定があるため、自分のレポジトリに修正してください。
 ```
     repoURL: https://github.com/<自分のrepository>/cnd-handson.git → この部分を修正してください
