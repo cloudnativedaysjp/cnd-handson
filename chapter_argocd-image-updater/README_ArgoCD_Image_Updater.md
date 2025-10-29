@@ -53,6 +53,9 @@ chapter_argocdを実施した場合、アプリがすでに一つ、または複
     repoURL: https://github.com/<自分のrepository>/cnd-handson.git → この部分を修正してください
                                 ^^^^^^^^^^^^^^^^^
 ```
+こちらに記載されているものが上記の設定部分になります。
+![image](image/updater14.png)
+
 修正したyamlファイルをapplyします。  
 ```
 cd cnd-handson/chapter_argocd-image-updater
