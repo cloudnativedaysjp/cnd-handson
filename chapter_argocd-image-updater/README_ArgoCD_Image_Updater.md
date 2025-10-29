@@ -39,7 +39,6 @@ latest/newest-build: レジストリ上で最も新しくビルドされたイ�
 digest: 指定したバージョン（タグ名）は固定したまま、そのタグの最新のSHAダイジェストに更新する  
 name/alphabetical: タグ名をアルファベット順に並べ、辞書順で最も後ろ（順位が高い）に来るタグへ更新する 
 
-
 ## 既存のArgoCDにあるアプリケーションの確認
 chapter_argocdを実施した場合、アプリがすでに一つあります。
 
@@ -48,15 +47,13 @@ chapter_argocdを実施した場合、アプリがすでに一つあります。
 
 ## ArgoCD Image Updaterで管理するアプリケーションを作成
 
-・以下のgit cloneしたフォルダの `cnd-handson/chapter_argocd-image-updater/manifest`の中にある、`application_argocdupdate.yaml`に  
-レポジトリ設定があるため、自分のレポジトリに修正してください。
+・以下のgit cloneしたフォルダの `chapter_argocd-image-updater/manifest`の中にある、`application_argocdupdate.yaml`に  
+レポジトリ設定があるため、自分のレポジトリ設定に修正してください。
 ```
     repoURL: https://github.com/<自分のrepository>/cnd-handson.git → この部分を修正してください
                                 ^^^^^^^^^^^^^^^^^
 ```
-
-
-
+修正したyamlファイルをapplyします。  
 ```
 kubectl apply -f ./manifest/application_argocdupdate.yaml
 ```
@@ -75,10 +72,10 @@ pod/argocdupdate-57b44bc99c-whh8b   1/1     Running   0          8s  <-
 pod/handson-954b5b8f6-288v5         1/1     Running   0          8m4s
 ```
 
- <b>argocdupdate</b>のアプリが新しく作成されていることを確認  
+ <b>argocdupdate</b>のアプリ(deployment/pod)が新しく作成されていることを確認  
 
 <details><summary>Manifestの説明</summary>
-Manifestについては、nginxのバージョン 1.27.0がインストールします。
+ApplyしたManifestで、nginxのバージョン 1.27.0がインストールされます。
 
 Image Updater用アノテーション（自動イメージ更新の設定）
 
@@ -113,7 +110,10 @@ Argo CDはその更新を検知し、自動SyncによりDeploymentのコンテ�
 ### 以下のリンクがあるが、今回namespaceなど異なるため、内容を変更しています。
 https://argocd-image-updater.readthedocs.io/en/stable/install/installation/
 
-変更したものについては、chapter_cicd/app/にあります。
+変更したものについては、chapter_cicd/app/にyamlファイルあります。
+また、`argocdupdate.example.com`にてアプリを確認できますが、  
+nginxのページにて、バージョンが記載されていないため、argocdのWebUIにてバージョンを確認します。  
+
 ```
 kubectl apply -f ./manifest/argocd_image_uploader.yaml
 ```
