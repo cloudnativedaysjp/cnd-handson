@@ -21,7 +21,7 @@ Annotationとして付与します。その後、ArgoCD Image Updaterは、ArgoC
 ArgoCDとの密接な統合により、Sync Windows や Application リソースに対するRBAC 認可などの高度な機能も完全にサポートされています。  
 
 ## ArgoCD Image Updaterが動作する条件
-ArgoCDが動作していること￥￥
+ArgoCDが動作していること
 マニフェストが、KustomizeやHelmで管理されていること
 コンテナイメージリポジトリに使う認証情報は、ArgoCD Image updaterと同じクラスター上で存在すること
 ArgoCD Image Updaterでは、Rollback機能がないため、ArgoCD側で対応、Roadmap上にはあるがまだ未定。
@@ -48,10 +48,14 @@ chapter_argocdを実施した場合、アプリがすでに一つあります。
 
 ## ArgoCD Image Updaterで管理するアプリケーションを作成
 
-・以下のgit cloneしたフォルダの /cnd-handson/chapter_cicd_argo-image-updater/manifestの中で、レポジトリ設定があるため、自分のレポジトリに修正してください。
+・以下のgit cloneしたフォルダの `cnd-handson/chapter_argo-image-updater/manifest`の中にある、`application_argocdupdate.yaml`に  
+レポジトリ設定があるため、自分のレポジトリに修正してください。
 ```
     repoURL: https://github.com/<自分のrepository>/cnd-handson.git → この部分を修正してください
+                                ^^^^^^^^^^^^^^^^^
 ```
+
+
 
 ```
 kubectl apply -f ./manifest/application_argocdupdate.yaml
