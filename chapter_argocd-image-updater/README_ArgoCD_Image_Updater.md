@@ -130,37 +130,37 @@ kubectl apply -f ./manifest/argocd_image_uploader.yaml
 構成要素と役割は次の通りです。  
 
 ServiceAccount  
- 名前: argocd-image-updater（namespace: argo-cd）  
+   名前: argocd-image-updater（namespace: argo-cd）  
 
 UpdaterのPodが使うサービスアカウント  
-RBAC  
- Role/RoleBinding（namespace: argo-cd）  
- configmaps/secretsのget/list/watchを許可（Updaterが自分の設定CM/Secretを読むため）  
- ClusterRole/ClusterRoleBinding（クラスタ全体）  
- applications（argoproj.io）のget/list/watch/update/patchを許可（Applicationの監視・更新に必要）  
- eventsのcreateを許可（イベント出力用）  
- ConfigMap（設定）  
- argocd-image-updater-config（namespace: argo-cd）  
- applications_api: kubernetes  
- UpdaterがArgo CDのAPIトークンなしでKubernetes API経由でApplicationを読むモード  
- argocd.server_addr: argo-cd-argocd-server.argo-cd.svc:443  
- argocd.insecure: "true"  
- 自己署名TLSの検証を緩める設定（APIモードに切り替える場合に有効）  
- interval: "1m"（1分間隔でチェック）  
- log.level: "debug"（詳細ログ）  
- kube.events: "true"（イベント出力）  
- registries.conf: GHCRを明示（公開利用で認証不要）  
- git.commit-message-template: Git書き戻し時のコミットメッセージテンプレート（argocdモードでは未使用）  
- argocd-image-updater-ssh-config（任意）  
- SSHでGitを使う場合のssh_config（HTTPSなら不要）  
- argocd-ssh-known-hosts-cm（任意）  
- SSHのknown_hostsを格納（SSHを使わないなら空でも問題なし）  
- Secret（任意）  
- argocd-image-updater-secret  
-  ARGOCD_TOKEN（APIモードで使う場合のみ）やWebhook用シークレットの収納。今回のKubernetesモードでは未設定でOK  
-Deployment（本体）  
- イメージ: quay.io/argoprojlabs/argocd-image-updater:v0.17.0  
-          args: ["run"]（v0.17系の起動方法）  
+ RBAC  
+   Role/RoleBinding（namespace: argo-cd）  
+   configmaps/secretsのget/list/watchを許可（Updaterが自分の設定CM/Secretを読むため）  
+   ClusterRole/ClusterRoleBinding（クラスタ全体）  
+   applications（argoproj.io）のget/list/watch/update/patchを許可（Applicationの監視・更新に必要）  
+   eventsのcreateを許可（イベント出力用）  
+   ConfigMap（設定）  
+   argocd-image-updater-config（namespace: argo-cd）  
+   applications_api: kubernetes  
+   UpdaterがArgo CDのAPIトークンなしでKubernetes API経由でApplicationを読むモード  
+   argocd.server_addr: argo-cd-argocd-server.argo-cd.svc:443  
+   argocd.insecure: "true"  
+   自己署名TLSの検証を緩める設定（APIモードに切り替える場合に有効）  
+   interval: "1m"（1分間隔でチェック）  
+   log.level: "debug"（詳細ログ）  
+   kube.events: "true"（イベント出力）  
+   registries.conf: GHCRを明示（公開利用で認証不要）  
+   git.commit-message-template: Git書き戻し時のコミットメッセージテンプレート（argocdモードでは未使用）  
+   argocd-image-updater-ssh-config（任意）  
+   SSHでGitを使う場合のssh_config（HTTPSなら不要）  
+   argocd-ssh-known-hosts-cm（任意）  
+   SSHのknown_hostsを格納（SSHを使わないなら空でも問題なし）  
+   Secret（任意）  
+     argocd-image-updater-secret  
+     ARGOCD_TOKEN（APIモードで使う場合のみ）やWebhook用シークレットの収納。今回のKubernetesモードでは未設定でOK  
+  Deployment（本体）  
+    イメージ: quay.io/argoprojlabs/argocd-image-updater:v0.17.0  
+            args: ["run"]（v0.17系の起動方法）  
       
   
   Updaterがargo-cd内のApplicationをKubernetes APIで定期スキャン（1分間隔）  
@@ -196,10 +196,10 @@ https://argocd-image-updater.readthedocs.io/en/stable/
 
 ## アプリケーションをrollbackする場合 (現状 ArgoCD Image UpdaterではRoadmapのため、ArgoCD上で対応します)
 
-ArgoCD上で、<B>HISTORU AND ROLLBACK </>をクリック  
+ArgoCD上で、<b> HISTORY AND ROLLBACK </b>をクリック  
 ![image](image/updater8.png)
 
-そこで、<B>Source Parameters</Bをクリックし、RollbackしたいVersionを確認する  
+そこで、<B>Source Parameters</B>をクリックし、RollbackしたいVersionを確認する  
 ![image](image/updater9.png)
 
 "..."をクリックして、"Rollback"　→ "OK"　をクリック  
