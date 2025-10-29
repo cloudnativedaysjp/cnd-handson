@@ -95,9 +95,9 @@ argocd-image-updater.argoproj.io/app.semver: ">=1.27.0 <1.28.0"
 argocd-image-updater.argoproj.io/interval: "1m"
 　このアプリに対して1分間隔で新しいタグがないかチェック
 
-全体的なmanifestの動きとしては、Argo CDは指定Gitのchapter_cicd/appを監視・同期し、argocd-demoにアプリを展開します。  
-Image Updaterは1分ごとにこのApplicationをスキャンして、ghcr.io/nginxinc/nginx-unprivilegedのタグを取得。  
-xでより新しいタグが見つかれば、write-back-method=argocdに従い、
+全体的なmanifestの動きとしては、Argo CDは指定Gitのchapter_argocd-image-updater/appにあるnginxのバージョンを監視・同期し、  
+argocd-demoにアプリを展開します。 Image Updaterは1分ごとにこのApplicationをスキャンして、  
+ghcr.io/nginxinc/nginx-unprivilegedのタグを取得。新しいタグが見つかれば、write-back-method=argocdに従い、
 Applicationのバージョンを（内部的にspec.sourceのイメージ指定）を直接更新します。 (1.27.0 → 1.27.xのLatestへ) 
 Argo CDはその更新を検知し、自動SyncによりDeploymentのコンテナイメージを新しいタグへ差し替えます。  
 </details>
