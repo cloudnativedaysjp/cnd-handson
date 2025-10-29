@@ -5,7 +5,7 @@
 そのため、ArgoCDをインストールしていない場合には、以下サイトからインストールを実施してください。  
 ArgoCDの詳細については、[こちら](https://github.com/cloudnativedaysjp/cnd-handson/blob/main/chapter_argocd/README_webui.md)を参照ください。  
 
-また、このドキュメントについては、CICDのハンズオンにCD部分の拡張版として、<B>ArcoCD Image Updater</B> を使うことを  
+また、このドキュメントについては、ArgoCDのハンズオンの拡張版として、<B>ArcoCD Image Updater</B> を使うことを  
 目的としたものになります。  
 ArgoCD Image Updaterの参照URL (https://argocd-image-updater.readthedocs.io/en/stable/)
 
@@ -27,7 +27,7 @@ ArgoCDが動作していること
 ArgoCD Image Updaterでは、Rollback機能がないため、ArgoCD側で対応、Roadmap上にはあるがまだ未定。
 
 ## 今回のハンズオンについて
-Nginx 1.27.0をArgoCD Image Uploderにて監視する様にし、  
+レポジトリにあるNginx 1.27.0をArgoCD Image Uploderにて監視する様にし、  
 Nginxのレジストリにある、1.27.x台の最新Latest版へ更新するハンズオンとしています。  
 ハンズオンなのでわかりやすい形で実施していますが、もちろん時前で管理しているアプリケーションの   
 バージョン変更している環境での導入が可能です。  
