@@ -111,7 +111,7 @@ Argo CDはその更新を検知し、自動SyncによりDeploymentのコンテ�
 ### 以下のリンクが公式にありますが、今回namespaceなど異なるため、内容を変更しています。
 https://argocd-image-updater.readthedocs.io/en/stable/install/installation/
 
-変更したものについては、chapter_cicd/app/にyamlファイルあります。
+今回のハンズオン用に変更したものについては、chapter_argocd-image-updater/app/にyamlファイルあります。
 また、`argocdupdate.example.com`にてアプリを確認できますが、  
 nginxのページにて、バージョンが記載されていないため、argocdのWebUIにてバージョンを確認します。  
 
