@@ -169,9 +169,10 @@ UpdaterのPodが使うサービスアカウント
   write-back-methodをargocdにすれば、Git認証なしでApplicationの設定を直接更新して反映可能  
   write-back-methodをgitに切り替える場合は、Argo CD側にRepository認証（Secretやargocd repo add）が必要    
 </details>
-  
+
+
+Updaterが動作して、ImageのAutoupdateが動作しているか確認  
 ```
-Updaterが動作して、ImageのAutoupdateが動作しているか確認
 kubectl -n argo-cd logs deploy/argocd-image-updater -f
 ```
 
@@ -192,8 +193,8 @@ time="2025-10-20T07:56:02Z" level=info msg="Successfully updated the live applic
 
 上記にて、ArgoCDで動作しているアプリケーションが、コンテナイメージのバージョンアップを検知することより、　　
 既存で動作しているアプリケーションの自動アップデートがされた形になります。　　
-また、Webhook連携なども記載がありますので、ご興味がある方はぜひ確認いただければと思います。  
-https://argocd-image-updater.readthedocs.io/en/stable/
+また、Webhook連携なども記載がありますので、ご興味がある方はぜひ確認いただければと思います。    
+https://argocd-image-updater.readthedocs.io/en/stable/  
 
 ## アプリケーションをrollbackする場合 (現状 ArgoCD Image UpdaterではRoadmapのため、ArgoCD上で対応します)
 
