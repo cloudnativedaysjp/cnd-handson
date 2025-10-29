@@ -108,7 +108,7 @@ Argo CDはその更新を検知し、自動SyncによりDeploymentのコンテ�
 
 
 # ArgoCD Image Updater のインストール
-### 以下のリンクがあるが、今回namespaceなど異なるため、内容を変更しています。
+### 以下のリンクが公式にありますが、今回namespaceなど異なるため、内容を変更しています。
 https://argocd-image-updater.readthedocs.io/en/stable/install/installation/
 
 変更したものについては、chapter_cicd/app/にyamlファイルあります。
