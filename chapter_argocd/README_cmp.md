@@ -70,11 +70,13 @@ Helmfileは複数のHelmチャートを一括管理できるツールで、環�
 
 **方法1: Patchを使用（既存環境への追加に推奨）**
 - 既にArgoCDが稼働している環境に適している
-- [→ Patch編へ進む](#cmpの適用方法patch編)
+
+  [→ Patch編へ進む](#cmpの適用方法patch編)
 
 **方法2: Helmfileを使用（新規環境に推奨）**
 - ArgoCDと一緒に初期構築する場合に適している
-- [→ Helmfile編へ進む](#cmpの適用方法helmfile編)
+  
+  [→ Helmfile編へ進む](#cmpの適用方法helmfile編)
 
 ## CMPの適用方法～Patch編～
 
@@ -228,8 +230,6 @@ Helmfileのvalues.yamlにCMPの設定を追加してデプロイする方法を�
 ### values.yamlにプラグイン設定を追加
 
 ArgoCD HelmチャートのvaluesファイルにCMPの設定を追加します。
-
-**注意**: SidecarコンテナはNon-Rootユーザーで実行されるため、書き込み権限がありません。HELM_*_HOME環境変数で、Helmの作業ディレクトリを書き込み可能な/tmpに変更しています。
 ```yaml
 # cmp/helm/values.yaml
 configs:
