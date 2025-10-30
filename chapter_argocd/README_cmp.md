@@ -58,8 +58,9 @@ CMPで利用可能なツールは、各コミュニティやベンダーが提�
 
 今回は、HelmfileをCMPとして利用できるようにします。
 Helmfileは複数のHelmチャートを一括管理できるツールで、環境ごとの設定管理を効率化できます。
-[patchでプラグインを適用する方法](#cmpの適用方法patch編)
-[helmfileでプラグインを適用する方法](#cmpの適用方法helmfile編)
+
+#### [patchでプラグインを適用する方法](#cmpの適用方法patch編)
+#### [helmfileでプラグインを適用する方法](#cmpの適用方法helmfile編)
 ## CMPの適用方法～Patch編～
 
 Patchを使用してCMPを適用する方法を説明します。
@@ -96,7 +97,7 @@ data:
         command: [sh, -c]
         args:
           - |
-            helmfile template -q --include-crds --skip-deps
+            helmfile template --include-crds --skip-deps || exit 1
 ```
 
 このConfigMapは以下の情報を定義しています。
@@ -130,6 +131,8 @@ helmfile-plugin-config   1      57s
 
 次に、argocd-repo-serverにCMPを実行するためのSidecarコンテナを追加します。
 このSidecarコンテナには、Helmfileがインストールされたイメージを使用します。
+
+**注意**: サイドカーコンテナはNon-Rootユーザーで実行されるため、書き込み権限がありません。HELM_*_HOME環境変数で、Helmの作業ディレクトリを書き込み可能な/tmpに変更しています。
 
 ```yaml
 apiVersion: apps/v1
@@ -209,33 +212,60 @@ Helmfileのvalues.yamlにCMPの設定を追加してデプロイする方法を�
 
 ArgoCD HelmチャートのvaluesファイルにCMPの設定を追加します。
 
+**注意**: サイドカーコンテナはNon-Rootユーザーで実行されるため、書き込み権限がありません。HELM_*_HOME環境変数で、Helmの作業ディレクトリを書き込み可能な/tmpに変更しています。
 ```yaml
 # cmp/helm/values.yaml
-repoServer:
+configs:
+  cmp:
+    create: true
+    plugins:
+      helmfile-plugin:
+        discover:
+          fileName: "helmfile.yaml"
+        init:
+          command: [sh, -c]
+          args: 
+            - |
+              echo "Initializing..."
+              helmfile deps
+        generate:
+          command: [sh, -c]
+          args:
+            - |
+              helmfile template --include-crds --skip-deps || exit 1
+
+repoServer: 
+  extraContainers: 
+    - name: helmfile-cmp
+      command: [/var/run/argocd/argocd-cmp-server]
+      image: ghcr.io/helmfile/helmfile:latest
+      env:
+        - name: HELM_CACHE_HOME
+          value: /tmp/helm/cache
+        - name: HELM_CONFIG_HOME
+          value: /tmp/helm/config
+        - name: HELM_DATA_HOME
+          value: /tmp/helm/data
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 999
+      volumeMounts:
+        - mountPath: /var/run/argocd
+          name: var-files
+        - mountPath: /home/argocd/cmp-server/plugins
+          name: plugins
+        - mountPath: /home/argocd/cmp-server/config/plugin.yaml
+          subPath: helmfile-plugin.yaml
+          name: argocd-cmp-cm
+        - mountPath: /tmp
+          name: cmp-tmp
+
   volumes:
-  - name: cmp-plugin
-    configMap:
-      name: cmp-plugin
-  - name: cmp-tmp
-    emptyDir: {}
-  
-  extraContainers:
-  - name: helmfile-cmp
-    image: ghcr.io/helmfile/helmfile:latest
-    command: [/var/run/argocd/argocd-cmp-server]
-    securityContext:
-      runAsNonRoot: true
-      runAsUser: 999
-    volumeMounts:
-    - mountPath: /var/run/argocd
-      name: var-files
-    - mountPath: /home/argocd/cmp-server/plugins
-      name: plugins
-    - mountPath: /home/argocd/cmp-server/config/plugin.yaml
-      subPath: plugin.yaml
-      name: cmp-plugin
-    - mountPath: /tmp
-      name: cmp-tmp
+    - name: argocd-cmp-cm
+      configMap:
+        name: argocd-cmp-cm
+    - name: cmp-tmp
+      emptyDir: {}
 ```
 
 この設定では、`repoServer.extraContainers`にHelmfile CMPのSidecarコンテナを定義しています。
@@ -266,39 +296,12 @@ argo-cd-argocd-repo-server-86985f8c4b-6x7bp   2/2     Running   0          15m
 ## CMPを使用したアプリケーションのデプロイ
 
 CMPが正しく設定されたら、実際にHelmfileを使用するApplicationリソースを作成してみましょう。
-今回は、Pyroscopeをデプロイする例を試します。
+今回は、headlampをデプロイする例を試します。
+#### [WebUIからheadlampをデプロイする](#web-uiでのアプリケーション作成)
+#### [CLIからheadlampをデプロイする](#cliでのアプリケーション作成)
+#### [YAMLからheadlampをデプロイする](#yamlファイルでのアプリケーション作成)
 
-### Applicationリソースの作成
-
-CMPを明示的に使用するApplicationリソースでは、`plugin`フィールドにプラグイン名を指定します。
-Discoverで自動検知してくれるので必須ではないです。
-
-```yaml
-apiVersion: argoproj.io/v1alpha1
-kind: Application
-metadata:
-  name: headlamp
-  namespace: argo-cd
-spec:
-  destination:
-    namespace: headlamp
-    server: 'https://kubernetes.default.svc'
-  project: default
-  source:
-    repoURL: https://github.com/cloudnativedaysjp/cnd-handson.git
-    targetRevision: HEAD
-    path: chapter_argocd/app/Helmfile/helm
-  syncPolicy:
-    syncOptions:
-      - CreateNamespace=true
-```
-
-この設定のポイントは以下のとおりです。
-
-* `source.plugin.name`: 使用するCMPの名前（`helmfile`）を指定
-* `source.path`: helmfile.yamlが配置されているディレクトリを指定
-* `destination.namespace`: デプロイ先のNamespaceを指定
-
+---
 ### Web UIでのアプリケーション作成
 
 ArgoCD Web UIからもCMPを使用するアプリケーションを作成できます。
@@ -308,6 +311,8 @@ Applicationsの画面において + NEW APPをクリックします。
 ![Applications](image/demoapp/new-app.png)
 
 上の画面上で各項目を次のように設定します。
+
+設定のポイントはsourceのpathの部分でhelmfile.yamlが配置されているディレクトリを指定することです。
 ```
 GENERAL
   Application Name: headlamp
@@ -330,9 +335,11 @@ SYNC APPSをクリックしてアプリケーションのデプロイを実行�
 
 ArgoCD CLIを使用してアプリケーションを作成することもできます。
 
+設定のポイントpathの部分でhelmfile.yamlが配置されているディレクトリを指定することです。
+
 ```sh
 argocd app create headlamp \
-  --repo https://github.com/cloudnativedaysjp/cnd-handson.git \
+  --repo https://github.com/ご自身のアカウント/cnd-handson.git \
   --path chapter_argocd/app/Helmfile/helm \
   --dest-server https://kubernetes.default.svc \
   --dest-namespace headlamp \
@@ -347,7 +354,30 @@ application 'headlamp' created
 
 ### YAMLファイルでのアプリケーション作成
 
-YAMLファイルを使用してアプリケーションを作成する方法が最も再現性が高く推奨されます。
+YAMLファイルを使用してアプリケーションを作成する方法です。
+
+設定のポイントはsource.pathの部分でhelmfile.yamlが配置されているディレクトリを指定することです。
+```yaml
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: headlamp
+  namespace: argo-cd
+spec:
+  destination:
+    namespace: headlamp
+    server: 'https://kubernetes.default.svc'
+  project: default
+  source:
+    repoURL: https://github.com/ご自身のアカウント/cnd-handson.git
+    targetRevision: HEAD
+    path: chapter_argocd/app/Helmfile/helm
+  syncPolicy:
+    syncOptions:
+      - CreateNamespace=true
+
+```
+適用します。
 
 ```sh
 kubectl apply -f app/Helmfile/application.yaml
@@ -373,7 +403,7 @@ headlamp   Synced        Healthy
 ArgoCD Web UIでアプリケーションの詳細を確認できます。
 `http://argocd.example.com/applications/headlamp` にアクセスすると、デプロイされたリソースの状態が視覚化されます。
 
--![](image/cmp/argocd-cmp-application.png)
+![](image/cmp/argocd-cmp-application.png)
 実際にデプロイされたリソースを確認します。
 
 ```sh
@@ -401,7 +431,7 @@ Helmfileでデプロイされたheadlampが正常に動作していることが�
 
 今回は最低設定でしたが、CMPを本番環境で使用する場合、以下の点に注意してください。
 
-* **セキュリティ**: Sidecarコンテナは`runAsNonRoot: true`で実行する
+* **セキュリティ**: Sidecarコンテナは`runAsNonRoot: true,runAsUser: 999`で実行する
 * **リソース制限**: `resources`フィールドでCPUとメモリの制限を設定する
 * **エラーハンドリング**: init、generateコマンドで適切なエラー処理を実装する
 * **ログ出力**: デバッグ用のログを標準エラー出力に出力する

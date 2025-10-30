@@ -17,7 +17,7 @@ configs:
           command: [sh, -c]
           args:
             - |
-              helmfile template -q --include-crds --skip-deps
+              helmfile template --include-crds --skip-deps || exit 1
 
 repoServer: 
   extraContainers: 
