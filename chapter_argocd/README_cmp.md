@@ -362,60 +362,44 @@ application.argoproj.io/headlamp created
 Applicationが作成されると、ArgoCDが自動的にGitリポジトリを監視し、helmfileを使用してマニフェストを生成・適用します。
 
 ```sh
-kubectl -n argo-cd get application pyroscope
+kubectl -n argo-cd get application headlamp
 ```
 ```sh
 # 実行結果
-NAME        SYNC STATUS   HEALTH STATUS
-pyroscope   Synced        Healthy
+NAME       SYNC STATUS   HEALTH STATUS
+headlamp   Synced        Healthy
 ```
 
 ArgoCD Web UIでアプリケーションの詳細を確認できます。
-`http://argocd.example.com/applications/pyroscope` にアクセスすると、デプロイされたリソースの状態が視覚化されます。
+`http://argocd.example.com/applications/headlamp` にアクセスすると、デプロイされたリソースの状態が視覚化されます。
 
-![](image/cmp/argocd-cmp-application.png)
-
+-![](image/cmp/argocd-cmp-application.png)
 実際にデプロイされたリソースを確認します。
 
 ```sh
-kubectl -n monitoring get all
+kubectl -n headlamp get all
 ```
 ```sh
 # 実行結果
-NAME                    READY   STATUS    RESTARTS   AGE
-pod/pyroscope-0         1/1     Running   0          2m30s
-pod/pyroscope-alloy-0   2/2     Running   0          2m30s
+NAME                            READY   STATUS    RESTARTS   AGE
+pod/headlamp-6dc86c44cb-khcz7   1/1     Running   0          22m
 
-NAME                              TYPE        CLUSTER-IP    EXTERNAL-IP   PORT(S)     AGE
-service/pyroscope                 ClusterIP   10.96.7.235   <none>        4040/TCP    2m30s
-service/pyroscope-alloy           ClusterIP   10.96.111.9   <none>        12345/TCP   2m30s
-service/pyroscope-alloy-cluster   ClusterIP   None          <none>        12345/TCP   2m30s
-service/pyroscope-headless        ClusterIP   None          <none>        4040/TCP    2m30s
-service/pyroscope-memberlist      ClusterIP   None          <none>        7946/TCP    2m30s
+NAME               TYPE        CLUSTER-IP     EXTERNAL-IP   PORT(S)   AGE
+service/headlamp   ClusterIP   10.96.75.235   <none>        80/TCP    22m
 
-NAME                               READY   AGE
-statefulset.apps/pyroscope         1/1     2m30s
-statefulset.apps/pyroscope-alloy   1/1     2m30s
+NAME                       READY   UP-TO-DATE   AVAILABLE   AGE
+deployment.apps/headlamp   1/1     1            1           22m
+
+NAME                                  DESIRED   CURRENT   READY   AGE
+replicaset.apps/headlamp-6dc86c44cb   1         1         1       22m
 ```
 
-HelmfileでデプロイされたPyroscopeが正常に動作していることが確認できたら成功です！
+Helmfileでデプロイされたheadlampが正常に動作していることが確認できたら成功です！
 
-## より高度なCMPの活用例
 
-今回は簡単な例でしたが、CMPを使用することでさまざまなツールチェーンをArgoCDに統合できます。
+## 推奨されるプラグイン設定
 
-### 複数のツールを組み合わせる例
-
-Helmfileだけでなく、Kustomizeを組み合わせて使用することも可能です。
-
-たとえば、以下のような構成も実現できます。
-
-* Helmfileで複数のHelmチャートをデプロイ
-* Terraformでクラウドリソースをプロビジョニング
-
-### 推奨されるプラグイン設定
-
-CMPを本番環境で使用する場合、以下の点に注意してください。
+今回は最低設定でしたが、CMPを本番環境で使用する場合、以下の点に注意してください。
 
 * **セキュリティ**: Sidecarコンテナは`runAsNonRoot: true`で実行する
 * **リソース制限**: `resources`フィールドでCPUとメモリの制限を設定する
