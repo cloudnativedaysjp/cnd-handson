@@ -1,0 +1,15 @@
+ingress:
+  enabled: true
+  ingressClassName: "nginx"
+  annotations:
+    nginx.ingress.kubernetes.io/ssl-redirect: "false"
+  hosts: 
+    - host: headlamp.example.com
+      paths:
+        - path: /
+          type: Prefix
+          backend:
+            service:
+              name: headlamp 
+              port:
+                name: http

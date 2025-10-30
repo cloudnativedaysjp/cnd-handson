@@ -8,3 +8,7 @@
 # Argo CD with CLI
 
 [Argo CD with CLI](./README_cli.md)
+
+# ArgoCDのCMPに興味がある方は、こちらのハンズオンを選択してください。<br>ArgoCDが理解している前提で書いています。
+
+[Argo CD with CMP](./README_cmp.md)

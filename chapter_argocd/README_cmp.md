@@ -1,11 +1,20 @@
 # ArgoCD Config Management Plugins (CMP)
+## 目次
+- [概要](#概要)
+- [CMPのコンポーネント](#cmpのコンポーネント)
+- [セットアップ](#セットアップ)
+  - [Patch編](#cmpの適用方法patch編)
+  - [Helmfile編](#cmpの適用方法helmfile編)
+- [アプリケーションのデプロイ](#cmpを使用したアプリケーションのデプロイ)
+- [推奨設定](#推奨されるプラグイン設定)
+- [まとめ](#まとめ)
 
 ## 概要
 
 ArgoCD Config Management Plugins (CMP)は、ArgoCDでネイティブにサポートされていないツール（HelmfileやTerraformなど）を使用してKubernetesマニフェストを生成・管理するための拡張機能です。その目的は、ArgoCDの標準機能（Helm、Kustomize、Jsonnet）を超えて、さまざまなツールチェーンを統合し、GitOpsワークフローを柔軟に構築することです。CMPを利用することで、開発者は既存のツールやワークフローを維持しながら、ArgoCDの宣言的なデプロイメント機能を活用できます。
 
 CMPの代表的なコンポーネントは以下のとおりです。
-![cmp_architecture](./image/cmp/cmp-architecture.png)
+![cmp_architecture](image/cmp/cmp-architecture.jpg)
 
 * ConfigMapによるプラグイン定義
   * CMPの動作を定義する設定ファイル
@@ -21,7 +30,7 @@ ArgoCDでCMPを利用する際は、ApplicationリソースでCMPのプラグイ
 ### CMPのコンポーネント
 
 CMPは、内部的には3つのフェーズで構成されています。
-![cmp-flow](./image/cmp/cmp-flow.png)
+![cmp-flow](image/cmp/cmp-flow.jpg)
 * Discover
   * プラグインを適用する条件を判定するフェーズ
   * 特定のファイル（helmfile.yaml、terraform.tfなど）の存在をチェック
@@ -59,6 +68,16 @@ CMPで利用可能なツールは、各コミュニティやベンダーが提�
 今回は、HelmfileをCMPとして利用できるようにします。
 Helmfileは複数のHelmチャートを一括管理できるツールで、環境ごとの設定管理を効率化できます。
 
+**方法1: Patchを使用（既存環境への追加に推奨）**
+- 既にArgoCDが稼働している環境に適している
+
+  [→ Patch編へ進む](#cmpの適用方法patch編)
+
+**方法2: Helmfileを使用（新規環境に推奨）**
+- ArgoCDと一緒に初期構築する場合に適している
+  
+  [→ Helmfile編へ進む](#cmpの適用方法helmfile編)
+
 ## CMPの適用方法～Patch編～
 
 Patchを使用してCMPを適用する方法を説明します。
@@ -95,7 +114,7 @@ data:
         command: [sh, -c]
         args:
           - |
-            helmfile template -q --include-crds --skip-deps
+            helmfile template --include-crds --skip-deps || exit 1
 ```
 
 このConfigMapは以下の情報を定義しています。
@@ -107,7 +126,7 @@ data:
 実際にConfigMapをデプロイします。
 
 ```sh
-kubectl apply -f ./cmp/patch/helmfile-cmp.yaml
+kubectl apply -f cmp/patch/helmfile-cmp.yaml
 ```
 ```sh
 # 実行結果
@@ -170,11 +189,15 @@ spec:
       - emptyDir: {}
         name: cmp-tmp
 ```
+> ⚠️ **重要な注意事項**
+> 
+> サイドカーコンテナはNon-Rootユーザーで実行されるため、書き込み権限がありません。
+> HELM_*_HOME環境変数で、Helmの作業ディレクトリを書き込み可能な/tmpに変更してください
 
 kubectl patchコマンドを使用してargocd-repo-serverにSidecarを追加します。
 
 ```sh
-kubectl patch deployment argo-cd-argocd-repo-server -n argo-cd --patch-file ./cmp/patch/argocd-repo-server-patch.yaml 
+kubectl patch deployment argo-cd-argocd-repo-server -n argo-cd --patch-file cmp/patch/argocd-repo-server-patch.yaml 
 ```
 
 ```sh
@@ -207,34 +230,59 @@ Helmfileのvalues.yamlにCMPの設定を追加してデプロイする方法を�
 ### values.yamlにプラグイン設定を追加
 
 ArgoCD HelmチャートのvaluesファイルにCMPの設定を追加します。
-
 ```yaml
-# helm/values.yaml
-repoServer:
+# cmp/helm/values.yaml
+configs:
+  cmp:
+    create: true
+    plugins:
+      helmfile-plugin:
+        discover:
+          fileName: "helmfile.yaml"
+        init:
+          command: [sh, -c]
+          args: 
+            - |
+              echo "Initializing..."
+              helmfile deps
+        generate:
+          command: [sh, -c]
+          args:
+            - |
+              helmfile template --include-crds --skip-deps || exit 1
+
+repoServer: 
+  extraContainers: 
+    - name: helmfile-cmp
+      command: [/var/run/argocd/argocd-cmp-server]
+      image: ghcr.io/helmfile/helmfile:latest
+      env:
+        - name: HELM_CACHE_HOME
+          value: /tmp/helm/cache
+        - name: HELM_CONFIG_HOME
+          value: /tmp/helm/config
+        - name: HELM_DATA_HOME
+          value: /tmp/helm/data
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 999
+      volumeMounts:
+        - mountPath: /var/run/argocd
+          name: var-files
+        - mountPath: /home/argocd/cmp-server/plugins
+          name: plugins
+        - mountPath: /home/argocd/cmp-server/config/plugin.yaml
+          subPath: helmfile-plugin.yaml
+          name: argocd-cmp-cm
+        - mountPath: /tmp
+          name: cmp-tmp
+
   volumes:
-  - name: cmp-plugin
-    configMap:
-      name: cmp-plugin
-  - name: cmp-tmp
-    emptyDir: {}
-  
-  extraContainers:
-  - name: helmfile-cmp
-    image: ghcr.io/helmfile/helmfile:latest
-    command: [/var/run/argocd/argocd-cmp-server]
-    securityContext:
-      runAsNonRoot: true
-      runAsUser: 999
-    volumeMounts:
-    - mountPath: /var/run/argocd
-      name: var-files
-    - mountPath: /home/argocd/cmp-server/plugins
-      name: plugins
-    - mountPath: /home/argocd/cmp-server/config/plugin.yaml
-      subPath: plugin.yaml
-      name: cmp-plugin
-    - mountPath: /tmp
-      name: cmp-tmp
+    - name: argocd-cmp-cm
+      configMap:
+        name: argocd-cmp-cm
+    - name: cmp-tmp
+      emptyDir: {}
 ```
 
 この設定では、`repoServer.extraContainers`にHelmfile CMPのSidecarコンテナを定義しています。
@@ -242,7 +290,7 @@ repoServer:
 values.yamlを配置します。
 
 ```sh
-cp ./cmp/values.yaml ./helm/values.yaml
+cp cmp/helm/values.yaml helm/values.yaml
 ```
 
 Helmfileを使用してArgoCDをデプロイします。
@@ -265,63 +313,48 @@ argo-cd-argocd-repo-server-86985f8c4b-6x7bp   2/2     Running   0          15m
 ## CMPを使用したアプリケーションのデプロイ
 
 CMPが正しく設定されたら、実際にHelmfileを使用するApplicationリソースを作成してみましょう。
-今回は、Pyroscopeをデプロイする例を試します。
+今回は、headlampをデプロイする例を試します。
+**方法1: Web UIを使用（視覚的な操作を好む方向け）**
+- ArgoCDのWeb画面から直感的に操作できる
 
-### Applicationリソースの作成
+  [→ Web UIでの作成へ進む](#web-uiでのアプリケーション作成)
 
-CMPを明示的に使用するApplicationリソースでは、`plugin`フィールドにプラグイン名を指定します。
-Discoverで自動検知してくれるので必須ではないです。
+**方法2: CLIを使用（コマンドライン操作に慣れた方向け）**
+- スクリプトによる自動化が可能
+  
+  [→ CLIでの作成へ進む](#cliでのアプリケーション作成)
 
-```yaml
-apiVersion: argoproj.io/v1alpha1
-kind: Application
-metadata:
-  name: cmp-pyroscope
-  namespace: argo-cd
-spec:
-  destination:
-    namespace: monitoring
-    server: 'https://kubernetes.default.svc'
-  project: default
-  source:
-    repoURL: https://github.com/cloudnativedaysjp/cnd-handson.git
-    targetRevision: HEAD
-    path: chapter_pyroscope/helm
-  syncPolicy:
-    syncOptions:
-      - CreateNamespace=true
-```
-
-この設定のポイントは以下のとおりです。
-
-* `source.plugin.name`: 使用するCMPの名前（`helmfile`）を指定
-* `source.path`: helmfile.yamlが配置されているディレクトリを指定
-* `destination.namespace`: デプロイ先のNamespaceを指定
-
+**方法3: YAMLを使用（GitOps管理・本番環境向け）**
+- 設定をコードとして管理できる
+  
+  [→ YAMLでの作成へ進む](#yamlファイルでのアプリケーション作成)
+---
 ### Web UIでのアプリケーション作成
 
 ArgoCD Web UIからもCMPを使用するアプリケーションを作成できます。
 
 Applicationsの画面において + NEW APPをクリックします。
 
-![Applications](./image/demoapp/new-app.png)
+![Applications](image/demoapp/new-app.png)
 
 上の画面上で各項目を次のように設定します。
+
+設定のポイントはsourceのpathの部分でhelmfile.yamlが配置されているディレクトリを指定することです。
 ```
 GENERAL
-  Application Name: pyroscope
+  Application Name: headlamp
   Project Name: default
   SYNC POLICY: Manual
   SYNC OPTIONS: AUTO CREATE NAMESPACE [v]
 SOURCE
   Repository URL: https://github.com/自身のアカウント名/cnd-handson
   Revision: main
-  Path: chapter_pyroscope/helm
+  Path: chapter_argocd/app/Helmfile/helm
 DESTINATION
   Cluster URL: https://kubernetes.default.svc
-  Namespace: monitoring
+  Namespace: headlamp
 ```
-![](./image/cmp/argocd-cmp-webui.png)
+![](image/cmp/argocd-cmp-webui.png)
 
 SYNC APPSをクリックしてアプリケーションのデプロイを実行してください。
 
@@ -329,31 +362,56 @@ SYNC APPSをクリックしてアプリケーションのデプロイを実行�
 
 ArgoCD CLIを使用してアプリケーションを作成することもできます。
 
+設定のポイントpathの部分でhelmfile.yamlが配置されているディレクトリを指定することです。
+
 ```sh
-argocd app create pyroscope \
-  --repo https://github.com/cloudnativedaysjp/cnd-handson.git \
-  --path chapter_pyroscope/helm \
+argocd app create headlamp \
+  --repo https://github.com/ご自身のアカウント/cnd-handson.git \
+  --path chapter_argocd/app/Helmfile/helm \
   --dest-server https://kubernetes.default.svc \
-  --dest-namespace monitoring \
+  --dest-namespace headlamp \
   --sync-policy automated
 ```
 
 ```sh
 # 実行結果
 {"level":"warning","msg":"Failed to invoke grpc call. Use flag --grpc-web in grpc calls. To avoid this warning message, use flag --grpc-web.","time":"2025-09-30T11:40:27+09:00"}
-application 'pyroscope' created
+application 'headlamp' created
 ```
 
 ### YAMLファイルでのアプリケーション作成
 
-YAMLファイルを使用してアプリケーションを作成する方法が最も再現性が高く推奨されます。
+YAMLファイルを使用してアプリケーションを作成する方法です。
+
+設定のポイントはsource.pathの部分でhelmfile.yamlが配置されているディレクトリを指定することです。
+```yaml
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: headlamp
+  namespace: argo-cd
+spec:
+  destination:
+    namespace: headlamp
+    server: 'https://kubernetes.default.svc'
+  project: default
+  source:
+    repoURL: https://github.com/ご自身のアカウント/cnd-handson.git
+    targetRevision: HEAD
+    path: chapter_argocd/app/Helmfile/helm
+  syncPolicy:
+    syncOptions:
+      - CreateNamespace=true
+
+```
+適用します。
 
 ```sh
-kubectl apply -f ./cmp/application.yaml
+kubectl apply -f app/Helmfile/application.yaml
 ```
 ```sh
 # 実行結果
-application.argoproj.io/cmp-pyroscope created
+application.argoproj.io/headlamp created
 ```
 
 ### 結果の確認
@@ -361,65 +419,46 @@ application.argoproj.io/cmp-pyroscope created
 Applicationが作成されると、ArgoCDが自動的にGitリポジトリを監視し、helmfileを使用してマニフェストを生成・適用します。
 
 ```sh
-kubectl -n argo-cd get application pyroscope
+kubectl -n argo-cd get application headlamp
 ```
 ```sh
 # 実行結果
-NAME        SYNC STATUS   HEALTH STATUS
-pyroscope   Synced        Healthy
+NAME       SYNC STATUS   HEALTH STATUS
+headlamp   Synced        Healthy
 ```
 
 ArgoCD Web UIでアプリケーションの詳細を確認できます。
-`http://argocd.example.com/applications/pyroscope` にアクセスすると、デプロイされたリソースの状態が視覚化されます。
+`http://argocd.example.com/applications/headlamp` にアクセスすると、デプロイされたリソースの状態が視覚化されます。
 
-![](./image/cmp/argocd-cmp-application.png)
-
+![](image/cmp/argocd-cmp-application.png)
 実際にデプロイされたリソースを確認します。
 
 ```sh
-kubectl -n monitoring get all
+kubectl -n headlamp get all
 ```
 ```sh
 # 実行結果
-NAME                    READY   STATUS    RESTARTS   AGE
-pod/pyroscope-0         1/1     Running   0          2m30s
-pod/pyroscope-alloy-0   2/2     Running   0          2m30s
+NAME                            READY   STATUS    RESTARTS   AGE
+pod/headlamp-6dc86c44cb-khcz7   1/1     Running   0          22m
 
-NAME                              TYPE        CLUSTER-IP    EXTERNAL-IP   PORT(S)     AGE
-service/pyroscope                 ClusterIP   10.96.7.235   <none>        4040/TCP    2m30s
-service/pyroscope-alloy           ClusterIP   10.96.111.9   <none>        12345/TCP   2m30s
-service/pyroscope-alloy-cluster   ClusterIP   None          <none>        12345/TCP   2m30s
-service/pyroscope-headless        ClusterIP   None          <none>        4040/TCP    2m30s
-service/pyroscope-memberlist      ClusterIP   None          <none>        7946/TCP    2m30s
+NAME               TYPE        CLUSTER-IP     EXTERNAL-IP   PORT(S)   AGE
+service/headlamp   ClusterIP   10.96.75.235   <none>        80/TCP    22m
 
-NAME                               READY   AGE
-statefulset.apps/pyroscope         1/1     2m30s
-statefulset.apps/pyroscope-alloy   1/1     2m30s
+NAME                       READY   UP-TO-DATE   AVAILABLE   AGE
+deployment.apps/headlamp   1/1     1            1           22m
+
+NAME                                  DESIRED   CURRENT   READY   AGE
+replicaset.apps/headlamp-6dc86c44cb   1         1         1       22m
 ```
 
-HelmfileでデプロイされたPyroscopeが正常に動作していることが確認できたら成功です！
+Helmfileでデプロイされたheadlampが正常に動作していることが確認できたら成功です！
 
-## より高度なCMPの活用例
 
-今回は簡単な例でしたが、CMPを使用することでさまざまなツールチェーンをArgoCDに統合できます。
+## 推奨されるプラグイン設定
 
-### 複数のツールを組み合わせる例
+今回は最低設定でしたが、CMPを本番環境で使用する場合、以下の点に注意してください。
 
-Helmfileだけでなく、Kustomizeを組み合わせて使用することも可能です。
-
-![](./image/argocd-cmp-advanced.png)
-
-たとえば、以下のような構成も実現できます。
-
-* Helmfileで複数のHelmチャートをデプロイ
-* Kustomizeで環境ごとの差分を管理
-* Terraformでクラウドリソースをプロビジョニング
-
-### 推奨されるプラグイン設定
-
-CMPを本番環境で使用する場合、以下の点に注意してください。
-
-* **セキュリティ**: Sidecarコンテナは`runAsNonRoot: true`で実行する
+* **セキュリティ**: Sidecarコンテナは`runAsNonRoot: true,runAsUser: 999`で実行する
 * **リソース制限**: `resources`フィールドでCPUとメモリの制限を設定する
 * **エラーハンドリング**: init、generateコマンドで適切なエラー処理を実装する
 * **ログ出力**: デバッグ用のログを標準エラー出力に出力する
@@ -429,8 +468,3 @@ CMPを本番環境で使用する場合、以下の点に注意してくださ�
 ## まとめ
 
 このハンズオンでは、ArgoCD Config Management Pluginsを使用してHelmfileをArgoCDに統合する方法を学びました。CMPを活用することで、ArgoCDのエコシステムを拡張し、既存のツールチェーンを維持しながらGitOpsワークフローを実現できます。
-
-次のステップとして、以下のチャプターに進むことをお勧めします。
-
-* [chapter_cicd](../chapter_cicd) - CI/CDパイプラインとArgoCDの統合
-* [chapter_argo-rollouts](../chapter_argo-rollouts) - Progressive Deliveryの実践
