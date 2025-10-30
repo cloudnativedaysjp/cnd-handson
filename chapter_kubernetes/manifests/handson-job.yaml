@@ -9,7 +9,7 @@ spec:
     spec:
       containers:
       - name: handson-job
-        image: centos:latest
+        image: alpine:latest
         command: ["echo"]
         args: ["Welcome To the CNDW2025 Hands On Event!!"]
       restartPolicy: Never
