@@ -1,4 +1,13 @@
 # ArgoCD Config Management Plugins (CMP)
+## 目次
+- [概要](#概要)
+- [CMPのコンポーネント](#cmpのコンポーネント)
+- [セットアップ](#セットアップ)
+  - [Patch編](#cmpの適用方法patch編)
+  - [Helmfile編](#cmpの適用方法helmfile編)
+- [アプリケーションのデプロイ](#cmpを使用したアプリケーションのデプロイ)
+- [推奨設定](#推奨されるプラグイン設定)
+- [まとめ](#まとめ)
 
 ## 概要
 
@@ -59,8 +68,14 @@ CMPで利用可能なツールは、各コミュニティやベンダーが提�
 今回は、HelmfileをCMPとして利用できるようにします。
 Helmfileは複数のHelmチャートを一括管理できるツールで、環境ごとの設定管理を効率化できます。
 
-#### [patchでプラグインを適用する方法](#cmpの適用方法patch編)
-#### [helmfileでプラグインを適用する方法](#cmpの適用方法helmfile編)
+**方法1: Patchを使用（既存環境への追加に推奨）**
+- 既にArgoCDが稼働している環境に適している
+- [→ Patch編へ進む](#cmpの適用方法patch編)
+
+**方法2: Helmfileを使用（新規環境に推奨）**
+- ArgoCDと一緒に初期構築する場合に適している
+- [→ Helmfile編へ進む](#cmpの適用方法helmfile編)
+
 ## CMPの適用方法～Patch編～
 
 Patchを使用してCMPを適用する方法を説明します。
@@ -132,8 +147,6 @@ helmfile-plugin-config   1      57s
 次に、argocd-repo-serverにCMPを実行するためのSidecarコンテナを追加します。
 このSidecarコンテナには、Helmfileがインストールされたイメージを使用します。
 
-**注意**: サイドカーコンテナはNon-Rootユーザーで実行されるため、書き込み権限がありません。HELM_*_HOME環境変数で、Helmの作業ディレクトリを書き込み可能な/tmpに変更しています。
-
 ```yaml
 apiVersion: apps/v1
 kind: Deployment
@@ -174,6 +187,10 @@ spec:
       - emptyDir: {}
         name: cmp-tmp
 ```
+> ⚠️ **重要な注意事項**
+> 
+> サイドカーコンテナはNon-Rootユーザーで実行されるため、書き込み権限がありません。
+> HELM_*_HOME環境変数で、Helmの作業ディレクトリを書き込み可能な/tmpに変更してください
 
 kubectl patchコマンドを使用してargocd-repo-serverにSidecarを追加します。
 
@@ -212,7 +229,7 @@ Helmfileのvalues.yamlにCMPの設定を追加してデプロイする方法を�
 
 ArgoCD HelmチャートのvaluesファイルにCMPの設定を追加します。
 
-**注意**: サイドカーコンテナはNon-Rootユーザーで実行されるため、書き込み権限がありません。HELM_*_HOME環境変数で、Helmの作業ディレクトリを書き込み可能な/tmpに変更しています。
+**注意**: SidecarコンテナはNon-Rootユーザーで実行されるため、書き込み権限がありません。HELM_*_HOME環境変数で、Helmの作業ディレクトリを書き込み可能な/tmpに変更しています。
 ```yaml
 # cmp/helm/values.yaml
 configs:
@@ -297,10 +314,20 @@ argo-cd-argocd-repo-server-86985f8c4b-6x7bp   2/2     Running   0          15m
 
 CMPが正しく設定されたら、実際にHelmfileを使用するApplicationリソースを作成してみましょう。
 今回は、headlampをデプロイする例を試します。
-#### [WebUIからheadlampをデプロイする](#web-uiでのアプリケーション作成)
-#### [CLIからheadlampをデプロイする](#cliでのアプリケーション作成)
-#### [YAMLからheadlampをデプロイする](#yamlファイルでのアプリケーション作成)
+**方法1: Web UIを使用（視覚的な操作を好む方向け）**
+- ArgoCDのWeb画面から直感的に操作できる
 
+  [→ Web UIでの作成へ進む](#web-uiでのアプリケーション作成)
+
+**方法2: CLIを使用（コマンドライン操作に慣れた方向け）**
+- スクリプトによる自動化が可能
+  
+  [→ CLIでの作成へ進む](#cliでのアプリケーション作成)
+
+**方法3: YAMLを使用（GitOps管理・本番環境向け）**
+- 設定をコードとして管理できる
+  
+  [→ YAMLでの作成へ進む](#yamlファイルでのアプリケーション作成)
 ---
 ### Web UIでのアプリケーション作成
 
