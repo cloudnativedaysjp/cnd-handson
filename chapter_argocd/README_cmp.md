@@ -5,7 +5,7 @@
 ArgoCD Config Management Plugins (CMP)は、ArgoCDでネイティブにサポートされていないツール（HelmfileやTerraformなど）を使用してKubernetesマニフェストを生成・管理するための拡張機能です。その目的は、ArgoCDの標準機能（Helm、Kustomize、Jsonnet）を超えて、さまざまなツールチェーンを統合し、GitOpsワークフローを柔軟に構築することです。CMPを利用することで、開発者は既存のツールやワークフローを維持しながら、ArgoCDの宣言的なデプロイメント機能を活用できます。
 
 CMPの代表的なコンポーネントは以下のとおりです。
-![cmp_architecture](./image/cmp/cmp-architecture.png)
+![cmp_architecture](image/cmp/cmp-architecture.png)
 
 * ConfigMapによるプラグイン定義
   * CMPの動作を定義する設定ファイル
@@ -21,7 +21,7 @@ ArgoCDでCMPを利用する際は、ApplicationリソースでCMPのプラグイ
 ### CMPのコンポーネント
 
 CMPは、内部的には3つのフェーズで構成されています。
-![cmp-flow](./image/cmp/cmp-flow.png)
+![cmp-flow](image/cmp/cmp-flow.png)
 * Discover
   * プラグインを適用する条件を判定するフェーズ
   * 特定のファイル（helmfile.yaml、terraform.tfなど）の存在をチェック
@@ -58,7 +58,8 @@ CMPで利用可能なツールは、各コミュニティやベンダーが提�
 
 今回は、HelmfileをCMPとして利用できるようにします。
 Helmfileは複数のHelmチャートを一括管理できるツールで、環境ごとの設定管理を効率化できます。
-
+[patchでプラグインを適用する方法](#cmpの適用方法patch編)
+[helmfileでプラグインを適用する方法](#cmpの適用方法helmfile編)
 ## CMPの適用方法～Patch編～
 
 Patchを使用してCMPを適用する方法を説明します。
@@ -107,7 +108,7 @@ data:
 実際にConfigMapをデプロイします。
 
 ```sh
-kubectl apply -f ./cmp/patch/helmfile-cmp.yaml
+kubectl apply -f cmp/patch/helmfile-cmp.yaml
 ```
 ```sh
 # 実行結果
@@ -174,7 +175,7 @@ spec:
 kubectl patchコマンドを使用してargocd-repo-serverにSidecarを追加します。
 
 ```sh
-kubectl patch deployment argo-cd-argocd-repo-server -n argo-cd --patch-file ./cmp/patch/argocd-repo-server-patch.yaml 
+kubectl patch deployment argo-cd-argocd-repo-server -n argo-cd --patch-file cmp/patch/argocd-repo-server-patch.yaml 
 ```
 
 ```sh
@@ -209,7 +210,7 @@ Helmfileのvalues.yamlにCMPの設定を追加してデプロイする方法を�
 ArgoCD HelmチャートのvaluesファイルにCMPの設定を追加します。
 
 ```yaml
-# helm/values.yaml
+# cmp/helm/values.yaml
 repoServer:
   volumes:
   - name: cmp-plugin
@@ -242,7 +243,7 @@ repoServer:
 values.yamlを配置します。
 
 ```sh
-cp ./cmp/values.yaml ./helm/values.yaml
+cp cmp/helm/values.yaml helm/values.yaml
 ```
 
 Helmfileを使用してArgoCDをデプロイします。
@@ -276,17 +277,17 @@ Discoverで自動検知してくれるので必須ではないです。
 apiVersion: argoproj.io/v1alpha1
 kind: Application
 metadata:
-  name: cmp-pyroscope
+  name: headlamp
   namespace: argo-cd
 spec:
   destination:
-    namespace: monitoring
+    namespace: headlamp
     server: 'https://kubernetes.default.svc'
   project: default
   source:
     repoURL: https://github.com/cloudnativedaysjp/cnd-handson.git
     targetRevision: HEAD
-    path: chapter_pyroscope/helm
+    path: chapter_argocd/app/Helmfile/helm
   syncPolicy:
     syncOptions:
       - CreateNamespace=true
@@ -304,24 +305,24 @@ ArgoCD Web UIからもCMPを使用するアプリケーションを作成でき�
 
 Applicationsの画面において + NEW APPをクリックします。
 
-![Applications](./image/demoapp/new-app.png)
+![Applications](image/demoapp/new-app.png)
 
 上の画面上で各項目を次のように設定します。
 ```
 GENERAL
-  Application Name: pyroscope
+  Application Name: headlamp
   Project Name: default
   SYNC POLICY: Manual
   SYNC OPTIONS: AUTO CREATE NAMESPACE [v]
 SOURCE
   Repository URL: https://github.com/自身のアカウント名/cnd-handson
   Revision: main
-  Path: chapter_pyroscope/helm
+  Path: chapter_argocd/app/Helmfile/helm
 DESTINATION
   Cluster URL: https://kubernetes.default.svc
-  Namespace: monitoring
+  Namespace: headlamp
 ```
-![](./image/cmp/argocd-cmp-webui.png)
+![](image/cmp/argocd-cmp-webui.png)
 
 SYNC APPSをクリックしてアプリケーションのデプロイを実行してください。
 
@@ -330,18 +331,18 @@ SYNC APPSをクリックしてアプリケーションのデプロイを実行�
 ArgoCD CLIを使用してアプリケーションを作成することもできます。
 
 ```sh
-argocd app create pyroscope \
+argocd app create headlamp \
   --repo https://github.com/cloudnativedaysjp/cnd-handson.git \
-  --path chapter_pyroscope/helm \
+  --path chapter_argocd/app/Helmfile/helm \
   --dest-server https://kubernetes.default.svc \
-  --dest-namespace monitoring \
+  --dest-namespace headlamp \
   --sync-policy automated
 ```
 
 ```sh
 # 実行結果
 {"level":"warning","msg":"Failed to invoke grpc call. Use flag --grpc-web in grpc calls. To avoid this warning message, use flag --grpc-web.","time":"2025-09-30T11:40:27+09:00"}
-application 'pyroscope' created
+application 'headlamp' created
 ```
 
 ### YAMLファイルでのアプリケーション作成
@@ -349,11 +350,11 @@ application 'pyroscope' created
 YAMLファイルを使用してアプリケーションを作成する方法が最も再現性が高く推奨されます。
 
 ```sh
-kubectl apply -f ./cmp/application.yaml
+kubectl apply -f cmp/application.yaml
 ```
 ```sh
 # 実行結果
-application.argoproj.io/cmp-pyroscope created
+application.argoproj.io/headlamp created
 ```
 
 ### 結果の確認
@@ -372,7 +373,7 @@ pyroscope   Synced        Healthy
 ArgoCD Web UIでアプリケーションの詳細を確認できます。
 `http://argocd.example.com/applications/pyroscope` にアクセスすると、デプロイされたリソースの状態が視覚化されます。
 
-![](./image/cmp/argocd-cmp-application.png)
+![](image/cmp/argocd-cmp-application.png)
 
 実際にデプロイされたリソースを確認します。
 
@@ -407,12 +408,9 @@ HelmfileでデプロイされたPyroscopeが正常に動作していることが
 
 Helmfileだけでなく、Kustomizeを組み合わせて使用することも可能です。
 
-![](./image/argocd-cmp-advanced.png)
-
 たとえば、以下のような構成も実現できます。
 
 * Helmfileで複数のHelmチャートをデプロイ
-* Kustomizeで環境ごとの差分を管理
 * Terraformでクラウドリソースをプロビジョニング
 
 ### 推奨されるプラグイン設定
@@ -429,8 +427,3 @@ CMPを本番環境で使用する場合、以下の点に注意してくださ�
 ## まとめ
 
 このハンズオンでは、ArgoCD Config Management Pluginsを使用してHelmfileをArgoCDに統合する方法を学びました。CMPを活用することで、ArgoCDのエコシステムを拡張し、既存のツールチェーンを維持しながらGitOpsワークフローを実現できます。
-
-次のステップとして、以下のチャプターに進むことをお勧めします。
-
-* [chapter_cicd](../chapter_cicd) - CI/CDパイプラインとArgoCDの統合
-* [chapter_argo-rollouts](../chapter_argo-rollouts) - Progressive Deliveryの実践
