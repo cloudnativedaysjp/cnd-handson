@@ -471,7 +471,7 @@ HTTPトラフィックの状態を確認するために、TOP画面左のサイ�
 
 ![image](./image/kiali-graph-namespace.png)
 
-- `Traffic`の`Ambient`と`Http`をにチェック
+- `Traffic`の`Ambient`と`Http`にチェック
 
 ![image](./image/kiali-traffic-graph-http.png)
 
