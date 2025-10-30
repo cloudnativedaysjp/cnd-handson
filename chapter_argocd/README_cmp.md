@@ -5,7 +5,7 @@
 ArgoCD Config Management Plugins (CMP)は、ArgoCDでネイティブにサポートされていないツール（HelmfileやTerraformなど）を使用してKubernetesマニフェストを生成・管理するための拡張機能です。その目的は、ArgoCDの標準機能（Helm、Kustomize、Jsonnet）を超えて、さまざまなツールチェーンを統合し、GitOpsワークフローを柔軟に構築することです。CMPを利用することで、開発者は既存のツールやワークフローを維持しながら、ArgoCDの宣言的なデプロイメント機能を活用できます。
 
 CMPの代表的なコンポーネントは以下のとおりです。
-![cmp_architecture](image/cmp/cmp-architecture.png)
+![cmp_architecture](image/cmp/cmp-architecture.jpng)
 
 * ConfigMapによるプラグイン定義
   * CMPの動作を定義する設定ファイル
@@ -21,7 +21,7 @@ ArgoCDでCMPを利用する際は、ApplicationリソースでCMPのプラグイ
 ### CMPのコンポーネント
 
 CMPは、内部的には3つのフェーズで構成されています。
-![cmp-flow](image/cmp/cmp-flow.png)
+![cmp-flow](image/cmp/cmp-flow.jpng)
 * Discover
   * プラグインを適用する条件を判定するフェーズ
   * 特定のファイル（helmfile.yaml、terraform.tfなど）の存在をチェック
