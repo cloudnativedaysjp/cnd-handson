@@ -1,0 +1,17 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: headlamp
+  namespace: argo-cd
+spec:
+  destination:
+    namespace: headlamp
+    server: 'https://kubernetes.default.svc'
+  project: default
+  source:
+    repoURL: https://github.com/cloudnativedaysjp/cnd-handson.git
+    targetRevision: HEAD
+    path: chapter_argocd/app/Helmfile/helm
+  syncPolicy:
+    syncOptions:
+      - CreateNamespace=true
