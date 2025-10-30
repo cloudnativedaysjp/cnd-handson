@@ -350,7 +350,7 @@ application 'headlamp' created
 YAMLファイルを使用してアプリケーションを作成する方法が最も再現性が高く推奨されます。
 
 ```sh
-kubectl apply -f cmp/application.yaml
+kubectl apply -f app/Helmfile/application.yaml
 ```
 ```sh
 # 実行結果

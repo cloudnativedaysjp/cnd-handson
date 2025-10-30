@@ -10,6 +10,6 @@ ingress:
           pathType: Prefix
           backend:
             service:
-              name: handson
+              name: headlamp 
               port:
                 name: http
