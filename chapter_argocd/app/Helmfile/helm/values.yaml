@@ -7,7 +7,7 @@ ingress:
     - host: headlamp.example.com
       paths:
         - path: /
-          pathType: Prefix
+          type: Prefix
           backend:
             service:
               name: headlamp 
