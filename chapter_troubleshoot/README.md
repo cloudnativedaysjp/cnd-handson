@@ -58,6 +58,7 @@ kubectl get all -n troubleshoot
 
 <details>
 <summary>デバッグ方法(参考)</summary>
+
 ```bash
 # Podの状態を確認
 kubectl get pods -n troubleshoot
@@ -100,6 +101,7 @@ kubectl get all -n troubleshoot
 
 <details>
 <summary>デバッグ方法(参考)</summary>
+
 ```bash
 # Podの状態を確認
 kubectl get pods -n troubleshoot
@@ -140,6 +142,7 @@ kubectl get all -n troubleshoot
 
 <details>
 <summary>デバッグ方法(参考)</summary>
+
 ```bash
 # Podの状態を確認
 kubectl get pods -n troubleshoot
@@ -196,6 +199,7 @@ kubectl get all -n troubleshoot
 
 <details>
 <summary>デバッグ方法(参考)</summary>
+
 ```bash
 # Podの状態を確認
 kubectl get pods -n troubleshoot
@@ -238,6 +242,7 @@ kubectl get all -n backend
 
 <details>
 <summary>デバッグ方法(参考)</summary>
+
 ```bash
 # Ingressの状態を確認
 kubectl describe ingress ingress -n troubleshoot
