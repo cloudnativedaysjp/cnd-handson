@@ -1,22 +1,22 @@
 apiVersion: v1
 kind: Namespace
 metadata:
-  name: scheduling-demo
+  name: troubleshoot
 ---
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: batch-app
-  namespace: scheduling-demo
+  name: app
+  namespace: troubleshoot
 spec:
   replicas: 1
   selector:
     matchLabels:
-      app: batch-app
+      app: app
   template:
     metadata:
       labels:
-        app: batch-app
+        app: app
     spec:
       containers:
       - name: app

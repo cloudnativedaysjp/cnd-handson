@@ -1,22 +1,22 @@
 apiVersion: v1
 kind: Namespace
 metadata:
-  name: imagepull-demo
+  name: troubleshoot
 ---
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: nginx-app
-  namespace: imagepull-demo
+  name: app
+  namespace: troubleshoot
 spec:
   replicas: 2
   selector:
     matchLabels:
-      app: nginx
+      app: app
   template:
     metadata:
       labels:
-        app: nginx
+        app: app
     spec:
       containers:
       - name: nginx
@@ -30,11 +30,11 @@ spec:
 apiVersion: v1
 kind: Service
 metadata:
-  name: nginx-service
-  namespace: imagepull-demo
+  name: app
+  namespace: troubleshoot
 spec:
   selector:
-    app: nginx
+    app: app
   ports:
   - port: 80
     targetPort: 8080

@@ -11,17 +11,17 @@ metadata:
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: frontend
+  name: app
   namespace: frontend
 spec:
   replicas: 1
   selector:
     matchLabels:
-      app: frontend
+      app: app
   template:
     metadata:
       labels:
-        app: frontend
+        app: app
     spec:
       containers:
       - name: nginx
@@ -32,11 +32,11 @@ spec:
 apiVersion: v1
 kind: Service
 metadata:
-  name: frontend-service
+  name: app
   namespace: frontend
 spec:
   selector:
-    app: frontend
+    app: app
   ports:
   - port: 80
     targetPort: 80
@@ -44,17 +44,17 @@ spec:
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: backend
+  name: app
   namespace: backend
 spec:
   replicas: 1
   selector:
     matchLabels:
-      app: backend
+      app: app
   template:
     metadata:
       labels:
-        app: backend
+        app: app
     spec:
       containers:
       - name: api
@@ -67,11 +67,11 @@ spec:
 apiVersion: v1
 kind: Service
 metadata:
-  name: backend-service
+  name: app
   namespace: backend
 spec:
   selector:
-    app: backend
+    app: app
   ports:
   - port: 8080
     targetPort: 5678
@@ -79,7 +79,7 @@ spec:
 apiVersion: networking.k8s.io/v1
 kind: Ingress
 metadata:
-  name: app-ingress
+  name: ingress
   namespace: frontend
   annotations:
     nginx.ingress.kubernetes.io/rewrite-target: /
@@ -93,13 +93,13 @@ spec:
         pathType: Prefix
         backend:
           service:
-            name: frontend-service
+            name: app
             port:
               number: 80
       - path: /api
         pathType: Prefix
         backend:
           service:
-            name: backend-service
+            name: app
             port:
               number: 8080

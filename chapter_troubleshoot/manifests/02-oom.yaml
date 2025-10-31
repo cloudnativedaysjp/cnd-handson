@@ -1,22 +1,22 @@
 apiVersion: v1
 kind: Namespace
 metadata:
-  name: oom-demo
+  name: troubleshoot
 ---
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: memory-hungry-app
-  namespace: oom-demo
+  name: app
+  namespace: troubleshoot
 spec:
   replicas: 1
   selector:
     matchLabels:
-      app: memory-hungry
+      app: app
   template:
     metadata:
       labels:
-        app: memory-hungry
+        app: app
     spec:
       containers:
       - name: app
@@ -40,11 +40,11 @@ spec:
 apiVersion: v1
 kind: Service
 metadata:
-  name: memory-hungry-service
-  namespace: oom-demo
+  name: app
+  namespace: troubleshoot
 spec:
   selector:
-    app: memory-hungry
+    app: app
   ports:
   - port: 80
     targetPort: 8080
