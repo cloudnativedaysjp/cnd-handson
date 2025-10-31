@@ -225,25 +225,32 @@ kubectl get events -n troubleshoot --sort-by='.lastTimestamp'
 kubectl apply -f manifests/05-ingress.yaml
 
 # リソースが作成されたことを確認
+kubectl get all -n troubleshoot
 kubectl get all -n frontend
 kubectl get all -n backend
 ```
 
 ### 症状
-- frontendネームスペースのIngressから、backendネームスペースのServiceを参照しようとすると失敗する
-- `/api`パスにアクセスしても503エラーが返ってくる
+- troubleshootネームスペースのIngressが、frontendとbackendネームスペースのServiceを参照できない
+- Ingressが参照しようとする`frontend-app`と`backend-app`というServiceが見つからない
+- `/`や`/api`パスにアクセスしても503エラーが返ってくる
 
 
 <details>
 <summary>デバッグ方法(参考)</summary>
 ```bash
 # Ingressの状態を確認
-kubectl describe ingress ingress -n frontend
+kubectl describe ingress ingress -n troubleshoot
 
 # Ingressのバックエンドを確認
-kubectl get ingress ingress -n frontend -o yaml
+kubectl get ingress ingress -n troubleshoot -o yaml
+
+# 各namespaceのServiceを確認
+kubectl get svc -n troubleshoot
+kubectl get svc -n frontend
+kubectl get svc -n backend
 
 # イベントを確認
-kubectl get events -n frontend --sort-by='.lastTimestamp'
+kubectl get events -n troubleshoot --sort-by='.lastTimestamp'
 ```
 </details>

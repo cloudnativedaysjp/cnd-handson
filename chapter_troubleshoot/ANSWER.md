@@ -213,21 +213,39 @@ kubectl taint nodes <node-name> workload=batch:NoSchedule-
 ### 原因
 Kubernetesでは、Ingressは同じnamespace内のServiceしか直接参照できません。異なるnamespaceのServiceを参照しようとすると、Serviceが見つからずエラーになります。
 
+今回の構成では:
+- `troubleshoot` namespaceにIngressがある
+- Ingressから`frontend-app`と`backend-app`というServiceを参照しようとしている
+- しかし、実際のServiceは`frontend`と`backend` namespaceに`app`という名前で存在している
+- そのため、Ingressが参照しようとするServiceが見つからず、503エラーが発生する
+
 ### 解決策
 ExternalName Serviceを使用して、異なるnamespaceのServiceを参照できるようにします。
 
 **手順**:
-1. frontendネームスペース内に、backendネームスペースのServiceを指すExternalName Serviceを作成
-2. Ingressからはfrontendネームスペース内のExternalName Serviceを参照
+1. `troubleshoot` namespace内に、`frontend`と`backend` namespaceのServiceを指すExternalName Serviceを作成
+2. Ingressからは`troubleshoot` namespace内のExternalName Serviceを参照
 
 **修正内容**:
 ```yaml
-# frontendネームスペース内にExternalName Serviceを作成
+# troubleshootネームスペース内にExternalName Serviceを作成
+---
 apiVersion: v1
 kind: Service
 metadata:
-  name: backend-proxy
-  namespace: frontend
+  name: frontend-app
+  namespace: troubleshoot
+spec:
+  type: ExternalName
+  externalName: app.frontend.svc.cluster.local
+  ports:
+  - port: 80
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: backend-app
+  namespace: troubleshoot
 spec:
   type: ExternalName
   externalName: app.backend.svc.cluster.local
@@ -240,18 +258,24 @@ spec:
 # マニフェストを適用
 kubectl apply -f manifests/05-ingress.yaml
 
-# Ingressの状態を確認（backendのServiceが見つからないエラー）
-kubectl get ingress -n frontend
-kubectl describe ingress ingress -n frontend
+# Ingressの状態を確認（ServiceNotFoundエラーが発生するはず）
+kubectl get ingress -n troubleshoot
+kubectl describe ingress ingress -n troubleshoot
+
+# 各namespaceのServiceを確認
+kubectl get svc -n troubleshoot
+kubectl get svc -n frontend
+kubectl get svc -n backend
 
 # マニフェストを修正して再適用
-# 修正内容: frontendネームスペース内にExternalName Serviceを追加
+# 修正内容: troubleshootネームスペース内にExternalName Serviceを追加
 # 詳細は上記の「修正内容」セクションを参照
 kubectl apply -f manifests/05-ingress.yaml
 
 # Ingressが正しく動作しているか確認
-kubectl get ingress -n frontend
+kubectl get ingress -n troubleshoot
 
 # curlで疎通確認
+curl -H "Host: troubleshoot.example.com" http://<ingress-ip>/
 curl -H "Host: troubleshoot.example.com" http://<ingress-ip>/api
 ```
