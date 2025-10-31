@@ -46,7 +46,7 @@ spec:
           valueFrom:
             configMapKeyRef:
               name: config
-              key: database_host
+              key: db_host
         - name: DB_PORT
           valueFrom:
             configMapKeyRef:
@@ -60,7 +60,7 @@ spec:
         - name: LOG_LEVEL
           valueFrom:
             configMapKeyRef:
-              name: config
+              name: app-config
               key: log_level
 ---
 apiVersion: v1

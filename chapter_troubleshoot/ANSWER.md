@@ -21,13 +21,13 @@ env:
 - name: DB_HOST
   valueFrom:
     configMapKeyRef:
-      name: app-config
+      name: config
       key: database_host  # db_host → database_host に修正
 
 - name: LOG_LEVEL
   valueFrom:
     configMapKeyRef:
-      name: app-config  # application-config → app-config に修正
+      name: config  # app-config → config に修正
       key: log_level
 ```
 
