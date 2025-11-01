@@ -41,9 +41,7 @@ env:
 # マニフェストを適用
 kubectl apply -f manifests/01-configmap.yaml
 
-# Podの状態を確認（問題が発生しているはず）
-kubectl get pods -n troubleshoot
-kubectl describe pod <pod-name> -n troubleshoot
+kubectl describe pod $(kubectl get pods -n troubleshoot -l app=app-configmap -o jsonpath='{.items[0].metadata.name}') -n troubleshoot
 
 # マニフェストを修正して再適用
 # 修正内容: ConfigMap名とキー名を正しく修正
@@ -53,7 +51,7 @@ kubectl apply -f manifests/01-configmap.yaml
 kubectl get pods -n troubleshoot
 
 # 環境変数が正しく設定されているか確認
-kubectl logs <pod-name> -n troubleshoot | grep -E "DB_HOST|LOG_LEVEL"
+kubectl logs $(kubectl get pods -n troubleshoot -l app=app-configmap -o jsonpath='{.items[0].metadata.name}') -n troubleshoot | grep -E "DB_HOST|LOG_LEVEL"
 ```
 
 ---
@@ -89,7 +87,7 @@ kubectl apply -f manifests/02-oom.yaml
 
 # Podの状態を確認（OOMKilledで再起動を繰り返すはず）
 kubectl get pods -n troubleshoot
-kubectl describe pod <pod-name> -n troubleshoot
+kubectl describe pod $(kubectl get pods -n troubleshoot -l app=app-oom -o jsonpath='{.items[0].metadata.name}') -n troubleshoot
 
 # マニフェストを修正して再適用
 # 修正内容: memory limits: 128Mi → 512Mi, requests: 64Mi → 256Mi
@@ -187,7 +185,7 @@ kubectl apply -f manifests/04-scheduling.yaml
 
 # Podの状態を確認（Pendingのままのはず）
 kubectl get pods -n troubleshoot
-kubectl describe pod <pod-name> -n troubleshoot
+kubectl describe pod $(kubectl get pods -n troubleshoot -l app=app-scheduling -o jsonpath='{.items[0].metadata.name}') -n troubleshoot
 
 # マニフェストを修正して再適用
 # 修正内容: effect: "NoExecute" → "NoSchedule"
@@ -237,7 +235,7 @@ metadata:
   namespace: troubleshoot
 spec:
   type: ExternalName
-  externalName: app.frontend.svc.cluster.local
+  externalName: app-frontend.frontend.svc.cluster.local
   ports:
   - port: 80
 ---
@@ -248,7 +246,7 @@ metadata:
   namespace: troubleshoot
 spec:
   type: ExternalName
-  externalName: app.backend.svc.cluster.local
+  externalName: app-backend.backend.svc.cluster.local
   ports:
   - port: 8080
 ```
@@ -278,4 +276,61 @@ kubectl get ingress -n troubleshoot
 # curlで疎通確認
 curl -H "Host: troubleshoot.example.com" http://<ingress-ip>/
 curl -H "Host: troubleshoot.example.com" http://<ingress-ip>/api
+
+# クリーンアップとして、troubleshootネームスペース内のExternalName Serviceを削除
+kubectl delete svc frontend-app -n troubleshoot
+kubectl delete svc backend-app -n troubleshoot
 ```
+
+---
+
+## シナリオ6: 総合問題
+
+### 原因
+この総合問題では、複数の原因が考えられます。以下に一般的な原因と解決策を挙げます。
+
+1.  **Podが起動していない/エラー状態**: `cnd-web-app`、`mysql`、`dummy-app`のいずれかのPodが正常に起動していない可能性があります。
+2.  **Serviceが正しく設定されていない**: `cnd-web-svc`や`mysql-svc`がPodを正しく選択できていない、またはポート設定が間違っている可能性があります。
+3.  **Ingressが正しく設定されていない**: `cnd-web-ing`がServiceを正しく参照できていない、またはホスト名やパスの設定が間違っている可能性があります。
+4.  **Secretが正しく設定されていない**: `app-secret`の`DB_PASSWORD`が正しく設定されていない、またはPodから参照できていない可能性があります。
+5.  **アプリケーション内部のエラー**: `cnd-web-app`がデータベースに接続できない、またはWebサーバーが正しく動作していない可能性があります。
+
+### 解決策
+
+以下の手順でデバッグと修正を行います。
+
+1.  **Podの状態を確認**: 
+    ```bash
+    kubectl get pods -n troubleshoot
+    kubectl describe pod cnd-web-app -n troubleshoot
+    kubectl logs cnd-web-app -n troubleshoot
+    kubectl describe pod mysql -n troubleshoot
+    kubectl logs mysql -n troubleshoot
+    ```
+2.  **Serviceの状態を確認**: 
+    ```bash
+    kubectl get svc -n troubleshoot
+    kubectl describe svc cnd-web-svc -n troubleshoot
+    kubectl describe svc mysql-svc -n troubleshoot
+    ```
+3.  **Ingressの状態を確認**: 
+    ```bash
+    kubectl get ingress -n troubleshoot
+    kubectl describe ingress cnd-web-ing -n troubleshoot
+    ```
+4.  **Secretの内容を確認**: 
+    ```bash
+    kubectl get secret app-secret -n troubleshoot -o yaml
+    ```
+    `DB_PASSWORD`が正しくBase64エンコードされているか確認し、必要であれば修正します。
+
+5.  **マニフェストの修正**: 上記のデバッグ結果に基づいて、`manifests/06-cnd-web.yaml`を修正し、再度適用します。
+    ```bash
+    kubectl apply -f manifests/06-cnd-web.yaml
+    ```
+
+**ヒント**:
+- `cnd-web-app`のログでデータベース接続エラーが出ていないか確認してください。
+- `mysql`のログで起動エラーが出ていないか確認してください。
+- `app-secret`の`DB_PASSWORD`はBase64エンコードされた値である必要があります。例えば、`password`をBase64エンコードすると`cGFzc3dvcmQ=`になります。
+- `cnd-web-app`の環境変数`DB_HOST`と`DB_PORT`が`mysql-svc`を正しく指しているか確認してください。

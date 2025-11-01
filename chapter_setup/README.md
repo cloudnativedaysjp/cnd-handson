@@ -95,6 +95,7 @@ YOUR_VM_IP_ADDRESS    kiali-ambient.example.com
 YOUR_VM_IP_ADDRESS    app.cilium.example.com
 YOUR_VM_IP_ADDRESS    hubble.cilium.example.com
 YOUR_VM_IP_ADDRESS    pyroscope.example.com
+YOUR_VM_IP_ADDRESS    troubleshoot.example.com
 ```
 
 ## リポジトリのClone
