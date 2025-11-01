@@ -1,0 +1,37 @@
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: troubleshoot
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: app-image-pull
+  namespace: troubleshoot
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: app-image-pull
+  template:
+    metadata:
+      labels:
+        app: app-image-pull
+    spec:
+      containers:
+      - name: nginx
+        image: nginx:1.27
+        ports:
+        - containerPort: 80
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: app-image-pull
+  namespace: troubleshoot
+spec:
+  selector:
+    app: app-image-pull
+  ports:
+  - port: 80
+    targetPort: 80

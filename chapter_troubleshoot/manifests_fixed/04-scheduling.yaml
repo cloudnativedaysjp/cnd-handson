@@ -1,0 +1,36 @@
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: troubleshoot
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: app-scheduling
+  namespace: troubleshoot
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: app-scheduling
+  template:
+    metadata:
+      labels:
+        app: app-scheduling
+    spec:
+      containers:
+      - name: app
+        image: busybox:1.36
+        command: ["sh", "-c", "echo Starting batch job && sleep 3600"]
+        resources:
+          requests:
+            memory: "64Mi"
+            cpu: "100m"
+          limits:
+            memory: "128Mi"
+            cpu: "200m"
+      tolerations:
+      - key: "workload"
+        operator: "Equal"
+        value: "batch"
+        effect: "NoSchedule"
