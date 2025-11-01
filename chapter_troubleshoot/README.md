@@ -27,8 +27,7 @@
 
 ## 目次
 
-- [前提条件](#前提条件)
-- [実施手順](#実施手順)
+- [トラブルシューティングの勘所とヒント](#トラブルシューティングの勘所とヒント)
 - [シナリオ1: 環境変数が読み込めずPodが起動しない](#シナリオ1-環境変数が読み込めずpodが起動しない)
 - [シナリオ2: Podが何度も再起動を繰り返す](#シナリオ2-podが何度も再起動を繰り返す)
 - [シナリオ3: コンテナイメージが取得できない](#シナリオ3-コンテナイメージが取得できない)
@@ -40,10 +39,19 @@
 
 ## トラブルシューティングの勘所とヒント
 
+> [!NOTE]
+> **`kubectl top`コマンドについて**
+>
+> このチャプターでは、リソース使用状況を確認するために`kubectl top pod`や`kubectl top node`コマンドを使用します。これらのコマンドを利用するには、Kubernetesクラスタに[Metrics Server](https://github.com/kubernetes-sigs/metrics-server)がデプロイされている必要があります。
+>
+> Prometheusの章をまだ実施していない場合は、以下のコマンドでMetrics Serverを導入してください:
+> ```bash
+> kubectl apply -f https://github.com/kubernetes-sigs/metrics-server/releases/latest/download/components.yaml
+> ```
+
 ### 一般的なデバッグのヒント
 
 - **リソース名の重複**: `Deployment`や`Service`などのリソース名が重複していると、意図しない挙動を引き起こすことがあります。特に異なるNamespaceで同じ名前を使用している場合、混乱を招きやすいです。リソース名は一意になるように命名規則を設けることを推奨します。
-- **`kubectl top`コマンドの利用**: `kubectl top pod`や`kubectl top node`はリソースの使用状況を確認するのに非常に便利ですが、Kubernetesクラスタに[Metrics Server](https://github.com/kubernetes-sigs/metrics-server)がデプロイされている必要があります。Metrics Serverがない環境では、このコマンドは機能しません。
 - **Prometheusとの連携**: Prometheusなどのモニタリングツールを導入している環境では、過去のリソース使用状況やイベント履歴を詳細に確認でき、デバッグが格段に容易になります。特に断続的に発生する問題の特定に役立ちます。
 - **`kubelet`ログの確認**: Podの起動やコンテナの実行に関する低レベルな問題は、Node上の`kubelet`のログに記録されていることが多いです。`journalctl -u kubelet`などで確認できます。
 - **Kubernetes History Inspector**: クラスターのログを視覚化し、問題の履歴を追跡するのに役立つツールです。詳細はこちらを参照してください: [Kubernetes History Inspector](https://cloud.google.com/blog/ja/products/containers-kubernetes/kubernetes-history-inspector-visualizes-cluster-logs)
@@ -69,6 +77,35 @@
 
 より詳細な情報は、[Kubernetes公式ドキュメント](https://kubernetes.io/docs/reference/kubectl/)を参照してください。
 
+### チェックスクリプトの使い方
+
+各シナリオには、現在の状態を確認して適切なヒントを表示するチェックスクリプトが用意されています。
+
+```bash
+# シナリオ1のチェック
+./scripts/check-01.sh
+
+# シナリオ2のチェック
+./scripts/check-02.sh
+
+# シナリオ3のチェック
+./scripts/check-03.sh
+
+# シナリオ4のチェック
+./scripts/check-04.sh
+
+# シナリオ5のチェック
+./scripts/check-05.sh
+
+# シナリオ6のチェック
+./scripts/check-06.sh
+```
+
+チェックスクリプトは以下を行います:
+- リソースの状態を確認
+- 問題が解決されていれば「✅ 正解！」と表示
+- 問題が残っている場合、現在の状態に応じた具体的なヒントを表示
+
 ---
 
 ## シナリオ1: 環境変数が読み込めずPodが起動しない
@@ -91,6 +128,13 @@ kubectl get all -n troubleshoot
 - 環境変数が正しく設定されない
 - アプリケーションが設定を読み込めずにエラーになる
 
+### 状態確認とヒント
+
+チェックスクリプトを実行すると、現在の状態を確認してヒントを得られます:
+
+```bash
+./scripts/check-01.sh
+```
 
 <details>
 <summary>デバッグ方法(参考)</summary>
@@ -143,6 +187,13 @@ kubectl get all -n troubleshoot
 - `kubectl get pods`で`CrashLoopBackOff`や`OOMKilled`が表示される
 - アプリケーションが正常に起動しない
 
+### 状態確認とヒント
+
+チェックスクリプトを実行すると、現在の状態を確認してヒントを得られます:
+
+```bash
+./scripts/check-02.sh
+```
 
 <details>
 <summary>デバッグ方法(参考)</summary>
@@ -194,6 +245,13 @@ kubectl get all -n troubleshoot
 - `kubectl describe pod`で"manifest unknown"や"not found"というエラーが表示される
 - 以前は動いていたBitnamiのイメージが突然Pullできなくなる
 
+### 状態確認とヒント
+
+チェックスクリプトを実行すると、現在の状態を確認してヒントを得られます:
+
+```bash
+./scripts/check-03.sh
+```
 
 <details>
 <summary>デバッグ方法(参考)</summary>
@@ -259,6 +317,13 @@ kubectl get all -n troubleshoot
 - `kubectl describe pod`で"0/X nodes are available"というメッセージが表示される
 - SchedulingFailedイベントが記録される
 
+### 状態確認とヒント
+
+チェックスクリプトを実行すると、現在の状態を確認してヒントを得られます:
+
+```bash
+./scripts/check-04.sh
+```
 
 <details>
 <summary>デバッグ方法(参考)</summary>
@@ -310,6 +375,14 @@ kubectl apply -f manifests/05-ingress.yaml
 
 - `curl`やブラウザでIngressにアクセスすると、503 Service Temporarily Unavailableエラーが返ってくる
 - Ingress Controllerのログに、バックエンドのServiceが見つからないというエラーが出力される
+
+### 状態確認とヒント
+
+チェックスクリプトを実行すると、現在の状態を確認してヒントを得られます:
+
+```bash
+./scripts/check-05.sh
+```
 
 <details>
 <summary>デバッグ方法(参考)</summary>
@@ -370,6 +443,13 @@ kubectl delete -f manifests/05-ingress.yaml
 kubectl apply -f manifests/06-cnd-web.yaml
 ```
 
+### 状態確認とヒント
+
+チェックスクリプトを実行すると、現在の状態を確認してヒントを得られます:
+
+```bash
+./scripts/check-06.sh
+```
 
 動作確認後、リソースを削除します。
 
