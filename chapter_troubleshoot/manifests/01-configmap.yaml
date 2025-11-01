@@ -17,17 +17,17 @@ data:
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: app
+  name: app-configmap
   namespace: troubleshoot
 spec:
   replicas: 1
   selector:
     matchLabels:
-      app: app
+      app: app-configmap
   template:
     metadata:
       labels:
-        app: app
+        app: app-configmap
     spec:
       containers:
       - name: app
@@ -66,11 +66,11 @@ spec:
 apiVersion: v1
 kind: Service
 metadata:
-  name: app
+  name: app-configmap
   namespace: troubleshoot
 spec:
   selector:
-    app: app
+    app: app-configmap
   ports:
   - port: 8080
     targetPort: 8080

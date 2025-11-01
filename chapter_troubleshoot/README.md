@@ -23,6 +23,7 @@
 > [!NOTE]
 > 各シナリオは独立しているため、興味のあるものから始めることができます。
 > 初めての方は、シナリオ1から順番に進めることをお勧めします。
+> また、各シナリオを開始する前の`troubleshoot`ネームスペースには、リソースが存在しない状態からスタートします。
 
 ## 目次
 
@@ -33,6 +34,40 @@
 - [シナリオ3: コンテナイメージが取得できない](#シナリオ3-コンテナイメージが取得できない)
 - [シナリオ4: PodがPendingのまま起動しない](#シナリオ4-podがpendingのまま起動しない)
 - [シナリオ5: Ingressで503エラーが発生する](#シナリオ5-ingressで503エラーが発生する)
+- [シナリオ6: 総合問題](#シナリオ6-総合問題)
+
+---
+
+## トラブルシューティングの勘所とヒント
+
+### 一般的なデバッグのヒント
+
+- **リソース名の重複**: `Deployment`や`Service`などのリソース名が重複していると、意図しない挙動を引き起こすことがあります。特に異なるNamespaceで同じ名前を使用している場合、混乱を招きやすいです。リソース名は一意になるように命名規則を設けることを推奨します。
+- **`kubectl top`コマンドの利用**: `kubectl top pod`や`kubectl top node`はリソースの使用状況を確認するのに非常に便利ですが、Kubernetesクラスタに[Metrics Server](https://github.com/kubernetes-sigs/metrics-server)がデプロイされている必要があります。Metrics Serverがない環境では、このコマンドは機能しません。
+- **Prometheusとの連携**: Prometheusなどのモニタリングツールを導入している環境では、過去のリソース使用状況やイベント履歴を詳細に確認でき、デバッグが格段に容易になります。特に断続的に発生する問題の特定に役立ちます。
+- **`kubelet`ログの確認**: Podの起動やコンテナの実行に関する低レベルな問題は、Node上の`kubelet`のログに記録されていることが多いです。`journalctl -u kubelet`などで確認できます。
+- **Kubernetes History Inspector**: クラスターのログを視覚化し、問題の履歴を追跡するのに役立つツールです。詳細はこちらを参照してください: [Kubernetes History Inspector](https://cloud.google.com/blog/ja/products/containers-kubernetes/kubernetes-history-inspector-visualizes-cluster-logs)
+- **`kubectl apply -n`の注意点**: `Namespace`や`ClusterRole`のようなクラスターレベルのリソースに対して`kubectl apply -f <file> -n <namespace>`を実行しても、`-n`オプションは無視されます。Namespaceを指定する必要があるのは、PodやDeploymentのようなNamespaceスコープのリソースに対してのみです。
+- **`kubectl get all`の活用**: `kubectl get all -n <namespace>`は、指定したNamespace内の主要なリソース（Pod, Deployment, Service, ReplicaSetなど）を一覧表示するのに便利です。Ingressリソースはデフォルトでは含まれないため、`kubectl get ingress -n <namespace>`を別途実行する必要があります。
+
+### よく使う`kubectl`コマンド一覧
+
+- **リソースの確認**:
+  - `kubectl get <resource-type> -n <namespace>`: 特定のリソースの情報を取得
+  - `kubectl describe <resource-type> <resource-name> -n <namespace>`: リソースの詳細情報を取得
+  - `kubectl get events -n <namespace> --sort-by='.lastTimestamp'`: イベントログを確認
+- **Podのデバッグ**:
+  - `kubectl logs <pod-name> -n <namespace>`: Podのログを表示
+  - `kubectl logs <pod-name> -n <namespace> --previous`: 以前のコンテナのログを表示
+  - `kubectl exec -it <pod-name> -n <namespace> -- <command>`: Pod内でコマンドを実行
+- **リソースの操作**:
+  - `kubectl apply -f <file>`: マニフェストを適用
+  - `kubectl delete -f <file>`: マニフェストで定義されたリソースを削除
+  - `kubectl delete <resource-type> <resource-name> -n <namespace>`: 特定のリソースを削除
+
+### `kubectl`公式ドキュメント
+
+より詳細な情報は、[Kubernetes公式ドキュメント](https://kubernetes.io/docs/reference/kubectl/)を参照してください。
 
 ---
 
@@ -43,9 +78,10 @@
 まず、問題を再現するためのリソースをデプロイします。
 
 ```bash
-# マニフェストを適用
 kubectl apply -f manifests/01-configmap.yaml
+```
 
+```bash
 # リソースが作成されたことを確認
 kubectl get all -n troubleshoot
 ```
@@ -64,7 +100,7 @@ kubectl get all -n troubleshoot
 kubectl get pods -n troubleshoot
 
 # Podの詳細を確認（エラーメッセージを確認）
-kubectl describe pod <pod-name> -n troubleshoot
+kubectl describe pod $(kubectl get pods -n troubleshoot -l app=app-configmap -o jsonpath='{.items[0].metadata.name}') -n troubleshoot
 
 # ConfigMapの内容を確認
 kubectl get configmap config -n troubleshoot -o yaml
@@ -77,6 +113,14 @@ kubectl get events -n troubleshoot --sort-by='.lastTimestamp'
 ```
 </details>
 
+### クリーンアップ
+
+以下のコマンドで、作成したリソースを削除します。
+
+```bash
+kubectl delete -f manifests/01-configmap.yaml
+```
+
 ---
 
 ## シナリオ2: Podが何度も再起動を繰り返す
@@ -86,9 +130,10 @@ kubectl get events -n troubleshoot --sort-by='.lastTimestamp'
 まず、問題を再現するためのリソースをデプロイします。
 
 ```bash
-# マニフェストを適用
 kubectl apply -f manifests/02-oom.yaml
+```
 
+```bash
 # リソースが作成されたことを確認
 kubectl get all -n troubleshoot
 ```
@@ -107,15 +152,23 @@ kubectl get all -n troubleshoot
 kubectl get pods -n troubleshoot
 
 # Podの詳細を確認（Stateセクションに"OOMKilled"と表示される）
-kubectl describe pod <pod-name> -n troubleshoot
+kubectl describe pod $(kubectl get pods -n troubleshoot -l app=app-oom -o jsonpath='{.items[0].metadata.name}') -n troubleshoot
 
 # Podのログを確認
-kubectl logs <pod-name> -n troubleshoot --previous
+kubectl logs $(kubectl get pods -n troubleshoot -l app=app-oom -o jsonpath='{.items[0].metadata.name}') -n troubleshoot --previous
 
 # Podのメトリクスを確認
 kubectl top pod -n troubleshoot
 ```
 </details>
+
+### クリーンアップ
+
+以下のコマンドで、作成したリソースを削除します。
+
+```bash
+kubectl delete -f manifests/02-oom.yaml
+```
 
 
 ---
@@ -129,7 +182,9 @@ kubectl top pod -n troubleshoot
 ```bash
 # マニフェストを適用
 kubectl apply -f manifests/03-image_pull.yaml
+```
 
+```bash
 # リソースが作成されたことを確認
 kubectl get all -n troubleshoot
 ```
@@ -148,15 +203,23 @@ kubectl get all -n troubleshoot
 kubectl get pods -n troubleshoot
 
 # Podの詳細を確認（エラーメッセージを確認）
-kubectl describe pod <pod-name> -n troubleshoot
+kubectl describe pod $(kubectl get pods -n troubleshoot -l app=app-image-pull -o jsonpath='{.items[0].metadata.name}') -n troubleshoot
 
 # イベントを確認
 kubectl get events -n troubleshoot --sort-by='.lastTimestamp'
 
 # ImagePullのログを確認
-kubectl logs <pod-name> -n troubleshoot
+kubectl logs $(kubectl get pods -n troubleshoot -l app=app-image-pull -o jsonpath='{.items[0].metadata.name}') -n troubleshoot
 ```
 </details>
+
+### クリーンアップ
+
+以下のコマンドで、作成したリソースを削除します。
+
+```bash
+kubectl delete -f manifests/03-image_pull.yaml
+```
 
 
 ---
@@ -205,7 +268,7 @@ kubectl get all -n troubleshoot
 kubectl get pods -n troubleshoot
 
 # Podがスケジュールされない理由を確認
-kubectl describe pod <pod-name> -n troubleshoot
+kubectl describe pod $(kubectl get pods -n troubleshoot -l app=app-scheduling -o jsonpath='{.items[0].metadata.name}') -n troubleshoot
 
 # NodeのTaintを確認
 kubectl describe node <node-name> | grep Taint
@@ -214,6 +277,14 @@ kubectl describe node <node-name> | grep Taint
 kubectl get events -n troubleshoot --sort-by='.lastTimestamp'
 ```
 </details>
+
+### クリーンアップ
+
+以下のコマンドで、作成したリソースを削除します。
+
+```bash
+./scripts/setup-04-scheduling.sh --delete
+```
 
 
 ---
@@ -227,35 +298,81 @@ kubectl get events -n troubleshoot --sort-by='.lastTimestamp'
 ```bash
 # マニフェストを適用
 kubectl apply -f manifests/05-ingress.yaml
+```
 
-# リソースが作成されたことを確認
-kubectl get all -n troubleshoot
-kubectl get all -n frontend
-kubectl get all -n backend
+次に、Ingressにアクセスするために、以下の行を`/etc/hosts`ファイルに追加します。`<ingress-ip>`はご自身の環境のIngressのIPアドレスに置き換えてください。
+
+```
+<ingress-ip> troubleshoot.example.com
 ```
 
 ### 症状
-- troubleshootネームスペースのIngressが、frontendとbackendネームスペースのServiceを参照できない
-- Ingressが参照しようとする`frontend-app`と`backend-app`というServiceが見つからない
-- `/`や`/api`パスにアクセスしても503エラーが返ってくる
 
+- `curl`やブラウザでIngressにアクセスすると、503 Service Temporarily Unavailableエラーが返ってくる
+- Ingress Controllerのログに、バックエンドのServiceが見つからないというエラーが出力される
 
 <details>
 <summary>デバッグ方法(参考)</summary>
 
 ```bash
 # Ingressの状態を確認
+kubectl get ingress -n troubleshoot
+
+# Ingressの詳細を確認
 kubectl describe ingress ingress -n troubleshoot
 
 # Ingressのバックエンドを確認
 kubectl get ingress ingress -n troubleshoot -o yaml
 
 # 各namespaceのServiceを確認
-kubectl get svc -n troubleshoot
-kubectl get svc -n frontend
-kubectl get svc -n backend
+kubectl get svc -A | grep -E "troubleshoot|frontend|backend"
 
 # イベントを確認
 kubectl get events -n troubleshoot --sort-by='.lastTimestamp'
+
+# Ingress Nginx Controllerのログを確認 (Ingress ControllerのPod名を適宜変更)
+# kubectl logs $(kubectl get pods -n ingress-nginx -l app.kubernetes.io/component=controller -o jsonpath='{.items[0].metadata.name}') -n ingress-nginx | grep troubleshoot
+
+# curlで疎通確認
+curl -H "Host: troubleshoot.example.com" http://troubleshoot.example.com/
+curl -H "Host: troubleshoot.example.com" http://troubleshoot.example.com/api
 ```
 </details>
+
+### クリーンアップ
+
+以下のコマンドで、作成したリソースを削除します。
+
+```bash
+kubectl delete -f manifests/05-ingress.yaml
+```
+
+---
+
+## シナリオ6: 総合問題
+
+セクションの最後に、簡単なWebアプリケーションを使ったトラブルシュートに挑戦してみましょう。
+構成図右下にあるcnd-web-appに接続し、適切なWebページを表示させることがゴールです。
+
+![diagram](./image/cnd-tshoot-diagram.svg)
+
+> [!NOTE]
+> - 動作確認は、ブラウザから以下のURLにアクセスすることで行います。
+>   - http://cnd-web.example.com
+> - Ingressにアクセスするために、以下の行を`/etc/hosts`ファイルに追加します。`<ingress-ip>`はご自身の環境のIngressのIPアドレスに置き換えてください。
+>   - `<ingress-ip> cnd-web.example.com`
+> - リソースの更新後もWeb画面の表示が変わらない場合があります。1-2分待ってからブラウザのリフレッシュを行なってください。
+> - 改修箇所は1箇所ではない可能性があります。また、構成図とエラーメッセージがヒントになる場合があります。
+
+
+以下のコマンドでアプリのデプロイを行なってください。
+```sh
+kubectl apply -f manifests/06-cnd-web.yaml
+```
+
+
+動作確認後、リソースを削除します。
+
+```sh
+kubectl delete -f manifests/06-cnd-web.yaml
+```

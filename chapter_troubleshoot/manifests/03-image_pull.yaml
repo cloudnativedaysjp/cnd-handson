@@ -6,17 +6,17 @@ metadata:
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: app
+  name: app-image-pull
   namespace: troubleshoot
 spec:
   replicas: 2
   selector:
     matchLabels:
-      app: app
+      app: app-image-pull
   template:
     metadata:
       labels:
-        app: app
+        app: app-image-pull
     spec:
       containers:
       - name: nginx
@@ -30,11 +30,11 @@ spec:
 apiVersion: v1
 kind: Service
 metadata:
-  name: app
+  name: app-image-pull
   namespace: troubleshoot
 spec:
   selector:
-    app: app
+    app: app-image-pull
   ports:
   - port: 80
     targetPort: 8080

@@ -6,17 +6,17 @@ metadata:
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: app
+  name: app-scheduling
   namespace: troubleshoot
 spec:
   replicas: 1
   selector:
     matchLabels:
-      app: app
+      app: app-scheduling
   template:
     metadata:
       labels:
-        app: app
+        app: app-scheduling
     spec:
       containers:
       - name: app

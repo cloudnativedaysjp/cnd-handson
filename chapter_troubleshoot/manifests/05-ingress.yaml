@@ -16,17 +16,17 @@ metadata:
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: app
+  name: app-frontend
   namespace: frontend
 spec:
   replicas: 1
   selector:
     matchLabels:
-      app: app
+      app: app-frontend
   template:
     metadata:
       labels:
-        app: app
+        app: app-frontend
     spec:
       containers:
       - name: nginx
@@ -37,11 +37,11 @@ spec:
 apiVersion: v1
 kind: Service
 metadata:
-  name: app
+  name: app-frontend
   namespace: frontend
 spec:
   selector:
-    app: app
+    app: app-frontend
   ports:
   - port: 80
     targetPort: 80
@@ -49,17 +49,17 @@ spec:
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: app
+  name: app-backend
   namespace: backend
 spec:
   replicas: 1
   selector:
     matchLabels:
-      app: app
+      app: app-backend
   template:
     metadata:
       labels:
-        app: app
+        app: app-backend
     spec:
       containers:
       - name: api
@@ -72,11 +72,11 @@ spec:
 apiVersion: v1
 kind: Service
 metadata:
-  name: app
+  name: app-backend
   namespace: backend
 spec:
   selector:
-    app: app
+    app: app-backend
   ports:
   - port: 8080
     targetPort: 5678
@@ -98,13 +98,13 @@ spec:
         pathType: Prefix
         backend:
           service:
-            name: frontend-app
+            name: app-frontend
             port:
               number: 80
       - path: /api
         pathType: Prefix
         backend:
           service:
-            name: backend-app
+            name: app-backend
             port:
               number: 8080

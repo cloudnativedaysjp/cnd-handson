@@ -6,17 +6,17 @@ metadata:
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: app
+  name: app-oom
   namespace: troubleshoot
 spec:
   replicas: 1
   selector:
     matchLabels:
-      app: app
+      app: app-oom
   template:
     metadata:
       labels:
-        app: app
+        app: app-oom
     spec:
       containers:
       - name: app
@@ -40,11 +40,11 @@ spec:
 apiVersion: v1
 kind: Service
 metadata:
-  name: app
+  name: app-oom
   namespace: troubleshoot
 spec:
   selector:
-    app: app
+    app: app-oom
   ports:
   - port: 80
     targetPort: 8080
