@@ -77,35 +77,6 @@
 
 より詳細な情報は、[Kubernetes公式ドキュメント](https://kubernetes.io/docs/reference/kubectl/)を参照してください。
 
-### チェックスクリプトの使い方
-
-各シナリオには、現在の状態を確認して適切なヒントを表示するチェックスクリプトが用意されています。
-
-```bash
-# シナリオ1のチェック
-./scripts/check-01.sh
-
-# シナリオ2のチェック
-./scripts/check-02.sh
-
-# シナリオ3のチェック
-./scripts/check-03.sh
-
-# シナリオ4のチェック
-./scripts/check-04.sh
-
-# シナリオ5のチェック
-./scripts/check-05.sh
-
-# シナリオ6のチェック
-./scripts/check-06.sh
-```
-
-チェックスクリプトは以下を行います:
-- リソースの状態を確認
-- 問題が解決されていれば「✅ 正解！」と表示
-- 問題が残っている場合、現在の状態に応じた具体的なヒントを表示
-
 ---
 
 ## シナリオ1: 環境変数が読み込めずPodが起動しない
@@ -128,12 +99,23 @@ kubectl get all -n troubleshoot
 - 環境変数が正しく設定されない
 - アプリケーションが設定を読み込めずにエラーになる
 
-### 状態確認とヒント
+### 正解の状態
 
-チェックスクリプトを実行すると、現在の状態を確認してヒントを得られます:
+以下の状態になれば正解です:
 
 ```bash
-./scripts/check-01.sh
+# Podが Running 状態になっている
+kubectl get pods -n troubleshoot
+# NAME              READY   STATUS    RESTARTS   AGE
+# app-configmap-xxx 1/1     Running   0          1m
+
+# ログに環境変数が正しく出力されている
+kubectl logs $(kubectl get pods -n troubleshoot -l app=app-configmap -o jsonpath='{.items[0].metadata.name}') -n troubleshoot
+# Starting application...
+# DB_HOST: postgres.default.svc.cluster.local
+# DB_PORT: 5432
+# DB_NAME: myapp
+# LOG_LEVEL: info
 ```
 
 <details>
@@ -187,12 +169,20 @@ kubectl get all -n troubleshoot
 - `kubectl get pods`で`CrashLoopBackOff`や`OOMKilled`が表示される
 - アプリケーションが正常に起動しない
 
-### 状態確認とヒント
+### 正解の状態
 
-チェックスクリプトを実行すると、現在の状態を確認してヒントを得られます:
+以下の状態になれば正解です:
 
 ```bash
-./scripts/check-02.sh
+# Podが Running 状態で、再起動回数が 0 になっている
+kubectl get pods -n troubleshoot
+# NAME           READY   STATUS    RESTARTS   AGE
+# app-oom-xxx    1/1     Running   0          2m
+
+# メモリ使用量が制限内に収まっている (Metrics Serverが必要)
+kubectl top pod -n troubleshoot
+# NAME           CPU(cores)   MEMORY(bytes)
+# app-oom-xxx    1m           256Mi
 ```
 
 <details>
@@ -245,12 +235,20 @@ kubectl get all -n troubleshoot
 - `kubectl describe pod`で"manifest unknown"や"not found"というエラーが表示される
 - 以前は動いていたBitnamiのイメージが突然Pullできなくなる
 
-### 状態確認とヒント
+### 正解の状態
 
-チェックスクリプトを実行すると、現在の状態を確認してヒントを得られます:
+以下の状態になれば正解です:
 
 ```bash
-./scripts/check-03.sh
+# 全てのPodが Running 状態になっている
+kubectl get pods -n troubleshoot
+# NAME                   READY   STATUS    RESTARTS   AGE
+# app-image-pull-xxx-1   1/1     Running   0          1m
+# app-image-pull-xxx-2   1/1     Running   0          1m
+
+# イメージが正しくPullされている (nginx:1.27 または bitnami/nginx:latest)
+kubectl get pods -n troubleshoot -o jsonpath='{.items[0].spec.containers[0].image}'
+# nginx:1.27
 ```
 
 <details>
@@ -317,12 +315,26 @@ kubectl get all -n troubleshoot
 - `kubectl describe pod`で"0/X nodes are available"というメッセージが表示される
 - SchedulingFailedイベントが記録される
 
-### 状態確認とヒント
+### 正解の状態
 
-チェックスクリプトを実行すると、現在の状態を確認してヒントを得られます:
+以下の状態になれば正解です:
 
 ```bash
-./scripts/check-04.sh
+# Podが Running 状態で、Nodeにスケジュールされている
+kubectl get pods -n troubleshoot -o wide
+# NAME                 READY   STATUS    RESTARTS   AGE   NODE
+# app-scheduling-xxx   1/1     Running   0          1m    <node-name>
+
+# Podのtolerationが正しく設定されている
+kubectl get pod $(kubectl get pods -n troubleshoot -l app=app-scheduling -o jsonpath='{.items[0].metadata.name}') -n troubleshoot -o jsonpath='{.spec.tolerations}' | jq
+# [
+#   {
+#     "effect": "NoSchedule",
+#     "key": "workload",
+#     "operator": "Equal",
+#     "value": "batch"
+#   }
+# ]
 ```
 
 <details>
@@ -376,12 +388,23 @@ kubectl apply -f manifests/05-ingress.yaml
 - `curl`やブラウザでIngressにアクセスすると、503 Service Temporarily Unavailableエラーが返ってくる
 - Ingress Controllerのログに、バックエンドのServiceが見つからないというエラーが出力される
 
-### 状態確認とヒント
+### 正解の状態
 
-チェックスクリプトを実行すると、現在の状態を確認してヒントを得られます:
+以下の状態になれば正解です:
 
 ```bash
-./scripts/check-05.sh
+# troubleshoot namespaceにExternalName Serviceが作成されている
+kubectl get svc -n troubleshoot
+# NAME           TYPE           EXTERNAL-NAME                                 PORT(S)
+# frontend-app   ExternalName   app-frontend.frontend.svc.cluster.local       80/TCP
+# backend-app    ExternalName   app-backend.backend.svc.cluster.local         8080/TCP
+
+# curlでアクセスできる
+curl -H "Host: troubleshoot.example.com" http://troubleshoot.example.com/
+# <!DOCTYPE html>... (nginxのデフォルトページ)
+
+curl -H "Host: troubleshoot.example.com" http://troubleshoot.example.com/api
+# Hello from backend API
 ```
 
 <details>
@@ -398,7 +421,8 @@ kubectl describe ingress ingress -n troubleshoot
 kubectl get ingress ingress -n troubleshoot -o yaml
 
 # 各namespaceのServiceを確認
-kubectl get svc -A | grep -E "troubleshoot|frontend|backend"
+kubectl get svc -n frontend
+kubectl get svc -n backend
 
 # イベントを確認
 kubectl get events -n troubleshoot --sort-by='.lastTimestamp'
@@ -443,12 +467,27 @@ kubectl delete -f manifests/05-ingress.yaml
 kubectl apply -f manifests/06-cnd-web.yaml
 ```
 
-### 状態確認とヒント
+### 正解の状態
 
-チェックスクリプトを実行すると、現在の状態を確認してヒントを得られます:
+以下の状態になれば正解です:
 
 ```bash
-./scripts/check-06.sh
+# 全てのPodが Running 状態になっている
+kubectl get pods -n troubleshoot
+# NAME          READY   STATUS    RESTARTS   AGE
+# cnd-web-app   1/1     Running   0          2m
+# mysql         1/1     Running   0          2m
+# dummy-app     1/1     Running   0          2m
+
+# Serviceが正しく設定されている
+kubectl get svc -n troubleshoot
+# NAME          TYPE        CLUSTER-IP      PORT(S)
+# cnd-web-svc   ClusterIP   10.x.x.x        80/TCP
+# mysql-svc     ClusterIP   10.x.x.x        3306/TCP
+
+# curlまたはブラウザでアクセスできる
+curl -H "Host: cnd-web.example.com" http://cnd-web.example.com/
+# <!DOCTYPE html>... (nginxのデフォルトページが表示される)
 ```
 
 動作確認後、リソースを削除します。
