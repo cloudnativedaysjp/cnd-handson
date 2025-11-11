@@ -1,9 +1,56 @@
-## Argo Configs
 configs:
   params:
-  # -- Run server without TLS
     server.insecure: true
-server:
+  cmp:
+    create: true
+    plugins:
+      helmfile-plugin:
+        discover:
+          fileName: "helmfile.yaml"
+        init:
+          command: [sh, -c]
+          args: 
+            - |
+              echo "Initializing..."
+              helmfile deps
+        generate:
+          command: [sh, -c]
+          args:
+            - |
+              helmfile template --include-crds --skip-deps || exit 1
+
+repoServer: 
+  extraContainers: 
+    - name: helmfile-cmp
+      command: [/var/run/argocd/argocd-cmp-server]
+      image: ghcr.io/helmfile/helmfile:latest
+      env:
+        - name: HELM_CACHE_HOME
+          value: /tmp/helm/cache
+        - name: HELM_CONFIG_HOME
+          value: /tmp/helm/config
+        - name: HELM_DATA_HOME
+          value: /tmp/helm/data
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 999
+      volumeMounts:
+        - mountPath: /var/run/argocd
+          name: var-files
+        - mountPath: /home/argocd/cmp-server/plugins
+          name: plugins
+        - mountPath: /home/argocd/cmp-server/config/plugin.yaml
+          subPath: helmfile-plugin.yaml
+          name: argocd-cmp-cm
+        - mountPath: /tmp
+          name: cmp-tmp
+
+  volumes:
+    - name: argocd-cmp-cm
+      configMap:
+        name: argocd-cmp-cm
+    - name: cmp-tmp
+      emptyDir: {}
+service:
   extensions:
-    # -- Enable support for Argo UI extensions
     enabled: true

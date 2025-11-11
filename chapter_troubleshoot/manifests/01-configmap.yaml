@@ -1,0 +1,71 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: config
+  namespace: troubleshoot
+data:
+  database_host: "postgres.default.svc.cluster.local"
+  database_port: "5432"
+  database_name: "myapp"
+  log_level: "info"
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: app-configmap
+  namespace: troubleshoot
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: app-configmap
+  template:
+    metadata:
+      labels:
+        app: app-configmap
+    spec:
+      containers:
+      - name: app
+        image: busybox:1.36
+        command: ["sh", "-c"]
+        args:
+        - |
+          echo "Starting application..."
+          echo "DB_HOST: $DB_HOST"
+          echo "DB_PORT: $DB_PORT"
+          echo "DB_NAME: $DB_NAME"
+          echo "LOG_LEVEL: $LOG_LEVEL"
+          sleep 3600
+        env:
+        - name: DB_HOST
+          valueFrom:
+            configMapKeyRef:
+              name: config
+              key: db_host
+        - name: DB_PORT
+          valueFrom:
+            configMapKeyRef:
+              name: config
+              key: database_port
+        - name: DB_NAME
+          valueFrom:
+            configMapKeyRef:
+              name: config
+              key: database_name
+        - name: LOG_LEVEL
+          valueFrom:
+            configMapKeyRef:
+              name: app-config
+              key: log_level
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: app-configmap
+  namespace: troubleshoot
+spec:
+  selector:
+    app: app-configmap
+  ports:
+  - port: 8080
+    targetPort: 8080

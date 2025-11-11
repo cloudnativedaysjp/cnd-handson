@@ -1,10 +1,10 @@
-# Co-located Hands-on Event by CNDS2025 Committee
-CloudNative Days Summer 2025 実行委員会による『一日で学ぶクラウドネイティブ技術実践ハンズオン』のドキュメントです。
+# Co-located Hands-on Event by CNDW2025 Committee
+CloudNative Days Winter 2025 実行委員会による『一日で学ぶクラウドネイティブ技術実践ハンズオン』のドキュメントです。
 
 Docker、Kubernetes、Prometheus、Grafana、ArgCDなど、クラウドネイティブな環境でよく利用されるOSSを対象としたハンズオンです。このハンズオンを通して、これらのOSSについての基本的な使い方を学び、今後の学習のきっかけにしてください。
 
 ## Chapter
-準備用chapter＋全16chapterから構成されています。
+準備用chapter＋全19chapterから構成されています。
 - [chapter_setup](./chapter_setup/)
 - [chapter_cluster-create](./chapter_cluster-create/)
 - [chapter_docker](./chapter_docker/)
@@ -13,6 +13,7 @@ Docker、Kubernetes、Prometheus、Grafana、ArgCDなど、クラウドネイテ
 - [chapter_grafana](./chapter_grafana/)
 - [chapter_opentelemetry](./chapter_opentelemetry/)
 - [chapter_argocd](./chapter_argocd/)
+- [chapter_argocd-image-updater](./chapter_argocd-image-updater/)
 - [chapter_cicd](./chapter_cicd/)
 - [chapter_istio](./chapter_istio/)
 - [chapter_cilium](./chapter_cilium/)
@@ -22,6 +23,7 @@ Docker、Kubernetes、Prometheus、Grafana、ArgCDなど、クラウドネイテ
 - [chapter_loki](./chapter_loki/)
 - [chapter_tempo](./chapter_tempo/)
 - [chapter_pyroscope](./chapter_pyroscope/)
+- [chapter_troubleshoot](./chapter_troubleshoot/)
 
 ### 進め方
 まずは、`chapter_setup`, `chapter_cluster-create`を実施してhandsonを進めるための環境を構築してください。<br>
@@ -37,6 +39,7 @@ flowchart TD
     grafana[chapter_grafana]
     otel[chapter_opentelemetry]
     argocd[chapter_argocd]
+    argocdimageupdater[chapter_argocdimageupdater]
     istio[chapter_istio]
     cilium[chapter_cilium]
     argorollouts[chapter_argo-rollouts]
@@ -46,10 +49,12 @@ flowchart TD
     tempo[chapter_tempo]
     pyroscope[chapter_pyroscope]
     cicd[chapter_cicd]
+    troubleshoot[chapter_troubleshoot]
 
     setup-->cluster
     cluster-->docker
     docker-->k8s
+    k8s-->troubleshoot
     cluster-->prom
     cluster-->argocd
 
@@ -69,6 +74,7 @@ flowchart TD
     istio-->istioambient
 
     argocd-->cicd
+    argocd-->argocdimageupdater
 ```
 
 ## 免責事項

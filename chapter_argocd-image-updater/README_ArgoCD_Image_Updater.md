@@ -5,9 +5,14 @@
 そのため、ArgoCDをインストールしていない場合には、以下サイトからインストールを実施してください。  
 ArgoCDの詳細については、[こちら](https://github.com/cloudnativedaysjp/cnd-handson/blob/main/chapter_argocd/README_webui.md)を参照ください。  
 
-また、このドキュメントについては、CICDのハンズオンにCD部分の拡張版として、<B>ArcoCD Image Updater</B> を使うことを  
+また、このドキュメントについては、ArgoCDのハンズオンの拡張版として、<B>ArcoCD Image Updater</B> を使うことを  
 目的としたものになります。  
 ArgoCD Image Updaterの参照URL (https://argocd-image-updater.readthedocs.io/en/stable/)
+
+ArgoCD Image Updaterのバージョンは、2025/11/11に、v1.0.0がリリースされましたが、  
+このハンズオンでは、`v0.17.0`を利用しています。  
+
+
 
 # ArgoCD Image Updater とは
 
@@ -22,42 +27,47 @@ ArgoCDとの密接な統合により、Sync Windows や Application リソース
 
 ## ArgoCD Image Updaterが動作する条件
 ArgoCDが動作していること
-マニフェストが、KustomizeやHelmで管理させれていること
+マニフェストが、KustomizeやHelmで管理されていること
 コンテナイメージリポジトリに使う認証情報は、ArgoCD Image updaterと同じクラスター上で存在すること
 ArgoCD Image Updaterでは、Rollback機能がないため、ArgoCD側で対応、Roadmap上にはあるがまだ未定。
 
 ## 今回のハンズオンについて
-Nginx 1.27.0をArgoCD Image Uploderにて監視する様にし、  
-Nginxのレジストリにある、1.27.x台の最新Latest版へ更新するハンズオンとしています。  
+レポジトリ(ghcr.io/nginxinc/nginx-unprivileged)にあるNginxのバージョン(初期インストールされるバージョン:1.27.0)を  
+ArgoCD Image Updaterにて監視することで、レジストリの1.27.x台の最新Latest版へ更新するハンズオンとしています。  
 ハンズオンなのでわかりやすい形で実施していますが、もちろん時前で管理しているアプリケーションの   
 バージョン変更している環境での導入が可能です。  
 https://argocd-image-updater.readthedocs.io/en/stable/basics/update-strategies/  
 
 ### バージョン管理の検知条件
-semver: セマンティックバージョニング（意味のあるバージョン規則）の制約を考慮して、利用可能な最新バージョンへ更新する  
-latest/newest-build: レジストリ上で最も新しくビルドされたイメージに更新する  
-digest: 指定したバージョン（タグ名）は固定したまま、そのタグの最新のSHAダイジェストに更新する  
-name/alphabetical: タグ名をアルファベット順に並べ、辞書順で最も後ろ（順位が高い）に来るタグへ更新する 
-
+semver: セマンティックバージョニング（意味のあるバージョン規則）の制約を考慮して、利用可能な最新バージョンへ更新します  
+latest/newest-build: レジストリ上で最も新しくビルドされたイメージに更新します  
+digest: 指定したバージョン（タグ名）は固定したまま、そのタグの最新のSHAダイジェストに更新します  
+name/alphabetical: タグ名をアルファベット順に並べ、辞書順で最も後ろ（順位が高い）に来るタグへ更新します   
 
 ## 既存のArgoCDにあるアプリケーションの確認
-chapter_argocdを実施した場合、アプリがすでに一つあります。
+chapter_argocdを実施した場合、アプリがすでに一つ、または複数動作しています。(以下は１つ動いている例です)  
 
 ![image](image/updater1.png)
 
 
 ## ArgoCD Image Updaterで管理するアプリケーションを作成
 
-・以下のmanifestの中で、レポジトリ設定があるため、自分のレポジトリに修正してください。
+以下のgit cloneしたcnd-handsonフォルダの `chapter_argocd-image-updater/manifest`の中にある、`application_argocdupdate.yaml`に  
+レポジトリ設定があるため、自分のレポジトリ設定に修正してください。  
 ```
     repoURL: https://github.com/<自分のrepository>/cnd-handson.git → この部分を修正してください
+                                ^^^^^^^^^^^^^^^^^
 ```
+こちらに記載されているものが上記の設定部分になります。
+![image](image/updater15.png)
 
+修正したyamlファイルをapplyします。  
 ```
+cd cnd-handson/chapter_argocd-image-updater
 kubectl apply -f ./manifest/application_argocdupdate.yaml
 ```
 
-設定したmanifestが反映していること
+設定したmanifestが反映されていること
 ```
 kubectl get deploy,pod -n argocd-demo
 ```
@@ -71,10 +81,10 @@ pod/argocdupdate-57b44bc99c-whh8b   1/1     Running   0          8s  <-
 pod/handson-954b5b8f6-288v5         1/1     Running   0          8m4s
 ```
 
- <b>argocdupdate<b>のアプリが新しく作成されていることを確認  
+ <b>argocdupdate</b>のアプリ(deployment/pod)が新しく作成されていることを確認  
 
 <details><summary>Manifestの説明</summary>
-Manifestについては、nginxのバージョン 1.27.0がインストールします。
+ApplyしたManifestで、nginxのバージョン 1.27.0がインストールされます。
 
 Image Updater用アノテーション（自動イメージ更新の設定）
 
@@ -93,9 +103,9 @@ argocd-image-updater.argoproj.io/app.semver: ">=1.27.0 <1.28.0"
 argocd-image-updater.argoproj.io/interval: "1m"
 　このアプリに対して1分間隔で新しいタグがないかチェック
 
-全体的なmanifestの動きとしては、Argo CDは指定Gitのchapter_cicd/appを監視・同期し、argocd-demoにアプリを展開します。  
-Image Updaterは1分ごとにこのApplicationをスキャンして、ghcr.io/nginxinc/nginx-unprivilegedのタグを取得。  
-xでより新しいタグが見つかれば、write-back-method=argocdに従い、
+全体的なmanifestの動きとしては、Argo CDは指定Gitのchapter_argocd-image-updater/appにあるnginxのバージョンを監視・同期し、  
+argocd-demoにアプリを展開します。 Image Updaterは1分ごとにこのApplicationをスキャンして、  
+ghcr.io/nginxinc/nginx-unprivilegedのタグを取得。新しいタグが見つかれば、write-back-method=argocdに従い、
 Applicationのバージョンを（内部的にspec.sourceのイメージ指定）を直接更新します。 (1.27.0 → 1.27.xのLatestへ) 
 Argo CDはその更新を検知し、自動SyncによりDeploymentのコンテナイメージを新しいタグへ差し替えます。  
 </details>
@@ -106,12 +116,15 @@ Argo CDはその更新を検知し、自動SyncによりDeploymentのコンテ�
 
 
 # ArgoCD Image Updater のインストール
-### 以下のリンクがあるが、今回namespaceなど異なるため、内容を変更しています。
+### 以下のリンクが公式にありますが、今回namespaceなど異なるため、内容を変更しています。
 https://argocd-image-updater.readthedocs.io/en/stable/install/installation/
 
-変更したものについては、chapter_cicd/app/にあります。
+今回のハンズオン用に変更したものについては、chapter_argocd-image-updater/app/にyamlファイルあります。
+また、`argocdupdate.example.com`にてアプリを確認できますが、  
+nginxのページにて、バージョンが記載されていないため、argocdのWebUIにてバージョンを確認します。  
+
 ```
-kubectl apply -f ./manifest/argocd_image_uploader.yaml
+kubectl apply -f ./manifest/argocd_image_updater.yaml
 ```
 
 このmanifestにより、ArgoCD Image Updaterが動作します。 
@@ -126,37 +139,37 @@ kubectl apply -f ./manifest/argocd_image_uploader.yaml
 構成要素と役割は次の通りです。  
 
 ServiceAccount  
- 名前: argocd-image-updater（namespace: argo-cd）  
+   名前: argocd-image-updater（namespace: argo-cd）  
 
 UpdaterのPodが使うサービスアカウント  
-RBAC  
- Role/RoleBinding（namespace: argo-cd）  
- configmaps/secretsのget/list/watchを許可（Updaterが自分の設定CM/Secretを読むため）  
- ClusterRole/ClusterRoleBinding（クラスタ全体）  
- applications（argoproj.io）のget/list/watch/update/patchを許可（Applicationの監視・更新に必要）  
- eventsのcreateを許可（イベント出力用）  
- ConfigMap（設定）  
- argocd-image-updater-config（namespace: argo-cd）  
- applications_api: kubernetes  
- UpdaterがArgo CDのAPIトークンなしでKubernetes API経由でApplicationを読むモード  
- argocd.server_addr: argo-cd-argocd-server.argo-cd.svc:443  
- argocd.insecure: "true"  
- 自己署名TLSの検証を緩める設定（APIモードに切り替える場合に有効）  
- interval: "1m"（1分間隔でチェック）  
- log.level: "debug"（詳細ログ）  
- kube.events: "true"（イベント出力）  
- registries.conf: GHCRを明示（公開利用で認証不要）  
- git.commit-message-template: Git書き戻し時のコミットメッセージテンプレート（argocdモードでは未使用）  
- argocd-image-updater-ssh-config（任意）  
- SSHでGitを使う場合のssh_config（HTTPSなら不要）  
- argocd-ssh-known-hosts-cm（任意）  
- SSHのknown_hostsを格納（SSHを使わないなら空でも問題なし）  
- Secret（任意）  
- argocd-image-updater-secret  
-  ARGOCD_TOKEN（APIモードで使う場合のみ）やWebhook用シークレットの収納。今回のKubernetesモードでは未設定でOK  
-Deployment（本体）  
- イメージ: quay.io/argoprojlabs/argocd-image-updater:v0.17.0  
-          args: ["run"]（v0.17系の起動方法）  
+ RBAC  
+   Role/RoleBinding（namespace: argo-cd）  
+   configmaps/secretsのget/list/watchを許可（Updaterが自分の設定CM/Secretを読むため）  
+   ClusterRole/ClusterRoleBinding（クラスタ全体）  
+   applications（argoproj.io）のget/list/watch/update/patchを許可（Applicationの監視・更新に必要）  
+   eventsのcreateを許可（イベント出力用）  
+   ConfigMap（設定）  
+   argocd-image-updater-config（namespace: argo-cd）  
+   applications_api: kubernetes  
+   UpdaterがArgo CDのAPIトークンなしでKubernetes API経由でApplicationを読むモード  
+   argocd.server_addr: argo-cd-argocd-server.argo-cd.svc:443  
+   argocd.insecure: "true"  
+   自己署名TLSの検証を緩める設定（APIモードに切り替える場合に有効）  
+   interval: "1m"（1分間隔でチェック）  
+   log.level: "debug"（詳細ログ）  
+   kube.events: "true"（イベント出力）  
+   registries.conf: GHCRを明示（公開利用で認証不要）  
+   git.commit-message-template: Git書き戻し時のコミットメッセージテンプレート（argocdモードでは未使用）  
+   argocd-image-updater-ssh-config（任意）  
+   SSHでGitを使う場合のssh_config（HTTPSなら不要）  
+   argocd-ssh-known-hosts-cm（任意）  
+   SSHのknown_hostsを格納（SSHを使わないなら空でも問題なし）  
+   Secret（任意）  
+     argocd-image-updater-secret  
+     ARGOCD_TOKEN（APIモードで使う場合のみ）やWebhook用シークレットの収納。今回のKubernetesモードでは未設定でOK  
+  Deployment（本体）  
+    イメージ: quay.io/argoprojlabs/argocd-image-updater:v0.17.0  
+            args: ["run"]（v0.17系の起動方法）  
       
   
   Updaterがargo-cd内のApplicationをKubernetes APIで定期スキャン（1分間隔）  
@@ -164,9 +177,10 @@ Deployment（本体）
   write-back-methodをargocdにすれば、Git認証なしでApplicationの設定を直接更新して反映可能  
   write-back-methodをgitに切り替える場合は、Argo CD側にRepository認証（Secretやargocd repo add）が必要    
 </details>
-  
+
+
+Updaterが動作して、ImageのAutoupdateが動作しているか確認  
 ```
-Updaterが動作して、ImageのAutoupdateが動作しているか確認
 kubectl -n argo-cd logs deploy/argocd-image-updater -f
 ```
 
@@ -185,17 +199,17 @@ time="2025-10-20T07:56:02Z" level=debug msg="Application argocdupdate matches th
 time="2025-10-20T07:56:02Z" level=info msg="Successfully updated the live application spec" application=argocdupdate
 ```
 
-上記にて、ArgoCDで動作しているアプリケーションが、コンテナイメージのバージョンアップを検知することより、　　
-既存で動作しているアプリケーションの自動アップデートがされた形になります。　　
+上記にて、ArgoCDで動作しているアプリケーションが、コンテナイメージのバージョンアップを検知することより  
+既存で動作しているアプリケーションの自動アップデートがされた形になります。  
 また、Webhook連携なども記載がありますので、ご興味がある方はぜひ確認いただければと思います。  
-https://argocd-image-updater.readthedocs.io/en/stable/
+https://argocd-image-updater.readthedocs.io/en/stable/  
 
 ## アプリケーションをrollbackする場合 (現状 ArgoCD Image UpdaterではRoadmapのため、ArgoCD上で対応します)
 
-ArgoCD上で、<B>HISTORU AND ROLLBACK </>をクリック  
+ArgoCD上で、<b> HISTORY AND ROLLBACK </b>をクリック  
 ![image](image/updater8.png)
 
-そこで、<B>Source Parameters</Bをクリックし、RollbackしたいVersionを確認する  
+そこで、<B>Source Parameters</B>をクリックし、RollbackしたいVersionを確認する  
 ![image](image/updater9.png)
 
 "..."をクリックして、"Rollback"　→ "OK"　をクリック  

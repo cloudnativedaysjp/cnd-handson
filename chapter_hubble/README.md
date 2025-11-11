@@ -49,14 +49,14 @@ Containers:            cilium             Running: 3
                        hubble-ui          Running: 1
                        cilium-operator    Running: 2
                        hubble-relay       Running: 1
-Cluster Pods:          8/8 managed by Cilium
-Helm chart version:    1.16.1
-Image versions         hubble-relay       quay.io/cilium/hubble-relay:v1.16.1@sha256:2e1b4c739a676ae187d4c2bfc45c3e865bda2567cc0320a90cb666657fcfcc35: 1
-                       cilium             quay.io/cilium/cilium:v1.16.1@sha256:0b4a3ab41a4760d86b7fc945b8783747ba27f29dac30dd434d94f2c9e3679f39: 3
-                       cilium-envoy       quay.io/cilium/cilium-envoy:v1.29.7-39a2a56bbd5b3a591f69dbca51d3e30ef97e0e51@sha256:bd5ff8c66716080028f414ec1cb4f7dc66f40d2fb5a009fff187f4a9b90b566b: 3
-                       hubble-ui          quay.io/cilium/hubble-ui:v0.13.1@sha256:e2e9313eb7caf64b0061d9da0efbdad59c6c461f6ca1752768942bfeda0796c6: 1
-                       hubble-ui          quay.io/cilium/hubble-ui-backend:v0.13.1@sha256:0e0eed917653441fded4e7cdb096b7be6a3bddded5a2dd10812a27b1fc6ed95b: 1
-                       cilium-operator    quay.io/cilium/operator-generic:v1.16.1@sha256:3bc7e7a43bc4a4d8989cb7936c5d96675dd2d02c306adf925ce0a7c35aa27dc4: 2
+Cluster Pods:          7/7 managed by Cilium
+Helm chart version:    1.18.1
+Image versions         cilium             quay.io/cilium/cilium:v1.18.1@sha256:65ab17c052d8758b2ad157ce766285e04173722df59bdee1ea6d5fda7149f0e9: 3
+                       cilium-envoy       quay.io/cilium/cilium-envoy:v1.34.4-1754895458-68cffdfa568b6b226d70a7ef81fc65dda3b890bf@sha256:247e908700012f7ef56f75908f8c965215c26a27762f296068645eb55450bda2: 3
+                       cilium-operator    quay.io/cilium/operator-generic:v1.18.1@sha256:97f4553afa443465bdfbc1cc4927c93f16ac5d78e4dd2706736e7395382201bc: 2
+                       hubble-relay       quay.io/cilium/hubble-relay:v1.18.1@sha256:7e2fd4877387c7e112689db7c2b153a4d5c77d125b8d50d472dbe81fc1b139b0: 1
+                       hubble-ui          quay.io/cilium/hubble-ui-backend:v0.13.2@sha256:a034b7e98e6ea796ed26df8f4e71f83fc16465a19d166eff67a03b822c0bfa15: 1
+                       hubble-ui          quay.io/cilium/hubble-ui:v0.13.2@sha256:9e37c1296b802830834cc87342a9182ccbb71ffebb711971e849221bd9d59392: 1
 ```
 
 設定自体はすでに[chapter Cluster Create](./../chapter_cluster-create)で行っているため、Hubble-uiとHubble-relayが動作しています。
@@ -93,7 +93,7 @@ cilium hubble port-forward &
 ```
 
 > [!NOTE]
-> 
+>
 > &をつけることによって、cilium hubble port-forwardコマンドをバックグラウンド実行しています。
 > 本ページのリソース削除手順にも記載の通り、終了時は必ずcilium hubble port-forwardコマンドを忘れずにkillしてください。
 
@@ -108,12 +108,12 @@ ps -eo pid,tty,cmd | grep "cilium hubble port-forward"
 ```
 
 > [!NOTE]
->   
+>
 > ciliumコマンドではなく、下記のようなkubectlコマンドを実行することでもReachabilityを確保可能です。
 > ```shell
 > kubectl port-forward -n kube-system deploy/hubble-relay 4245:4245 &
 > ```
-> 
+>
 > port-forwardコマンドがバックグラウンドを実行されているかどうかは、下記コマンドで確認できます。
 > ```
 > ps -eo pid,tty,cmd | grep "kubectl port-forward -n kube-system deploy/hubble-relay"
@@ -164,10 +164,9 @@ kubectl apply -f manifest/ingress.yaml
 
 デフォルトではL3/L4のイベントのみ可視化の対象となっています。
 L7のイベントを可視化の対象とするためには、CiliumNetworkPolicyリソースを作成し、CiliumNetworkPolicyのルールに一致させる必要があります。
-
 > [!NOTE]
-> 
-> L7プロトコルを可視化する方法として、Podのannotationを利用する方法もありましたが、2023/11時点の最新のドキュメントではCiliumNetworkPolicyを利用する方法が推奨されています。  
+>
+> L7プロトコルを可視化する方法として、Podのannotationを利用する方法もありましたが、2025/11時点の最新のドキュメントではCiliumNetworkPolicyを利用する方法が推奨されています。
 > see: https://github.com/cilium/cilium/blob/82dbff8e5a5f7ced99e96cd85997fae90e035aac/Documentation/observability/visibility.rst
 
 確認用にcurlを実行可能なクラアントを立てます。
@@ -193,7 +192,7 @@ kubectl exec -n handson curl -- /bin/sh -c "curl -s -o /dev/null handson:8080 -w
 ![](./image/ch5-hubble-observe-01.png)
 
 
-L3/L4のイベントが可視化されており、ドメイン名やリクエストパスなどのL7の情報が表示されていないことが分かります。  
+L3/L4のイベントが可視化されており、ドメイン名やリクエストパスなどのL7の情報が表示されていないことが分かります。
 L7のイベントを可視化の対象とするために、ポート8080への通信がルールに含まれる下記CiliumNetworkPolicyを適用します。
 
 ```shell

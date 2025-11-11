@@ -13,9 +13,9 @@ Nodeの一覧が出力されるはずです。
 
 ```Log
 NAME                 STATUS   ROLES           AGE   VERSION
-kind-control-plane   Ready    control-plane   32d   v1.31.0
-kind-worker          Ready    <none>          32d   v1.31.0
-kind-worker2         Ready    <none>          32d   v1.31.0
+kind-control-plane   Ready    control-plane   88m   v1.34.0
+kind-worker          Ready    <none>          88m   v1.34.0
+kind-worker2         Ready    <none>          88m   v1.34.0
 ```
 
 Nodeが表示されない場合は、kubeconfigが設定されていない可能性があります。
@@ -46,8 +46,8 @@ kubectl version --client
 
 ```
 # 実行結果
-Client Version: v1.31.1
-Kustomize Version: v5.4.2
+Client Version: v1.34.1
+Kustomize Version: v5.7.1
 ```
 
 続いて、chapter_kubernetesにcurrent directoryを移動します。
@@ -641,9 +641,9 @@ kubectl run tmp --restart=Never --rm -i --image=nginx:alpine -- curl <PodのIP>
 
   % Total    % Received % Xferd  Average Speed   Time    Time     Time  Current
                                  Dload  Upload   Total   Spent    Left  Speed
-CNDW2024!!
-100    11  100    11    0     0   8094      0 --:--:-- --:--:-- --:--:-- 11000
-pod "tmp" deleted
+100    11  100    11    0     0   4776      0 --:--:-- --:--:-- --:--:--  5500
+CNDW2025!!
+pod "tmp" deleted from default namespace
 ```
 
 動作確認後、リソースを削除します。

@@ -208,7 +208,7 @@ TCPトラフィックの状態を確認するために、TOP画面左のサイ�
 
 ![image](./image/kiali-graph-namespace.png)
 
-- `Traffic`の`Tcp`のみにチェック
+- `Traffic`の`Ambient`と`Tcp`をチェック
 
 ![image](./image/kiali-traffic-graph-tcp.png)
 
@@ -380,7 +380,7 @@ ZTUNNEL_POD=$(kubectl get pod -n istio-system -l app=ztunnel --field-selector=sp
 kubectl logs "$ZTUNNEL_POD" -n istio-system --tail 4
 ```
 
-```sh
+```json
 # 実行結果(jqコマンドで成形をしています。)
 {
   "level": "error",
@@ -471,7 +471,7 @@ HTTPトラフィックの状態を確認するために、TOP画面左のサイ�
 
 ![image](./image/kiali-graph-namespace.png)
 
-- `Traffic`の`Http`のみにチェック
+- `Traffic`の`Ambient`と`Http`にチェック
 
 ![image](./image/kiali-traffic-graph-http.png)
 
@@ -711,7 +711,7 @@ ZTUNNEL_POD=$(kubectl get pod -n istio-system -l app=ztunnel --field-selector=sp
 kubectl logs "$ZTUNNEL_POD" -n istio-system --tail 2
 ```
 
-```sh
+```json
 # 実行結果(jqコマンドで成形をしています。)
 {
   "level": "info",
@@ -747,7 +747,7 @@ WAYPOINT_PROXY_POD=$(kubectl get pods -l app.kubernetes.io/component=waypoint-pr
 kubectl logs "$WAYPOINT_PROXY_POD" --tail 2
 ```
 
-```sh
+```json
 # 実行結果(jqコマンドで成形をしています。)
 {
   "bytes_received": 0,
