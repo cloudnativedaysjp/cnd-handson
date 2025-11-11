@@ -140,7 +140,7 @@ DashboardやGrafana Alertingでは、Dashboard Panelやアラートの内容文�
 8. `Webhook URL` をコピーする
 
 Grafana側では <http://grafana.example.com/alerting/notifications> にアクセスして、
-右側の `Add contact point` ボタンをクリックします。
+右側の `Create contact point` ボタンをクリックします。
 
 ![image](./image/contact-points.png)
 
@@ -197,20 +197,25 @@ Contact Pointを追加しただけでは新規にアラートを追加しても�
 
 ![image](./image/add-alert-rule-2.png)
 
-3. Set evaluation behavior
-  - `Folder` ... `ingress-nginx`
+3. Add folder and labels
+  - `Folder` ... `ingress-nginx` に設定
+  - `Add labels`をクリックし、`Labels` ... `alert-route = slack` を設定。`Save`で保存
+
+![image](./image/add-alert-rule-3.png)
+![image](./image/add-alert-rule-3-1.png)
+
+4. Set evaluation behavior
   - `Evaluation group` ... `New evaluation group` をクリックし、 `Evaluation group name` を `sample-grafana-alert-1`, `Evaluation Interval` を `5m` に設定
   - `Pending preriod` ... `5m`
 
-![image](./image/add-alert-rule-3.png)
+![image](./image/add-alert-rule-4.png)
 
-4. Configure labels and notifications
-  - `Labels` ... `alert-route = slack`
+5. Configure notifications
   - `Contact point` ... `sample-grafana-alerting`
 
 ![image](./image/add-alert-rule-4.png)
 
-5. Add annotaions
+5. Configure notification message
   - `Summary` ... `app.example.com has not received requests over 10 times`
   - `Description` ... `app.example.com has not received {{ $labels.method }} requests 10 times`
 
