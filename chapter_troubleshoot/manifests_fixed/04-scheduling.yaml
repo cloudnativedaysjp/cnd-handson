@@ -33,4 +33,4 @@ spec:
       - key: "workload"
         operator: "Equal"
         value: "batch"
-        effect: "NoExecute"
+        effect: "NoSchedule"

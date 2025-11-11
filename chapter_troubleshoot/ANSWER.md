@@ -6,6 +6,9 @@
 
 ## 環境変数が読み込めずPodが起動しない
 
+<details>
+<summary>解説を見る</summary>
+
 ### 原因
 ConfigMapを環境変数として参照する際、以下のいずれかの問題が発生しています:
 1. ConfigMapのキー名が実際のキー名と一致していない
@@ -41,9 +44,7 @@ env:
 # マニフェストを適用
 kubectl apply -f manifests/01-configmap.yaml
 
-# Podの状態を確認（問題が発生しているはず）
-kubectl get pods -n troubleshoot
-kubectl describe pod <pod-name> -n troubleshoot
+kubectl describe pod $(kubectl get pods -n troubleshoot -l app=app-configmap -o jsonpath='{.items[0].metadata.name}') -n troubleshoot
 
 # マニフェストを修正して再適用
 # 修正内容: ConfigMap名とキー名を正しく修正
@@ -53,12 +54,16 @@ kubectl apply -f manifests/01-configmap.yaml
 kubectl get pods -n troubleshoot
 
 # 環境変数が正しく設定されているか確認
-kubectl logs <pod-name> -n troubleshoot | grep -E "DB_HOST|LOG_LEVEL"
+kubectl logs $(kubectl get pods -n troubleshoot -l app=app-configmap -o jsonpath='{.items[0].metadata.name}') -n troubleshoot | grep -E "DB_HOST|LOG_LEVEL"
 ```
+</details>
 
 ---
 
 ## Podが何度も再起動を繰り返す
+
+<details>
+<summary>解説を見る</summary>
 
 ### 原因
 アプリケーションが必要とするメモリよりも、resourcesのlimitsで設定されたメモリが少ないため、OOM (Out Of Memory) Killerによってコンテナが強制終了されます。
@@ -89,7 +94,7 @@ kubectl apply -f manifests/02-oom.yaml
 
 # Podの状態を確認（OOMKilledで再起動を繰り返すはず）
 kubectl get pods -n troubleshoot
-kubectl describe pod <pod-name> -n troubleshoot
+kubectl describe pod $(kubectl get pods -n troubleshoot -l app=app-oom -o jsonpath='{.items[0].metadata.name}') -n troubleshoot
 
 # マニフェストを修正して再適用
 # 修正内容: memory limits: 128Mi → 512Mi, requests: 64Mi → 256Mi
@@ -101,10 +106,14 @@ kubectl get pods -n troubleshoot
 # メモリ使用量を確認
 kubectl top pod -n troubleshoot
 ```
+</details>
 
 ---
 
 ## コンテナイメージが取得できない
+
+<details>
+<summary>解説を見る</summary>
 
 ### 原因
 Bitnamiは2024年頃からイメージのタグ付けポリシーを変更し、特定バージョンのタグを削除する方針になりました。最新版のみを`latest`タグで提供するため、以前使えていた特定バージョン（例：`bitnami/nginx:1.25.0`）のタグが突然削除され、イメージがPullできなくなります。
@@ -138,10 +147,14 @@ containers:
   ports:
   - containerPort: 80
 ```
+</details>
 
 ---
 
 ## PodがPendingのまま起動しない
+
+<details>
+<summary>解説を見る</summary>
 
 ### 原因
 NodeにはTaintが設定されており、PodにはそれをTolerate（許容）するTolerationが必要です。しかし、Tolerationの`effect`が間違っているため、PodがNodeにスケジュールされません。
@@ -187,7 +200,7 @@ kubectl apply -f manifests/04-scheduling.yaml
 
 # Podの状態を確認（Pendingのままのはず）
 kubectl get pods -n troubleshoot
-kubectl describe pod <pod-name> -n troubleshoot
+kubectl describe pod $(kubectl get pods -n troubleshoot -l app=app-scheduling -o jsonpath='{.items[0].metadata.name}') -n troubleshoot
 
 # マニフェストを修正して再適用
 # 修正内容: effect: "NoExecute" → "NoSchedule"
@@ -205,10 +218,14 @@ kubectl get pods -n troubleshoot -o wide
 # taintを削除
 kubectl taint nodes <node-name> workload=batch:NoSchedule-
 ```
+</details>
 
 ---
 
 ## Ingressで503エラーが発生する
+
+<details>
+<summary>解説を見る</summary>
 
 ### 原因
 Kubernetesでは、Ingressは同じnamespace内のServiceしか直接参照できません。異なるnamespaceのServiceを参照しようとすると、Serviceが見つからずエラーになります。
@@ -237,7 +254,7 @@ metadata:
   namespace: troubleshoot
 spec:
   type: ExternalName
-  externalName: app.frontend.svc.cluster.local
+  externalName: app-frontend.frontend.svc.cluster.local
   ports:
   - port: 80
 ---
@@ -248,7 +265,7 @@ metadata:
   namespace: troubleshoot
 spec:
   type: ExternalName
-  externalName: app.backend.svc.cluster.local
+  externalName: app-backend.backend.svc.cluster.local
   ports:
   - port: 8080
 ```
@@ -278,4 +295,9 @@ kubectl get ingress -n troubleshoot
 # curlで疎通確認
 curl -H "Host: troubleshoot.example.com" http://<ingress-ip>/
 curl -H "Host: troubleshoot.example.com" http://<ingress-ip>/api
+
+# クリーンアップとして、troubleshootネームスペース内のExternalName Serviceを削除
+kubectl delete svc frontend-app -n troubleshoot
+kubectl delete svc backend-app -n troubleshoot
 ```
+</details>
