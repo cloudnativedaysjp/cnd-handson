@@ -5,6 +5,10 @@
 このチャプターでは、Kubernetesで頻繁に遭遇するトラブルを実際に再現し、デバッグから解決までのプロセスを体験します。
 作って壊してを繰り返すことで、実践的なトラブルシューティングの技術を身につけることができます。
 
+各問題の解説は[ANSWER.md](./ANSWER.md)に記載してあります。
+マニフェストを修正した例は[manifests_fixed](./manifests_fixed)に記載してあるので参考にしてみてください。
+必ずしも修正方法はひとつではなく、ANSWER.mdにもその一例のみ記載してあります。
+
 ### このチャプターで学べること
 
 - よくあるKubernetesのトラブルパターンとその原因
@@ -49,15 +53,6 @@
 > ```bash
 > kubectl apply -f https://github.com/kubernetes-sigs/metrics-server/releases/latest/download/components.yaml
 > ```
-
-### 一般的なデバッグのヒント
-
-- **リソース名の重複**: `Deployment`や`Service`などのリソース名が重複していると、意図しない挙動を引き起こすことがあります。特に異なるNamespaceで同じ名前を使用している場合、混乱を招きやすいです。リソース名は一意になるように命名規則を設けることを推奨します。
-- **Prometheusとの連携**: Prometheusなどのモニタリングツールを導入している環境では、過去のリソース使用状況やイベント履歴を詳細に確認でき、デバッグが格段に容易になります。特に断続的に発生する問題の特定に役立ちます。
-- **`kubelet`ログの確認**: Podの起動やコンテナの実行に関する低レベルな問題は、Node上の`kubelet`のログに記録されていることが多いです。`journalctl -u kubelet`などで確認できます。
-- **Kubernetes History Inspector**: クラスターのログを視覚化し、問題の履歴を追跡するのに役立つツールです。詳細はこちらを参照してください: [Kubernetes History Inspector](https://cloud.google.com/blog/ja/products/containers-kubernetes/kubernetes-history-inspector-visualizes-cluster-logs)
-- **`kubectl apply -n`の注意点**: `Namespace`や`ClusterRole`のようなクラスターレベルのリソースに対して`kubectl apply -f <file> -n <namespace>`を実行しても、`-n`オプションは無視されます。Namespaceを指定する必要があるのは、PodやDeploymentのようなNamespaceスコープのリソースに対してのみです。
-- **`kubectl get all`の活用**: `kubectl get all -n <namespace>`は、指定したNamespace内の主要なリソース（Pod, Deployment, Service, ReplicaSetなど）を一覧表示するのに便利です。Ingressリソースはデフォルトでは含まれないため、`kubectl get ingress -n <namespace>`を別途実行する必要があります。
 
 ### よく使う`kubectl`コマンド一覧
 

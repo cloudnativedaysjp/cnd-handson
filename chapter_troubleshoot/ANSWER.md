@@ -6,6 +6,9 @@
 
 ## 環境変数が読み込めずPodが起動しない
 
+<details>
+<summary>解説を見る</summary>
+
 ### 原因
 ConfigMapを環境変数として参照する際、以下のいずれかの問題が発生しています:
 1. ConfigMapのキー名が実際のキー名と一致していない
@@ -53,10 +56,14 @@ kubectl get pods -n troubleshoot
 # 環境変数が正しく設定されているか確認
 kubectl logs $(kubectl get pods -n troubleshoot -l app=app-configmap -o jsonpath='{.items[0].metadata.name}') -n troubleshoot | grep -E "DB_HOST|LOG_LEVEL"
 ```
+</details>
 
 ---
 
 ## Podが何度も再起動を繰り返す
+
+<details>
+<summary>解説を見る</summary>
 
 ### 原因
 アプリケーションが必要とするメモリよりも、resourcesのlimitsで設定されたメモリが少ないため、OOM (Out Of Memory) Killerによってコンテナが強制終了されます。
@@ -99,10 +106,14 @@ kubectl get pods -n troubleshoot
 # メモリ使用量を確認
 kubectl top pod -n troubleshoot
 ```
+</details>
 
 ---
 
 ## コンテナイメージが取得できない
+
+<details>
+<summary>解説を見る</summary>
 
 ### 原因
 Bitnamiは2024年頃からイメージのタグ付けポリシーを変更し、特定バージョンのタグを削除する方針になりました。最新版のみを`latest`タグで提供するため、以前使えていた特定バージョン（例：`bitnami/nginx:1.25.0`）のタグが突然削除され、イメージがPullできなくなります。
@@ -136,10 +147,14 @@ containers:
   ports:
   - containerPort: 80
 ```
+</details>
 
 ---
 
 ## PodがPendingのまま起動しない
+
+<details>
+<summary>解説を見る</summary>
 
 ### 原因
 NodeにはTaintが設定されており、PodにはそれをTolerate（許容）するTolerationが必要です。しかし、Tolerationの`effect`が間違っているため、PodがNodeにスケジュールされません。
@@ -203,10 +218,14 @@ kubectl get pods -n troubleshoot -o wide
 # taintを削除
 kubectl taint nodes <node-name> workload=batch:NoSchedule-
 ```
+</details>
 
 ---
 
 ## Ingressで503エラーが発生する
+
+<details>
+<summary>解説を見る</summary>
 
 ### 原因
 Kubernetesでは、Ingressは同じnamespace内のServiceしか直接参照できません。異なるnamespaceのServiceを参照しようとすると、Serviceが見つからずエラーになります。
@@ -281,56 +300,4 @@ curl -H "Host: troubleshoot.example.com" http://<ingress-ip>/api
 kubectl delete svc frontend-app -n troubleshoot
 kubectl delete svc backend-app -n troubleshoot
 ```
-
----
-
-## シナリオ6: 総合問題
-
-### 原因
-この総合問題では、複数の原因が考えられます。以下に一般的な原因と解決策を挙げます。
-
-1.  **Podが起動していない/エラー状態**: `cnd-web-app`、`mysql`、`dummy-app`のいずれかのPodが正常に起動していない可能性があります。
-2.  **Serviceが正しく設定されていない**: `cnd-web-svc`や`mysql-svc`がPodを正しく選択できていない、またはポート設定が間違っている可能性があります。
-3.  **Ingressが正しく設定されていない**: `cnd-web-ing`がServiceを正しく参照できていない、またはホスト名やパスの設定が間違っている可能性があります。
-4.  **Secretが正しく設定されていない**: `app-secret`の`DB_PASSWORD`が正しく設定されていない、またはPodから参照できていない可能性があります。
-5.  **アプリケーション内部のエラー**: `cnd-web-app`がデータベースに接続できない、またはWebサーバーが正しく動作していない可能性があります。
-
-### 解決策
-
-以下の手順でデバッグと修正を行います。
-
-1.  **Podの状態を確認**: 
-    ```bash
-    kubectl get pods -n troubleshoot
-    kubectl describe pod cnd-web-app -n troubleshoot
-    kubectl logs cnd-web-app -n troubleshoot
-    kubectl describe pod mysql -n troubleshoot
-    kubectl logs mysql -n troubleshoot
-    ```
-2.  **Serviceの状態を確認**: 
-    ```bash
-    kubectl get svc -n troubleshoot
-    kubectl describe svc cnd-web-svc -n troubleshoot
-    kubectl describe svc mysql-svc -n troubleshoot
-    ```
-3.  **Ingressの状態を確認**: 
-    ```bash
-    kubectl get ingress -n troubleshoot
-    kubectl describe ingress cnd-web-ing -n troubleshoot
-    ```
-4.  **Secretの内容を確認**: 
-    ```bash
-    kubectl get secret app-secret -n troubleshoot -o yaml
-    ```
-    `DB_PASSWORD`が正しくBase64エンコードされているか確認し、必要であれば修正します。
-
-5.  **マニフェストの修正**: 上記のデバッグ結果に基づいて、`manifests/06-cnd-web.yaml`を修正し、再度適用します。
-    ```bash
-    kubectl apply -f manifests/06-cnd-web.yaml
-    ```
-
-**ヒント**:
-- `cnd-web-app`のログでデータベース接続エラーが出ていないか確認してください。
-- `mysql`のログで起動エラーが出ていないか確認してください。
-- `app-secret`の`DB_PASSWORD`はBase64エンコードされた値である必要があります。例えば、`password`をBase64エンコードすると`cGFzc3dvcmQ=`になります。
-- `cnd-web-app`の環境変数`DB_HOST`と`DB_PORT`が`mysql-svc`を正しく指しているか確認してください。
+</details>
