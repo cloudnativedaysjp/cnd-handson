@@ -13,6 +13,7 @@ Docker、Kubernetes、Prometheus、Grafana、ArgCDなど、クラウドネイテ
 - [chapter_grafana](./chapter_grafana/)
 - [chapter_opentelemetry](./chapter_opentelemetry/)
 - [chapter_argocd](./chapter_argocd/)
+- [chapter_argocd](./chapter_argocd-image-updater/)
 - [chapter_cicd](./chapter_cicd/)
 - [chapter_istio](./chapter_istio/)
 - [chapter_cilium](./chapter_cilium/)
@@ -38,6 +39,7 @@ flowchart TD
     grafana[chapter_grafana]
     otel[chapter_opentelemetry]
     argocd[chapter_argocd]
+    argocdimageupdater[chapter_argocdimageupdater]
     istio[chapter_istio]
     cilium[chapter_cilium]
     argorollouts[chapter_argo-rollouts]
@@ -72,6 +74,7 @@ flowchart TD
     istio-->istioambient
 
     argocd-->cicd
+    argocd-->argocdimageupdater
 ```
 
 ## 免責事項
