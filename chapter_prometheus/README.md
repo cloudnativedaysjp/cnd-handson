@@ -123,8 +123,9 @@ spec:
     - port: web
 ```
 
-![image](https://prometheus.io/assets/grafana_prometheus.png)
+![image](https://prometheus-operator.dev/img/service-and-podMonitor.svg)
 
+> 図では、Prometheus Operatorが中央で動作し、宣言した `ServiceMonitor` や `PodMonitor` を監視対象として登録し、クラスター内のService／PodへのScrape設定を自動で反映している様子が示されています。左側のService経由の経路と、右側のPod直接経路の2パターンが描かれており、Operatorがこれら両方を仲介することで、Prometheus本体に追加の再起動やConfigMap更新を行わなくても、動的な監視対象の変更が可能になります。
 ---
 
 ## 実践: Prometheusの導入
