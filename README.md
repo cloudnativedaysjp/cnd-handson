@@ -4,7 +4,7 @@ CloudNative Days Winter 2025 実行委員会による『一日で学ぶクラウ
 Docker、Kubernetes、Prometheus、Grafana、ArgCDなど、クラウドネイティブな環境でよく利用されるOSSを対象としたハンズオンです。このハンズオンを通して、これらのOSSについての基本的な使い方を学び、今後の学習のきっかけにしてください。
 
 ## Chapter
-準備用chapter＋全17chapterから構成されています。
+準備用chapter＋全19chapterから構成されています。
 - [chapter_setup](./chapter_setup/)
 - [chapter_cluster-create](./chapter_cluster-create/)
 - [chapter_docker](./chapter_docker/)
