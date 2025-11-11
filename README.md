@@ -13,7 +13,7 @@ Docker、Kubernetes、Prometheus、Grafana、ArgCDなど、クラウドネイテ
 - [chapter_grafana](./chapter_grafana/)
 - [chapter_opentelemetry](./chapter_opentelemetry/)
 - [chapter_argocd](./chapter_argocd/)
-- [chapter_argocd](./chapter_argocd-image-updater/)
+- [chapter_argocd-updater](./chapter_argocd-image-updater/)
 - [chapter_cicd](./chapter_cicd/)
 - [chapter_istio](./chapter_istio/)
 - [chapter_cilium](./chapter_cilium/)
