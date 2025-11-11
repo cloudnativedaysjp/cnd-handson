@@ -199,9 +199,6 @@ kubectl get pods -n troubleshoot
 # Podの詳細を確認（Stateセクションに"OOMKilled"と表示される）
 kubectl describe pod $(kubectl get pods -n troubleshoot -l app=app-oom -o jsonpath='{.items[0].metadata.name}') -n troubleshoot
 
-# Podのログを確認
-kubectl logs $(kubectl get pods -n troubleshoot -l app=app-oom -o jsonpath='{.items[0].metadata.name}') -n troubleshoot --previous
-
 # Podのメトリクスを確認
 kubectl top pod -n troubleshoot
 ```
@@ -280,7 +277,6 @@ kubectl logs $(kubectl get pods -n troubleshoot -l app=app-image-pull -o jsonpat
 ```bash
 kubectl delete -f manifests/03-image_pull.yaml
 ```
-
 
 ---
 
@@ -381,12 +377,6 @@ kubectl get events -n troubleshoot --sort-by='.lastTimestamp'
 kubectl apply -f manifests/05-ingress.yaml
 ```
 
-次に、Ingressにアクセスするために、以下の行を`/etc/hosts`ファイルに追加します。`<ingress-ip>`はご自身の環境のIngressのIPアドレスに置き換えてください。
-
-```
-<ingress-ip> troubleshoot.example.com
-```
-
 ### 症状
 
 - `curl`やブラウザでIngressにアクセスすると、503 Service Temporarily Unavailableエラーが返ってくる
@@ -404,10 +394,10 @@ kubectl get svc -n troubleshoot
 # backend-app    ExternalName   app-backend.backend.svc.cluster.local         8080/TCP
 
 # curlでアクセスできる
-curl -H "Host: troubleshoot.example.com" http://troubleshoot.example.com/
+curl http://troubleshoot.example.com/
 # <!DOCTYPE html>... (nginxのデフォルトページ)
 
-curl -H "Host: troubleshoot.example.com" http://troubleshoot.example.com/api
+curl http://troubleshoot.example.com/api
 # Hello from backend API
 ```
 
@@ -460,10 +450,6 @@ kubectl delete -f manifests/05-ingress.yaml
 > [!NOTE]
 > - 動作確認は、ブラウザから以下のURLにアクセスすることで行います。
 >   - http://cnd-web.example.com
-> - Ingressにアクセスするために、以下の行を`/etc/hosts`ファイルに追加します。`<ingress-ip>`はご自身の環境のIngressのIPアドレスに置き換えてください。
->   - `<ingress-ip> cnd-web.example.com`
-> - リソースの更新後もWeb画面の表示が変わらない場合があります。1-2分待ってからブラウザのリフレッシュを行なってください。
-> - 改修箇所は1箇所ではない可能性があります。また、構成図とエラーメッセージがヒントになる場合があります。
 
 
 以下のコマンドでアプリのデプロイを行なってください。
@@ -490,7 +476,7 @@ kubectl get svc -n troubleshoot
 # mysql-svc     ClusterIP   10.x.x.x        3306/TCP
 
 # curlまたはブラウザでアクセスできる
-curl -H "Host: cnd-web.example.com" http://cnd-web.example.com/
+curl http://cnd-web.example.com
 # <!DOCTYPE html>... (nginxのデフォルトページが表示される)
 ```
 
