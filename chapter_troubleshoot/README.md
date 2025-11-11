@@ -9,6 +9,14 @@
 マニフェストを修正した例は[manifests_fixed](./manifests_fixed)に記載してあるので参考にしてみてください。
 必ずしも修正方法はひとつではなく、ANSWER.mdにもその一例のみ記載してあります。
 
+## 事前準備
+
+本章を始める前に，以下のコマンドで事前にnamespaceを作成してください．
+
+```bash
+kubectl create namespace troubleshoot
+```
+
 ### このチャプターで学べること
 
 - よくあるKubernetesのトラブルパターンとその原因
