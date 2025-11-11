@@ -19,7 +19,7 @@ docker -v
 
 ```
 # 実行結果
-Docker version 28.1.1, build 4eba377
+Docker version 28.5.1, build e180ab8
 ```
 
 続いて、サンプルイメージをpullします。
