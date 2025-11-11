@@ -93,8 +93,8 @@ kubectl create namespace troubleshoot
 kubectl apply -f manifests/01-configmap.yaml
 ```
 
+リソースが作成されたことを確認
 ```bash
-# リソースが作成されたことを確認
 kubectl get all -n troubleshoot
 ```
 
@@ -163,8 +163,8 @@ kubectl delete -f manifests/01-configmap.yaml
 kubectl apply -f manifests/02-oom.yaml
 ```
 
+リソースが作成されたことを確認
 ```bash
-# リソースが作成されたことを確認
 kubectl get all -n troubleshoot
 ```
 
@@ -221,13 +221,13 @@ kubectl delete -f manifests/02-oom.yaml
 
 まず、問題を再現するためのリソースをデプロイします。
 
+マニフェストを適用
 ```bash
-# マニフェストを適用
 kubectl apply -f manifests/03-image_pull.yaml
 ```
 
+リソースが作成されたことを確認
 ```bash
-# リソースが作成されたことを確認
 kubectl get all -n troubleshoot
 ```
 
@@ -372,8 +372,8 @@ kubectl get events -n troubleshoot --sort-by='.lastTimestamp'
 
 まず、問題を再現するためのリソースをデプロイします。
 
+マニフェストを適用
 ```bash
-# マニフェストを適用
 kubectl apply -f manifests/05-ingress.yaml
 ```
 
