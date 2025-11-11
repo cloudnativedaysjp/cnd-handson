@@ -206,20 +206,20 @@ Contact Pointを追加しただけでは新規にアラートを追加しても�
 
 4. Set evaluation behavior
   - `Evaluation group` ... `New evaluation group` をクリックし、 `Evaluation group name` を `sample-grafana-alert-1`, `Evaluation Interval` を `5m` に設定
-  - `Pending preriod` ... `5m`
+  - `Pending period` ... `5m`
 
 ![image](./image/add-alert-rule-4.png)
 
 5. Configure notifications
   - `Contact point` ... `sample-grafana-alerting`
 
-![image](./image/add-alert-rule-4.png)
+![image](./image/add-alert-rule-5.png)
 
-5. Configure notification message
+6. Configure notification message
   - `Summary` ... `app.example.com has not received requests over 10 times`
   - `Description` ... `app.example.com has not received {{ $labels.method }} requests 10 times`
 
-![image](./image/add-alert-rule-5.png)
+![image](./image/add-alert-rule-6.png)
 
 このアラートは、1分間隔で取得した、 `app.example.com` に対するリクエスト数が10以上でなければアラートを発報するというルールになっています。
 5分程度経過すると、無事にアラートが発報されると思います。
