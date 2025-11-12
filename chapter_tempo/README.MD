@@ -162,8 +162,9 @@ Service Graphを表示させるには追加で設定が必要です。
 ![expolre-select-tempo](image/expolre-select-tempo.png)
 
 下のほうまでスクロールして`Additional settings`のメニューを展開します。
-展開した後Service graphの項目のData sourceにPrometheusを選択して一番下にあるSave & testをクリックします。
-`Data source successfully connected.`と表示されると設定が完了しています。
+- 展開した後`Service graph`の項目のData sourceに`Prometheus`を選択します
+- `Node Graph`の項目の`Enable node graph`を有効にします
+- 一番下にあるSave & testをクリックします。`Data source successfully connected.`と表示されると設定が完了しています。
 ![select-promethues](image/select-promethues.png)
 
 `http://grafana.example.com/explore`を開きます。Service GraphタブをクリックしてRun Queryボタンをクリックしてください。
