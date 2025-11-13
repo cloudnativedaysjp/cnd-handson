@@ -235,6 +235,32 @@ Lokiはマルチテナントにも対応しており、`Header`と`value`で使�
 
 ![](image/ch11_env.png)
 
+> [!NOTE]
+> Lokiは、バージョン3.0(2024年)から、OTLP(OpenTelemetry Protocol)のエンドポイントとしてネイティブサポートされました。
+> OpenTelemetryでは、データそのものだけでなく、key:valueの属性(attribute)も付与して送付でき、バックエンドストレージでの検索のしやすさに貢献します。
+> 
+> OTLPでログを受信する際、Lokiはデフォルトで特定のラベル（例：`service_name`、`log_file_name`など）をインデックスとして保持します。
+> しかし、デフォルトのラベル以外の属性（例：`exporter`）をインデックスとして使用したい場合は、Lokiの設定で明示的に指定する必要があります。
+> 
+> 追加のラベルをインデックス化するために、本ハンズオンでは以下を設定しています。
+> ```yaml
+> # `loki-values.yaml`
+> loki:
+>   limits_config:
+>     allow_structured_metadata: true
+>     # OTLP設定: resource attributesをラベルとして使用
+>     otlp_config:
+>       resource_attributes:
+>         attributes_config:
+>           # exporter属性をラベルとしてインデックス化
+>           # これにより、Grafanaのラベルフィルタでexporter=OTLPで検索可能になる
+>           - action: index_label
+>             attributes:
+>               - exporter
+> ```
+> 
+> この設定により、`exporter`属性がLokiのラベルとしてインデックス化され、Grafanaのラベルフィルタで`exporter=OTLP`のようなクエリが可能になります。
+
 まずは、OpenTelemetry CollectorをアプライしてLokiにログを送付します。
 
 ```shell
@@ -287,7 +313,7 @@ Log Query Startersには、特定の文字列でフィルターしたログをlo
 どのパターンもそのまま適用することはできませんが、クエリを書く際のヒントとして利用できます。
 
 試しに、Metric Query startersの`Total requests per label of streams`をクリックしてみましょう。
-選択肢が表示される場合、「Replace query」を選択します。
+選択肢が表示される場合、「Apply to query」を選択します。
 すると、LogQLが自動で構築されるので、追加で下記の設定をしてください。
 
 - `Line contains`: `blue`
@@ -313,24 +339,45 @@ Log Query Startersには、特定の文字列でフィルターしたログをlo
 `New alert rule`をクリックして、下記の項目を入力します。
 入力が終わると`Save rule and exit`をクリックして適用します。
 
-- `Rule name` ... `SampleGrafanaAlertLoki`
-- `Datastore` ... `Loki`
-- `Label filter` ... `exporter = OTLP`
-- `Operation` ... 以下を順に設定
-  - `Line Filter > Line contains` をクリックし、 `blue` に設定
-  - `Range Functions > Count over time` をクリックし、 `Range` を `5m` に設定
-  - `Aggregations > Sum` をクリック
-- `Expressions`
-  - `Reduce > Mode` ... `Replace Non-numeric value`を`0`に設定
-    - この設定をいれることで、値が無い場合は0とみなします
-  - `Threshold` ... `IS ABOVE`を`100`に設定
-    - 100より大きい場合、アラートを発報します
-- `Set evaluation behavior`
-  - `Folder` ... New folderで`loki-alert`を作成
+1. `Enter alert rule name`
+    - `Name` ... `SampleGrafanaAlertLoki`
+2. `Define query and alert condition`
+    - `Datastore` ... `Loki`
+    - `Label filter` ... 以下を順に設定
+      - `exporter` = `OTLP` に設定
+      - `Line contains` ... `blue` に設定
+      - `Operations` をクリックし、以下を設定
+        - `Range Functions > Count over time` をクリックし、 `Range` を `5m` に設定
+      - `Operations` をクリックし、以下を設定　※さらに条件を追加します
+        - `Aggregations > Sum` を設定
+    - `Alert condition`
+      - WHEN `Last` OF QUERY `IS ABOVE` 100
+        - 最新値が 100より大きい場合、アラートを発報します
+    - 右上部の`Run queries` をクリックすると、実際のクエリの結果をグラフ化して確認できます
+    - グラフ下部に、「Firing」とフラグのあるレコードが表示され、実際に発報されるアラートをシミュレートできます。
+![](image/ch11_grafana_alert_rule_loki.png)
+
+> [!NOTE]
+> 試しに`Sum`の集約条件を非表示にし、 `Preview alert rule condition`をクリックしてみます。とんでもない量のアラートになるとわかります！
+
+3. `Add folder and labels`
+  - `Folder`
+    - New folder で`loki-alert`を作成
+    - `Folder` ... `loki-alert` に設定
+  - `Labels`
+    - Add labels で `alert-route`=`slack`を設定
+
+4. `Set evaluation behavior`
   - `Evaluation group` ... `New evaluation group` をクリックし、 `Evaluation group name` を `sample-grafana-alert-loki`, `Evaluation Interval` を `1m` に設定
   - `Pending period` ... `0s`に設定（即時発報）
-- `Configure labels and notifications` ... `alert-route`と`slack`を設定
-- `Summary` ... 任意の文字列を追加
+  - `Keep firing for` ... `0s` に設定（継続発報しない）
+
+5. `Configure notifications`
+  - `Contact point` ... `sample-grafana-alerting`を設定
+    - chapter_grafanaで作成したContact Pointを使用する
+
+6. `Configure notification message`
+  - `Summary`, `Description` ... 任意の文字列を追加
   - 他の参加者とアラートが被った場合でも、自分が設定したアラートだと識別できるように設定
 
 このアラートは、`sum(count_over_time({exporter="OTLP"} |= "blue" [5m]))`が100を超えた場合にアラートを発報するというルールになっています。

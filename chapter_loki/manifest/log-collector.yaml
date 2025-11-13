@@ -31,18 +31,31 @@ spec:
         - type: remove
           field: attributes.timestamp_field
 
+    processors:
+      # resource processorでexporterラベルをOTLPに設定
+      # これにより、README.mdで指定されているexporter="OTLP"での検索にヒットする
+      resource:
+        attributes:
+          - key: exporter
+            value: OTLP
+            action: upsert
+
     exporters:
-      loki:
-        endpoint: http://loki-gateway.monitoring.svc.cluster.local/loki/api/v1/push
-        default_labels_enabled:
-          exporter: true
-          job: true
+      # OTLP HTTP exporterを使用してLokiにログを送信
+      # Loki 3.0以降はOTLPプロトコルをサポートしている
+      # エンドポイントはLokiのOTLPエンドポイントを指定
+      otlphttp:
+        endpoint: http://loki-gateway.monitoring.svc.cluster.local/otlp
         headers:
           X-Scope-OrgID: tenant1
+        tls:
+          # ハンズオン環境のため、自己署名証明書のエラーを回避するために証明書の検証を無効化します。
+          # 本番環境では、適切な証明書を設定し、このオプションをtrueにしないでください。
+          insecure: true
 
     service:
       pipelines:
         logs:
           receivers: [filelog]
-          processors: []
-          exporters: [loki]
+          processors: [resource]
+          exporters: [otlphttp]
