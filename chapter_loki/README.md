@@ -341,7 +341,7 @@ Log Query Startersには、特定の文字列でフィルターしたログをlo
 
 1. `Enter alert rule name`
     - `Name` ... `SampleGrafanaAlertLoki`
-2. `Define query amd alert condition`
+2. `Define query and alert condition`
     - `Datastore` ... `Loki`
     - `Label filter` ... 以下を順に設定
       - `exporter` = `OTLP` に設定
@@ -351,10 +351,10 @@ Log Query Startersには、特定の文字列でフィルターしたログをlo
       - `Operations` をクリックし、以下を設定　※さらに条件を追加します
         - `Aggregations > Sum` を設定
     - `Alert condition`
-      - WHEN `Last` OF QUERY `IS AVOBE` 100
+      - WHEN `Last` OF QUERY `IS ABOVE` 100
         - 最新値が 100より大きい場合、アラートを発報します
     - 右上部の`Run queries` をクリックすると、実際のクエリの結果をグラフ化して確認できます
-    - グラフ下部に、「Firing」とフラグのあるレコードが表示され、実際に発報されるアラートをシュミレートできます。
+    - グラフ下部に、「Firing」とフラグのあるレコードが表示され、実際に発報されるアラートをシミュレートできます。
 ![](image/ch11_grafana_alert_rule_loki.png)
 
 > [!NOTE]
@@ -377,7 +377,7 @@ Log Query Startersには、特定の文字列でフィルターしたログをlo
     - chapter_grafanaで作成したContact Pointを使用する
 
 6. `Configure notification message`
-  - `Summary`, `Despription` ... 任意の文字列を追加
+  - `Summary`, `Description` ... 任意の文字列を追加
   - 他の参加者とアラートが被った場合でも、自分が設定したアラートだと識別できるように設定
 
 このアラートは、`sum(count_over_time({exporter="OTLP"} |= "blue" [5m]))`が100を超えた場合にアラートを発報するというルールになっています。
