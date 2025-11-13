@@ -156,27 +156,6 @@ Run Queryボタンをクリックしてください。
 すると表示されます。
 ![traceql-result](image/traceql-result.png)
 
-## Service Graph
-Service Graphを表示させるには追加で設定が必要です。
-`http://grafana.example.com/connections/datasources`にアクセスしたあとTempoを選択します。
-![expolre-select-tempo](image/expolre-select-tempo.png)
-
-下のほうまでスクロールして`Additional settings`のメニューを展開します。
-展開した後Service graphの項目のData sourceにPrometheusを選択して一番下にあるSave & testをクリックします。
-`Data source successfully connected.`と表示されると設定が完了しています。
-![select-promethues](image/select-promethues.png)
-
-`http://grafana.example.com/explore`を開きます。Service GraphタブをクリックしてRun Queryボタンをクリックしてください。
-すると下の画像のような表示になります。
-![result-service-graph](image/result-service-graph.png)
-
-`Rate`をクリックしてください。
-
-![click-rate](image/click-rate.png)
-
-すると右にPrometheusのパネルが展開してAPIがコールされた回数がグラフで表示されます。
-![result-click-rate](image/result-click-rate.png)
-
 ## おまけ
 今回は時間の都合上省略しますがLokiと連携してTraceとLogを接続する方法やPrometheusと連携してTraceとMetricsを連携する方法、
 Pyroscopeと連携してTraceとprofilesを連携する方法があります。
