@@ -7,6 +7,6 @@ releases:
   namespace: monitoring
   createNamespace: true
   chart: grafana/tempo
-  version: 1.23.3
+  version: 1.24.3
   values: 
     - tempo-values.yaml
