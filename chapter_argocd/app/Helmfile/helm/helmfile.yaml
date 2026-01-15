@@ -6,6 +6,6 @@ releases:
 - name: headlamp
   namespace: headlamp
   chart: headlamp/headlamp
-  version: 0.36.0
+  version: 0.39.0
   values:
   - values.yaml
