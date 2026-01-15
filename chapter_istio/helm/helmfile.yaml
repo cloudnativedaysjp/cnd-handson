@@ -33,6 +33,6 @@ releases:
   namespace: istio-system
   createNamespace: true
   chart: kiali/kiali-server
-  version: 2.14.0
+  version: 2.20.0
   values:
   - values/kiali.values.yaml
