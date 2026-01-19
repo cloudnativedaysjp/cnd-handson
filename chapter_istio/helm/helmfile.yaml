@@ -7,7 +7,7 @@ repositories:
 releases:
 - name: istio-base
   chart: istio-official/base
-  version: 1.27.0
+  version: 1.28.3
 - name: istio-misc
   namespace: istio-system
   chart: charts/istio-misc
@@ -16,14 +16,14 @@ releases:
 - name: istiod
   namespace: istio-system
   chart: istio-official/istiod
-  version: 1.27.0
+  version: 1.28.3
   wait: true
   values:
   - values/istiod.values.yaml
 - name: istio-ingressgateway
   namespace: istio-system
   chart: istio-official/gateway
-  version: 1.27.0
+  version: 1.28.3
   wait: true
   needs:
   - istio-system/istiod
