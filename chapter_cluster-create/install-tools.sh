@@ -151,7 +151,7 @@ install_helm_diff() {
   fi
 
   info "Installing helm-diff plugin..."
-  helm plugin install "$plugin_url" > /dev/null 2>&1 || {
+  helm plugin install "$plugin_url" -verify=false > /dev/null 2>&1 || {
     err "Failed to install helm-diff plugin"
     return 1
   }
