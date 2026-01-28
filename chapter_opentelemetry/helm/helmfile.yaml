@@ -16,7 +16,7 @@ releases:
 - name: opentelemetry-operator
   namespace: monitoring
   chart: open-telemetry/opentelemetry-operator
-  version: 0.93.0
+  version: 0.105.0
   disableValidation: true
   values:
   - values/opentelemetry-operator.values.yaml
