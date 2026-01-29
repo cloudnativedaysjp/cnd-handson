@@ -5,13 +5,12 @@ metadata:
   name: color-gw
   namespace: handson
 spec:
-  hostnames:
-  - app.example.com
   gatewayClassName: cilium
   listeners:
   - protocol: HTTP
     port: 80
     name: web-gw-color
+    hostname: app.example.com
     allowedRoutes:
       namespaces:
         from: Same
@@ -24,6 +23,8 @@ metadata:
 spec:
   parentRefs:
   - name: color-gw
+  hostnames:
+  - app.example.com
   rules:
   - matches:
     - path:
