@@ -5,6 +5,8 @@ metadata:
   name: color-gw
   namespace: handson
 spec:
+  hostnames:
+  - app.example.com
   gatewayClassName: cilium
   listeners:
   - protocol: HTTP
