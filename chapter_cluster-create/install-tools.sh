@@ -5,11 +5,11 @@ set -o pipefail
 set -o errexit
 
 # Versions of the tools to install
-readonly KIND_VERSION="v0.30.0"
-readonly KUBECTL_VERSION="v1.34.1"
-readonly CILIUM_CLI_VERSION="v0.18.7"
-readonly HELM_VERSION="v3.19.0"
-readonly HELMFILE_VERSION="1.1.7"
+readonly KIND_VERSION="v0.31.0"
+readonly KUBECTL_VERSION="v1.35.0"
+readonly CILIUM_CLI_VERSION="v0.19.0"
+readonly HELM_VERSION="v4.1.0"
+readonly HELMFILE_VERSION="1.2.3"
 # Output colors
 readonly GREEN='\033[0;32m'
 readonly RED="\033[0;31m"
@@ -151,7 +151,7 @@ install_helm_diff() {
   fi
 
   info "Installing helm-diff plugin..."
-  helm plugin install "$plugin_url" > /dev/null 2>&1 || {
+  helm plugin install "$plugin_url" -verify=false > /dev/null 2>&1 || {
     err "Failed to install helm-diff plugin"
     return 1
   }
