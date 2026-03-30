@@ -32,8 +32,8 @@ ArgoCDが動作していること
 ArgoCD Image Updaterでは、Rollback機能がないため、ArgoCD側で対応、Roadmap上にはあるがまだ未定。
 
 ## 今回のハンズオンについて
-レポジトリ(ghcr.io/nginxinc/nginx-unprivileged)にあるNginxのバージョン(初期インストールされるバージョン:1.27.0)を  
-ArgoCD Image Updaterにて監視することで、レジストリの1.27.x台の最新Latest版へ更新するハンズオンとしています。  
+レポジトリ(ghcr.io/nginxinc/nginx-unprivileged)にあるNginxのバージョン(初期インストールされるバージョン:1.29.0)を  
+ArgoCD Image Updaterにて監視することで、レジストリの1.29.x台の最新Latest版へ更新するハンズオンとしています。  
 ハンズオンなのでわかりやすい形で実施していますが、もちろん時前で管理しているアプリケーションの   
 バージョン変更している環境での導入が可能です。  
 https://argocd-image-updater.readthedocs.io/en/stable/basics/update-strategies/  
