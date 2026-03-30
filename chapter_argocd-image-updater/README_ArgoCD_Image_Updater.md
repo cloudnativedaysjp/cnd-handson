@@ -9,8 +9,8 @@ ArgoCDの詳細については、[こちら](https://github.com/cloudnativedaysj
 目的としたものになります。  
 ArgoCD Image Updaterの参照URL (https://argocd-image-updater.readthedocs.io/en/stable/)
 
-ArgoCD Image Updaterのバージョンは、2025/11/11に、v1.0.0がリリースされましたが、  
-このハンズオンでは、`v0.17.0`を利用しています。  
+ArgoCD Image Updaterのバージョンは、2026/2/20に、v1.1.1がリリースされましたが、  
+このハンズオンでは、`v1.1.1`を利用しています。  
 
 
 
