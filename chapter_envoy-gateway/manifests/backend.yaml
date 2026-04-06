@@ -1,0 +1,30 @@
+apiVersion: gateway.envoyproxy.io/v1alpha1
+kind: Backend
+metadata:
+  name: httpbin
+  namespace: envoy-gateway-handson
+spec:
+  endpoints:
+    - fqdn:
+        hostname: httpbin.org
+        port: 80
+---
+apiVersion: gateway.networking.k8s.io/v1
+kind: HTTPRoute
+metadata:
+  name: backend-route
+  namespace: envoy-gateway-handson
+spec:
+  parentRefs:
+    - name: eg
+  hostnames:
+    - "app.envoy-gateway.example.com"
+  rules:
+    - backendRefs:
+        - group: gateway.envoyproxy.io
+          kind: Backend
+          name: httpbin
+      matches:
+        - path:
+            type: PathPrefix
+            value: /
