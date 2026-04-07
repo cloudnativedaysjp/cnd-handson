@@ -120,18 +120,24 @@ pod/handson-blue-6c4f4c9c57-597dx   2/2     Running   0          26s
 ```
 
 Envoy proxyがサイドカーとしてアプリケーションpodに注入されているか確認しましょう。
+
+> [!NOTE]
+>
+> Istio 1.29以降では、Envoy proxyはKubernetes Native Sidecar（init container方式）としてデプロイされます。そのため、`.spec.initContainers`にproxyv2のイメージが含まれます。
+
 ```sh
-kubectl get pods -n handson -l app=handson -o jsonpath={.items..spec..containers..image} | tr -s '[[:space:]]' '\n';echo
+kubectl get pods -n handson -l app=handson -o jsonpath='{range .items[*]}{range .spec.initContainers[*]}{.image}{"\n"}{end}{range .spec.containers[*]}{.image}{"\n"}{end}{end}'
 ```
 ```sh
 # 実行結果
+docker.io/istio/proxyv2:1.29.1
 docker.io/istio/proxyv2:1.29.1
 argoproj/rollouts-demo:blue
 
 # Tracingをopentelemetry管理している場合は下記も併せて表示されます。
 ghcr.io/open-telemetry/opentelemetry-go-instrumentation/autoinstrumentation-go:v0.14.0-alpha
 ```
-`docker.io/istio/proxyv2`のイメージで動作しているコンテナがデータプレーンです。
+`docker.io/istio/proxyv2`のイメージで動作しているコンテナがデータプレーンです。1つ目の`proxyv2`はiptablesルールの初期設定用（`istio-init`）、2つ目がトラフィックを処理するEnvoy proxy（`istio-proxy`）です。
 
 ### メッシュ外からのアクセス
 Istioメッシュ外からのアクセスをIstioメッシュ内のアプリケーションにルーティングできるようするためにIstio gateway/virtual serviceを作成します。
