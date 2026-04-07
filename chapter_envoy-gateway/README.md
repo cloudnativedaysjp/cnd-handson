@@ -17,7 +17,7 @@
 ### Envoy Gatewayとは
 Envoy Gatewayは、[Gateway API](https://gateway-api.sigs.k8s.io/)に準拠したAPI Gatewayの実装です。内部的にはEnvoy Proxyを利用しており、ControllerがGateway APIリソースからEnvoyの設定を生成し、xDS (x Discovery Service)でProxyに配信する仕組みになっています。
 
-Envoy Gatewayは主にNorth-South(外部からクラスタ内部への通信)のトラフィック管理を目的として設計されています。
+Envoy Gatewayは当初North-South(外部からクラスタ内部への通信)のトラフィック管理を主な目的として設計されていましたが、v1.2以降ではEast-West(サービス間通信)のサポートも追加され、IngressとService Meshの両方を統合的に管理できるプロジェクトへと進化しています。
 
 ### Istioとの違い
 同じくEnvoyを基盤とするIstioとよく比較されますが、それぞれ異なるユースケースを持っています。
@@ -122,20 +122,29 @@ NAME   CLASS   ADDRESS         PROGRAMMED   AGE
 eg     eg      x.x.x.x        True         30s
 ```
 
-### ポートフォワードの設定
+### Gatewayへのアクセス設定
 
-kind環境ではLoadBalancerが利用できないため、port-forwardを使ってGatewayにアクセスします。
+GatewayのExternal IPを確認します。
 
 ```sh
-export ENVOY_SERVICE=$(kubectl get svc -n envoy-gateway-system --selector=gateway.envoyproxy.io/owning-gateway-namespace=envoy-gateway-handson,gateway.envoyproxy.io/owning-gateway-name=eg -o jsonpath='{.items[0].metadata.name}')
-kubectl -n envoy-gateway-system port-forward service/${ENVOY_SERVICE} 18080:8080 &
+kubectl get gateway eg -n envoy-gateway-handson
+```
+
+```
+# 実行結果
+NAME   CLASS   ADDRESS        PROGRAMMED   AGE
+eg     eg      x.x.x.x       True         60s
+```
+
+`ADDRESS`に表示されたIPアドレスを`/etc/hosts`に設定します（[chapter_setup](../chapter_setup/README.md)で設定済みの場合は、IPアドレスを更新してください）。
+
+```
+GATEWAY_IP    app.envoy-gateway.example.com
 ```
 
 > [!NOTE]
 >
-> 以降のセクションでは、`http://app.envoy-gateway.example.com:18080` でGatewayにアクセスすることを前提としています。
-> [chapter_setup](../chapter_setup/README.md)で`/etc/hosts`に`app.envoy-gateway.example.com`を設定済みであることを確認してください。
-> port-forwardが切断された場合は、再度上記コマンドを実行してください。
+> 以降のセクションでは、`http://app.envoy-gateway.example.com:8080` でGatewayにアクセスすることを前提としています。
 
 ## 基本的なHTTPルーティング
 
@@ -182,7 +191,7 @@ kubectl apply -f manifests/httproute-basic.yaml
 動作確認をします。
 
 ```sh
-curl -s http://app.envoy-gateway.example.com:18080/
+curl -s http://app.envoy-gateway.example.com:8080/
 ```
 
 ```
@@ -245,7 +254,7 @@ kubectl apply -f manifests/httproute-path.yaml
 ```
 
 ```sh
-curl -s http://app.envoy-gateway.example.com:18080/v1
+curl -s http://app.envoy-gateway.example.com:8080/v1
 ```
 
 ```
@@ -254,7 +263,7 @@ Hello from v1
 ```
 
 ```sh
-curl -s http://app.envoy-gateway.example.com:18080/v2
+curl -s http://app.envoy-gateway.example.com:8080/v2
 ```
 
 ```
@@ -319,7 +328,7 @@ kubectl apply -f manifests/httproute-header.yaml
 通常のリクエスト:
 
 ```sh
-curl -s http://app.envoy-gateway.example.com:18080/
+curl -s http://app.envoy-gateway.example.com:8080/
 ```
 
 ```
@@ -330,7 +339,7 @@ Hello from v1
 canaryヘッダーを付与したリクエスト:
 
 ```sh
-curl -s --header "x-version: canary" http://app.envoy-gateway.example.com:18080/
+curl -s --header "x-version: canary" http://app.envoy-gateway.example.com:8080/
 ```
 
 ```
@@ -392,7 +401,7 @@ kubectl apply -f manifests/httproute-weight.yaml
 10回リクエストを送って、トラフィックの分散を確認します。
 
 ```sh
-for i in $(seq 1 10); do curl -s http://app.envoy-gateway.example.com:18080/; done
+for i in $(seq 1 10); do curl -s http://app.envoy-gateway.example.com:8080/; done
 ```
 
 ```
@@ -508,7 +517,7 @@ httpbin   10s
 外部サービスにリクエストが転送されるか確認します。
 
 ```sh
-curl -s http://app.envoy-gateway.example.com:18080/headers | head -20
+curl -s http://app.envoy-gateway.example.com:8080/headers | head -20
 ```
 
 ```
@@ -743,9 +752,6 @@ Envoy Gatewayは、Gateway APIに準拠しつつもBackendやBackendTrafficPolic
 ハンズオンで作成したリソースを削除します。
 
 ```sh
-# port-forward プロセスの停止
-pkill -f "port-forward.*18080:8080"
-
 kubectl delete -f manifests/backend-traffic-policy.yaml --ignore-not-found=true
 kubectl delete -f manifests/httproute-basic.yaml --ignore-not-found=true
 kubectl delete -f manifests/gateway.yaml
