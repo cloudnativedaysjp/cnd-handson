@@ -123,7 +123,7 @@ Envoy proxyがサイドカーとしてアプリケーションpodに注入され
 
 > [!NOTE]
 >
-> Istio 1.29以降では、Envoy proxyはKubernetes Native Sidecar（init container方式）としてデプロイされます。そのため、`.spec.initContainers`にproxyv2のイメージが含まれます。
+> Istio 1.27以降（Kubernetes 1.29以降のクラスタ）では、Envoy proxyはデフォルトでKubernetes Native Sidecar（init container方式）としてデプロイされます。そのため、`.spec.initContainers`にproxyv2のイメージが含まれます。
 
 ```sh
 kubectl get pods -n handson -l app=handson -o jsonpath='{range .items[*]}{range .spec.initContainers[*]}{.image}{"\n"}{end}{range .spec.containers[*]}{.image}{"\n"}{end}{end}'
