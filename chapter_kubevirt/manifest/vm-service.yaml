@@ -1,0 +1,35 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: fedora-svc
+  labels:
+    app: fedora-vm
+spec:
+  ports:
+  - port: 22
+    targetPort: 22
+    protocol: TCP
+    name: ssh
+  - port: 80
+    targetPort: 80
+    protocol: TCP
+    name: http
+  selector:
+    kubevirt.io/vm: fedora-vm
+  type: ClusterIP
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: cirros-svc
+  labels:
+    app: cirros
+spec:
+  ports:
+  - port: 22
+    targetPort: 22
+    protocol: TCP
+    name: ssh
+  selector:
+    kubevirt.io/vm: cirros-vm
+  type: ClusterIP

@@ -1,0 +1,49 @@
+apiVersion: kubevirt.io/v1
+kind: VirtualMachine
+metadata:
+  name: simple-ubuntu-vm
+  labels:
+    app: simple-ubuntu
+spec:
+  running: false
+  template:
+    metadata:
+      labels:
+        kubevirt.io/vm: simple-ubuntu-vm
+    spec:
+      domain:
+        devices:
+          disks:
+          - name: containerdisk
+            disk:
+              bus: virtio
+          - name: cloudinitdisk
+            disk:
+              bus: virtio
+          interfaces:
+          - name: default
+            masquerade: {}
+        resources:
+          requests:
+            memory: 1Gi
+            cpu: "1"
+      networks:
+      - name: default
+        pod: {}
+      volumes:
+      - name: containerdisk
+        containerDisk:
+          image: quay.io/kubevirt/fedora-cloud-container-disk-demo:latest
+      - name: cloudinitdisk
+        cloudInitNoCloud:
+          userData: |-
+            #cloud-config
+            hostname: simple-ubuntu
+            password: fedora
+            chpasswd: { expire: False }
+            ssh_pwauth: true
+            users:
+            - name: fedora
+              password: fedora
+              sudo: ALL=(ALL) NOPASSWD:ALL
+              shell: /bin/bash
