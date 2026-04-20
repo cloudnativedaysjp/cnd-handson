@@ -6,11 +6,17 @@ loki:
     configs:
       - from: 2024-04-01
         store: tsdb
-        object_store: s3
+        object_store: filesystem
         schema: v13
         index:
           prefix: loki_index_
           period: 24h
+  storage_config:
+    tsdb_shipper:
+      active_index_directory: /var/loki/index
+      cache_location: /var/loki/index_cache
+    filesystem:
+      directory: /var/loki/chunks
   ingester:
     chunk_encoding: snappy
   tracing:
@@ -59,13 +65,6 @@ singleBinary:
 chunksCache:
   # default is 500MB, with limited memory keep this smaller
   writebackSizeLimit: 10MB
-
-# Enable minio for storage
-minio:
-  enabled: true
-  serviceAccount:
-    name: "minio-sa-loki"
-
 
 # Zero out replica counts of other deployment modes
 backend:
