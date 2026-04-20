@@ -255,8 +255,8 @@ kubectl get --raw /api/v1/nodes/$(kubectl get nodes -o jsonpath='{.items[0].meta
 ### 仮想マシンの詳細情報
 
 ```sh
-kubectl describe vm ubuntu-vm
-kubectl describe vmi ubuntu-vm
+kubectl describe vm vm-with-datavolume
+kubectl describe vmi vm-with-datavolume
 ```
 
 ## 最終クリーンアップ
