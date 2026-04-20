@@ -210,7 +210,7 @@ virtctl expose vm fedora-vm --name fedora-svc --port 22 --target-port 22
 ポートフォワードによる接続
 
 ```sh
-kubectl port-forward service/vm-ssh-service 2222:22
+kubectl port-forward service/fedora-svc 2222:22
 ```
 
 別のターミナルからSSH接続：
