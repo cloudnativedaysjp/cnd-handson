@@ -234,7 +234,7 @@ kubectl apply -f manifest/vm-with-datavolume.yaml
 ノード間での仮想マシンの移動を体験します：
 
 ```sh
-virtctl migrate ubuntu-vm
+virtctl migrate vm-with-datavolume
 ```
 
 マイグレーション状況の確認：
