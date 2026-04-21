@@ -237,6 +237,15 @@ virtctl console fedora-vm
 - ユーザー: `fedora`
 - パスワード: `password`
 
+
+以下、コマンドを実行し
+```sh
+cat /etc/redhat-release
+# 以下のようにFedoraのVMが稼働していることを確認
+Fedora release 32 (Thirty Two)
+
+```
+
 ## ネットワーク設定
 
 ### 仮想マシン用サービスの作成
@@ -273,6 +282,7 @@ CDI（Containerized Data Importer）はKubeVirt向けにデータのインポー
 ContainerDisk(前項までのやりかた)はコンテナイメージに同梱した一時的なルートディスクをそのまま使う方式で、CDI は外部ソースから永続ディスクを取り込み・複製して再利用可能なストレージとして運用しま。
 
 ```sh
+# CDIのインストール
 export VERSION=$(basename $(curl -s -w %{redirect_url} https://github.com/kubevirt/containerized-data-importer/releases/latest))
 kubectl create -f https://github.com/kubevirt/containerized-data-importer/releases/download/$VERSION/cdi-operator.yaml
 kubectl create -f https://github.com/kubevirt/containerized-data-importer/releases/download/$VERSION/cdi-cr.yaml
@@ -285,11 +295,25 @@ kubectl get pods -n cdi
 
 ```sh
 kubectl apply -f manifest/vm-with-datavolume.yaml
+
+kubectl get datavolume
+# 以下のようにDatavolumeがSucceededになると成功です。
+# 今回DataVolumeではマニフェストの14行目にあるイメージをダウンロードしています。
+NAME                PHASE       PROGRESS   RESTARTS   AGE
+fedora-datavolume   Succeeded   100.0%                11m
+
+kubectl get pvc
+# Datavolumeのデータは以下のようにPVCを利用します
+NAME                STATUS   VOLUME                                     CAPACITY      ACCESS MODES   STORAGECLASS   VOLUMEATTRIBUTESCLASS   AGE
+fedora-datavolume   Bound    pvc-0b4df460-d2cc-49f0-812b-3abdec197649   11381663335   RWO            standard       <unset>                 11m
 ```
 
 ### ライブマイグレーション
 
-ノード間での仮想マシンの移動を体験します：
+ノード間での仮想マシンの移動します。
+**本環境ではストレージの都合上、本項は実施できません。**
+ライブマイグレーションの細かい制限については[公式ドキュメント](https://kubevirt.io/user-guide/compute/live_migration/#limitations)を参照ください。
+
 
 ```sh
 virtctl start vm-with-datavolume
@@ -298,21 +322,6 @@ virtctl migrate vm-with-datavolume
 
 # 別のノードに仮想マシンが起動し直していることを確認
 kubectl get vmi
-```
-
-## KubeVirtの監視
-
-### 仮想マシンのメトリクス確認
-
-```sh
-kubectl get --raw /api/v1/nodes/$(kubectl get nodes -o jsonpath='{.items[0].metadata.name}')/proxy/metrics | grep kubevirt
-```
-
-### 仮想マシンの詳細情報
-
-```sh
-kubectl describe vm vm-with-datavolume
-kubectl describe vmi vm-with-datavolume
 ```
 
 ## 最終クリーンアップ
