@@ -3,22 +3,21 @@ kind: VirtualMachine
 metadata:
   name: vm-with-datavolume
   labels:
-    app: ubuntu-persistent
+    app: fedora-persistent
 spec:
   dataVolumeTemplates:
   - metadata:
-      name: ubuntu-datavolume
+      name: fedora-datavolume
     spec:
       source:
         registry:
-          url: docker:/quay.io/kubevirt/fedora-cloud-container-disk-demo:latest
+          url: docker://quay.io/kubevirt/fedora-cloud-container-disk-demo:latest
       storage:
         resources:
           requests:
             storage: 10Gi
         accessModes:
         - ReadWriteOnce
-        storageClassName: local-path
   runStrategy: Halted
   template:
     metadata:
@@ -50,7 +49,7 @@ spec:
       volumes:
       - name: datavolumedisk
         dataVolume:
-          name: ubuntu-datavolume
+          name: fedora-datavolume
       - name: cloudinitdisk
         cloudInitNoCloud:
           userData: |-
@@ -73,4 +72,4 @@ spec:
             runcmd:
             - systemctl enable ssh
             - systemctl start ssh
-            - echo "Welcome to persistent Fedora VM!" > /home/ubuntu/welcome.txt
+            - echo "Welcome to persistent Fedora VM!" > /home/fedora/welcome.txt
