@@ -11,7 +11,7 @@ spec:
     spec:
       source:
         registry:
-        urldocker:/quay.io/kubevirt/ubuntucontainer-disk-demo:latest
+          url: docker:/quay.io/kubevirt/fedora-cloud-container-disk-demo:latest
       storage:
         resources:
           requests:
@@ -19,7 +19,7 @@ spec:
         accessModes:
         - ReadWriteOnce
         storageClassName: local-path
-  running: false
+  runStrategy: Halted
   template:
     metadata:
       labels:
@@ -59,7 +59,7 @@ spec:
             ssh_pwauth: true
             disable_root: false
             users:
-            - name: ubuntu
+            - name: fedora
               passwd: $6$rounds=4096$saltsaltsal$f4QXYENnO/GGYnPF9HTJqECN4T3dP2MvZFPD2VplR37FN/FJiPSBl8EfYMjh/YOvGrqHH6BNH4yLsWVf0Smo31
               lock-passwd: false
               sudo: ALL=(ALL) NOPASSWD:ALL
@@ -73,4 +73,4 @@ spec:
             runcmd:
             - systemctl enable ssh
             - systemctl start ssh
-            - echo "Welcome to persistent Ubuntu VM!" > /home/ubuntu/welcome.txt
+            - echo "Welcome to persistent Fedora VM!" > /home/ubuntu/welcome.txt

@@ -17,6 +17,9 @@ spec:
           - name: containerdisk
             disk:
               bus: virtio
+          - name: cloudinitdisk
+            disk:
+              bus: virtio
           interfaces:
           - name: default
             masquerade: {}

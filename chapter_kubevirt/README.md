@@ -1,18 +1,35 @@
 # KubeVirt
 本chapterではKubernetesクラスタ上で仮想マシンを動作させるKubeVirtを体験し、コンテナワークロードと仮想化ワークロードの統合管理について学習します。
 
-## 目次
-- [概要](#概要)
-- [始める前に](#始める前に)
-- [事前準備](#事前準備)
-- [仮想マシンの作成と管理](#仮想マシンの作成と管理)
-- [Ubuntu仮想マシンの作成](#ubuntu仮想マシンの作成)
-- [ネットワーク設定](#ネットワーク設定)
-- [データボリュームとPersistentVolume](#データボリュームとpersistentvolume)
-- [KubeVirtの監視](#kubevirtの監視)
-- [トラブルシューティング](#トラブルシューティング)
-- [まとめ](#まとめ)
-- [最終クリーンアップ](#最終クリーンアップ)
+
+- [KubeVirt](#kubevirt)
+  - [概要](#概要)
+    - [KubeVirtとは](#kubevirtとは)
+    - [KubeVirtの特徴](#kubevirtの特徴)
+    - [アーキテクチャ](#アーキテクチャ)
+  - [セットアップ](#セットアップ)
+    - [KubeVirtのインストール確認](#kubevirtのインストール確認)
+    - [virtctl CLIの確認](#virtctl-cliの確認)
+  - [仮想マシンの作成と管理](#仮想マシンの作成と管理)
+    - [最初の仮想マシンを作成](#最初の仮想マシンを作成)
+    - [仮想マシンへの接続](#仮想マシンへの接続)
+    - [仮想マシンの操作](#仮想マシンの操作)
+      - [仮想マシンの停止](#仮想マシンの停止)
+      - [仮想マシンの再起動](#仮想マシンの再起動)
+      - [仮想マシンの削除](#仮想マシンの削除)
+  - [Fedora仮想マシンの作成](#fedora仮想マシンの作成)
+    - [Fedora仮想マシンのデプロイ](#fedora仮想マシンのデプロイ)
+    - [仮想マシンの起動と接続](#仮想マシンの起動と接続)
+  - [ネットワーク設定](#ネットワーク設定)
+    - [仮想マシン用サービスの作成](#仮想マシン用サービスの作成)
+  - [データボリュームとPersistentVolume](#データボリュームとpersistentvolume)
+    - [データボリューム付き仮想マシンの作成](#データボリューム付き仮想マシンの作成)
+    - [ライブマイグレーション](#ライブマイグレーション)
+  - [KubeVirtの監視](#kubevirtの監視)
+    - [仮想マシンのメトリクス確認](#仮想マシンのメトリクス確認)
+    - [仮想マシンの詳細情報](#仮想マシンの詳細情報)
+  - [最終クリーンアップ](#最終クリーンアップ)
+
 
 ## 概要
 ### KubeVirtとは
@@ -134,7 +151,11 @@ kubectl patch virtualmachine cirros-vm --type merge -p '{"spec":{"runStrategy": 
 ```sh
 kubectl get vms
 kubectl get vmis
+kubectl get po
 ```
+
+- **VM（VirtualMachine）**: 仮想マシンの定義と望ましい状態を保持するリソースで、停止・起動してもオブジェクトは永続します。
+- **VMI（VirtualMachineInstance）**: 実際に稼働中の仮想マシンインスタンスを表すリソースで、仮想マシンが起動している間のみ存在します。
 
 ### 仮想マシンへの接続
 
@@ -161,10 +182,24 @@ virtctl stop cirros-vm
 kubectl patch virtualmachine cirros-vm --type merge -p '{"spec":{"runStrategy": "Halted"}}'
 ```
 
+VMが停止したことを確認し、VMIが削除されていることを確認します。
+
+```sh
+kubectl get vms
+kubectl get vmis
+```
+
+
+
 #### 仮想マシンの再起動
 
 ```sh
+# 再度VMを起動し、再起動を実行
+virtctl start cirros-vm
 virtctl restart cirros-vm
+
+# VMが再起動される過程を確認
+k get vms -w
 ```
 
 #### 仮想マシンの削除
@@ -223,6 +258,13 @@ ssh -p 2222 fedora@localhost
 
 ### データボリューム付き仮想マシンの作成
 
+DataVolumeはCDIが作成・管理する仮想マシン用ディスクイメージの取り込みリソースで、HTTPやPVCなどのソースから VM用の永続ディスクを自動生成できます。
+
+CDI（Containerized Data Importer）はKubeVirt向けにデータのインポート・クローン・アップロードを提供するコンポーネントで、DataVolume の実体処理を担います。
+
+ContainerDisk(前項までのやりかた)はコンテナイメージに同梱した一時的なルートディスクをそのまま使う方式で、CDI は外部ソースから永続ディスクを取り込み・複製して再利用可能なストレージとして運用しま。
+
+
 永続化ストレージを使用する仮想マシンを作成します：
 
 ```sh
@@ -234,12 +276,9 @@ kubectl apply -f manifest/vm-with-datavolume.yaml
 ノード間での仮想マシンの移動を体験します：
 
 ```sh
+kubectl get vmi
 virtctl migrate vm-with-datavolume
-```
 
-マイグレーション状況の確認：
-
-```sh
 # 別のノードに仮想マシンが起動し直していることを確認
 kubectl get vmi
 ```
@@ -265,5 +304,4 @@ kubectl describe vmi vm-with-datavolume
 
 ```sh
 kubectl delete vm --all
-kubectl delete pvc --all
 ```
