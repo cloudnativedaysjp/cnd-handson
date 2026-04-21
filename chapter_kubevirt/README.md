@@ -83,6 +83,18 @@ KubeVirtは以下のコマンドでインストールします：
 
 ```
 
+### virtctl CLIの確認
+
+KubeVirtの仮想マシン操作には`virtctl`コマンドを使用します。
+バージョンを確認して正常にインストールされていることを確認します。
+
+```sh
+virtctl version
+
+Client Version: version.Info{GitVersion:"v1.8.2", GitCommit:"3203e9d1ce77af32f6a9ce72b9f954830666f72c", GitTreeState:"clean", BuildDate:"2026-04-20T14:34:03Z", GoVersion:"go1.24.9 X:nocoverageredesign", Compiler:"gc", Platform:"linux/amd64"}
+Server Version: version.Info{GitVersion:"v1.8.2", GitCommit:"3203e9d1ce77af32f6a9ce72b9f954830666f72c", GitTreeState:"clean", BuildDate:"2026-04-20T16:50:30Z", GoVersion:"go1.24.9 X:nocoverageredesign", Compiler:"gc", Platform:"linux/amd64"}
+```
+
 ### KubeVirtのインストール確認
 
 まずは、KubeVirtが正常にインストールされているか確認します。
@@ -102,19 +114,6 @@ virt-handler-ffhfn                 1/1     Running   0          4m3s
 virt-operator-86d97799c8-g6xgm     1/1     Running   0          5m38s
 virt-operator-86d97799c8-jb4dc     1/1     Running   0          5m38s
 ```
-
-### virtctl CLIの確認
-
-KubeVirtの仮想マシン操作には`virtctl`コマンドを使用します。
-バージョンを確認して正常にインストールされていることを確認します。
-
-```sh
-virtctl version
-
-Client Version: version.Info{GitVersion:"v1.7.1", GitCommit:"96c648f96cc18489ae1fe1685486c5f5aa681935", GitTreeState:"clean", BuildDate:"2026-02-23T16:40:28Z", GoVersion:"go1.24.9 X:nocoverageredesign", Compiler:"gc", Platform:"linux/amd64"}
-Server Version: version.Info{GitVersion:"v1.7.1", GitCommit:"96c648f96cc18489ae1fe1685486c5f5aa681935", GitTreeState:"clean", BuildDate:"2026-02-23T18:35:21Z", GoVersion:"go1.24.9 X:nocoverageredesign", Compiler:"gc", Platform:"linux/amd64"}
-```
-
 
 ## 仮想マシンの作成と管理
 
@@ -169,6 +168,13 @@ virtctl console cirros-vm
 - ユーザー: `cirros`
 - パスワード: `gocubsgo`
 
+ログイン後、仮想マシン内で以下コマンドを実行してみてください。
+
+```sh
+$ uname -o -a
+Linux cirros-vm 4.4.0-28-generic #47-Ubuntu SMP Fri Jun 24 10:09:13 UTC 2016 x86_64 GNU/Linux
+```
+
 コンソールから抜ける場合は `Ctrl + ]` を使用します。
 
 ### 仮想マシンの操作
@@ -199,7 +205,7 @@ virtctl start cirros-vm
 virtctl restart cirros-vm
 
 # VMが再起動される過程を確認
-k get vms -w
+kubectl get vms -w
 ```
 
 #### 仮想マシンの削除
@@ -224,6 +230,8 @@ kubectl apply -f manifest/fedora-vm.yaml
 virtctl start fedora-vm
 virtctl console fedora-vm
 ```
+
+※起動には5分ほど時間がかかります。
 
 ログイン情報：
 - ユーザー: `fedora`
@@ -264,6 +272,14 @@ CDI（Containerized Data Importer）はKubeVirt向けにデータのインポー
 
 ContainerDisk(前項までのやりかた)はコンテナイメージに同梱した一時的なルートディスクをそのまま使う方式で、CDI は外部ソースから永続ディスクを取り込み・複製して再利用可能なストレージとして運用しま。
 
+```sh
+export VERSION=$(basename $(curl -s -w %{redirect_url} https://github.com/kubevirt/containerized-data-importer/releases/latest))
+kubectl create -f https://github.com/kubevirt/containerized-data-importer/releases/download/$VERSION/cdi-operator.yaml
+kubectl create -f https://github.com/kubevirt/containerized-data-importer/releases/download/$VERSION/cdi-cr.yaml
+
+kubectl get cdi cdi -n cdi
+kubectl get pods -n cdi
+```
 
 永続化ストレージを使用する仮想マシンを作成します：
 
@@ -276,6 +292,7 @@ kubectl apply -f manifest/vm-with-datavolume.yaml
 ノード間での仮想マシンの移動を体験します：
 
 ```sh
+virtctl start vm-with-datavolume
 kubectl get vmi
 virtctl migrate vm-with-datavolume
 
