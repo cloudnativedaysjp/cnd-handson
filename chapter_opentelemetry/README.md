@@ -222,7 +222,7 @@ pod/log-collector-collector-gsd8a   1/1     Running   0          18h
 今回はホスト上の`/var/log/cndt-*.json`のログをまとめてくれるようになっているため、試しに下記の通り書き込んでみます。
 
 ```bash
-docker exec -it kind-worker sh -c "echo '{\"key1\": \"value1\", \"key2\": \"value2\"}' >> /tmp/cnd-1.json"
+docker exec -it kind-worker sh -c "echo '{\"key1\": \"value1\", \"key2\": \"value2\"}' >> /tmp/cndt-1.json"
 ```
 
 その後、`file` Exporterによって出力されたファイルを見てみると、確かにReceiverで受け取ったログがExporterで出力されていることが確認できます。
@@ -262,7 +262,7 @@ docker exec -it kind-worker sh -c "cat /tmp/all.json  | jq ."
                 {
                   "key": "log.file.name",
                   "value": {
-                    "stringValue": "cnd-1.json"
+                    "stringValue": "cndt-1.json"
                   }
                 },
               ],
