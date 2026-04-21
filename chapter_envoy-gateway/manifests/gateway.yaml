@@ -7,7 +7,7 @@ spec:
   gatewayClassName: eg
   listeners:
     - name: http
-      port: 8080
+      port: 8081
       protocol: HTTP
       allowedRoutes:
         namespaces:
