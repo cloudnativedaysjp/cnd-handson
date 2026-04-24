@@ -122,7 +122,7 @@ Settings - > Repositories と進み CONEECT REPOをクリックします。
 上の画面上で各項目を次のように設定
 ```
 GENERAL
-Choose your connection method: VIA HTTPS
+Choose your connection method: VIA HTTP/HTTPS
 Type: git
 Project: default
 Repository URL: https://github.com/自身のアカウント名/cnd-handson
