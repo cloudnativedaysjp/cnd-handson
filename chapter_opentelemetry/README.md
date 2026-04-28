@@ -82,7 +82,7 @@ kubectl -n monitoring get pods
 ```sh
 # 実行結果
 NAME                                      READY   STATUS    RESTARTS   AGE
-opentelemetry-operator-677b4d8655-6q5j5   2/2     Running   0          20h
+opentelemetry-operator-677b4d8655-6q5j5   1/1     Running   0          20h
 ```
 
 ## OpenTelemetryCollectorリソースによるCollectorのデプロイと管理
