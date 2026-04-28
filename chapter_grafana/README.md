@@ -308,7 +308,7 @@ kubectl -n prometheus rollout status deployment/kube-prometheus-stack-grafana
 ### Step 4: Git Syncの接続設定
 
 1. <http://grafana.example.com/admin/provisioning> にアクセス
-2. `Configure Git Sync` (または `Connect to Git`) をクリック
+2. `Configure GitHub` (または `Connect to Git`) をクリック
 3. 以下を入力
    - `GitHub access token` ... Step 2で発行したToken
    - `Repository URL` ... forkしたリポジトリのURL (例: `https://github.com/<your-username>/cnd-handson`)
