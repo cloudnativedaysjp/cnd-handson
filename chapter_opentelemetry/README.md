@@ -452,7 +452,7 @@ NAME     STATUS    VERSION   STRATEGY   STORAGE   AGE
 jaeger   Running   1.61.0    allinone   memory    11s
 ```
 
-デプロイされたJaegerのUIは、`https://jaeger.example.com/search`から確認できます。
+デプロイされたJaegerのUIは、`http://jaeger.example.com/search`から確認できます。
 
 
 今回は、`otlp` Receiverを利用し、OpenTelemetry Protocol（OTLP）を利用してトレースデータを受け取ります。そしてそのデータを`otlp` Exporterを利用してJaegerに対して保存、`debug` Exporterを利用して標準出力にもデバッグログを出力します。
