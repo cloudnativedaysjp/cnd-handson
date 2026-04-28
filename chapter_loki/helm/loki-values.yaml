@@ -11,6 +11,12 @@ loki:
         index:
           prefix: loki_index_
           period: 24h
+  storage:
+    type: filesystem
+    bucketNames:
+      chunks: chunks
+      ruler: ruler
+      admin: admin
   storage_config:
     tsdb_shipper:
       active_index_directory: /var/loki/index
