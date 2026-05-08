@@ -4,7 +4,7 @@ CloudNative Days Winter 2025 実行委員会による『一日で学ぶクラウ
 Docker、Kubernetes、Prometheus、Grafana、ArgCDなど、クラウドネイティブな環境でよく利用されるOSSを対象としたハンズオンです。このハンズオンを通して、これらのOSSについての基本的な使い方を学び、今後の学習のきっかけにしてください。
 
 ## Chapter
-準備用chapter＋全19chapterから構成されています。
+準備用chapter＋全20chapterから構成されています。
 - [chapter_setup](./chapter_setup/)
 - [chapter_cluster-create](./chapter_cluster-create/)
 - [chapter_docker](./chapter_docker/)
@@ -24,6 +24,7 @@ Docker、Kubernetes、Prometheus、Grafana、ArgCDなど、クラウドネイテ
 - [chapter_tempo](./chapter_tempo/)
 - [chapter_pyroscope](./chapter_pyroscope/)
 - [chapter_troubleshoot](./chapter_troubleshoot/)
+- [chapter_envoy-gateway](./chapter_envoy-gateway/)
 
 ### 進め方
 まずは、`chapter_setup`, `chapter_cluster-create`を実施してhandsonを進めるための環境を構築してください。<br>
@@ -50,6 +51,7 @@ flowchart TD
     pyroscope[chapter_pyroscope]
     cicd[chapter_cicd]
     troubleshoot[chapter_troubleshoot]
+    envoygateway[chapter_envoy-gateway]
 
     setup-->cluster
     cluster-->docker
@@ -75,6 +77,8 @@ flowchart TD
 
     argocd-->cicd
     argocd-->argocdimageupdater
+
+    cluster-->envoygateway
 ```
 
 ## 免責事項

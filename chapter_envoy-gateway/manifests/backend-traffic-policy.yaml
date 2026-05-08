@@ -1,0 +1,28 @@
+apiVersion: gateway.envoyproxy.io/v1alpha1
+kind: BackendTrafficPolicy
+metadata:
+  name: health-check-policy
+  namespace: envoy-gateway-handson
+spec:
+  targetRefs:
+    - group: gateway.networking.k8s.io
+      kind: HTTPRoute
+      name: app-route
+  healthCheck:
+    passive:
+      baseEjectionTime: 10s
+      interval: 2s
+      maxEjectionPercent: 100
+      consecutive5XxErrors: 3
+      consecutiveLocalOriginFailures: 3
+    active:
+      type: HTTP
+      timeout: 1s
+      interval: 3s
+      unhealthyThreshold: 3
+      healthyThreshold: 1
+      http:
+        path: /healthz
+        method: GET
+        expectedStatuses:
+          - 200
