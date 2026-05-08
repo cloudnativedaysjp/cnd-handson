@@ -19,7 +19,7 @@ docker -v
 
 ```
 # 実行結果
-Docker version 28.5.1, build e180ab8
+Docker version 29.4.0, build 9d7ad9f
 ```
 
 続いて、サンプルイメージをpullします。
@@ -63,9 +63,9 @@ docker images
 
 ```
 # 実行結果
-REPOSITORY               TAG       IMAGE ID       CREATED         SIZE
-kindest/node             <none>    9319cf209ac5   4 weeks ago     974MB
-docker/getting-started   latest    3e4394f6b72f   17 months ago   47MB
+ubuntu@handson-handson-2:~/cnd-handson/chapter_docker$ docker image ls
+IMAGE                                                                                  ID             DISK USAGE   CONTENT SIZE   EXTRA
+docker/getting-started:latest                                                          d79336f4812b       73.9MB         21.4MB    U
 ```
 
 
@@ -283,10 +283,10 @@ cd after
 docker build -t multistage:after .
 ```
 
-それぞれのサイズを比較してみましょう。1GBほど縮小されていることがわかります。
+それぞれのサイズを比較してみましょう。multistageのbeforeとafterの `DISK USAGE` が1GBほど縮小されていることがわかります。
 
 ```sh
-docker images | grep multistage
+docker images
 ```
 
 
