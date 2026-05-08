@@ -310,7 +310,7 @@ fedora-datavolume   Bound    pvc-0b4df460-d2cc-49f0-812b-3abdec197649   11381663
 
 ### ライブマイグレーション
 
-ノード間での仮想マシンの移動します。
+ノード間で仮想マシンの移動を行います。
 **本環境ではストレージの都合上、本項は実施できません。**
 ライブマイグレーションの細かい制限については[公式ドキュメント](https://kubevirt.io/user-guide/compute/live_migration/#limitations)を参照ください。
 
