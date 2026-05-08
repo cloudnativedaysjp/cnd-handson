@@ -1,0 +1,47 @@
+apiVersion: kubevirt.io/v1
+kind: VirtualMachine
+metadata:
+  name: cirros-vm
+  labels:
+    app: cirros
+spec:
+  runStrategy: Halted
+  template:
+    metadata:
+      labels:
+        kubevirt.io/vm: cirros-vm
+    spec:
+      domain:
+        devices:
+          disks:
+          - name: containerdisk
+            disk:
+              bus: virtio
+          - name: cloudinitdisk
+            disk:
+              bus: virtio
+          interfaces:
+          - name: default
+            masquerade: {}
+        resources:
+          requests:
+            memory: 256M
+            cpu: "0.5"
+      networks:
+      - name: default
+        pod: {}
+      volumes:
+      - name: containerdisk
+        containerDisk:
+          image: quay.io/kubevirt/cirros-container-disk-demo:latest
+      - name: cloudinitdisk
+        cloudInitNoCloud:
+          userData: |-
+            #cloud-config
+            ssh_pwauth: true
+            users:
+            - name: cirros
+              passwd: $6$rounds=4096$saltsaltsal$f4QXYENnO/GGYnPF9HTJqECN4T3dP2MvZFPD2VplR37FN/FJiPSBl8EfYMjh/YOvGrqHH6BNH4yLsWVf0Smo31
+              lock-passwd: false
+              sudo: ALL=(ALL) NOPASSWD:ALL
+              shell: /bin/bash
