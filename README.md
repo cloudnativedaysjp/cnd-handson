@@ -24,6 +24,7 @@ Docker、Kubernetes、Prometheus、Grafana、ArgCDなど、クラウドネイテ
 - [chapter_tempo](./chapter_tempo/)
 - [chapter_pyroscope](./chapter_pyroscope/)
 - [chapter_troubleshoot](./chapter_troubleshoot/)
+- [chapter_kubevirt](./chapter_kubevirt/)
 
 ### 進め方
 まずは、`chapter_setup`, `chapter_cluster-create`を実施してhandsonを進めるための環境を構築してください。<br>
@@ -50,6 +51,7 @@ flowchart TD
     pyroscope[chapter_pyroscope]
     cicd[chapter_cicd]
     troubleshoot[chapter_troubleshoot]
+    kubevirt[chapter_kubevirt]
 
     setup-->cluster
     cluster-->docker
@@ -57,6 +59,7 @@ flowchart TD
     k8s-->troubleshoot
     cluster-->prom
     cluster-->argocd
+    cluster-->kubevirt
 
     prom-->grafana
     prom-->argorollouts

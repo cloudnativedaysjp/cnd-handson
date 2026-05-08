@@ -364,7 +364,7 @@ kubectl apply -f manifests/ingress-nginx-servicemonitor.yaml
 <http://prometheus.example.com/graph> を開き (またはリロードして)、PromQL入力欄に ngi のように入力し、nginx のメトリクスが追加されているのを確認しましょう。
 ※ServiceMonitorをapplyしてから反映（メトリクスが追加）されるまでに数分かかります。
 
-![image](https://raw.githubusercontent.com/kubernetes/ingress-nginx/blob/main/docs/images/prometheus-dashboard1.png)
+![image](https://github.com/kubernetes/ingress-nginx/blob/main/docs/images/prometheus-dashboard1.png)
 
 ## PromQL実例集
 

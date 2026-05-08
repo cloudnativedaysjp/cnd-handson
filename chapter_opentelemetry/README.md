@@ -82,7 +82,7 @@ kubectl -n monitoring get pods
 ```sh
 # 実行結果
 NAME                                      READY   STATUS    RESTARTS   AGE
-opentelemetry-operator-677b4d8655-6q5j5   2/2     Running   0          20h
+opentelemetry-operator-677b4d8655-6q5j5   1/1     Running   0          20h
 ```
 
 ## OpenTelemetryCollectorリソースによるCollectorのデプロイと管理
@@ -222,7 +222,7 @@ pod/log-collector-collector-gsd8a   1/1     Running   0          18h
 今回はホスト上の`/var/log/cndt-*.json`のログをまとめてくれるようになっているため、試しに下記の通り書き込んでみます。
 
 ```bash
-docker exec -it kind-worker sh -c "echo '{\"key1\": \"value1\", \"key2\": \"value2\"}' >> /tmp/cnd-1.json"
+docker exec -it kind-worker sh -c "echo '{\"key1\": \"value1\", \"key2\": \"value2\"}' >> /tmp/cndt-1.json"
 ```
 
 その後、`file` Exporterによって出力されたファイルを見てみると、確かにReceiverで受け取ったログがExporterで出力されていることが確認できます。
@@ -262,7 +262,7 @@ docker exec -it kind-worker sh -c "cat /tmp/all.json  | jq ."
                 {
                   "key": "log.file.name",
                   "value": {
-                    "stringValue": "cnd-1.json"
+                    "stringValue": "cndt-1.json"
                   }
                 },
               ],
@@ -452,7 +452,7 @@ NAME     STATUS    VERSION   STRATEGY   STORAGE   AGE
 jaeger   Running   1.61.0    allinone   memory    11s
 ```
 
-デプロイされたJaegerのUIは、`https://jaeger.example.com/search`から確認できます。
+デプロイされたJaegerのUIは、`http://jaeger.example.com/search`から確認できます。
 
 
 今回は、`otlp` Receiverを利用し、OpenTelemetry Protocol（OTLP）を利用してトレースデータを受け取ります。そしてそのデータを`otlp` Exporterを利用してJaegerに対して保存、`debug` Exporterを利用して標準出力にもデバッグログを出力します。

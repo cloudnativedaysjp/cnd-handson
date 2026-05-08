@@ -16,7 +16,7 @@ spec:
     spec:
       containers:
       - name: argocdupdate
-        image: ghcr.io/nginxinc/nginx-unprivileged:1.27.0
+        image: ghcr.io/nginxinc/nginx-unprivileged:1.29.5
         imagePullPolicy: IfNotPresent
         ports:
         - containerPort: 8080

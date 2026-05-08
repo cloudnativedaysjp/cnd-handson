@@ -8,7 +8,7 @@ metadata:
     argocd-image-updater.argoproj.io/image-list: app=ghcr.io/nginxinc/nginx-unprivileged
     argocd-image-updater.argoproj.io/write-back-method: argocd
     argocd-image-updater.argoproj.io/app.update-strategy: semver
-    argocd-image-updater.argoproj.io/app.semver: ">=1.27.0 <1.28.0"
+    argocd-image-updater.argoproj.io/app.semver: ">=1.29.0 <1.30.0"
     argocd-image-updater.argoproj.io/interval: "1m"
 spec:
   project: default

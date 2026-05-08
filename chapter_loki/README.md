@@ -17,11 +17,10 @@
 LokiはPrometheusを参考に作成されたログの集約システムです。
 LokiをベースにしたLogging Stackの利用イメージは下記の図になります。
 LokiはPull型ではなくPush型を採用しており、ログを取得してLokiに送付するAgentが必要になります。
-Agentとしては、[Promtail](https://grafana.com/docs/loki/latest/send-data/promtail/)や[fluentbit](https://fluentbit.io/)、[OpenTelemetry](https://opentelemetry.io/)などがあげられます。
+Agentとしては、[Grafana Alloy](https://grafana.com/docs/alloy/latest/)や[fluentbit](https://fluentbit.io/)、[OpenTelemetry](https://opentelemetry.io/)などがあげられます。
 また、集約したログは[Grafana](https://github.com/grafana/grafana)や[LogCLI](https://grafana.com/docs/loki/latest/query/logcli/)のようなツールで参照します。
 
 ![](https://raw.githubusercontent.com/grafana/loki/v3.0.0/docs/sources/get-started/loki-overview-2.png)
-
 
 Lokiの特徴として、ログに付与されたラベルに対してのみインデックスを作成することによる、ラベルを条件にしたログ参照の高速化があげられます。
 
@@ -183,8 +182,9 @@ helmfile sync -f helm/helmfile.yaml
 ```
 
 > [!WARNING]
-> 今回、オブジェクトストレージとしてminIOを構築し利用する設定が入っています。
-> これはローカルで確認するために選定しており、推奨される設定ではないことに注意してください。
+> 今回はハンズオンの再現性を優先し、オブジェクトストレージとしてローカルファイルシステムを利用する設定にしています。
+> また、Pod再起動時のデータ消失を避けるため、`singleBinary.persistence.enabled: true` でPersistent Volumeを利用する前提です。
+> 本番環境では、AWS S3 や GCS などのマネージドオブジェクトストレージを利用してください。
 > 詳細は[supported-chunks-stores-not-typically-recommended-for-production-use](https://grafana.com/docs/loki/latest/operations/storage/)を確認してください。
 
 次にLokiを利用するGrafanaのDatasourceの設定をしましょう。

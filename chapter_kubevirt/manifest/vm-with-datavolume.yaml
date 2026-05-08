@@ -1,0 +1,75 @@
+apiVersion: kubevirt.io/v1
+kind: VirtualMachine
+metadata:
+  name: vm-with-datavolume
+  labels:
+    app: fedora-persistent
+spec:
+  dataVolumeTemplates:
+  - metadata:
+      name: fedora-datavolume
+    spec:
+      source:
+        registry:
+          url: docker://quay.io/kubevirt/fedora-cloud-container-disk-demo:latest
+      storage:
+        resources:
+          requests:
+            storage: 10Gi
+        accessModes:
+        - ReadWriteOnce
+  runStrategy: Halted
+  template:
+    metadata:
+      labels:
+        kubevirt.io/vm: vm-with-datavolume
+    spec:
+      domain:
+        devices:
+          disks:
+          - name: datavolumedisk
+            disk:
+              bus: virtio
+          - name: cloudinitdisk
+            disk:
+              bus: virtio
+          interfaces:
+          - name: default
+            masquerade: {}
+        resources:
+          requests:
+            memory: 2Gi
+            cpu: "1"
+          limits:
+            memory: 2Gi
+            cpu: "1"
+      networks:
+      - name: default
+        pod: {}
+      volumes:
+      - name: datavolumedisk
+        dataVolume:
+          name: fedora-datavolume
+      - name: cloudinitdisk
+        cloudInitNoCloud:
+          userData: |-
+            #cloud-config
+            hostname: persistent-vm
+            ssh_pwauth: true
+            disable_root: false
+            users:
+            - name: fedora
+              passwd: $6$rounds=4096$saltsaltsal$f4QXYENnO/GGYnPF9HTJqECN4T3dP2MvZFPD2VplR37FN/FJiPSBl8EfYMjh/YOvGrqHH6BNH4yLsWVf0Smo31
+              lock-passwd: false
+              sudo: ALL=(ALL) NOPASSWD:ALL
+              shell: /bin/bash
+            packages:
+            - openssh-server
+            - curl
+            - wget
+            - vim
+            - htop
+            runcmd:
+            - systemctl enable ssh
+            - systemctl start ssh
+            - echo "Welcome to persistent Fedora VM!" > /home/fedora/welcome.txt
