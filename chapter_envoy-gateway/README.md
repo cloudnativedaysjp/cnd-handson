@@ -191,7 +191,7 @@ kubectl apply -f manifests/httproute-basic.yaml
 動作確認をします。
 
 ```sh
-curl -s http://app.envoy-gateway.example.com:8080/
+curl -s http://app.envoy-gateway.example.com:8081/
 ```
 
 ```
