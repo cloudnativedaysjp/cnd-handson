@@ -48,4 +48,4 @@ CI/CDについてですが、 **CI** は、(**Continuous Integration：継続的
 
 ## CICDのCD部分の動作確認(ArgoCD Image Updater機能)
 
-[CD(Continuous Delivery)のArgoCD Image Uploaderのハンズオン手順](./chapter_argocd-image-updater/README_ArcoCD_Image_Uploader)
+[CD(Continuous Delivery)のArgoCD Image Uploaderのハンズオン手順](https://github.com/cloudnativedaysjp/cnd-handson/blob/main/chapter_argocd-image-updater/README_ArgoCD_Image_Updater.md)
