@@ -48,7 +48,7 @@ releases:
   namespace: istio-system
   createNamespace: true
   chart: kiali/kiali-server
-  version: 2.24.0
+  version: 2.27.0
   wait: true
   needs:
   - prometheus/kube-prometheus-stack
