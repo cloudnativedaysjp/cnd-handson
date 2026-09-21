@@ -7,6 +7,6 @@ releases:
   namespace: monitoring
   createNamespace: true
   chart: grafana/loki
-  version: 13.2.0
+  version: 13.7.2
   values:
   - loki-values.yaml
