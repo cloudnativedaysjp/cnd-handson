@@ -6,10 +6,10 @@ set -o errexit
 
 # Versions of the tools to install
 readonly KIND_VERSION="v0.33.0"
-readonly KUBECTL_VERSION="v1.36.4"
-readonly CILIUM_CLI_VERSION="v0.20.0"
+readonly KUBECTL_VERSION="v1.37.1"
+readonly CILIUM_CLI_VERSION="v0.20.1"
 readonly HELM_VERSION="v4.3.0"
-readonly HELMFILE_VERSION="1.8.0"
+readonly HELMFILE_VERSION="1.8.1"
 # Output colors
 readonly GREEN='\033[0;32m'
 readonly RED="\033[0;31m"
