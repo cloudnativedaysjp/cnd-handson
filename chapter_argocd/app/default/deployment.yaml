@@ -26,7 +26,7 @@ spec:
           type: RuntimeDefault
       containers:
       - image: ghcr.io/cloudnativedaysjp/cnd-handson-app/handson:legacy
-        imagePullPolicy: Always
+        imagePullPolicy: IfNotPresent
         name: handson
         ports:
         - name: http
