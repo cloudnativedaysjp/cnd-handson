@@ -41,7 +41,7 @@ Argo CDとの連携が可能で、簡単に既存のGit Opsでプログレッシ
 また、GitHubのリポジトリの登録やPushは、forkした自身のリポジトリを利用してください。
 
 ### Prometheusのセットアップ
-[chapter_prometheus](../chapter_prometheus/README.md#実践-ingress-nginx-controllerからメトリクスを収集する)を参照して、kube-prometheus-stackのインストールからNginx Ingressのメトリクスを外部公開できていることを確認まで行ってください。
+[chapter_prometheus](../chapter_prometheus/README.md#実践-gateway-apiのデータプレーンからメトリクスを収集)を参照して、kube-prometheus-stackのインストールからEnvoy Gatewayのメトリクスを収集できていることを確認まで行ってください。
 
 ### Argo CDのセットアップ
 [chapter_argocd](../chapter_argocd/README.md#argo-cdのインストール)を参照してArgo CDのインストールからWebUIの確認とレポジトリのforkから登録まで行ってください。

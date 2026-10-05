@@ -1,0 +1,3 @@
+# CRDはenvoy-gateway-crdsリリースとkubectlで別途管理する
+crds:
+  enabled: false

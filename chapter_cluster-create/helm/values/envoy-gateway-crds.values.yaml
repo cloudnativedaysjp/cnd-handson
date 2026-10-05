@@ -1,0 +1,7 @@
+crds:
+  # Gateway APIのCRDはREADMEの手順でkubectlから適用するため、ここでは入れない
+  gatewayAPI:
+    enabled: false
+  # Envoy Gateway独自のCRD(EnvoyProxyなど)のみを入れる
+  envoyGateway:
+    enabled: true

@@ -13,9 +13,9 @@ Nodeの一覧が出力されるはずです。
 
 ```Log
 NAME                 STATUS   ROLES           AGE   VERSION
-kind-control-plane   Ready    control-plane   88m   v1.34.0
-kind-worker          Ready    <none>          88m   v1.34.0
-kind-worker2         Ready    <none>          88m   v1.34.0
+kind-control-plane   Ready    control-plane   88m   v1.36.4
+kind-worker          Ready    <none>          88m   v1.36.4
+kind-worker2         Ready    <none>          88m   v1.36.4
 ```
 
 Nodeが表示されない場合は、kubeconfigが設定されていない可能性があります。
@@ -46,7 +46,7 @@ kubectl version --client
 
 ```
 # 実行結果
-Client Version: v1.34.1
+Client Version: v1.36.4
 Kustomize Version: v5.7.1
 ```
 
@@ -249,10 +249,14 @@ test-5cdf547c4f-wvzbt   1/1     Running   0          10s
 
 続いて、Podの外部公開の方法を紹介します。
 前回のセッションではPortForwardを使ってPodのアクセスを行いましたが
-本セクション以降はIngressというリソースを使って外部公開を行います。
+本セクション以降はGateway APIのHTTPRouteというリソースを使って外部公開を行います。
 
+Gateway APIは、従来Ingressリソースが担っていたL7ルーティングを、
+インフラ管理者が管理するGatewayと、アプリケーション開発者が管理するHTTPRouteに役割分担して定義するAPIです。
+Gateway自体は[chapter_cluster-create](../chapter_cluster-create/)で`gateway` Namespaceに`handson-gateway`として作成済みなので、
+ここではHTTPRouteだけを作成します。
 
-### 5.1. Service/Ingressリソースの作成
+### 5.1. Service/HTTPRouteリソースの作成
 
 では、Serviceを作成していきます。
 
@@ -292,45 +296,54 @@ kubectl get services
 test-service   ClusterIP   10.96.123.57   <none>        80/TCP    16s
 ```
 
-続いてIngressリソースを作成します。
+続いてHTTPRouteリソースを作成します。
 Serviceリソース同様、予め用意されているManifestを使用します。
 
+`parentRefs`でどのGatewayに紐付けるかを指定し、`hostnames`と`rules`でルーティング条件と転送先を指定します。
 
 ```Yaml
-apiVersion: networking.k8s.io/v1
-kind: Ingress
+apiVersion: gateway.networking.k8s.io/v1
+kind: HTTPRoute
 metadata:
-  name: test-ingress
+  name: test-httproute
 spec:
-  ingressClassName: nginx
+  parentRefs:
+  - name: handson-gateway
+    namespace: gateway
+    sectionName: http
+  hostnames:
+  - hello-world.example.com
   rules:
-  - host: hello-world.example.com
-    http:
-      paths:
-      - pathType: Prefix
-        path: "/"
-        backend:
-          service:
-            name: test-service
-            port:
-              number: 80
+  - matches:
+    - path:
+        type: PathPrefix
+        value: /
+    backendRefs:
+    - name: test-service
+      port: 80
 ```
 
 ```sh
-kubectl apply -f test-ingress.yaml 
+kubectl apply -f test-httproute.yaml 
 ```
 
-作成したIngressは以下で確認が可能です。
+作成したHTTPRouteは以下で確認が可能です。
 
 ```sh
-kubectl get ingress
+kubectl get httproute
 ```
 
 > 出力例
 
 ```Log
-NAME           CLASS   HOSTS                     ADDRESS        PORTS   AGE
-test-ingress   nginx   hello-world.example.com   10.96.42.249   80      2m6s
+NAME             HOSTNAMES                     AGE
+test-httproute   ["hello-world.example.com"]   2m6s
+```
+
+Gatewayに正しく紐付いているかどうかは、`status`の`conditions`で確認できます。
+
+```sh
+kubectl describe httproute test-httproute
 ```
 
 ### 5.2. 動作確認
@@ -345,7 +358,7 @@ Hello Worldの文字が表示されたら成功です。
 動作確認後、リソースを削除します。
 
 ```
-kubectl delete ingress test-ingress
+kubectl delete httproute test-httproute
 kubectl delete service test-service
 kubectl delete deployment test
 ```
@@ -425,43 +438,56 @@ kubectl rollout undo deployment rollout
 ```sh
 kubectl delete deployment rollout
 kubectl delete service rollout-service
-kubectl delete ingress rollout-ingress
+kubectl delete httproute rollout-httproute
 ```
 
 ### 6.2 Blue-Green Deployment
 
 
 古い環境と新しい環境を混在させ、ルーティングなどによってトラフィックを制御し、ダウンタイム無しで環境を切り替えます。
-今回はIngressのHost名によって、新旧どちらのアプリケーションにもアクセスできるような環境を用意しています。
+今回はHTTPRouteのHost名によって、新旧どちらのアプリケーションにもアクセスできるような環境を用意しています。
+HTTPRouteは1つのリソースにつき1組のルーティングルールを定義するため、Host名ごとにHTTPRouteを作成します。
 
 ```Yaml
-apiVersion: networking.k8s.io/v1
-kind: Ingress
+apiVersion: gateway.networking.k8s.io/v1
+kind: HTTPRoute
 metadata:
-  name: blue-green
+  name: blue-httproute
 spec:
-  ingressClassName: nginx
+  parentRefs:
+  - name: handson-gateway
+    namespace: gateway
+    sectionName: http
+  hostnames:
+  - blue.example.com
   rules:
-  - host: blue.example.com
-    http:
-      paths:
-      - pathType: Prefix
-        path: "/"
-        backend:
-          service:
-            name: blue-service
-            port:
-              number: 80
-  - host: green.example.com
-    http:
-      paths:
-      - pathType: Prefix
-        path: "/"
-        backend:
-          service:
-            name: green-service
-            port:
-              number: 80
+  - matches:
+    - path:
+        type: PathPrefix
+        value: /
+    backendRefs:
+    - name: blue-service
+      port: 80
+---
+apiVersion: gateway.networking.k8s.io/v1
+kind: HTTPRoute
+metadata:
+  name: green-httproute
+spec:
+  parentRefs:
+  - name: handson-gateway
+    namespace: gateway
+    sectionName: http
+  hostnames:
+  - green.example.com
+  rules:
+  - matches:
+    - path:
+        type: PathPrefix
+        value: /
+    backendRefs:
+    - name: green-service
+      port: 80
 ```
 
 まずは、対象のManifestを適用します。
@@ -470,11 +496,11 @@ spec:
 kubectl apply -f blue-green.yaml
 ```
 
-続いて、Pod,Service,Ingressがそれぞれデプロイされているか確認を行います。
+続いて、Pod,Service,HTTPRouteがそれぞれデプロイされているか確認を行います。
 
 
 ```sh
-kubectl get pods,services,ingress
+kubectl get pods,services,httproutes
 ```
 
 それぞれのリソースが正常に動作していることが確認できたら、ブラウザから以下のようにアクセスができるはずです。
@@ -492,7 +518,7 @@ kubectl delete pod blue
 kubectl delete pod green
 kubectl delete service blue-service
 kubectl delete service green-service
-kubectl delete ingress blue-green
+kubectl delete httproute blue-httproute green-httproute
 ```
 
 ## 7. データの永続化 (PVとPVC)
@@ -1622,7 +1648,7 @@ kubectl delete pod dummy-app
 kubectl delete pod mysql
 kubectl delete service cnd-web-svc
 kubectl delete service mysql-svc
-kubectl delete ingress cnd-web-ing
+kubectl delete httproute cndw-web-httproute
 kubectl delete secret app-secret
 ```
 

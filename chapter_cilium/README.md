@@ -83,8 +83,8 @@ kubectl exec -n kube-system ds/cilium -c cilium-agent -- cilium version
 下記のようにバージョンが確認できます。
 
 ```shell
-Client: 1.18.1 e8a7070f 2025-08-13T14:47:02+00:00 go version go1.24.6 linux/amd64
-Daemon: 1.18.1 e8a7070f 2025-08-13T14:47:02+00:00 go version go1.24.6 linux/amd64
+Client: 1.20.2 go version go1.25.1 linux/amd64
+Daemon: 1.20.2 go version go1.25.1 linux/amd64
 ```
 
 この章ではCiliumの機能として下記について説明します。
@@ -202,7 +202,7 @@ kubectl delete -f manifest/cnp.yaml
 
 ### Ingress
 
-CiliumはIngressリソースをサポートしており、第1章でIngress NGINX Controllerをデプロイしましたが、Ingress NGINX Controllerを使わずとも、Cilium単体でIngressリソースを利用できます。
+このハンズオンではクラスター外からのトラフィックをEnvoy GatewayのGateway APIで受けていますが、CiliumはIngressリソースもサポートしており、Cilium単体でIngressリソースを利用できます。
 Ingressリソースを利用するためには、CiliumのHelm Chartで`ingressController.enabled: true`を指定する必要があります。
 この設定はすでに[chapter_cluster-create](../chapter_cluster-create/)で行っており、現時点でIngressリソースは利用できる状態になっています。
 詳細については[Kubernetes Ingress Support](https://docs.cilium.io/en/stable/network/servicemesh/ingress/)を参照ください。
@@ -381,11 +381,11 @@ Containers:            cilium-operator    Running: 2
                        hubble-relay       Running: 1
                        cilium             Running: 3
 Cluster Pods:          21/21 managed by Cilium
-Helm chart version:    1.18.1
-Image versions         cilium             quay.io/cilium/cilium:v1.18.1@sha256:65ab17c052d8758b2ad157ce766285e04173722df59bdee1ea6d5fda7149f0e9: 3
-                       cilium-envoy       quay.io/cilium/cilium-envoy:v1.34.4-1754895458-68cffdfa568b6b226d70a7ef81fc65dda3b890bf@sha256:247e908700012f7ef56f75908f8c965215c26a27762f296068645eb55450bda2: 3
-                       cilium-operator    quay.io/cilium/operator-generic:v1.18.1@sha256:97f4553afa443465bdfbc1cc4927c93f16ac5d78e4dd2706736e7395382201bc: 2
-                       hubble-relay       quay.io/cilium/hubble-relay:v1.18.1@sha256:7e2fd4877387c7e112689db7c2b153a4d5c77d125b8d50d472dbe81fc1b139b0: 1
+Helm chart version:    1.20.2
+Image versions         cilium             quay.io/cilium/cilium:v1.20.2: 3
+                       cilium-envoy       quay.io/cilium/cilium-envoy:v1.36.3: 3
+                       cilium-operator    quay.io/cilium/operator-generic:v1.20.2: 2
+                       hubble-relay       quay.io/cilium/hubble-relay:v1.20.2: 1
                        hubble-ui          quay.io/cilium/hubble-ui-backend:v0.13.2@sha256:a034b7e98e6ea796ed26df8f4e71f83fc16465a19d166eff67a03b822c0bfa15: 1
                        hubble-ui          quay.io/cilium/hubble-ui:v0.13.2@sha256:9e37c1296b802830834cc87342a9182ccbb71ffebb711971e849221bd9d59392: 1
 ```

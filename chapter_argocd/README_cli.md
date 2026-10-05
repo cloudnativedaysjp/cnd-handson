@@ -171,9 +171,9 @@ deployment.apps/argo-cd-argocd-redis                       1/1     1            
 deployment.apps/argo-cd-argocd-repo-server                 1/1     1            1           26d
 deployment.apps/argo-cd-argocd-server                      1/1     1            1           26d
 ```
-ingressを作成し、Argo CDのWEB UIにも、アクセスできるようにします。
+HTTPRouteを作成し、Argo CDのWEB UIにも、アクセスできるようにします。
 ```
-kubectl apply -f ingress/ingress.yaml
+kubectl apply -f httproute/httproute.yaml
 ```
 
 * ユーザ名: admin
@@ -256,7 +256,7 @@ GROUP              KIND        NAMESPACE    NAME                  STATUS   HEALT
                    Namespace                argocd-demo           Running  Synced         namespace/argocd-demo created
                    Service     argocd-demo  handson               Synced   Healthy        service/handson created
 apps               Deployment  argocd-demo  handson               Synced   Healthy        deployment.apps/handson created
-networking.k8s.io  Ingress     argocd-demo  app-ingress-by-nginx  Synced   Healthy        ingress.networking.k8s.io/app-ingress-by-nginx created
+gateway.networking.k8s.io  HTTPRoute   argocd-demo  app-httproute         Synced   Healthy        httproute.gateway.networking.k8s.io/app-httproute created
 ```
 
 
@@ -303,7 +303,7 @@ Health Status:      Healthy
 GROUP              KIND        NAMESPACE    NAME                  STATUS     HEALTH   HOOK  MESSAGE
                    Service     argocd-demo  handson               Synced     Healthy        service/handson unchanged
 apps               Deployment  argocd-demo  handson               OutOfSync  Healthy        deployment.apps/handson unchanged
-networking.k8s.io  Ingress     argocd-demo  app-ingress-by-nginx  Synced     Healthy        ingress.networking.k8s.io/app-ingress-by-nginx unchanged
+gateway.networking.k8s.io  HTTPRoute   argocd-demo  app-httproute         Synced     Healthy        httproute.gateway.networking.k8s.io/app-httproute unchanged
 ```
 
 手動でSYNCするコマンドを実行してみましょう。
@@ -357,11 +357,11 @@ Health Status:      Progressing
 GROUP              KIND        NAMESPACE             NAME                  STATUS  HEALTH       HOOK  MESSAGE
                    Service     argocd-kustomize-dev  handson               Synced  Healthy            service/handson unchanged
 apps               Deployment  argocd-kustomize-dev  handson               Synced  Healthy            deployment.apps/handson unchanged
-networking.k8s.io  Ingress     argocd-kustomize-dev  app-ingress-by-nginx  Synced  Healthy            ingress.networking.k8s.io/app-ingress-by-nginx unchanged
+gateway.networking.k8s.io  HTTPRoute   argocd-kustomize-dev  app-httproute         Synced  Healthy            httproute.gateway.networking.k8s.io/app-httproute unchanged
 ```
 作成されるリソースは下記の通りです。
 ```
-kubectl get service,deployment,ingress -n argocd-kustomize-dev
+kubectl get service,deployment,httproute -n argocd-kustomize-dev
 ```
 ```
 # 実行結果例
@@ -372,7 +372,7 @@ NAME                      READY   UP-TO-DATE   AVAILABLE   AGE
 deployment.apps/handson   1/1     1            1           25m
 
 NAME                                             CLASS   HOSTS                              ADDRESS        PORTS   AGE
-ingress.networking.k8s.io/app-ingress-by-nginx   nginx   dev.kustomize.argocd.example.com   10.96.185.74   80      25m
+httproute.gateway.networking.k8s.io/app-httproute   ["dev.kustomize.argocd.example.com"]   25m
 ```
 
 本番環境のアプリを作成します。
@@ -404,11 +404,11 @@ Health Status:      Progressing
 GROUP              KIND        NAMESPACE             NAME                  STATUS  HEALTH       HOOK  MESSAGE
                    Service     argocd-kustomize-prd  handson               Synced  Healthy            service/handson unchanged
 apps               Deployment  argocd-kustomize-prd  handson               Synced  Healthy            deployment.apps/handson unchanged
-networking.k8s.io  Ingress     argocd-kustomize-prd  app-ingress-by-nginx  Synced  Healthy            ingress.networking.k8s.io/app-ingress-by-nginx unchanged
+gateway.networking.k8s.io  HTTPRoute   argocd-kustomize-prd  app-httproute         Synced  Healthy            httproute.gateway.networking.k8s.io/app-httproute unchanged
 ```
 作成されるリソースは下記の通りです。
 ```
-kubectl get service,deployment,ingress -n argocd-kustomize-prd
+kubectl get service,deployment,httproute -n argocd-kustomize-prd
 ```
 ```
 # 実行結果例
@@ -419,7 +419,7 @@ NAME                      READY   UP-TO-DATE   AVAILABLE   AGE
 deployment.apps/handson   2/2     2            2           25m
 
 NAME                                             CLASS   HOSTS                              ADDRESS        PORTS   AGE
-ingress.networking.k8s.io/app-ingress-by-nginx   nginx   prd.kustomize.argocd.example.com   10.96.185.74   80      25m
+httproute.gateway.networking.k8s.io/app-httproute   ["prd.kustomize.argocd.example.com"]   25m
 ```
 
 
@@ -462,11 +462,11 @@ GROUP              KIND        NAMESPACE    NAME                  STATUS   HEALT
                    Namespace                argocd-helm           Running  Synced             namespace/argocd-helm created
                    Service     argocd-helm  handson               Synced   Healthy            service/handson created
 apps               Deployment  argocd-helm  handson               Synced   Healthy            deployment.apps/handson created
-networking.k8s.io  Ingress     argocd-helm  app-ingress-by-nginx  Synced   Healthy            ingress.networking.k8s.io/app-ingress-by-nginx created
+gateway.networking.k8s.io  HTTPRoute   argocd-helm  app-httproute         Synced   Healthy            httproute.gateway.networking.k8s.io/app-httproute created
 ```
 作成されるリソースは下記の通りです。
 ```
-kubectl get service,deployment,ingress -n argocd-helm
+kubectl get service,deployment,httproute -n argocd-helm
 ```
 ```
 # 実行結果例
@@ -477,7 +477,7 @@ NAME                      READY   UP-TO-DATE   AVAILABLE   AGE
 deployment.apps/handson   1/1     1            1           23m
 
 NAME                                             CLASS   HOSTS                     ADDRESS        PORTS   AGE
-ingress.networking.k8s.io/app-ingress-by-nginx   nginx   helm.argocd.example.com   10.96.185.74   80      23m
+httproute.gateway.networking.k8s.io/app-httproute   ["helm.argocd.example.com"]   23m
 ```
 
 ブラウザで
