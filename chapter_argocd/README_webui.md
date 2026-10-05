@@ -131,6 +131,27 @@ CONNECTをクリックして、下記のように表示されていることを�
 ![CONNECT](./image/setup/add-repo-complete.png)
 
 
+## デモアプリのバックエンドのデプロイ
+デモアプリは、タスク管理のアプリ [cnd-handson-app](https://github.com/cloudnativedaysjp/cnd-handson-app) です。画面は 2 つの版があります。
+- legacy: 表形式の画面
+- modern: カンバンの画面
+
+画面を出すには、ログインやタスクを扱うバックエンドが要ります。バックエンドは handson namespace に 1 つだけ入れます。この章のデモアプリは、どれもこのバックエンドにつなぎます。
+
+Argo CD は Helm chart を `helm template` で描画します。chart に Secret を作らせると、同期のたびにパスワードが変わります。そのため、Secret を先に作ります。
+```
+kubectl create namespace handson
+kubectl -n handson create secret generic handson-secrets \
+  --from-literal=DB_PASSWORD="$(openssl rand -hex 16)" \
+  --from-literal=IDP_SIGNING_KEY="$(openssl genpkey -algorithm RSA -pkeyopt rsa_keygen_bits:2048 | base64 | tr -d '\n')" \
+  --from-literal=IDP_DEMO_PASSWORD=demo-password
+```
+バックエンドの Application を作ります。[cnd-handson-app](https://github.com/cloudnativedaysjp/cnd-handson-app) リポジトリにある Helm chart を同期します。
+```
+kubectl apply -f app/backend/application.yaml
+```
+Applications の画面で、handson-backend が Healthy になるまで待ちます。
+
 ## デモアプリのデプロイ
 試しにデモアプリのデプロイを行い、Argo CDの一連の操作を行います。
 
@@ -163,15 +184,15 @@ GENERAL
 ![sync](./image/demoapp/sync.png)
 ブラウザから
 http://app.argocd.example.com
-へアクセスして確認してみてください。アプリケーションが表示され青い色のタイルが出てくるのが確認できます。
+へアクセスして確認してみてください。ログイン画面が表示されます。ユーザー `demo@example.com`、パスワード `demo-password` でログインします。表形式の画面（legacy）が表示されることを確認できます。
 
 ![demo app](./image/demoapp/demo-app.png)
 
 上記の手順でGitに保存しているマニフェストを参照して、アプリケーションのデプロイを行いました。次にGitの変更にKubernetes Clusterを同期させます。
 
-app/default/deployment.yamlの編集を行います。 imageのtagをblueからgreenに変更します。
+app/default/deployment.yamlの編集を行います。 imageのtagをlegacyからmodernに変更します。
 ```
-image: argoproj/rollouts-demo:green
+image: ghcr.io/cloudnativedaysjp/cnd-handson-app/handson:modern
 ```
 差分をforkしたmainブランチ（Argo CDのappを作成する際に指定したブランチ）に取り込みます。
 ```
@@ -182,7 +203,7 @@ Argo CDはデフォルトでは3分に一回の頻度でブランチを確認し
 Gitの変更をKubernetes Clusterに反映させるためにページ上部にあるSYNCをクリックして、下記のように表示されていることを確認して下さい。
 ![blue2green](image/demoapp/blue2green-sync.png)
 http://app.argocd.example.com
-へアクセスして確認するとタイルが青から緑に変わったことが確認できます。
+へアクセスして確認すると、表形式の画面からカンバンの画面（modern）に変わったことが確認できます。ログイン画面が出たときは、同じユーザーでログインします。
 ![blue2green](image/demoapp/blue2green-demoapp.png)
 
 ## Kustomizeを使ったデプロイ
@@ -226,7 +247,7 @@ GENERAL
 ![Kustomize-prd](image/demoapp/Kustomize-sync-prd.png)
 
 
-ブラウザで各環境へアクセスして確認してみてください。タイルの色が開発環境と本番環境で違う事が確認できます。
+ブラウザで各環境へアクセスして確認してみてください。開発環境は表形式の画面（legacy）、本番環境はカンバンの画面（modern）になっていることが確認できます。
   * 開発環境: http://dev.kustomize.argocd.example.com
   * 本番環境: http://prd.kustomize.argocd.example.com
 ## Helmを使ったデプロイ
@@ -244,7 +265,7 @@ GENERAL
   SOURCE
     Repository URL: https://github.com/自身のアカウント名/cnd-handson
     Revision: main
-    Path: chapter_argocd/app/Helm/rollouts-demo
+    Path: chapter_argocd/app/Helm/handson
   DESTINATION
     Cluster URL: https://kubernetes.default.svc
     Namespace: argocd-helm
@@ -256,7 +277,7 @@ GENERAL
 ![helm-sync](./image/demoapp/helm-sync.png)
 ブラウザで
 http://helm.argocd.example.com
-アクセスして確認してみてください。Helmを使ってデプロイが出来ている事が確認できます。
+アクセスして確認してみてください。Helmを使ってデプロイが出来ている事が確認できます。表形式の画面（legacy）が表示されます。
 
 ## 作成したリソースの削除　（chapter_cicdを実施する場合には、削除せずSkipしてください）
 各アプリのDELETEをクリックします
@@ -272,12 +293,12 @@ Applications画面の場合は、一番右下の端に、
 削除する際にアプリケーション名の入力があるので入力してOKをクリックします。
 ![delete](image/demoapp/Delete-3.png)
 
-全てのアプリケーションを削除して、初めてアクセスした画面と同じようにして下さい。
+handson-backend も含めて全てのアプリケーションを削除して、初めてアクセスした画面と同じようにして下さい。
 ![aplication](image/setup/access-webui.png)
 
 作成したnamespaceの削除を行います。
 ```
-kubectl delete namespace argocd-demo argocd-kustomize-dev argocd-kustomize-prd argocd-helm
+kubectl delete namespace argocd-demo argocd-kustomize-dev argocd-kustomize-prd argocd-helm handson
 ```
 
 最後に、argocd自体も削除します。

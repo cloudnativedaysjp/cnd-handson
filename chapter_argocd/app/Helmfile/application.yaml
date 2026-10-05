@@ -10,7 +10,7 @@ spec:
   project: default
   source:
     repoURL: https://github.com/cloudnativedaysjp/cnd-handson.git
-    targetRevision: upgrade/argocd
+    targetRevision: HEAD
     path: chapter_argocd/app/Helmfile/helm
   syncPolicy:
     syncOptions:

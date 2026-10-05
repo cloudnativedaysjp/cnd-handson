@@ -1,0 +1,14 @@
+replicaCount: 1
+
+image:
+  repository: ghcr.io/cloudnativedaysjp/cnd-handson-app/handson
+  # legacy（表形式の画面）か modern（カンバンの画面）
+  tag: legacy
+  pullPolicy: Always
+
+# handson namespace に入れたバックエンドの namespace
+backendNamespace: handson
+
+ingress:
+  className: nginx
+  host: helm.argocd.example.com

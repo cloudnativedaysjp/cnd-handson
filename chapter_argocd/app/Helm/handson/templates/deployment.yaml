@@ -1,3 +1,4 @@
+{{- $ns := .Values.backendNamespace }}
 apiVersion: apps/v1
 kind: Deployment
 metadata:
@@ -5,16 +6,11 @@ metadata:
     app: handson
   name: handson
 spec:
-  replicas: 1
+  replicas: {{ .Values.replicaCount }}
   revisionHistoryLimit: 1
   selector:
     matchLabels:
       app: handson
-  strategy:
-    rollingUpdate:
-      maxSurge: 2
-      maxUnavailable: 1
-    type: RollingUpdate
   template:
     metadata:
       labels:
@@ -25,29 +21,28 @@ spec:
         seccompProfile:
           type: RuntimeDefault
       containers:
-      - image: ghcr.io/cloudnativedaysjp/cnd-handson-app/handson:legacy
-        imagePullPolicy: Always
+      - image: {{ .Values.image.repository }}:{{ .Values.image.tag }}
+        imagePullPolicy: {{ .Values.image.pullPolicy }}
         name: handson
         ports:
         - name: http
           containerPort: 8080
           protocol: TCP
-        # handson namespace に入れたバックエンドにつなぐ
         env:
         - name: IDP_ADDR
-          value: handson-idp.handson:50051
+          value: handson-idp.{{ $ns }}:50051
         - name: IDP_JWKS_URL
-          value: http://handson-idp.handson:8080/.well-known/jwks.json
+          value: http://handson-idp.{{ $ns }}:8080/.well-known/jwks.json
         - name: IDP_ISS
           value: http://handson-idp:8080
         - name: IDP_AUD
           value: handson
         - name: PROJECT_ADDR
-          value: handson-project.handson:50051
+          value: handson-project.{{ $ns }}:50051
         - name: TASK_ADDR
-          value: handson-task.handson:50051
+          value: handson-task.{{ $ns }}:50051
         - name: COLUMN_ADDR
-          value: handson-column.handson:50051
+          value: handson-column.{{ $ns }}:50051
         readinessProbe:
           httpGet:
             path: /healthz

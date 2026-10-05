@@ -1,0 +1,24 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: handson-backend
+  namespace: argo-cd
+spec:
+  project: default
+  source:
+    repoURL: https://github.com/cloudnativedaysjp/cnd-handson-app
+    targetRevision: main
+    path: deploy/helm/handson
+    helm:
+      valuesObject:
+        # Argo CD は helm template で描画するため、chart が Secret を生成すると同期のたびに値が変わる
+        secret:
+          create: false
+        # 入口は各デモアプリが入れる
+        entry:
+          variants: null
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: handson
+  syncPolicy:
+    automated: {}
