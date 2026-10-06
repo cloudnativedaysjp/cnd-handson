@@ -140,8 +140,22 @@ Gateway APIはKubernetes本体には含まれておらず、CRDとして追加�
 Envoy Gateway v1.9が対応しているGateway APIはv1.6.1です。
 
 ```shell
-kubectl apply --server-side -f https://github.com/kubernetes-sigs/gateway-api/releases/download/v1.6.1/standard-install.yaml
 kubectl apply --server-side -f https://github.com/kubernetes-sigs/gateway-api/releases/download/v1.6.1/experimental-install.yaml
+```
+
+> [!NOTE]
+>
+> experimental-install.yamlはstandard-install.yamlの内容をすべて含んでいます。
+> standard-install.yamlを適用した後にexperimental-install.yamlを適用すると、
+> standard-install.yamlに含まれるValidatingAdmissionPolicy（`safe-upgrades.gateway.networking.k8s.io`）によって拒否されるため、
+> experimental-install.yamlのみを適用します。
+
+続いて、Envoy Gateway独自のCRD（EnvoyProxyなど）をデプロイします。
+これらのCRDはサイズが大きく、Helmのリリースとしてインストールするとリリース情報を保存するSecretの上限（1MiB）を超えてしまうため、
+`helm template`でレンダリングした結果を`kubectl apply --server-side`で適用します。
+
+```shell
+helm template envoy-gateway-crds oci://docker.io/envoyproxy/gateway-crds-helm --version v1.9.1 -f helm/values/envoy-gateway-crds.values.yaml | kubectl apply --server-side -f -
 ```
 
 CiliumとEnvoy Gatewayはhelmfileコマンドを利用することでデプロイできます。

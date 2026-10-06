@@ -9,16 +9,6 @@ releases:
   version: 1.20.2
   values:
   - values/cilium.values.yaml
-- name: envoy-gateway-crds
-  namespace: envoy-gateway-system
-  createNamespace: true
-  chart: oci://docker.io/envoyproxy/gateway-crds-helm
-  version: v1.9.1
-  values:
-  - values/envoy-gateway-crds.values.yaml
-  # CNIが動いていないとEnvoy GatewayのPodが起動できないため、Ciliumの後にデプロイする
-  needs:
-  - kube-system/cilium
 - name: envoy-gateway
   namespace: envoy-gateway-system
   createNamespace: true
@@ -26,5 +16,6 @@ releases:
   version: v1.9.1
   values:
   - values/envoy-gateway.values.yaml
+  # CNIが動いていないとEnvoy GatewayのPodが起動できないため、Ciliumの後にデプロイする
   needs:
-  - envoy-gateway-system/envoy-gateway-crds
+  - kube-system/cilium

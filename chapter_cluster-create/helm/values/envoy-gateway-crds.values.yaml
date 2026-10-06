@@ -1,3 +1,4 @@
+# helm templateでレンダリングしてkubectlで適用する（READMEを参照）
 crds:
   # Gateway APIのCRDはREADMEの手順でkubectlから適用するため、ここでは入れない
   gatewayAPI:
