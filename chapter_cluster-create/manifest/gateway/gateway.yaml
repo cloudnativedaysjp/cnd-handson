@@ -21,6 +21,10 @@ spec:
         replicas: 1
       envoyService:
         type: NodePort
+        # デフォルトはLocalで、EnvoyのPodが動いていないノードではNodePortへの通信が破棄される。
+        # extraPortMappingsで公開しているのはcontrol-planeノードだけなので、
+        # どのノードで受けてもEnvoyのPodへ転送されるようにClusterにする。
+        externalTrafficPolicy: Cluster
         patch:
           type: StrategicMerge
           value:

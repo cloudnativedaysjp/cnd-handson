@@ -60,16 +60,16 @@ Grafanaでは手作業でDashboardを作成する以外に、
 <https://grafana.com/docs/grafana/latest/dashboards/manage-dashboards/#import-a-dashboard>
 
 実際にハンズオンでインストールするツールに関するDashboardをインポートしてみましょう。
-以下のようなDashboardがありますが、ここではEnvoy GatewayのDashboardを導入してみます。
+以下のようなDashboardがありますが、ここではIngress NGINX ControllerのDashboardを導入してみます。
 
-- <https://github.com/envoyproxy/gateway/tree/main/charts/gateway-addons-helm/dashboards>
+- <https://github.com/kubernetes/ingress-nginx/tree/main/deploy/grafana/dashboards>
 - <https://grafana.com/grafana/dashboards/7645-istio-control-plane-dashboard/>
 - <https://grafana.com/grafana/dashboards/14584-argocd/>
 - <https://grafana.com/grafana/dashboards/16611-cilium-metrics/>
 - <https://grafana.com/grafana/dashboards/13539-hubble/>
 
 まずは <http://grafana.example.com/dashboards> にアクセスし、 `New` ボタンのプルダウンメニューから `New folder` をクリックし、
-`envoy-gateway` というフォルダ名で作成します。
+`ingress-nginx` というフォルダ名で作成します。
 
 ![image](./image/dashboards.png)
 
@@ -78,9 +78,9 @@ Grafanaでは手作業でDashboardを作成する以外に、
 ![image](./image/dashboard-ingress-nginx.png)
 
 その後Dashboardのインポート形式を選択してインポートしますが、
-Envoy Gatewayはgrafana.comではなくGitHubでダッシュボードを公開しているので、JSONファイル形式で行います。
+Ingress NGINX Controllerはgrafana.comではなくGitHubでダッシュボードを公開しているので、JSONファイル形式で行います。
 
-<https://github.com/envoyproxy/gateway/blob/main/charts/gateway-addons-helm/dashboards/envoy-proxy-global.json> を手元にダウンロードしておきます。
+<https://github.com/kubernetes/ingress-nginx/blob/main/deploy/grafana/dashboards/nginx.json> を手元にダウンロードしておきます。
 
 ![image](./image/download-nginx-dashboard.png)
 
@@ -89,20 +89,15 @@ Grafana画面で `Upload dashboard JSON file` ボタンをクリックして、
 
 最後に、以下のような画面に遷移するので、次のように設定し、 `Import` をクリックします。
 
-- `Name` ... `Envoy Proxy Global`
-- `Folder` ... `envoy-gateway`
+- `Name` ... `NGINX Ingress controller`
+- `Folder` ... `ingress-nginx`
 - `Prometheus Datasource` ... `Prometheus`
 
 ![image](./image/import-dashboard.png)
 
-インポートに成功すると、Gatewayを通過したリクエスト数やレスポンスタイムのダッシュボードが表示されるはずです。
+インポートに成功すると、以下のようなダッシュボードが表示されるはずです。
 
 ![image](./image/ingress-nginx.png)
-
-> [!NOTE]
->
-> このDashboardは[chapter_prometheus](../chapter_prometheus/README.md#実践-gateway-apiのデータプレーンからメトリクスを収集)で
-> PodMonitorを適用してEnvoyのメトリクスを収集していることが前提です。
 
 ## Datasourceについて
 
@@ -193,8 +188,8 @@ Contact Pointを追加しただけでは新規にアラートを追加しても�
 ![image](./image/add-alert-rule-1.png)
 
 2. Define query and alert condition
-  - `Metric` ... `envoy_http_downstream_rq_total`
-  - `Label filter` ... `namespace = envoy-gateway-system`
+  - `Metric` ... `nginx_ingress_controller_requests`
+  - `Label filter` ... `host = app.example.com`
   - `Operation` ... 以下を順に設定
     - `Range Functions > Avg over time` をクリックし、 `Range` を `1m` に設定
     - `Binary Operations > Less than` をクリックし、 `Value` を `10` に設定
@@ -203,7 +198,7 @@ Contact Pointを追加しただけでは新規にアラートを追加しても�
 ![image](./image/add-alert-rule-2.png)
 
 3. Add folder and labels
-  - `Folder` ... `envoy-gateway` に設定
+  - `Folder` ... `ingress-nginx` に設定
   - `Add labels`をクリックし、`Labels` ... `alert-route = slack` を設定。`Save`で保存
 
 ![image](./image/add-alert-rule-3.png)
@@ -221,12 +216,12 @@ Contact Pointを追加しただけでは新規にアラートを追加しても�
 ![image](./image/add-alert-rule-5.png)
 
 6. Configure notification message
-  - `Summary` ... `Gateway has not received requests over 10 times`
-  - `Description` ... `Envoy Gateway on {{ $labels.pod }} has not received 10 requests`
+  - `Summary` ... `app.example.com has not received requests over 10 times`
+  - `Description` ... `app.example.com has not received {{ $labels.method }} requests 10 times`
 
 ![image](./image/add-alert-rule-6.png)
 
-このアラートは、1分間隔で取得した、Gatewayが受け取ったリクエスト数が10以上でなければアラートを発報するというルールになっています。
+このアラートは、1分間隔で取得した、 `app.example.com` に対するリクエスト数が10以上でなければアラートを発報するというルールになっています。
 5分程度経過すると、無事にアラートが発報されると思います。
 
 > [!TIP]

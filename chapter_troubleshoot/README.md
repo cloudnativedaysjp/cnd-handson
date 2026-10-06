@@ -30,7 +30,7 @@ kubectl create namespace troubleshoot
 2. **シナリオ2** - Podが何度も再起動を繰り返す
 3. **シナリオ3** - コンテナイメージが取得できない
 4. **シナリオ4** - PodがPendingのまま起動しない
-5. **シナリオ5** - HTTPRouteでエラーが発生する
+5. **シナリオ5** - Ingressで503エラーが発生する
 6. **シナリオ6** - 総合問題
 
 > [!NOTE]
@@ -45,7 +45,7 @@ kubectl create namespace troubleshoot
 - [シナリオ2: Podが何度も再起動を繰り返す](#シナリオ2-podが何度も再起動を繰り返す)
 - [シナリオ3: コンテナイメージが取得できない](#シナリオ3-コンテナイメージが取得できない)
 - [シナリオ4: PodがPendingのまま起動しない](#シナリオ4-podがpendingのまま起動しない)
-- [シナリオ5: HTTPRouteでエラーが発生する](#シナリオ5-httprouteでエラーが発生する)
+- [シナリオ5: Ingressで503エラーが発生する](#シナリオ5-ingressで503エラーが発生する)
 - [シナリオ6: 総合問題](#シナリオ6-総合問題)
 
 ---
@@ -366,7 +366,7 @@ kubectl get events -n troubleshoot --sort-by='.lastTimestamp'
 
 ---
 
-## シナリオ5: HTTPRouteでエラーが発生する
+## シナリオ5: Ingressで503エラーが発生する
 
 ### 環境構築
 
@@ -374,22 +374,24 @@ kubectl get events -n troubleshoot --sort-by='.lastTimestamp'
 
 マニフェストを適用
 ```bash
-kubectl apply -f manifests/05-httproute.yaml
+kubectl apply -f manifests/05-ingress.yaml
 ```
 
 ### 症状
 
-- `curl`やブラウザでアクセスすると、500エラーが返ってくる
-- HTTPRouteの`status`を確認すると、バックエンドのServiceを参照できていないことを示す条件が出力される
+- `curl`やブラウザでIngressにアクセスすると、503 Service Temporarily Unavailableエラーが返ってくる
+- Ingress Controllerのログに、バックエンドのServiceが見つからないというエラーが出力される
 
 ### 正解の状態
 
 以下の状態になれば正解です:
 
 ```bash
-# HTTPRouteのReferenceGrantによるバックエンド参照が解決できている
-kubectl get httproute httproute -n troubleshoot -o jsonpath='{.status.parents[0].conditions}' | jq
-# ... "type": "ResolvedRefs", "status": "True" ...
+# troubleshoot namespaceにExternalName Serviceが作成されている
+kubectl get svc -n troubleshoot
+# NAME           TYPE           EXTERNAL-NAME                                 PORT(S)
+# frontend-app   ExternalName   app-frontend.frontend.svc.cluster.local       80/TCP
+# backend-app    ExternalName   app-backend.backend.svc.cluster.local         8080/TCP
 
 # curlでアクセスできる
 curl http://troubleshoot.example.com/
@@ -403,27 +405,24 @@ curl http://troubleshoot.example.com/api
 <summary>デバッグ方法(参考)</summary>
 
 ```bash
-# HTTPRouteの状態を確認
-kubectl get httproute -n troubleshoot
+# Ingressの状態を確認
+kubectl get ingress -n troubleshoot
 
-# HTTPRouteの詳細(statusのconditions)を確認
-kubectl describe httproute httproute -n troubleshoot
+# Ingressの詳細を確認
+kubectl describe ingress ingress -n troubleshoot
 
-# HTTPRouteのバックエンドを確認
-kubectl get httproute httproute -n troubleshoot -o yaml
+# Ingressのバックエンドを確認
+kubectl get ingress ingress -n troubleshoot -o yaml
 
 # 各namespaceのServiceを確認
 kubectl get svc -n frontend
 kubectl get svc -n backend
 
-# ReferenceGrantが存在するか確認
-kubectl get referencegrant -A
-
 # イベントを確認
 kubectl get events -n troubleshoot --sort-by='.lastTimestamp'
 
-# Gatewayのデータプレーン(Envoy)のログを確認
-# kubectl logs -n envoy-gateway-system -l app.kubernetes.io/name=envoy --tail=50
+# Ingress Nginx Controllerのログを確認 (Ingress ControllerのPod名を適宜変更)
+# kubectl logs $(kubectl get pods -n ingress-nginx -l app.kubernetes.io/component=controller -o jsonpath='{.items[0].metadata.name}') -n ingress-nginx | grep troubleshoot
 
 # curlで疎通確認
 curl -H "Host: troubleshoot.example.com" http://troubleshoot.example.com/
@@ -436,7 +435,7 @@ curl -H "Host: troubleshoot.example.com" http://troubleshoot.example.com/api
 以下のコマンドで、作成したリソースを削除します。
 
 ```bash
-kubectl delete -f manifests/05-httproute.yaml
+kubectl delete -f manifests/05-ingress.yaml
 ```
 
 ---

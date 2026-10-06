@@ -104,10 +104,10 @@ pyroscope-store-gateway-1                    1/1     Running   0          27m
 
 
 ## Pyroscopeフロントエンドへのアクセス
-Pyoscopeの画面にアクセスします。pyroscopeの画面を参照するために、HTTPRouteリソースを追加します。
+Pyoscopeの画面にアクセスします。pyroscopeの画面を参照するために、ingressリソースを追加します。
 
 ```bash
-kubectl apply -f httproute.yaml
+kubectl apply -f ingress.yaml
 ```
 
 [http://pyroscope.example.com](http://pyroscope.example.com)にアクセスしましょう。すでにPyroscope自身のプロファイルが確認できます。
@@ -199,18 +199,20 @@ releases:
 helmfile sync -f helm/helmfile.yaml
 ```
 
-3) HTTPRoute のバックエンドServiceを `pyroscope` に戻します（`httproute.yaml`）。
-```httproute.yaml
+3) Ingress のバックエンドServiceを `pyroscope` に戻します（`ingress.yaml`）。
+```ingress.yaml
   rules:
-  - matches:
-    - path:
-        type: PathPrefix
-        value: /
-    backendRefs:
-    # マイクロサービスモードではpyroscope-query-frontend、
-    # モノリシックモードではpyroscopeを指定する
-    - name: pyroscope
-      port: 4040
+  - host: pyroscope.example.com
+    http:
+      paths:
+      - path: /
+        pathType: Prefix
+        backend:
+          service:
+            # name: pyroscope-query-frontend # マイクロサービスモードで指定するservice名
+            name: pyroscope # モノリシックモードの場合はこちらに変更
+            port:
+              number: 4040
 ```
 
 4) Pod例（モノリシック）：

@@ -408,7 +408,6 @@ kubectl logs -l app.kubernetes.io/name=metrics-collector-collector -f
 TraceをOpenTelemetryで管理するハンズオンを進める前に、TraceバックエンドであるJaegerをインストールします。
 Jaeger Operator自体はすでにインストールしているため、`Jaeger`リソースを利用してデプロイします。
 今回は簡略化のために、永続化はしない設定を利用します。
-また、Jaeger OperatorはGateway APIに対応していないため、Jaeger UIの外部公開はHTTPRouteを別途作成して行います。
 
 ```yaml
 apiVersion: jaegertracing.io/v1
@@ -426,27 +425,13 @@ spec:
     options:
       memory:
         max-traces: 100000
----
-apiVersion: gateway.networking.k8s.io/v1
-kind: HTTPRoute
-metadata:
-  name: jaeger-httproute
-  namespace: jaeger
-spec:
-  parentRefs:
-  - name: handson-gateway
-    namespace: gateway
-    sectionName: http
-  hostnames:
-  - jaeger.example.com
-  rules:
-  - matches:
-    - path:
-        type: PathPrefix
-        value: /
-    backendRefs:
-    - name: jaeger-query
-      port: 16686
+  ingress:
+    enabled: true
+    hosts:
+    - jaeger.example.com
+    ingressClassName: nginx
+    annotations:
+      nginx.ingress.kubernetes.io/ssl-redirect: "false"
 ```
 
 実際にJaegerをデプロイします。

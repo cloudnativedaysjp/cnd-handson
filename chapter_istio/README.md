@@ -170,20 +170,20 @@ virtualservice.networking.istio.io/simple-routing   ["handson"]   ["app.example.
 ![image](./image/app-simple-routing.png)
 
 ### メッシュの可視化
-Kialiを用いてIstioサービスメッシュ内のトラフィックを見てみましょう。Kialiは[インストール](#インストール)でインストール済みなので、外部(インターネット)からアクセスできるようにするためにHTTPRouteリソースを作成します。
+Kialiを用いてIstioサービスメッシュ内のトラフィックを見てみましょう。Kialiは[インストール](#インストール)でインストール済みなので、外部(インターネット)からアクセスできるようにするためにIngressリソースを作成します。
 
 ```sh
-kubectl apply -f networking/kiali-httproute.yaml
+kubectl apply -f ingress/kiali-ingress.yaml
 ```
 
-しばらくすると、HTTPRouteがGatewayに紐付きます。
+しばらくすると、ingressリソースにIPが付与されます。
 ```sh
-kubectl get httproutes -n istio-system
+kubectl get ingresses -n istio-system -l app=kiali
 ```
 ```sh
 # 実行結果
-NAME              HOSTNAMES               AGE
-kiali-httproute   ["kiali.example.com"]   2m5s
+NAME             CLASS   HOSTS               ADDRESS        PORTS   AGE
+kiali-by-nginx   nginx   kiali.example.com   10.96.88.164   80      2m5s
 ```
 
 ブラウザから<http://kiali.example.com>にアクセスをしてKialiダッシュボードが表示されることを確認してください。

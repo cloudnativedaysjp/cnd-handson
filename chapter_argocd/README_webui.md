@@ -100,9 +100,9 @@ deployment.apps/argo-cd-argocd-redis                       1/1     1            
 deployment.apps/argo-cd-argocd-repo-server                 1/1     1            1           26d
 deployment.apps/argo-cd-argocd-server                      1/1     1            1           26d
 ```
-HTTPRouteを作成し、Argo CDのWEB UIにアクセス出来るようにします。
+ingressを作成し、Argo CDのWEB UIにアクセス出来るようにします。
 ```
-kubectl apply -f httproute/httproute.yaml
+kubectl apply -f ingress/ingress.yaml
 ```
 http://argocd.example.com
 へアクセスします。下記のページにアクセス出来るか確認して下さい。

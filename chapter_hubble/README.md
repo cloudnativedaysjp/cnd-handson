@@ -149,14 +149,14 @@ hubble observe flows
 
 Hubble UIからHubble Relayにアクセスし、Hubble Serverの情報を取得します。
 
-Hubble UIへアクセスするために、HTTPRouteリソースを作成します。
+Hubble UIへアクセスするために、Ingressリソースを作成します。
 
 ```shell
-kubectl apply -f manifest/httproute.yaml
+kubectl apply -f manifest/ingress.yaml
 ```
 
-ブラウザで`hubble.cilium.example.com`にアクセスしkube-systemのnamespaceを確認すると、下記のような画面が出力されます。
-これより、インターネット側からGatewayのデータプレーンであるEnvoyにアクセスがあり、その後hubble-uiの8081ポートにアクセスしていることが分かります。
+ブラウザで`hubble.cilium.example.com:8080`にアクセスしkube-systemのnamespaceを確認すると、下記のような画面が出力されます。
+これより、インターネット側からingress-nginxの80ポートにアクセスがあり、その後hubble-uiの8081ポートにアクセスしていることが分かります。
 
 ![](./image/ch05_hubble-ui_01.png)
 

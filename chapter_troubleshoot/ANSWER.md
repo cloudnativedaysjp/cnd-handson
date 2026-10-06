@@ -222,75 +222,62 @@ kubectl taint nodes <node-name> workload=batch:NoSchedule-
 
 ---
 
-## HTTPRouteでエラーが発生する
+## Ingressで503エラーが発生する
 
 <details>
 <summary>解説を見る</summary>
 
 ### 原因
-Gateway APIでは、HTTPRouteが別のnamespaceのServiceを`backendRefs`に指定することができますが、
-参照される側のnamespaceに`ReferenceGrant`が存在しない限り、その参照は許可されません。
-これは、あるnamespaceの管理者が知らないうちに別namespaceからServiceを参照されることを防ぐための仕組みです。
+Kubernetesでは、Ingressは同じnamespace内のServiceしか直接参照できません。異なるnamespaceのServiceを参照しようとすると、Serviceが見つからずエラーになります。
 
 今回の構成では:
-- `troubleshoot` namespaceにHTTPRouteがある
-- HTTPRouteから`frontend`/`backend` namespaceのServiceを参照しようとしている
-- しかし、`frontend`/`backend` namespaceに`ReferenceGrant`が存在しない
-- そのため、HTTPRouteの`status`に`ResolvedRefs: False`（`reason: RefNotPermitted`）が記録され、
-  該当ルートへのアクセスは500エラーになる
+- `troubleshoot` namespaceにIngressがある
+- Ingressから`frontend-app`と`backend-app`というServiceを参照しようとしている
+- しかし、実際のServiceは`frontend`と`backend` namespaceに`app`という名前で存在している
+- そのため、Ingressが参照しようとするServiceが見つからず、503エラーが発生する
 
 ### 解決策
-参照される側のnamespaceに`ReferenceGrant`を作成し、`troubleshoot` namespaceのHTTPRouteから
-Serviceを参照することを明示的に許可します。
+ExternalName Serviceを使用して、異なるnamespaceのServiceを参照できるようにします。
 
 **手順**:
-1. `frontend`と`backend` namespaceに、`troubleshoot` namespaceのHTTPRouteからのService参照を許可する`ReferenceGrant`を作成
-2. HTTPRouteの`backendRefs`はそのまま、別namespaceのServiceを直接参照する
+1. `troubleshoot` namespace内に、`frontend`と`backend` namespaceのServiceを指すExternalName Serviceを作成
+2. Ingressからは`troubleshoot` namespace内のExternalName Serviceを参照
 
 **修正内容**:
 ```yaml
-# 参照される側のnamespaceにReferenceGrantを作成
+# troubleshootネームスペース内にExternalName Serviceを作成
 ---
-apiVersion: gateway.networking.k8s.io/v1beta1
-kind: ReferenceGrant
+apiVersion: v1
+kind: Service
 metadata:
-  name: allow-troubleshoot-httproute
-  namespace: frontend
+  name: frontend-app
+  namespace: troubleshoot
 spec:
-  from:
-  - group: gateway.networking.k8s.io
-    kind: HTTPRoute
-    namespace: troubleshoot
-  to:
-  - group: ""
-    kind: Service
+  type: ExternalName
+  externalName: app-frontend.frontend.svc.cluster.local
+  ports:
+  - port: 80
 ---
-apiVersion: gateway.networking.k8s.io/v1beta1
-kind: ReferenceGrant
+apiVersion: v1
+kind: Service
 metadata:
-  name: allow-troubleshoot-httproute
-  namespace: backend
+  name: backend-app
+  namespace: troubleshoot
 spec:
-  from:
-  - group: gateway.networking.k8s.io
-    kind: HTTPRoute
-    namespace: troubleshoot
-  to:
-  - group: ""
-    kind: Service
+  type: ExternalName
+  externalName: app-backend.backend.svc.cluster.local
+  ports:
+  - port: 8080
 ```
 
 **確認方法**:
 ```bash
 # マニフェストを適用
-kubectl apply -f manifests/05-httproute.yaml
+kubectl apply -f manifests/05-ingress.yaml
 
-# HTTPRouteの状態を確認（RefNotPermittedが発生するはず）
-kubectl get httproute -n troubleshoot
-kubectl describe httproute httproute -n troubleshoot
-
-# ReferenceGrantが存在しないことを確認
-kubectl get referencegrant -A
+# Ingressの状態を確認（ServiceNotFoundエラーが発生するはず）
+kubectl get ingress -n troubleshoot
+kubectl describe ingress ingress -n troubleshoot
 
 # 各namespaceのServiceを確認
 kubectl get svc -n troubleshoot
@@ -298,19 +285,19 @@ kubectl get svc -n frontend
 kubectl get svc -n backend
 
 # マニフェストを修正して再適用
-# 修正内容: frontend/backendネームスペースにReferenceGrantを追加
+# 修正内容: troubleshootネームスペース内にExternalName Serviceを追加
 # 詳細は上記の「修正内容」セクションを参照
-kubectl apply -f manifests/05-httproute.yaml
+kubectl apply -f manifests/05-ingress.yaml
 
-# HTTPRouteが正しく動作しているか確認（ResolvedRefsがTrueになる）
-kubectl get httproute httproute -n troubleshoot -o jsonpath='{.status.parents[0].conditions}' | jq
+# Ingressが正しく動作しているか確認
+kubectl get ingress -n troubleshoot
 
 # curlで疎通確認
-curl http://troubleshoot.example.com/
-curl http://troubleshoot.example.com/api
+curl -H "Host: troubleshoot.example.com" http://<ingress-ip>/
+curl -H "Host: troubleshoot.example.com" http://<ingress-ip>/api
 
-# クリーンアップとして、作成したReferenceGrantを削除
-kubectl delete referencegrant allow-troubleshoot-httproute -n frontend
-kubectl delete referencegrant allow-troubleshoot-httproute -n backend
+# クリーンアップとして、troubleshootネームスペース内のExternalName Serviceを削除
+kubectl delete svc frontend-app -n troubleshoot
+kubectl delete svc backend-app -n troubleshoot
 ```
 </details>

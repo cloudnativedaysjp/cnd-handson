@@ -237,6 +237,9 @@ To further debug and diagnose cluster problems, use 'kubectl cluster-info dump'.
 EXTERNAL-IPが割り当てられないためです。
 `kind-config.yaml`でホストの80番ポートをControl Planeの30080番ポートにマッピングしているので、
 これでブラウザからGatewayへ到達できるようになります。
+なお、Envoy GatewayはServiceの`externalTrafficPolicy`をデフォルトで`Local`にするため、
+EnvoyのPodがControl Plane以外のノードで動いていると通信が破棄されてしまいます。
+そのため、`EnvoyProxy`で`externalTrafficPolicy: Cluster`を指定しています。
 
 ```shell
 kubectl apply -f manifest/gateway/gateway.yaml
