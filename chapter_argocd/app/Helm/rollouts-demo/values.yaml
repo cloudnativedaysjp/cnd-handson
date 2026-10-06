@@ -53,20 +53,19 @@ service:
   type: ClusterIP
   port: 80
 
-ingress:
-  name: app-ingress-by-nginx
-  enabled: false
-  className: nginx
-  sslredirect: "false"
-    # kubernetes.io/ingress.class: nginx
-    # kubernetes.io/tls-acme: "true"
+httpRoute:
+  name: app-httproute
+  parentRef:
+    name: handson-gateway
+    namespace: gateway
+    sectionName: http
   host: "helm.argocd.example.com"
   path: /
-  pathType: Prefix
+  pathType: PathPrefix
   backend:
     service:
       port:
-        name: http
+        number: 80
 
 
 

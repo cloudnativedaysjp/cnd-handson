@@ -1,0 +1,3 @@
+# CRDはREADMEの手順でkubectlから別途適用する
+crds:
+  enabled: false
