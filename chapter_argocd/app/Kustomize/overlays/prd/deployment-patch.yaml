@@ -9,7 +9,5 @@ spec:
   template:
     spec:
       containers:
-      - image: argoproj/rollouts-demo:green
-        imagePullPolicy: IfNotPresent
+      - image: ghcr.io/cloudnativedaysjp/cnd-handson-app/handson:modern
         name: handson
-  

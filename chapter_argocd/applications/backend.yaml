@@ -1,0 +1,27 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: handson-backend
+  namespace: argo-cd
+  finalizers:
+  - resources-finalizer.argocd.argoproj.io/foreground
+spec:
+  project: default
+  source:
+    repoURL: https://github.com/cloudnativedaysjp/cnd-handson-app
+    targetRevision: main
+    path: deploy/helm/handson
+    helm:
+      # valuesObject に書いた null は apply で消えるため、文字列で渡す
+      values: |
+        # Argo CD は helm template で描画するため、chart が Secret を生成すると同期のたびに値が変わる
+        secret:
+          create: false
+        # 入口は各デモアプリが入れる
+        entry:
+          variants: null
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: handson
+  syncPolicy:
+    automated: {}

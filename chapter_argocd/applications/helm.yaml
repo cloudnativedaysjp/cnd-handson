@@ -1,0 +1,25 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: argocd-helm
+  namespace: argo-cd
+  finalizers:
+  - resources-finalizer.argocd.argoproj.io/foreground
+spec:
+  project: default
+  source:
+    repoURL: https://github.com/<GITHUB_USER>/cnd-handson
+    targetRevision: main
+    path: chapter_argocd/app/Helm/handson
+    helm:
+      # chart の values.yaml の値を上書きする
+      valuesObject:
+        image:
+          tag: modern
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: argocd-helm
+  syncPolicy:
+    automated: {}
+    syncOptions:
+    - CreateNamespace=true
