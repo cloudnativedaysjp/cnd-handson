@@ -152,10 +152,10 @@ repo-server の Pod には、コンテナが 2 つあります。2 つ目は CMP
 
 ### Web UI を開く
 
-Ingress を作り、Web UI を開けるようにします。
+HTTPRoute を作り、Web UI を開けるようにします。HTTPRoute は、[chapter_cluster-create](../chapter_cluster-create/) で作った `handson-gateway` に紐付けます。
 
 ```bash
-kubectl apply -f ingress/ingress.yaml
+kubectl apply -f httproute/httproute.yaml
 ```
 
 admin のパスワードを確かめます。
