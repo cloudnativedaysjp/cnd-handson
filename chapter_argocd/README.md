@@ -177,6 +177,52 @@ http://argocd.example.com を開き、ログインします。
 > [!NOTE]
 > 公開リポジトリは、Argo CD に登録しなくても使えます。プライベートリポジトリを使うときは、Settings > Repositories で認証情報を登録します。
 
+## Application の中身を読む
+
+Application を作る前に、この章で使う YAML を読みます。[applications/demo.yaml](applications/demo.yaml) は、デモアプリを入れる Application です。
+
+```yaml
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: argocd-demo
+  namespace: argo-cd
+  finalizers:
+  - resources-finalizer.argocd.argoproj.io/foreground
+spec:
+  project: default
+  source:
+    repoURL: https://github.com/<GITHUB_USER>/cnd-handson
+    targetRevision: main
+    path: chapter_argocd/app/default
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: argocd-demo
+  syncPolicy:
+    syncOptions:
+    - CreateNamespace=true
+```
+
+| フィールド | 意味 |
+|---|---|
+| `metadata.namespace` | Application 自体を置く namespace。Argo CD を入れた argo-cd にする |
+| `metadata.finalizers` | Application を消したときに、デプロイしたリソースも消す |
+| `spec.project` | Application をまとめる単位。この章では既定の default を使う |
+| `spec.source.repoURL` | マニフェストを取り出す Git リポジトリ |
+| `spec.source.targetRevision` | 使うブランチ。タグやコミットも書ける |
+| `spec.source.path` | リポジトリの中の、マニフェストがあるディレクトリ |
+| `spec.destination.server` | デプロイ先のクラスタ。`https://kubernetes.default.svc` は Argo CD 自身が動くクラスタ |
+| `spec.destination.namespace` | デプロイ先の namespace |
+| `spec.syncPolicy.syncOptions` | 同期の細かい設定。`CreateNamespace=true` で、namespace がなければ作る |
+
+`path` のディレクトリに何があるかで、Argo CD はマニフェストの作り方を変えます。
+
+- YAML が並んでいるだけなら、そのまま使う
+- `kustomization.yaml` があれば、Kustomize で描画する
+- `Chart.yaml` があれば、Helm で描画する
+
+`syncPolicy` に `automated` を書くと、Git が変わったときに自動で同期します。demo.yaml には書いていないので、同期は手で行います。
+
 ## バックエンドを入れる
 
 デモアプリは、タスク管理のアプリ [cnd-handson-app](https://github.com/cloudnativedaysjp/cnd-handson-app) です。画面には 2 つの版があります。
@@ -196,7 +242,29 @@ kubectl -n handson create secret generic handson-secrets \
   --from-literal=IDP_DEMO_PASSWORD=demo-password
 ```
 
-バックエンドの Application を作ります。[applications/backend.yaml](applications/backend.yaml) は、cnd-handson-app リポジトリにある Helm chart を同期します。
+バックエンドの Application は [applications/backend.yaml](applications/backend.yaml) です。demo.yaml との違いは 3 つです。
+
+```yaml
+spec:
+  source:
+    repoURL: https://github.com/cloudnativedaysjp/cnd-handson-app
+    targetRevision: main
+    path: deploy/helm/handson
+    helm:
+      values: |
+        secret:
+          create: false
+        entry:
+          variants: null
+  syncPolicy:
+    automated: {}
+```
+
+- `source` は、cnd-handson-app リポジトリにある Helm chart です。`path` に `Chart.yaml` があるので、Helm で描画します。
+- `helm.values` で、chart の values を上書きします。Secret は先に作ったものを使います。画面（`entry`）は各デモアプリが入れるので、ここでは入れません。
+- `automated` を書いているので、作るとすぐに同期します。
+
+Application を作ります。
 
 ```bash
 kubectl apply -f applications/backend.yaml
@@ -216,7 +284,7 @@ handson-backend   Synced        Healthy
 
 ## Application を作る
 
-[applications/demo.yaml](applications/demo.yaml) は、[app/default](app/default) のマニフェストを argocd-demo namespace に入れる Application です。
+[Application の中身を読む](#application-の中身を読む) で見た demo.yaml を作ります。[app/default](app/default) のマニフェストを、argocd-demo namespace に入れます。
 
 `repoURL` の `<GITHUB_USER>` を自分のアカウント名に置き換えて、作ります。
 
