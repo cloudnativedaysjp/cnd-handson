@@ -4,5 +4,5 @@ resources:
 - ../../base/
 
 patches:
-- path: ingress-patch.yaml
+- path: httproute-patch.yaml
 - path: deployment-patch.yaml

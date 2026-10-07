@@ -1,0 +1,20 @@
+---
+apiVersion: gateway.networking.k8s.io/v1
+kind: HTTPRoute
+metadata:
+  name: handson
+spec:
+  parentRefs:
+  - name: handson-gateway
+    namespace: gateway
+    sectionName: http
+  hostnames:
+  - app.example.com
+  rules:
+  - matches:
+    - path:
+        type: PathPrefix
+        value: /
+    backendRefs:
+    - name: handson
+      port: 8080

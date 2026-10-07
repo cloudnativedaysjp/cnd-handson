@@ -9,6 +9,5 @@ image:
 # handson namespace に入れたバックエンドの namespace
 backendNamespace: handson
 
-ingress:
-  className: nginx
+httpRoute:
   host: helm.argocd.example.com

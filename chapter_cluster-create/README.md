@@ -60,12 +60,15 @@ HelmはKubernetes用のパッケージマネージャーであり、Helmfileを�
 構築するKubernetesクラスターの設定は`kind-config.yaml`で行います。
 今回は下記のような設定でKubernetesクラスターを構築します。
 - ホスト上のポートを下記のようにkind上のControl Planeのポートにマッピング
-  -    80 -> 30080
-  -   443 -> 30443
-  -  8080 -> 31080
-  -  8443 -> 31443
-  - 18080 -> 32080
-  - 18443 -> 32443
+
+  | 用途 | ホスト側のポート | Control Plane側のポート |
+  | --- | --- | --- |
+  | Gateway API (Envoy Gateway) | 80 | 30080 |
+  | Cilium Ingress | 8080 | 31080 |
+  | Cilium Ingress (HTTPS) | 8443 | 31443 |
+  | Istio Ingress Gateway | 18080 | 32080 |
+  | Istio Ingress Gateway (HTTPS) | 18443 | 32443 |
+
 - CiliumをCNIとして利用するため、DefaultのCNIの無効化
 - Ciliumをkube-proxyの代替として利用するため、kube-proxyの無効化
 
@@ -79,7 +82,7 @@ kind create cluster --config=kind-config.yaml
 
 ```shell
 Creating cluster "kind" ...
- ✓ Ensuring node image (kindest/node:v1.35.0) 🖼 
+ ✓ Ensuring node image (kindest/node:v1.36.4) 🖼 
  ✓ Preparing nodes 📦 📦 📦  
  ✓ Writing configuration 📜 
  ✓ Starting control-plane 🕹️ 
@@ -111,30 +114,73 @@ Have a question, bug, or feature request? Let us know! https://kind.sigs.k8s.io/
 
 - [Gateway API](https://gateway-api.sigs.k8s.io/)
 - [Cilium](https://cilium.io/)
-- [Ingress NGINX Controller](https://github.com/kubernetes/ingress-nginx)
+- [Envoy Gateway](https://gateway.envoyproxy.io/)
 
-Gateway APIはKubernetesクラスター外からKubernetesクラスター内のServiceへのトラフィックを管理するためのものです。
+Gateway APIはKubernetesクラスター外からKubernetesクラスター内のServiceへのトラフィックを管理するためのAPIです。
+従来Ingressリソースが担っていた役割を、より表現力の高いリソース（GatewayClass、Gateway、HTTPRouteなど）に分割して定義できるようになっています。
+なお、これまでのハンズオンではIngress NGINX Controllerを利用していましたが、
+[Ingress NGINX Controllerは2026年3月をもって開発・メンテナンスが終了](https://kubernetes.io/blog/2025/11/11/ingress-nginx-retirement/)しており、
+KubernetesコミュニティからもGateway APIへの移行が推奨されています。
+そのため、このハンズオンでもGateway APIを利用する構成に変更しています。
+
+Gateway APIはあくまでAPIの仕様なので、実際にトラフィックを捌くコントローラー（実装）が別途必要になります。
+実装は[複数存在](https://gateway-api.sigs.k8s.io/implementations/)しますが、このハンズオンではEnvoy Gatewayを利用します。
+Envoy GatewayはEnvoy Proxyをデータプレーンとして利用するGateway APIの実装で、CNCFのプロジェクトです。
 Ciliumについては[chapter_cilium](../chapter_cilium/)で説明するのでそちらを参照してください。
-Ingress NGINX Controllerはインターネットからkind上のServiceリソースへ通信をルーティングするためにインストールします。
 各コンポーネントの詳細については上記リンクをご参照ください。
 
+> [!NOTE]
+>
+> Cilium自身もGateway APIの実装を持っています（[chapter_cilium](../chapter_cilium/)で扱います）が、
+> このハンズオンではCNIとしてのCiliumとGateway APIの実装を分けて理解できるように、
+> クラスター全体の入り口はEnvoy Gatewayが担当する構成にしています。
+
 まず、最初にGateway APIのCRDをデプロイします。
+Gateway APIはKubernetes本体には含まれておらず、CRDとして追加する必要があります。
+Envoy Gateway v1.9が対応しているGateway APIはv1.6.1です。
 
 ```shell
-kubectl apply --server-side -f https://github.com/kubernetes-sigs/gateway-api/releases/download/v1.4.1/standard-install.yaml
-kubectl apply --server-side -f https://github.com/kubernetes-sigs/gateway-api/releases/download/v1.4.1/experimental-install.yaml
+kubectl apply --server-side -f https://github.com/kubernetes-sigs/gateway-api/releases/download/v1.6.1/experimental-install.yaml
 ```
 
-Gateway API以外のコンポーネントはhelmfileコマンドを利用することでデプロイできます。
+> [!NOTE]
+>
+> experimental-install.yamlはstandard-install.yamlの内容をすべて含んでいます。
+> standard-install.yamlを適用した後にexperimental-install.yamlを適用すると、
+> standard-install.yamlに含まれるValidatingAdmissionPolicy（`safe-upgrades.gateway.networking.k8s.io`）によって拒否されるため、
+> experimental-install.yamlのみを適用します。
+
+続いて、Envoy Gateway独自のCRD（EnvoyProxyなど）をデプロイします。
+これらのCRDはサイズが大きく、Helmのリリースとしてインストールするとリリース情報を保存するSecretの上限（1MiB）を超えてしまうため、
+`helm template`でレンダリングした結果を`kubectl apply --server-side`で適用します。
+
+```shell
+helm template envoy-gateway-crds oci://docker.io/envoyproxy/gateway-crds-helm --version v1.9.1 -f helm/values/envoy-gateway-crds.values.yaml | kubectl apply --server-side -f -
+```
+
+CiliumとEnvoy Gatewayはhelmfileコマンドを利用することでデプロイできます。
 
 ```shell
 helmfile sync -f helm/helmfile.yaml
 ```
 
+デプロイが完了したら、Envoy Gatewayのコントローラーが起動していることを確認します。
+
+```shell
+kubectl get pods -n envoy-gateway-system
+```
+
+```shell
+# 実行結果
+NAME                             READY   STATUS      RESTARTS   AGE
+envoy-gateway-6d8f4d6b8c-xxxxx   1/1     Running     0          60s
+```
+
 > [!NOTE]
 >
-> Kubernetesのイングレスコントローラーとして、Ingress NGINX Controllerをインストールしていますが、Cilium自体もKubernetes Ingressリソースをサポートしています。
-> こちらに関しては、[chapter_cilium](../chapter_cilium/)にて説明します。
+> `helm/helmfile.yaml`では`needs`を指定して、Cilium → Envoy Gatewayの順にデプロイされるようにしています。
+> Envoy GatewayのインストールにはPodを起動するJob（証明書生成）が含まれるため、
+> CNIであるCiliumが先に動作している必要があるためです。
 
 ## kubectlコマンドのシェル補完の有効化
 
@@ -174,6 +220,66 @@ To further debug and diagnose cluster problems, use 'kubectl cluster-info dump'.
 > cilium connectivity test
 > ```
 
+## Gatewayのデプロイ
+
+このハンズオンでは、各chapterのアプリケーションがクラスター外からのトラフィックを受けるための共通の入り口として、
+`gateway` Namespaceに`handson-gateway`という名前のGatewayリソースを1つ作成します。
+以降の各chapterでは、このGatewayに対してHTTPRouteリソースを紐付けることでルーティングを設定していきます。
+
+`manifest/gateway/gateway.yaml`では下記の3つのリソースを定義しています。
+
+- `GatewayClass` ... どの実装（コントローラー）がGatewayを処理するかを宣言するリソース。ここではEnvoy Gatewayを指定しています
+- `EnvoyProxy` ... Envoy Gatewayが起動するEnvoyの設定を行う、Envoy Gateway独自のリソース
+- `Gateway` ... 実際の入り口となるリソース。HTTPの80番ポートでリクエストを受け付けます
+
+`EnvoyProxy`では、Envoyを公開するServiceを`Type: NodePort`にして、NodePortを`30080`に固定しています。
+今回のハンズオン環境にはクラウドプロバイダーのロードバランサーが存在せず、`Type: LoadBalancer`のままでは
+EXTERNAL-IPが割り当てられないためです。
+`kind-config.yaml`でホストの80番ポートをControl Planeの30080番ポートにマッピングしているので、
+これでブラウザからGatewayへ到達できるようになります。
+なお、Envoy GatewayはServiceの`externalTrafficPolicy`をデフォルトで`Local`にするため、
+EnvoyのPodがControl Plane以外のノードで動いていると通信が破棄されてしまいます。
+そのため、`EnvoyProxy`で`externalTrafficPolicy: Cluster`を指定しています。
+
+```shell
+kubectl apply -f manifest/gateway/gateway.yaml
+```
+
+Gatewayが正しく構成されたことを確認します。`PROGRAMMED`が`True`になっていれば成功です。
+
+```shell
+kubectl get gatewayclass,gateway -n gateway
+```
+
+```shell
+# 実行結果
+NAME                                            CONTROLLER                                      ACCEPTED   AGE
+gatewayclass.gateway.networking.k8s.io/cilium   io.cilium/gateway-controller                    True       5m
+gatewayclass.gateway.networking.k8s.io/eg       gateway.envoyproxy.io/gatewayclass-controller   True       25s
+
+NAME                                                CLASS   ADDRESS      PROGRAMMED   AGE
+gateway.gateway.networking.k8s.io/handson-gateway   eg      172.18.0.3   True         25s
+```
+
+Gatewayを作成すると、Envoy Gatewayが`envoy-gateway-system` NamespaceにEnvoyのDeploymentとServiceを作成します。
+Serviceが`NodePort`で`30080`を公開していることを確認します。
+
+```shell
+kubectl get svc -n envoy-gateway-system -l gateway.envoyproxy.io/owning-gateway-name=handson-gateway
+```
+
+```shell
+# 実行結果
+NAME                              TYPE       CLUSTER-IP      EXTERNAL-IP   PORT(S)        AGE
+envoy-gateway-handson-gatew-xxx   NodePort   10.96.120.134   <none>        80:30080/TCP   30s
+```
+
+> [!NOTE]
+>
+> Gatewayリソースの`spec.listeners[].allowedRoutes.namespaces.from`には`All`を指定しています。
+> これにより、どのNamespaceからでもこのGatewayにHTTPRouteを紐付けられるようになります。
+> 本番環境では`Same`や`Selector`を利用して、Gatewayを利用できるNamespaceを制限することが推奨されます。
+
 ## アプリケーションのデプロイ
 次章以降で使用する動作確認用アプリケーションとして、[Argo Rollouts Demo Application](https://github.com/argoproj/rollouts-demo)をデプロイします。
 
@@ -182,13 +288,13 @@ kubectl create namespace handson
 kubectl apply -f manifest/app/serviceaccount.yaml -n handson -l color=blue
 kubectl apply -f manifest/app/deployment.yaml -n handson -l color=blue
 kubectl apply -f manifest/app/service.yaml -n handson
-kubectl apply -f manifest/app/ingress.yaml -n handson
+kubectl apply -f manifest/app/httproute.yaml -n handson
 ```
 
 作成されるリソースは下記のとおりです。
 
 ```shell
-kubectl get services,deployments,ingresses -n handson
+kubectl get services,deployments,httproutes -n handson
 ```
 ```shell
 # 実行結果
@@ -198,8 +304,32 @@ service/handson   ClusterIP   10.96.82.202   <none>        8080/TCP   3m33s
 NAME                           READY   UP-TO-DATE   AVAILABLE   AGE
 deployment.apps/handson-blue   1/1     1            1           3m34s
 
-NAME                                             CLASS   HOSTS             ADDRESS       PORTS   AGE
-ingress.networking.k8s.io/app-ingress-by-nginx   nginx   app.example.com   10.96.54.28   80      3m9s
+NAME                                             HOSTNAMES             AGE
+httproute.gateway.networking.k8s.io/handson      ["app.example.com"]   3m9s
+```
+
+HTTPRouteがGatewayに正しく紐付いたかどうかは、`status`を確認することで分かります。
+
+```shell
+kubectl get httproute handson -n handson -o jsonpath='{.status.parents[0].conditions}' | jq
+```
+
+```shell
+# 実行結果（抜粋）
+[
+  {
+    "message": "Accepted HTTPRoute",
+    "reason": "Accepted",
+    "status": "True",
+    "type": "Accepted"
+  },
+  {
+    "message": "Service reference is valid",
+    "reason": "ResolvedRefs",
+    "status": "True",
+    "type": "ResolvedRefs"
+  }
+]
 ```
 
 ブラウザから`http://app.example.com`に接続し、下記のような画面が表示されることを確認してください。
