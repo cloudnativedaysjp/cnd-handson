@@ -1,0 +1,31 @@
+apiVersion: argoproj.io/v1alpha1
+kind: ApplicationSet
+metadata:
+  name: argocd-kustomize
+  namespace: argo-cd
+spec:
+  goTemplate: true
+  goTemplateOptions: ["missingkey=error"]
+  generators:
+  - list:
+      elements:
+      - env: dev
+      - env: prd
+  template:
+    metadata:
+      name: argocd-kustomize-{{ .env }}
+      finalizers:
+      - resources-finalizer.argocd.argoproj.io/foreground
+    spec:
+      project: default
+      source:
+        repoURL: https://github.com/<GITHUB_USER>/cnd-handson
+        targetRevision: main
+        path: chapter_argocd/app/Kustomize/overlays/{{ .env }}
+      destination:
+        server: https://kubernetes.default.svc
+        namespace: argocd-kustomize-{{ .env }}
+      syncPolicy:
+        automated: {}
+        syncOptions:
+        - CreateNamespace=true

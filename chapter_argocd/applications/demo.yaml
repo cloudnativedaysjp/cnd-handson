@@ -1,0 +1,20 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: argocd-demo
+  namespace: argo-cd
+  # Application を消したときに、デプロイしたリソースも消す
+  finalizers:
+  - resources-finalizer.argocd.argoproj.io/foreground
+spec:
+  project: default
+  source:
+    repoURL: https://github.com/<GITHUB_USER>/cnd-handson
+    targetRevision: main
+    path: chapter_argocd/app/default
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: argocd-demo
+  syncPolicy:
+    syncOptions:
+    - CreateNamespace=true
