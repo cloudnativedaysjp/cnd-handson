@@ -4,5 +4,5 @@ bases:
 - ../../base/
 
 patchesStrategicMerge:
-- ingress-patch.yaml
+- httproute-patch.yaml
 - deployment-patch.yaml

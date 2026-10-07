@@ -76,52 +76,67 @@ spec:
   - port: 8080
     targetPort: 5678
 ---
-apiVersion: v1
-kind: Service
+# HTTPRouteが別のNamespaceのServiceを参照することを許可する
+apiVersion: gateway.networking.k8s.io/v1beta1
+kind: ReferenceGrant
 metadata:
-  name: frontend-app
-  namespace: troubleshoot
+  name: allow-troubleshoot-httproute
+  namespace: frontend
 spec:
-  type: ExternalName
-  externalName: app-frontend.frontend.svc.cluster.local
-  ports:
-  - port: 80
+  from:
+  - group: gateway.networking.k8s.io
+    kind: HTTPRoute
+    namespace: troubleshoot
+  to:
+  - group: ""
+    kind: Service
 ---
-apiVersion: v1
-kind: Service
+apiVersion: gateway.networking.k8s.io/v1beta1
+kind: ReferenceGrant
 metadata:
-  name: backend-app
-  namespace: troubleshoot
+  name: allow-troubleshoot-httproute
+  namespace: backend
 spec:
-  type: ExternalName
-  externalName: app-backend.backend.svc.cluster.local
-  ports:
-  - port: 8080
+  from:
+  - group: gateway.networking.k8s.io
+    kind: HTTPRoute
+    namespace: troubleshoot
+  to:
+  - group: ""
+    kind: Service
 ---
-apiVersion: networking.k8s.io/v1
-kind: Ingress
+apiVersion: gateway.networking.k8s.io/v1
+kind: HTTPRoute
 metadata:
-  name: ingress
+  name: httproute
   namespace: troubleshoot
-  annotations:
-    nginx.ingress.kubernetes.io/rewrite-target: /
 spec:
-  ingressClassName: nginx
+  parentRefs:
+  - name: handson-gateway
+    namespace: gateway
+    sectionName: http
+  hostnames:
+  - troubleshoot.example.com
   rules:
-  - host: troubleshoot.example.com
-    http:
-      paths:
-      - path: /
-        pathType: Prefix
-        backend:
-          service:
-            name: frontend-app
-            port:
-              number: 80
-      - path: /api
-        pathType: Prefix
-        backend:
-          service:
-            name: backend-app
-            port:
-              number: 8080
+  - matches:
+    - path:
+        type: PathPrefix
+        value: /api
+    filters:
+    - type: URLRewrite
+      urlRewrite:
+        path:
+          type: ReplacePrefixMatch
+          replacePrefixMatch: /
+    backendRefs:
+    - name: app-backend
+      namespace: backend
+      port: 8080
+  - matches:
+    - path:
+        type: PathPrefix
+        value: /
+    backendRefs:
+    - name: app-frontend
+      namespace: frontend
+      port: 80

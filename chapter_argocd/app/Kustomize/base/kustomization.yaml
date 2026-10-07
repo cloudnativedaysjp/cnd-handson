@@ -5,5 +5,5 @@ commonLabels:
 kind: Kustomization
 resources:
 - deployment.yaml
-- ingress.yaml
+- httproute.yaml
 - service.yaml
