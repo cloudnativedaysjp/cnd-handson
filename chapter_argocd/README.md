@@ -97,7 +97,7 @@ Git とクラスタが一致しているかを表します。
 
 ### リポジトリを fork する
 
-Argo CD は Git の変更を見てデプロイします。この章では Git に push するので、このリポジトリを自分のアカウントに fork します。
+Argo CD は Git の変更を見てデプロイします。この章では GitHub 上でファイルを変えるので、このリポジトリを自分のアカウントに fork します。
 
 [このハンズオンのリポジトリ](https://github.com/cloudnativedaysjp/cnd-handson)を開き、Fork をクリックします。
 
@@ -111,12 +111,13 @@ Create fork をクリックします。
 
 ![fork3](image/setup/fork-3-new.png)
 
-fork したリポジトリを clone し、この章のディレクトリに移ります。
+fork は clone しません。Git の変更は GitHub の画面で行います。
+
+自分のアカウント名を変数に入れ、VM にあるこのリポジトリの `chapter_argocd` に移ります。
 
 ```bash
 export GITHUB_USER=<自分の GitHub アカウント名>
-git clone https://github.com/${GITHUB_USER}/cnd-handson.git
-cd cnd-handson/chapter_argocd
+cd ~/cnd-handson/chapter_argocd
 ```
 
 以降の手順は、`chapter_argocd` で実行します。
@@ -277,19 +278,27 @@ sed "s/<GITHUB_USER>/${GITHUB_USER}/" applications/demo.yaml | kubectl apply -f 
 
 ### Git を変えて反映する
 
-[app/default/deployment.yaml](app/default/deployment.yaml) の image のタグを、`legacy` から `modern` に変えます。
+fork の [app/default/deployment.yaml](app/default/deployment.yaml) を GitHub の画面で変えます。
+
+ブラウザで次の URL を開きます。`<GITHUB_USER>` は自分のアカウント名に置き換えます。
+
+```
+https://github.com/<GITHUB_USER>/cnd-handson/blob/main/chapter_argocd/app/default/deployment.yaml
+```
+
+右上の鉛筆アイコンをクリックし、編集画面を開きます。
+
+![edit](image/v3/github-edit.png)
+
+image のタグを、`legacy` から `modern` に変えます。
 
 ```yaml
       - image: ghcr.io/cloudnativedaysjp/cnd-handson-app/handson:modern
 ```
 
-変更を fork の main ブランチに push します。
+Commit changes をクリックします。Commit directly to the `main` branch を選んだまま、もう一度 Commit changes をクリックします。
 
-```bash
-git add app/default/deployment.yaml
-git commit -m "Switch the demo app to modern"
-git push origin main
-```
+![commit](image/v3/github-commit.png)
 
 Argo CD が変更に気づくまで、最大 3 分かかります。待てないときは、Web UI で argocd-demo を開き、REFRESH をクリックします。
 
