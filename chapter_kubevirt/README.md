@@ -296,6 +296,13 @@ kubectl get pods -n cdi
 ```sh
 kubectl apply -f manifest/vm-with-datavolume.yaml
 
+# 仮想マシンを起動します。
+virtctl start vm-with-datavolume
+
+# StorageClass が WaitForFirstConsumer の場合、
+# 仮想マシンを起動しないと DataVolume の PHASE は
+# WaitForFirstConsumer から進みません。
+
 kubectl get datavolume
 # 以下のようにDatavolumeがSucceededになると成功です。
 # 今回DataVolumeではマニフェストの14行目にあるイメージをダウンロードしています。
