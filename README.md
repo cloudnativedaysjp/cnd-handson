@@ -59,7 +59,7 @@ flowchart TD
     cluster-->docker
     docker-->k8sintro
     k8sintro-->k8soverview
-    k8soverview-->troubleshoot
+    k8sintro-->troubleshoot
     cluster-->prom
     cluster-->argocd
     cluster-->kubevirt
