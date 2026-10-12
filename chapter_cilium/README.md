@@ -236,7 +236,7 @@ server: envoy
 ### Gateway API
 
 CiliumはGateway APIをサポートしており、Gateway APIを利用することで、トラフィックの分割、ヘッダー変更、URLの書き換えなどのより高度なルーティング機能を利用することが可能です。
-この節ではGateway APIを利用したトラフックの分割を行います。
+この節ではGateway APIを利用したトラフィックの分割を行います。
 Gateway APIの詳細は[Kubernetes Gateway API](https://gateway-api.sigs.k8s.io/)を参照してください。
 
 まず、デモのために第1章でデプロイした`blue`イメージに加えて、`yellow`イメージをデプロイします。
@@ -333,7 +333,7 @@ LB_IP=$(kubectl get -n handson svc -l io.cilium.gateway/owning-gateway=color-gw 
 ```shell
 for in in {1..10}; do \
 echo -n "Color is "
-curl ${LB_IP}/color;echo
+curl -s ${LB_IP}/color;echo
 sleep 0.1
 done
 ```
