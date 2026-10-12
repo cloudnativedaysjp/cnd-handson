@@ -2,7 +2,7 @@
 このドキュメントは、CD(Countinuous Delivery)のハンズオン資料になります。  
 ハンズオンのChapter_argocdにある、ArcoCDを利用して実施していきます。  
 そのため、ArgoCDをインストールしていない場合には、以下サイトからインストールを実施してください。  
-ArgoCDの詳細については、[こちら](https://github.com/cloudnativedaysjp/cnd-handson/blob/main/chapter_argocd/README_webui.md)を参照ください。  
+ArgoCDの詳細については、[こちら](https://github.com/cloudnativedaysjp/cnd-handson/blob/main/chapter_argocd/README.md)を参照ください。  
 
 # 今回利用するリポジトリの準備  
 ## Gitリポジトリの準備(ローカル環境)
@@ -26,7 +26,7 @@ Argo CDを利用するため、GitHubへPush等が必要となり、それをト
 
 ![image](image/fork3.png)
 
-ここからは、Argo CDの詳細については、[ArgoCD](https://github.com/cloudnativedaysjp/cnd-handson/blob/main/chapter_argocd/README_webui.md)が動作している前提で解説していきます。  
+ここからは、Argo CDの詳細については、[ArgoCD](https://github.com/cloudnativedaysjp/cnd-handson/blob/main/chapter_argocd/README.md)が動作している前提で解説していきます。  
 動作していない場合には、上記リンクからインストールを実施してください。  
 Argo CDのWebGUIへログインできれば問題ないです。  
 

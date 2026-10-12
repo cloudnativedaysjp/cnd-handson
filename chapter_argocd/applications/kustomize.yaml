@@ -1,0 +1,46 @@
+apiVersion: argoproj.io/v1alpha1
+kind: ApplicationSet
+metadata:
+  name: argocd-kustomize
+  namespace: argo-cd
+spec:
+  goTemplate: true
+  goTemplateOptions: ["missingkey=error"]
+  generators:
+  - list:
+      elements:
+      - env: dev
+      - env: prd
+  template:
+    metadata:
+      name: argocd-kustomize-{{ .env }}
+      finalizers:
+      - resources-finalizer.argocd.argoproj.io/foreground
+    spec:
+      project: default
+      sources:
+      # 画面
+      - repoURL: https://github.com/<GITHUB_USER>/cnd-handson
+        targetRevision: main
+        path: chapter_argocd/app/Kustomize/overlays/{{ .env }}
+      # バックエンド
+      - repoURL: https://github.com/cloudnativedaysjp/cnd-handson-app
+        targetRevision: main
+        path: deploy/helm/handson
+        helm:
+          values: |
+            entry:
+              variants: null
+      destination:
+        server: https://kubernetes.default.svc
+        namespace: argocd-kustomize-{{ .env }}
+      ignoreDifferences:
+      - kind: Secret
+        name: handson-secrets
+        jsonPointers:
+        - /data
+      syncPolicy:
+        automated: {}
+        syncOptions:
+        - CreateNamespace=true
+        - RespectIgnoreDifferences=true

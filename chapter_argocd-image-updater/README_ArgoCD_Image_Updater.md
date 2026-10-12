@@ -3,7 +3,7 @@
 このドキュメントは、CD(Countinuous Delivery)のハンズオン資料になります。  
 ハンズオンのChapter_argocdにある、ArcoCDを利用して実施していきます。  
 そのため、ArgoCDをインストールしていない場合には、以下サイトからインストールを実施してください。  
-ArgoCDの詳細については、[こちら](https://github.com/cloudnativedaysjp/cnd-handson/blob/main/chapter_argocd/README_webui.md)を参照ください。  
+ArgoCDの詳細については、[こちら](https://github.com/cloudnativedaysjp/cnd-handson/blob/main/chapter_argocd/README.md)を参照ください。  
 
 また、このドキュメントについては、ArgoCDのハンズオンの拡張版として、<B>ArcoCD Image Updater</B> を使うことを  
 目的としたものになります。  

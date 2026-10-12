@@ -1,0 +1,37 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: argocd-demo
+  namespace: argo-cd
+  # Application を消したときに、デプロイしたリソースも消す
+  finalizers:
+  - resources-finalizer.argocd.argoproj.io/foreground
+spec:
+  project: default
+  sources:
+  # 画面
+  - repoURL: https://github.com/<GITHUB_USER>/cnd-handson
+    targetRevision: main
+    path: chapter_argocd/app/default
+  # バックエンド
+  - repoURL: https://github.com/cloudnativedaysjp/cnd-handson-app
+    targetRevision: main
+    path: deploy/helm/handson
+    helm:
+      # valuesObject に書いた null は apply で消えるため、文字列で渡す
+      values: |
+        entry:
+          variants: null
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: argocd-demo
+  # chart は描画のたびに Secret の値を作り直すので、最初に作った値を残す
+  ignoreDifferences:
+  - kind: Secret
+    name: handson-secrets
+    jsonPointers:
+    - /data
+  syncPolicy:
+    syncOptions:
+    - CreateNamespace=true
+    - RespectIgnoreDifferences=true
