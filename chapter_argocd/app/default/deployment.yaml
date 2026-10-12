@@ -32,22 +32,22 @@ spec:
         - name: http
           containerPort: 8080
           protocol: TCP
-        # handson namespace に入れたバックエンドにつなぐ
+        # 同じ namespace に入れたバックエンドにつなぐ
         env:
         - name: IDP_ADDR
-          value: handson-idp.handson:50051
+          value: handson-idp:50051
         - name: IDP_JWKS_URL
-          value: http://handson-idp.handson:8080/.well-known/jwks.json
+          value: http://handson-idp:8080/.well-known/jwks.json
         - name: IDP_ISS
           value: http://handson-idp:8080
         - name: IDP_AUD
           value: handson
         - name: PROJECT_ADDR
-          value: handson-project.handson:50051
+          value: handson-project:50051
         - name: TASK_ADDR
-          value: handson-task.handson:50051
+          value: handson-task:50051
         - name: COLUMN_ADDR
-          value: handson-column.handson:50051
+          value: handson-column:50051
         readinessProbe:
           httpGet:
             path: /healthz

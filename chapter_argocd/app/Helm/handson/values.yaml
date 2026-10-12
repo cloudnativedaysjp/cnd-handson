@@ -6,8 +6,5 @@ image:
   tag: legacy
   pullPolicy: IfNotPresent
 
-# handson namespace に入れたバックエンドの namespace
-backendNamespace: handson
-
 httpRoute:
   host: helm.argocd.example.com
