@@ -29,6 +29,13 @@ spec:
             cpu: 5m
   strategy:
     canary:
+      stableService: handson
+      canaryService: handson-canary
+      trafficRouting:
+        plugins:
+          argoproj-labs/gatewayAPI:
+            httpRoute: app-httproute
+            namespace: canary
       steps:
       - setWeight: 20
       - pause: {}

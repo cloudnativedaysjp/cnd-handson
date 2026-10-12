@@ -29,6 +29,13 @@ spec:
             cpu: 5m
   strategy:
     canary:
+      stableService: handson
+      canaryService: handson-canary
+      trafficRouting:
+        plugins:
+          argoproj-labs/gatewayAPI:
+            httpRoute: app-httproute
+            namespace: prometheus-analysis
       analysis:
         templates:
         - templateName: handson-analysis
@@ -36,12 +43,9 @@ spec:
         - name: envoy-cluster
           value: httproute/prometheus-analysis/app-httproute/rule/0
       steps:
-      - setWeight: 40
-      - pause: 
-          duration: 10
-      - setWeight: 60
+      - setWeight: 20
       - pause:
-          duration: 10
-      - setWeight: 80
+          duration: 30s
+      - setWeight: 50
       - pause:
-          duration: 10
+          duration: 30s

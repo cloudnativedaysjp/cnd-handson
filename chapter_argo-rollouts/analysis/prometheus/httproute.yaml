@@ -14,6 +14,11 @@ spec:
     - path:
         type: PathPrefix
         value: /
+    # 重みは Rollout が書き換える
     backendRefs:
     - name: handson
       port: 80
+      weight: 100
+    - name: handson-canary
+      port: 80
+      weight: 0
