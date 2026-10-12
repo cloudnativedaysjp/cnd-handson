@@ -238,7 +238,7 @@ Argo CD は Helm chart を `helm template` で描画します。chart に Secret
 kubectl create namespace handson
 kubectl -n handson create secret generic handson-secrets \
   --from-literal=DB_PASSWORD="$(openssl rand -hex 16)" \
-  --from-literal=IDP_SIGNING_KEY="$(openssl genpkey -algorithm RSA -pkeyopt rsa_keygen_bits:2048 | base64 | tr -d '\n')" \
+  --from-literal=IDP_SIGNING_KEY="$(openssl genpkey -algorithm RSA -pkeyopt rsa_keygen_bits:2048 2>/dev/null | base64 | tr -d '\n')" \
   --from-literal=IDP_DEMO_PASSWORD=demo-password
 ```
 
@@ -368,13 +368,13 @@ Commit changes をクリックします。Commit directly to the `main` branch �
 
 ![commit](image/v3/github-commit.png)
 
-Argo CD が変更に気づくまで、最大 3 分かかります。待てないときは、Web UI で argocd-demo を開き、REFRESH をクリックします。
+Argo CD が変更に気づくまで、3 分ほどかかります。待てないときは、Web UI で argocd-demo を開き、REFRESH をクリックします。
 
 Argo CD が自動で同期し、新しい Pod に入れ替わります。
 
 ![autosync](image/v3/demo-autosync.png)
 
-http://app.argocd.example.com を開き直すと、カンバンの画面（modern）に変わっています。ログイン画面が出たときは、同じユーザーでログインします。
+http://app.argocd.example.com を開き直すと、カンバンの画面（modern）に変わっています。表示が変わらないときは、ブラウザで再読み込みします。ログイン画面が出たときは、同じユーザーでログインします。
 
 ![modern](image/v3/modern.png)
 
