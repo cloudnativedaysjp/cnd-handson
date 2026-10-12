@@ -36,16 +36,15 @@ spec:
           argoproj-labs/gatewayAPI:
             httpRoute: app-httproute
             namespace: prometheus-analysis
-      analysis:
-        templates:
-        - templateName: handson-analysis
-        args:
-        - name: envoy-cluster
-          value: httproute/prometheus-analysis/app-httproute/rule/0
       steps:
       - setWeight: 20
-      - pause:
-          duration: 30s
+      # 分析が成功するまで次に進まない。失敗したら中止して元の版に戻す
+      - analysis:
+          templates:
+          - templateName: handson-analysis
+          args:
+          - name: envoy-cluster
+            value: httproute/prometheus-analysis/app-httproute/rule/0
       - setWeight: 50
       - pause:
           duration: 30s

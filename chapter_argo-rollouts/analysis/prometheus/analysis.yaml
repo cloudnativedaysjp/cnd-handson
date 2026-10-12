@@ -8,10 +8,13 @@ spec:
   - name: envoy-cluster
   metrics:
   - name: handson-analysis
-    interval: 10s
+    # 15 秒おきに 4 回測る。メトリクスが新しい版のリクエストを含むまで 1 分ほどかかる
+    interval: 15s
+    count: 4
     # リクエストがない間は NaN になるので、成功として扱う
-    successCondition: isNaN(result[0]) || result[0] > 0.90
-    failureLimit: 3
+    successCondition: isNaN(result[0]) || result[0] >= 0.95
+    # 1 回でも下回ったら失敗にする
+    failureLimit: 0
     provider:
       prometheus:
         address: http://kube-prometheus-stack-prometheus.prometheus.svc.cluster.local:9090
