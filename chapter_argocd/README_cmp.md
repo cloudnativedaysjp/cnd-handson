@@ -1,6 +1,6 @@
 # Argo CD with CMP
 
-Argo CD がマニフェストを作れるのは、YAML、Kustomize、Helm などに限られます。それ以外のツールでマニフェストを作りたいときは、Config Management Plugin（CMP）を使います。
+Argo CD がマニフェストを作れるのは、YAML、Kustomize、Helm などに限られます。それ以外のツールでマニフェストを作りたいときは、Config Management Plugin（CMP）を使います。CMP が受け持つのは、マニフェストを作るところまでです。作ったマニフェストの差分の検出や同期は、ほかの Application と同じく Argo CD が行います。
 
 この章では、Helmfile を CMP として使い、[Headlamp](https://headlamp.dev/) をデプロイします。
 
@@ -15,7 +15,7 @@ CMP は、repo-server の Pod にサイドカーとして入ります。サイ�
 
 ![cmp_architecture](image/cmp/cmp-architecture.jpg)
 
-repo-server は、Git から取り出したディレクトリをサイドカーに渡します。サイドカーは、プラグインの設定に従って次の 3 つを順に行います。
+repo-server は、Git から取り出したディレクトリをサイドカーに渡します。サイドカーは、プラグインの設定に従ってマニフェストを作ります。この章のプラグインは、次の 3 つを順に行います。
 
 ![cmp-flow](image/cmp/cmp-flow.jpg)
 
@@ -152,7 +152,10 @@ Web UI で headlamp を開くと、Helmfile で描画したリソースが並ん
 
 ![](image/cmp/argocd-cmp-application.png)
 
-http://headlamp.example.com を開くと、Headlamp の画面が表示されます。
+http://headlamp.example.com を開くと、トークンを入力する画面が表示されます。この章では、画面が表示されるところまでを確かめます。
+
+> [!WARNING]
+> この章の Headlamp は、ServiceAccount に cluster-admin の権限を付け、HTTP で公開しています。ハンズオンの環境だけで使ってください。
 
 ## 片付け
 
