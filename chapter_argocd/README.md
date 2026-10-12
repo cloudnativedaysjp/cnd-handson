@@ -432,8 +432,6 @@ argocd-kustomize-dev   Synced        Healthy
 argocd-kustomize-prd   Synced        Healthy
 ```
 
-![appset](image/v3/kustomize-appset.png)
-
 各環境を開きます。dev は表形式の画面（legacy）、prd はカンバンの画面（modern）です。
 
 - dev: http://dev.kustomize.argocd.example.com
@@ -444,6 +442,10 @@ prd の Pod は 2 つです。
 ```bash
 kubectl -n argocd-kustomize-prd get pods
 ```
+
+Web UI で argocd-kustomize-prd を開くと、handson の Pod が 2 つ並んでいます。
+
+![appset](image/v3/kustomize-appset.png)
 
 ## Helm
 
