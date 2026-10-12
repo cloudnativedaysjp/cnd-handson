@@ -13,4 +13,5 @@ spec:
       app.kubernetes.io/component: proxy
   podMetricsEndpoints:
     - port: metrics
+      path: /stats/prometheus
       interval: 30s

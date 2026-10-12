@@ -5,7 +5,7 @@ metadata:
 spec:
   metrics:
   - name: handson-analysis
-    successCondition: result == "hym"
+    successCondition: result == "green"
     failureLimit: 3
     provider:
       web:
