@@ -199,6 +199,10 @@ metadata:
 spec:
   project: default
   sources:
+  # 画面
+  - repoURL: https://github.com/<GITHUB_USER>/cnd-handson
+    targetRevision: main
+    path: chapter_argocd/app/default
   # バックエンド
   - repoURL: https://github.com/cloudnativedaysjp/cnd-handson-app
     targetRevision: main
@@ -207,10 +211,6 @@ spec:
       values: |
         entry:
           variants: null
-  # 画面
-  - repoURL: https://github.com/<GITHUB_USER>/cnd-handson
-    targetRevision: main
-    path: chapter_argocd/app/default
   destination:
     server: https://kubernetes.default.svc
     namespace: argocd-demo
@@ -241,8 +241,8 @@ spec:
 
 `sources` には、2 つの場所を書いています。
 
-- バックエンドは、cnd-handson-app リポジトリの Helm chart から入れます。`helm.values` で chart の値を上書きし、chart に入っている画面（`entry`）は入れないようにします。
 - 画面は、自分の fork の [app/default](app/default) から入れます。この章で変えるのは、こちらです。
+- バックエンドは、cnd-handson-app リポジトリの Helm chart から入れます。`helm.values` で chart の値を上書きし、chart に入っている画面（`entry`）は入れないようにします。
 
 `path` のディレクトリに何があるかで、Argo CD はマニフェストの作り方を変えます。
 

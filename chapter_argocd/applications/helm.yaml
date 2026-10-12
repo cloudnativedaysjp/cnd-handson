@@ -8,14 +8,6 @@ metadata:
 spec:
   project: default
   sources:
-  # バックエンド
-  - repoURL: https://github.com/cloudnativedaysjp/cnd-handson-app
-    targetRevision: main
-    path: deploy/helm/handson
-    helm:
-      values: |
-        entry:
-          variants: null
   # 画面
   - repoURL: https://github.com/<GITHUB_USER>/cnd-handson
     targetRevision: main
@@ -25,6 +17,14 @@ spec:
       valuesObject:
         image:
           tag: modern
+  # バックエンド
+  - repoURL: https://github.com/cloudnativedaysjp/cnd-handson-app
+    targetRevision: main
+    path: deploy/helm/handson
+    helm:
+      values: |
+        entry:
+          variants: null
   destination:
     server: https://kubernetes.default.svc
     namespace: argocd-helm

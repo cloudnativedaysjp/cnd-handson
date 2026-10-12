@@ -19,6 +19,10 @@ spec:
     spec:
       project: default
       sources:
+      # 画面
+      - repoURL: https://github.com/<GITHUB_USER>/cnd-handson
+        targetRevision: main
+        path: chapter_argocd/app/Kustomize/overlays/{{ .env }}
       # バックエンド
       - repoURL: https://github.com/cloudnativedaysjp/cnd-handson-app
         targetRevision: main
@@ -27,10 +31,6 @@ spec:
           values: |
             entry:
               variants: null
-      # 画面
-      - repoURL: https://github.com/<GITHUB_USER>/cnd-handson
-        targetRevision: main
-        path: chapter_argocd/app/Kustomize/overlays/{{ .env }}
       destination:
         server: https://kubernetes.default.svc
         namespace: argocd-kustomize-{{ .env }}
