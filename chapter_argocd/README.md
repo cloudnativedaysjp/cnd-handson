@@ -290,6 +290,8 @@ Web UI で argocd-demo を開くと、Git にあるリソースがまだクラ�
 
 画面上部の SYNC をクリックし、SYNCHRONIZE をクリックします。リソースが作られ、Synced と Healthy になります。
 
+同期した直後は、Synced でも Progressing のままです。Synced はクラスタが Git と一致していること、Healthy は Pod などが動いていることを表すので、Pod が起動するまで Healthy になりません。
+
 ![synced](image/v3/demo-synced.png)
 
 http://app.argocd.example.com を開きます。ログイン画面が出たら、次のユーザーでログインします。
@@ -361,24 +363,18 @@ http://app.argocd.example.com を開き直すと、カンバンの画面（moder
 
 ### 手で変えた状態を戻す
 
-kubectl で Deployment のレプリカ数を 3 に変えます。
+kubectl で Deployment のレプリカ数を 3 に変え、そのままレプリカ数の変化を見ます。selfHeal はすぐに戻すので、2 つのコマンドを続けて実行します。
 
 ```bash
-kubectl -n argocd-demo scale deployment handson --replicas=3
-```
-
-レプリカ数を見ます。
-
-```bash
-kubectl -n argocd-demo get deployment handson -w
+kubectl -n argocd-demo scale deployment handson --replicas=3 && kubectl -n argocd-demo get deployment handson -w
 ```
 
 Git ではレプリカ数が 1 なので、Argo CD が差分に気づいて 1 に戻します。確かめたら Ctrl+C で止めます。
 
 ```
 # 実行結果
+deployment.apps/handson scaled
 NAME      READY   UP-TO-DATE   AVAILABLE   AGE
-handson   1/1     1            1           10m
 handson   1/3     1            1           10m
 handson   1/1     1            1           10m
 ```
@@ -449,7 +445,11 @@ Web UI で argocd-kustomize-prd を開くと、handson の Pod が 2 つ並ん�
 
 ![appset](image/v3/kustomize-appset.png)
 
+ApplicationSet が作った Application は、ApplicationSet が管理します。Application だけを消しても作り直されるので、消すときは ApplicationSet を消します。
+
 ## Helm
+
+Kustomize は、元の YAML に環境ごとの差分を重ねて作り分けます。Helm は、テンプレートに values を埋め込んで描画するので、Application から values を変えるだけで中身を変えられます。
 
 [app/Helm/handson](app/Helm/handson) は画面の Helm chart です。バックエンドはこれまでと同じく cnd-handson-app の chart から入れます。[values.yaml](app/Helm/handson/values.yaml) では画面を legacy にしています。
 
