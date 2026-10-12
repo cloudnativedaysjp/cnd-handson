@@ -144,7 +144,6 @@ argo-cd-argocd-applicationset-controller-d68c4c54d-zct8m   1/1     Running     0
 argo-cd-argocd-dex-server-f68dccffb-smmlp                  1/1     Running     0          60s
 argo-cd-argocd-notifications-controller-545b4749f4-7l5gm   1/1     Running     0          60s
 argo-cd-argocd-redis-86c47569c-jwzwf                       1/1     Running     0          60s
-argo-cd-argocd-redis-secret-init-pksjj                     0/1     Completed   0          75s
 argo-cd-argocd-repo-server-5489fdcf4b-frk86                2/2     Running     0          60s
 argo-cd-argocd-server-7c99cfccdb-dghsj                     1/1     Running     0          60s
 ```
@@ -375,7 +374,7 @@ Git ではレプリカ数が 1 なので、Argo CD が差分に気づいて 1 �
 # 実行結果
 deployment.apps/handson scaled
 NAME      READY   UP-TO-DATE   AVAILABLE   AGE
-handson   1/3     1            1           10m
+handson   1/3     3            1           10m
 handson   1/1     1            1           10m
 ```
 
