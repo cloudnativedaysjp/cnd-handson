@@ -62,7 +62,7 @@ repoServer:
     - name: helmfile-cmp
       command: [/var/run/argocd/argocd-cmp-server]
       image: ghcr.io/helmfile/helmfile:latest
-      env:
+      env:  # root 以外で動くので、Helm の書き込み先を /tmp にする
         - name: HELM_CACHE_HOME
           value: /tmp/helm/cache
         - name: HELM_CONFIG_HOME
@@ -80,14 +80,11 @@ repoServer:
         - mountPath: /home/argocd/cmp-server/config/plugin.yaml
           subPath: helmfile-plugin.yaml
           name: argocd-cmp-cm
-        - mountPath: /tmp
+        - mountPath: /tmp  # repo-server とは別の /tmp を使う
           name: cmp-tmp
 ```
 
-- `command` の `argocd-cmp-server` は、repo-server とやり取りするためのプログラムです。repo-server が `/var/run/argocd` に置いたものを使います。
-- `argocd-cmp-cm` の `helmfile-plugin.yaml` を、`plugin.yaml` としてマウントします。サイドカーはこのファイルを読んで動きます。
-- サイドカーは root 以外のユーザー（UID 999）で動きます。Helm が書き込む場所を、`HELM_*_HOME` で `/tmp` に変えています。
-- `/tmp` には、repo-server とは別の空のボリュームをマウントします。repo-server と同じ `/tmp` を使うことは、Argo CD が禁止しています。
+サイドカーで動くのは Helmfile ではなく、Argo CD の `argocd-cmp-server` です。これが repo-server から頼まれて、`plugin.yaml` に書いたコマンドを実行します。`plugin.yaml` の中身は、`configs.cmp` に書いたプラグインの設定です。
 
 サイドカーが動いていることを確かめます。
 
