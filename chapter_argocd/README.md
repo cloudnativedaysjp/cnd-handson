@@ -38,13 +38,13 @@ Argo CD は、次のコンポーネントで動きます。
 
 ### Application
 
-Argo CD では、デプロイの単位を Application というカスタムリソースで書きます。
+Argo CD では、デプロイの単位を Application というカスタムリソースで書きます。Application は、アプリそのものではありません。どの Git のどのディレクトリを、どの namespace に入れるかを書いた設定です。
 
 ```yaml
 apiVersion: argoproj.io/v1alpha1
 kind: Application
 metadata:
-  name: argocd-demo
+  name: example
   namespace: argo-cd
 spec:
   source:        # どの Git の、どのディレクトリを使うか
@@ -53,7 +53,7 @@ spec:
     path: chapter_argocd/app/default
   destination:   # どのクラスタの、どの namespace に入れるか
     server: https://kubernetes.default.svc
-    namespace: argocd-demo
+    namespace: example
 ```
 
 Web UI や `argocd` コマンドで作った Application も、中身はこのリソースです。この章では YAML で書き、`kubectl apply` で作ります。
@@ -179,7 +179,14 @@ http://argocd.example.com を開き、ログインします。
 
 ## Application の中身を読む
 
-Application を作る前に、この章で使う YAML を読みます。[applications/demo.yaml](applications/demo.yaml) は、デモアプリを入れる Application です。
+この章でデプロイするのは、タスク管理のアプリ [cnd-handson-app](https://github.com/cloudnativedaysjp/cnd-handson-app) です。アプリは、画面とバックエンドでできています。
+
+- 画面: ブラウザで開くところ。legacy（表形式）と modern（カンバン）の 2 つの版がある
+- バックエンド: ログインやタスクを扱うところ。Postgres と 4 つのサービスでできている
+
+この章では、アプリ 1 つを Application 1 つで入れます。画面とバックエンドは、同じ namespace に入ります。
+
+Application を作る前に、YAML を読みます。[applications/demo.yaml](applications/demo.yaml) は、アプリを argocd-demo namespace に入れる Application です。
 
 ```yaml
 apiVersion: argoproj.io/v1alpha1
@@ -191,16 +198,31 @@ metadata:
   - resources-finalizer.argocd.argoproj.io/foreground
 spec:
   project: default
-  source:
-    repoURL: https://github.com/<GITHUB_USER>/cnd-handson
+  sources:
+  # バックエンド
+  - repoURL: https://github.com/cloudnativedaysjp/cnd-handson-app
+    targetRevision: main
+    path: deploy/helm/handson
+    helm:
+      values: |
+        entry:
+          variants: null
+  # 画面
+  - repoURL: https://github.com/<GITHUB_USER>/cnd-handson
     targetRevision: main
     path: chapter_argocd/app/default
   destination:
     server: https://kubernetes.default.svc
     namespace: argocd-demo
+  ignoreDifferences:
+  - kind: Secret
+    name: handson-secrets
+    jsonPointers:
+    - /data
   syncPolicy:
     syncOptions:
     - CreateNamespace=true
+    - RespectIgnoreDifferences=true
 ```
 
 | フィールド | 意味 |
@@ -208,12 +230,19 @@ spec:
 | `metadata.namespace` | Application 自体を置く namespace。Argo CD を入れた argo-cd にする |
 | `metadata.finalizers` | Application を消したときに、デプロイしたリソースも消す |
 | `spec.project` | Application をまとめる単位。この章では既定の default を使う |
-| `spec.source.repoURL` | マニフェストを取り出す Git リポジトリ |
-| `spec.source.targetRevision` | 使うブランチ。タグやコミットも書ける |
-| `spec.source.path` | リポジトリの中の、マニフェストがあるディレクトリ |
+| `spec.sources` | マニフェストを取り出す場所の一覧。1 つだけなら `source` と書く |
+| `sources[].repoURL` | マニフェストを取り出す Git リポジトリ |
+| `sources[].targetRevision` | 使うブランチ。タグやコミットも書ける |
+| `sources[].path` | リポジトリの中の、マニフェストがあるディレクトリ |
 | `spec.destination.server` | デプロイ先のクラスタ。`https://kubernetes.default.svc` は Argo CD 自身が動くクラスタ |
 | `spec.destination.namespace` | デプロイ先の namespace |
-| `spec.syncPolicy.syncOptions` | 同期の細かい設定。`CreateNamespace=true` で、namespace がなければ作る |
+| `spec.ignoreDifferences` | Git とクラスタを比べるときに、無視するところ |
+| `spec.syncPolicy.syncOptions` | 同期の細かい設定 |
+
+`sources` には、2 つの場所を書いています。
+
+- バックエンドは、cnd-handson-app リポジトリの Helm chart から入れます。`helm.values` で chart の値を上書きし、chart に入っている画面（`entry`）は入れないようにします。
+- 画面は、自分の fork の [app/default](app/default) から入れます。この章で変えるのは、こちらです。
 
 `path` のディレクトリに何があるかで、Argo CD はマニフェストの作り方を変えます。
 
@@ -221,70 +250,19 @@ spec:
 - `kustomization.yaml` があれば、Kustomize で描画する
 - `Chart.yaml` があれば、Helm で描画する
 
+`ignoreDifferences` と `RespectIgnoreDifferences=true` は、バックエンドの Secret のために書いています。
+
+- バックエンドの chart は、DB のパスワードと署名鍵を Secret に入れます。値は描画のたびに作り直されます。
+- `ignoreDifferences` で、Secret の値を比べないようにします。値が変わっても、OutOfSync になりません。
+- `RespectIgnoreDifferences=true` で、同期のときも Secret の値を上書きしません。最初に作った値が残ります。
+
+`CreateNamespace=true` は、namespace がなければ作る設定です。
+
 `syncPolicy` に `automated` を書くと、Git が変わったときに自動で同期します。demo.yaml には書いていないので、同期は手で行います。
-
-## バックエンドを入れる
-
-デモアプリは、タスク管理のアプリ [cnd-handson-app](https://github.com/cloudnativedaysjp/cnd-handson-app) です。画面には 2 つの版があります。
-
-- legacy: 表形式の画面
-- modern: カンバンの画面
-
-画面を出すには、ログインやタスクを扱うバックエンドが要ります。バックエンドは handson namespace に 1 つだけ入れます。この章のデモアプリは、どれもこのバックエンドにつなぎます。
-
-Argo CD は Helm chart を `helm template` で描画します。chart に Secret を作らせると、同期のたびにパスワードが変わります。そのため、Secret を先に作ります。
-
-```bash
-kubectl create namespace handson
-kubectl -n handson create secret generic handson-secrets \
-  --from-literal=DB_PASSWORD="$(openssl rand -hex 16)" \
-  --from-literal=IDP_SIGNING_KEY="$(openssl genpkey -algorithm RSA -pkeyopt rsa_keygen_bits:2048 2>/dev/null | base64 | tr -d '\n')" \
-  --from-literal=IDP_DEMO_PASSWORD=demo-password
-```
-
-バックエンドの Application は [applications/backend.yaml](applications/backend.yaml) です。demo.yaml との違いは 3 つです。
-
-```yaml
-spec:
-  source:
-    repoURL: https://github.com/cloudnativedaysjp/cnd-handson-app
-    targetRevision: main
-    path: deploy/helm/handson
-    helm:
-      values: |
-        secret:
-          create: false
-        entry:
-          variants: null
-  syncPolicy:
-    automated: {}
-```
-
-- `source` は、cnd-handson-app リポジトリにある Helm chart です。`path` に `Chart.yaml` があるので、Helm で描画します。
-- `helm.values` で、chart の values を上書きします。Secret は先に作ったものを使います。画面（`entry`）は各デモアプリが入れるので、ここでは入れません。
-- `automated` を書いているので、作るとすぐに同期します。
-
-Application を作ります。
-
-```bash
-kubectl apply -f applications/backend.yaml
-```
-
-handson-backend が Synced と Healthy になるまで待ちます。
-
-```bash
-kubectl -n argo-cd get applications
-```
-
-```
-# 実行結果
-NAME              SYNC STATUS   HEALTH STATUS
-handson-backend   Synced        Healthy
-```
 
 ## Application を作る
 
-[Application の中身を読む](#application-の中身を読む) で見た demo.yaml を作ります。[app/default](app/default) のマニフェストを、argocd-demo namespace に入れます。
+[Application の中身を読む](#application-の中身を読む) で見た demo.yaml を作ります。バックエンドと [app/default](app/default) の画面を、argocd-demo namespace に入れます。
 
 `repoURL` の `<GITHUB_USER>` を自分のアカウント名に置き換えて、作ります。
 
@@ -333,6 +311,7 @@ applications/demo.yaml の `syncPolicy` に `automated` を足します。
       selfHeal: true
     syncOptions:
     - CreateNamespace=true
+    - RespectIgnoreDifferences=true
 ```
 
 - `automated` を書くと、Git が変わったときに自動で同期します。
@@ -416,7 +395,7 @@ Kustomize で、開発環境（dev）と本番環境（prd）のマニフェス�
 | dev | [app/Kustomize/overlays/dev](app/Kustomize/overlays/dev) | legacy | 1 |
 | prd | [app/Kustomize/overlays/prd](app/Kustomize/overlays/prd) | modern | 2 |
 
-どちらも [app/Kustomize/base](app/Kustomize/base) を元にしています。各 overlay では、違うところだけを上書きします。
+どちらも [app/Kustomize/base](app/Kustomize/base) を元にしています。各 overlay では、違うところだけを上書きします。バックエンドは、環境ごとに 1 つずつ入ります。
 
 2 つの環境の Application は、ほとんど同じです。違うのは、環境の名前だけです。このようなときは、ApplicationSet を使います。ApplicationSet は、テンプレートから Application をまとめて作ります。
 
@@ -451,7 +430,6 @@ NAME                   SYNC STATUS   HEALTH STATUS
 argocd-demo            Synced        Healthy
 argocd-kustomize-dev   Synced        Healthy
 argocd-kustomize-prd   Synced        Healthy
-handson-backend        Synced        Healthy
 ```
 
 ![appset](image/v3/kustomize-appset.png)
@@ -469,7 +447,7 @@ kubectl -n argocd-kustomize-prd get pods
 
 ## Helm
 
-[app/Helm/handson](app/Helm/handson) は、デモアプリの Helm chart です。[values.yaml](app/Helm/handson/values.yaml) では、画面を legacy にしています。
+[app/Helm/handson](app/Helm/handson) は、画面の Helm chart です。バックエンドは、これまでと同じく cnd-handson-app の chart から入れます。[values.yaml](app/Helm/handson/values.yaml) では、画面を legacy にしています。
 
 ```yaml
 image:
@@ -480,6 +458,10 @@ image:
 Application では、values を上書きできます。[applications/helm.yaml](applications/helm.yaml) では、画面を modern にしています。
 
 ```yaml
+  # 画面
+  - repoURL: https://github.com/<GITHUB_USER>/cnd-handson
+    targetRevision: main
+    path: chapter_argocd/app/Helm/handson
     helm:
       valuesObject:
         image:
@@ -505,13 +487,13 @@ Application と ApplicationSet を消します。finalizer を付けているの
 
 ```bash
 kubectl -n argo-cd delete applicationset argocd-kustomize
-kubectl -n argo-cd delete application argocd-demo argocd-helm handson-backend
+kubectl -n argo-cd delete application argocd-demo argocd-helm
 ```
 
 namespace を消します。
 
 ```bash
-kubectl delete namespace argocd-demo argocd-kustomize-dev argocd-kustomize-prd argocd-helm handson
+kubectl delete namespace argocd-demo argocd-kustomize-dev argocd-kustomize-prd argocd-helm
 ```
 
 最後に、Argo CD を消します。
