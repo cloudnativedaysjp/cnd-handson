@@ -363,7 +363,7 @@ http://app.argocd.example.com を開き直すと、カンバンの画面（moder
 
 ### 手で変えた状態を戻す
 
-kubectl で Deployment のレプリカ数を 3 に変え、そのままレプリカ数の変化を見ます。selfHeal はすぐに戻すので、2 つのコマンドを続けて実行します。
+kubectl で Deployment のレプリカ数を 3 に変え、そのままレプリカ数の変化を見ます。selfHeal で自動的に戻るので、変化を見逃さないよう 2 つのコマンドを続けて実行します。
 
 ```bash
 kubectl -n argocd-demo scale deployment handson --replicas=3 && kubectl -n argocd-demo get deployment handson -w
@@ -416,7 +416,7 @@ ApplicationSet を作ります。
 sed "s/<GITHUB_USER>/${GITHUB_USER}/" applications/kustomize.yaml | kubectl apply -f -
 ```
 
-Application が 2 つ作られます。
+Application が 2 つ作られます。テンプレートに `automated` を書いているので、作られた Application はすぐに同期します。
 
 ```bash
 kubectl -n argo-cd get applications
