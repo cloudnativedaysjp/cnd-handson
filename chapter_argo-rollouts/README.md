@@ -86,16 +86,6 @@ helmfile で Argo Rollouts を入れます。
 helmfile sync -f helm/helmfile.yaml
 ```
 
-```bash
-kubectl -n argo-rollouts get deployments
-```
-
-```
-# 実行結果
-NAME            READY   UP-TO-DATE   AVAILABLE   AGE
-argo-rollouts   2/2     2            2           60s
-```
-
 [helm/values.yaml](helm/values.yaml) では、Gateway API のプラグインを読み込みます。Canary Release で、Rollout が HTTPRoute の重みを書き換えるのに使います。
 
 ## Blue/Green Deployment: Pod の用意と切り替えは別
@@ -161,7 +151,7 @@ fork の [app/blue-green/rollout.yaml](app/blue-green/rollout.yaml) を GitHub �
 
 Web UI で blue-green を開き、Rollout（handson）の「⋮」から Promote-Full をクリックし、確認の画面で OK をクリックします。rollout-extension が入っていれば、Rollout をクリックしたときに ROLLOUT のタブが出て、新旧のバージョンの状態をまとめて確かめられます。
 
-Service をもう一度見ると、`handson` のハッシュも新しい ReplicaSet のものに変わっています。active も緑になり、古いバージョンの Pod は少し待ってから消えます。切り替えで Argo Rollouts が変えたのは、Service の selector だけです。そのため一度に切り替わり、新旧のバージョンが混ざりません。
+Service をもう一度見ると、`handson` のハッシュも新しい ReplicaSet のものに変わっています。active も緑になり、古いバージョンの Pod は少し待ってから消えます。この Promote でトラフィックの行き先を変えるために、Argo Rollouts が書き換えたのは `handson` の selector だけです。そのため一度に切り替わり、新旧のバージョンが混ざりません。
 
 Application を消します。
 
@@ -233,7 +223,12 @@ fork の [app/canary/rollout.yaml](app/canary/rollout.yaml) で、image のタ�
 > [!IMPORTANT]
 > 重みが 80 と 20 に変わりました。Git の httproute.yaml は 100 と 0 のままです。重みを書き換えたのは Argo CD ではなく、Rollout の `setWeight: 20` を読んだ Argo Rollouts です。
 
+<details>
+<summary>Argo CD は、書き換えられた重みを Git の値に戻さないのか</summary>
+
 Argo CD から見ると、HTTPRoute は Git と違う状態です。それでも Argo CD は 100 と 0 に戻しません。canary の Application は `automated: {}` だけで、[Argo CD の章](../chapter_argocd/README.md#手で変えた状態を戻す)で使った `selfHeal: true` を書いていないからです。`selfHeal: true` を付けると、Argo CD と Argo Rollouts が重みを書き換え合います。実際の運用では、`ignoreDifferences` で重みを比較から外します。
+
+</details>
 
 http://app.rollouts.example.com を開くと、青いタイルの中に、緑のタイルが 2 割ほど混ざります。
 
@@ -310,7 +305,7 @@ kubectl -n argo-cd delete application canary
           duration: 30s
 ```
 
-この節では、2 つのイメージで結果を比べます。どちらも、人は何も操作しません。
+この節では、2 つのイメージで結果を比べます。人が行うのは image のタグを変えるところまでで、Promote の操作は要りません。うまくいけば、次の結果になります。
 
 | | `green` | `bad-red` |
 |---|---|---|
@@ -358,9 +353,12 @@ RolloutAborted: Rollout aborted update to revision 3: Step-based analysis phase 
 ```
 
 > [!IMPORTANT]
-> 重みが 100 と 0 に戻り、トラフィックはすべて緑のバージョンに流れています。Prometheus のメトリクスを測って失敗と判断し、トラフィックを戻したのは Argo Rollouts です。その判断は AnalysisRun に残っています。`bad-red` に届いたのは 20% のリクエストだけで、人は何もしていません。
+> 重みが 100 と 0 に戻り、トラフィックはすべて緑のバージョンに流れています。Prometheus のメトリクスを測って失敗と判断し、トラフィックを戻したのは Argo Rollouts です。その判断は AnalysisRun に残っています。`bad-red` に届いたのは 20% のリクエストだけで、人は Promote も中止もしていません。
 
-Web UI では、prometheus-analysis の Rollout が Degraded になります。Git には `bad-red` が残っているので、直すときは Git の image のタグを戻します。
+> [!NOTE]
+> 結果は、リクエストの量と、メトリクスが Prometheus に届くタイミングで変わります。画面を開いていないなどでリクエストが少ないと、成功率が 95% を下回らず、`bad-red` でも Analysis が成功することがあります。
+
+中止されたとき、Web UI では prometheus-analysis の Rollout が Degraded になります。Git には `bad-red` が残っているので、直すときは Git の image のタグを戻します。
 
 Application を消します。
 
