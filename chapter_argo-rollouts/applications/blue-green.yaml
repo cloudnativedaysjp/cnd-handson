@@ -1,0 +1,20 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: blue-green
+  namespace: argo-cd
+  finalizers:
+  - resources-finalizer.argocd.argoproj.io/foreground
+spec:
+  project: default
+  source:
+    repoURL: https://github.com/<GITHUB_USER>/cnd-handson
+    targetRevision: main
+    path: chapter_argo-rollouts/app/blue-green
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: blue-green
+  syncPolicy:
+    automated: {}
+    syncOptions:
+    - CreateNamespace=true

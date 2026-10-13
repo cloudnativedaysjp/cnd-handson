@@ -4,18 +4,21 @@ metadata:
   name: handson-analysis
 spec:
   args:
-  - name: ingress
+  # Envoy Gateway が HTTPRoute ごとに作るクラスタの名前（httproute/<namespace>/<name>/rule/<index>）
+  - name: envoy-cluster
   metrics:
   - name: handson-analysis
-    interval: 10s
-    successCondition: isNaN(result[0]) || result[0] > 0.90
-    failureLimit: 3
+    # 15 秒おきに 4 回測る。メトリクスが新しいバージョンのリクエストを含むまで 1 分ほどかかる
+    interval: 15s
+    count: 4
+    # リクエストがない間は NaN になるので、成功として扱う
+    successCondition: isNaN(result[0]) || result[0] >= 0.95
+    # 1 回でも下回ったら失敗にする
+    failureLimit: 0
     provider:
       prometheus:
         address: http://kube-prometheus-stack-prometheus.prometheus.svc.cluster.local:9090
         query: >+
-          sum(
-            rate(nginx_ingress_controller_requests{ingress="{{args.ingress}}",status!~"[4-5].*"}[1m]))
-            /
-            sum(rate(nginx_ingress_controller_requests{ingress="{{args.ingress}}"}[1m])
-          )
+          sum(rate(envoy_cluster_upstream_rq_xx{envoy_cluster_name="{{args.envoy-cluster}}",envoy_response_code_class!~"4|5"}[1m]))
+          /
+          sum(rate(envoy_cluster_upstream_rq_xx{envoy_cluster_name="{{args.envoy-cluster}}"}[1m]))
