@@ -24,9 +24,7 @@ graph LR;
     成功-->CanaryRelease;
 ```
 
-Deployment のローリングアップデートは、readiness probe が通れば、Pod を新しいバージョンに入れ替えていきます。エラーを返すバージョンでも、起動さえすれば利用者の全員に届きます。
-
-プログレッシブデリバリーでは、新しいバージョンに届くのは一部のリクエストだけです。問題が見つかれば、全員に届く前に元のバージョンへ自動で戻ります。
+Deployment のローリングアップデートは、readiness probe が通れば、Pod を新しいバージョンに入れ替えていきます。エラーを返すバージョンでも、起動さえすれば利用者の全員に届きます。プログレッシブデリバリーでは、新しいバージョンに届くのは一部のリクエストだけです。問題が見つかれば、全員に届く前に元のバージョンへ自動で戻ります。
 
 ## 誰が何を書き換えるか
 
@@ -163,9 +161,7 @@ fork の [app/blue-green/rollout.yaml](app/blue-green/rollout.yaml) を GitHub �
 
 Web UI で blue-green を開き、Rollout（handson）の「⋮」から Promote-Full をクリックし、確認の画面で OK をクリックします。rollout-extension が入っていれば、Rollout をクリックしたときに ROLLOUT のタブが出て、新旧のバージョンの状態をまとめて確かめられます。
 
-Service をもう一度見ると、`handson` のハッシュも新しい ReplicaSet のものに変わっています。active も緑になり、古いバージョンの Pod は少し待ってから消えます。
-
-切り替えで Argo Rollouts が変えたのは、Service の selector だけです。そのため一度に切り替わり、新旧のバージョンが混ざりません。
+Service をもう一度見ると、`handson` のハッシュも新しい ReplicaSet のものに変わっています。active も緑になり、古いバージョンの Pod は少し待ってから消えます。切り替えで Argo Rollouts が変えたのは、Service の selector だけです。そのため一度に切り替わり、新旧のバージョンが混ざりません。
 
 Application を消します。
 
@@ -266,9 +262,7 @@ kubectl -n argo-cd delete application canary
 
 ## Analysis: リリースを進めるかを測って決める
 
-ここまでは、先に進めるかどうかを人が決めて、Promote-Full をクリックしました。Analysis を使うと、Argo Rollouts が新しいバージョンを測り、その結果で進めるか戻すかを決めます。
-
-何を測るかは、AnalysisTemplate の `provider` で選びます。
+ここまでは、先に進めるかどうかを人が決めて、Promote-Full をクリックしました。Analysis を使うと、Argo Rollouts が新しいバージョンを測り、その結果で進めるか戻すかを決めます。何を測るかは、AnalysisTemplate の `provider` で選びます。
 
 | provider | 成功の決め方 | 例 |
 |---|---|---|
@@ -298,9 +292,7 @@ kubectl -n argo-cd delete application canary
 
 15 秒おきに 4 回測り、成功率が 95% 以上なら成功です。`failureLimit: 0` なので、1 回でも下回れば失敗になります。「成功率 95% 以上」というリリースの判断基準が、ファイルとして Git に残ります。
 
-測っているのは、HTTPRoute を通ったリクエスト全体の成功率です。新しいバージョンだけでなく、古いバージョンに流れた 80% も含みます。新しいバージョンのエラーが多ければ、全体の成功率も下がるので、この章ではこれで判断します。
-
-リクエストがないと、成功率は NaN になります。この AnalysisTemplate は NaN を成功として扱うので、誰もアクセスしていなければ、何も測らないまま Analysis が成功します。
+測っているのは、HTTPRoute を通ったリクエスト全体の成功率です。新しいバージョンだけでなく、古いバージョンに流れた 80% も含みます。新しいバージョンのエラーが多ければ、全体の成功率も下がるので、この章ではこれで判断します。リクエストがないと、成功率は NaN になります。この AnalysisTemplate は NaN を成功として扱うので、誰もアクセスしていなければ、何も測らないまま Analysis が成功します。
 
 [analysis/prometheus/rollout.yaml](analysis/prometheus/rollout.yaml) では、Canary Release の `pause: {}` を `analysis` に置き換えます。人の代わりに Analysis が、50% に進めてよいかを決めます。
 
@@ -336,9 +328,7 @@ Analysis の間は、http://app.rollouts.example.com を開いたままにして
 
 ### 成功する例
 
-fork の [analysis/prometheus/rollout.yaml](analysis/prometheus/rollout.yaml) で、image のタグを `blue` から `green` に変えてコミットします。
-
-同期すると、20% で Analysis が始まります。1 分ほどで Analysis が成功し、50%、100% と自動で進みます。誰もクリックしていないのに、画面のタイルは緑が増えていきます。AnalysisRun は `Successful` になります。
+fork の [analysis/prometheus/rollout.yaml](analysis/prometheus/rollout.yaml) で、image のタグを `blue` から `green` に変えてコミットします。同期すると、20% で Analysis が始まります。1 分ほどで Analysis が成功し、50%、100% と自動で進みます。誰もクリックしていないのに、画面のタイルは緑が増えていきます。AnalysisRun は `Successful` になります。
 
 ```bash
 kubectl -n prometheus-analysis get analysisrun
@@ -346,15 +336,9 @@ kubectl -n prometheus-analysis get analysisrun
 
 ### 失敗する例
 
-この章でいちばん見てほしいのが、ここです。
+この章でいちばん見てほしいのが、この例です。`argoproj/rollouts-demo:bad-red` は、一部のリクエストにエラーを返すイメージです。アプリは起動し、readiness probe も通るので、Deployment ならそのまま全員に届いてしまいます。コミットする前に、HTTPRoute の重みと画面のタイルがどう変わるかを予想してみてください。
 
-`argoproj/rollouts-demo:bad-red` は、一部のリクエストにエラーを返すイメージです。アプリは起動し、readiness probe も通ります。Deployment なら、そのまま全員に届くバージョンです。
-
-コミットする前に、何が起きるかを予想してみてください。HTTPRoute の重みと画面のタイルは、どう変わるでしょうか。
-
-fork の [analysis/prometheus/rollout.yaml](analysis/prometheus/rollout.yaml) で、image のタグを `green` から `bad-red` に変えてコミットします。
-
-同期すると、20% で Analysis が始まります。画面には、赤いタイルとエラーが混ざります。AnalysisRun を見ながら待ちます。
+fork の [analysis/prometheus/rollout.yaml](analysis/prometheus/rollout.yaml) で、image のタグを `green` から `bad-red` に変えてコミットします。同期すると 20% で Analysis が始まり、画面には赤いタイルとエラーが混ざります。AnalysisRun を見ながら待ちます。
 
 ```bash
 kubectl -n prometheus-analysis get analysisrun -w
