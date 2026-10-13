@@ -1,6 +1,6 @@
 # Argo Rollouts
 
-この章では、Kubernetes でプログレッシブデリバリーを行うツール、Argo Rollouts を使います。Blue/Green Deployment と Canary Release で新しいバージョンを出します。最後に、新しいバージョンを測った結果で、リリースを自動で進めたり止めたりします。
+この章では、Kubernetes でプログレッシブデリバリーを行うツール、Argo Rollouts を使います。Blue/Green Deployment と Canary Release で新しいバージョンをリリースします。最後に、新しいバージョンを測った結果で、リリースを自動で進めたり止めたりします。
 
 ## プログレッシブデリバリー
 
@@ -356,7 +356,7 @@ handson-d7d97867f-2-1   Successful   2m
 
 #### 失敗する例
 
-`argoproj/rollouts-demo:bad-red` は、一部のリクエストにエラーを返すイメージです。これを新しいバージョンとして出します。
+`argoproj/rollouts-demo:bad-red` は、一部のリクエストにエラーを返すイメージです。これを新しいバージョンとしてリリースします。
 
 fork の [analysis/prometheus/rollout.yaml](analysis/prometheus/rollout.yaml) で、image のタグを `green` から `bad-red` に変えてコミットします。
 
