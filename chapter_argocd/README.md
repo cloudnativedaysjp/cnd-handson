@@ -180,7 +180,7 @@ http://argocd.example.com を開き、ログインします。
 
 この章では、タスク管理のアプリ [cnd-handson-app](https://github.com/cloudnativedaysjp/cnd-handson-app) をデプロイします。アプリは画面とバックエンドでできています。
 
-- 画面: ブラウザで開くところ。legacy（表形式）と modern（カンバン）の 2 つの版がある
+- 画面: ブラウザで開くところ。legacy（表形式）と modern（カンバン）の 2 種類がある
 - バックエンド: ログインやタスクを扱うところ。Postgres と 4 つのサービスでできている
 
 アプリ 1 つを Application 1 つで入れるので、画面とバックエンドは同じ namespace に入ります。
@@ -224,42 +224,36 @@ spec:
     - RespectIgnoreDifferences=true
 ```
 
+最初に押さえるのは、次の項目です。
+
 | フィールド | 意味 |
 |---|---|
 | `metadata.namespace` | Application 自体を置く namespace。Argo CD を入れた argo-cd にする |
-| `metadata.finalizers` | Application を消したときに、デプロイしたリソースも消す |
-| `spec.project` | Application をまとめる単位。この章では既定の default を使う |
-| `spec.sources` | マニフェストを取り出す場所の一覧。1 つだけなら `source` と書く |
 | `sources[].repoURL` | マニフェストを取り出す Git リポジトリ |
 | `sources[].targetRevision` | 使うブランチ。タグやコミットも書ける |
 | `sources[].path` | リポジトリの中の、マニフェストがあるディレクトリ |
-| `spec.destination.server` | デプロイ先のクラスタ。`https://kubernetes.default.svc` は Argo CD 自身が動くクラスタ |
-| `spec.destination.namespace` | デプロイ先の namespace |
-| `spec.ignoreDifferences` | Git とクラスタを比べるときに、無視するところ |
-| `spec.syncPolicy.syncOptions` | 同期の細かい設定 |
+| `spec.destination` | デプロイ先のクラスタと namespace。`https://kubernetes.default.svc` は Argo CD 自身が動くクラスタ |
+| `spec.syncPolicy` | 同期のしかた |
 
-`sources` には 2 つの場所を書いています。
+今回は、画面とバックエンドを別のリポジトリから取得するため、`sources` を 2 つ指定しています。この章で書き換えるのは、自分の fork にある画面の [app/default](app/default) です。取得元が 1 つなら、`sources` ではなく `source` と書きます。
 
-- 画面は自分の fork の [app/default](app/default) から入れます。この章ではこちらを書き換えます。
-- バックエンドは cnd-handson-app リポジトリの Helm chart から入れます。chart には画面（`entry`）も入っているので、`helm.values` で外しています。
+`syncPolicy` に `automated` を書いていないので、この Application は手で同期します。
 
-`path` のディレクトリに何があるかで、Argo CD はマニフェストの作り方を変えます。
+<details>
+<summary>補足: そのほかの項目</summary>
 
-- YAML が並んでいるだけなら、そのまま使う
-- `kustomization.yaml` があれば、Kustomize で描画する
-- `Chart.yaml` があれば、Helm で描画する
+残りの項目は、サンプルアプリの都合で書いています。GitOps の流れを追うだけなら、読み飛ばして構いません。
 
-`ignoreDifferences` と `RespectIgnoreDifferences=true` は、バックエンドの Secret のための設定です。
+- `metadata.finalizers`: Application を消したときに、デプロイしたリソースも消します。
+- `spec.project`: Application をまとめる単位です。この章では既定の default を使います。
+- `helm.values`: バックエンドの chart には画面（`entry`）も入っているので、ここで外しています。
+- `CreateNamespace=true`: namespace がなければ作ります。
 
-- バックエンドの chart は DB のパスワードと署名鍵を Secret に入れます。この値は描画のたびに作り直されます。
-- `ignoreDifferences` で Secret の値を比較から外します。値が変わっても OutOfSync になりません。
-- `RespectIgnoreDifferences=true` を付けると、同期のときも Secret の値を上書きせず、最初に作った値が残ります。
+`ignoreDifferences` と `RespectIgnoreDifferences=true` は、バックエンドの Secret のための設定です。バックエンドの chart は、DB のパスワードと署名鍵を Secret に入れます。この値は、描画のたびに作り直されます。
 
-その代わり、chart の values で Secret の値を変えても、クラスタの Secret には反映されません。
+`ignoreDifferences` で、Secret の値を比較から外します。値が変わっても OutOfSync になりません。`RespectIgnoreDifferences=true` を付けると、同期のときも Secret の値を上書きせず、最初に作った値が残ります。その代わり、chart の values で Secret の値を変えても、クラスタの Secret には反映されません。
 
-`CreateNamespace=true` は namespace がなければ作る設定です。
-
-`syncPolicy` に `automated` を書くと Git の変更を自動で同期しますが、demo.yaml には書いていないので手で同期します。
+</details>
 
 ## Application を作る
 
@@ -362,13 +356,15 @@ http://app.argocd.example.com を開き直すと、カンバンの画面（moder
 
 ### 手で変えた状態を戻す
 
-kubectl で Deployment のレプリカ数を 3 に変え、そのままレプリカ数の変化を見ます。selfHeal で自動的に戻るので、変化を見逃さないよう 2 つのコマンドを続けて実行します。
+Git を通さずに、kubectl で Deployment のレプリカ数を 3 に変えます。Git の deployment.yaml では、レプリカ数は 1 です。`selfHeal: true` の Application で、何が起きるかを予想してから実行してください。
+
+変化はすぐに起きるので、見逃さないよう 2 つのコマンドを続けて実行します。
 
 ```bash
 kubectl -n argocd-demo scale deployment handson --replicas=3 && kubectl -n argocd-demo get deployment handson -w
 ```
 
-Git ではレプリカ数が 1 なので、Argo CD が差分に気づいて 1 に戻します。確かめたら Ctrl+C で止めます。
+確かめたら Ctrl+C で止めます。
 
 ```
 # 実行結果
@@ -378,12 +374,26 @@ handson   1/3     3            1           10m
 handson   1/1     1            1           10m
 ```
 
-クラスタを変えたいときは、kubectl ではなく Git を変えます。
+3 になったレプリカ数は、すぐに 1 に戻ります。Application Controller が、クラスタと Git の差分に気づき、Git の状態に戻したからです。クラスタを変えたいときは、kubectl ではなく Git を変えます。
 
 > [!NOTE]
 > Git からマニフェストを消しても、既定ではクラスタのリソースは消えません。消すには `automated` に `prune: true` を足します。
 
-## Kustomize と ApplicationSet
+## マニフェストの作り方を変える
+
+ここまでは、YAML を並べたディレクトリをそのまま使いました。Argo CD は、Kustomize や Helm で描画したマニフェストも扱えます。
+
+受け持ちは 2 つに分かれます。Repository Server が Git からマニフェストを取り出して描画し、Application Controller がそれをクラスタと比べて適用します。描画の方法が変わっても、比べて同期する仕組みは、ここまでと同じです。
+
+どの方法で描画するかは、`path` のディレクトリに何があるかで決まります。
+
+| ディレクトリにあるもの | 描画の方法 |
+|---|---|
+| YAML だけ | そのまま使う |
+| `kustomization.yaml` | Kustomize で描画する |
+| `Chart.yaml` | Helm で描画する |
+
+### Kustomize と ApplicationSet
 
 Kustomize で開発環境（dev）と本番環境（prd）のマニフェストを作り分けます。
 
@@ -446,7 +456,7 @@ Web UI で argocd-kustomize-prd を開くと、handson の Pod が 2 つ並ん�
 
 ApplicationSet が作った Application は、ApplicationSet が管理します。Application だけを消しても作り直されるので、消すときは ApplicationSet を消します。
 
-## Helm
+### Helm
 
 Kustomize は、元の YAML に環境ごとの差分を重ねて作り分けます。Helm は、テンプレートに values を埋め込んで描画するので、Application から values を変えるだけで中身を変えられます。
 
