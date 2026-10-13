@@ -120,7 +120,7 @@ Argo CD が変更に気づくまで 3 分ほどかかります。待てないと
 
 ![demoapp](image/BG/demoapp.png)
 
-Web UI で blue-green を開き、Rollout（handson）の「⋮」から Promote-Full をクリックします。active も緑に切り替わり、古い版の Pod は少し待ってから消えます。
+Web UI で blue-green を開き、Rollout（handson）の「⋮」から Promote-Full をクリックし、確認の画面で OK をクリックします。active も緑に切り替わり、古い版の Pod は少し待ってから消えます。
 
 rollout-extension が入っていれば、Rollout をクリックしたときに ROLLOUT のタブが出ます。新旧の版の状態を、まとめて確かめられます。
 
@@ -190,7 +190,7 @@ http://app.rollouts.example.com を開くと、青いタイルの中に、緑の
 
 ![demoapp](image/canary/demoapp.png)
 
-Web UI で canary を開き、Rollout の「⋮」から Promote-Full をクリックします。すべてのトラフィックが新しい版に流れ、タイルが緑だけになります。
+Web UI で canary を開き、Rollout の「⋮」から Promote-Full をクリックし、確認の画面で OK をクリックします。すべてのトラフィックが新しい版に流れ、タイルが緑だけになります。
 
 Application を消します。
 
