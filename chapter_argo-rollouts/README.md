@@ -2,12 +2,14 @@
 
 この章では、Kubernetes でプログレッシブデリバリーを行うツール、Argo Rollouts を使います。機能を一通り触るより、Argo Rollouts が裏で何を書き換えているかを、自分の目で確かめることを目指します。
 
-| 節 | 確かめること |
-|---|---|
-| Blue/Green Deployment | Pod の入れ替えと、トラフィックの切り替えは、別々に起きる |
-| Canary Release | リリースが進むと、Argo Rollouts が HTTPRoute の重みを書き換える |
-| Analysis | リリースを進めるかどうかを、人ではなくメトリクスが決める |
-| 失敗する例 | アプリが起動していても、エラーが多ければリリースは止まる |
+リリースを先に進める役は、節を追うごとに人から Argo Rollouts へ移ります。Argo CD の章で、手で同期してから自動の同期に進んだのと同じ流れです。
+
+| 節 | 先に進めるのは | 確かめること |
+|---|---|---|
+| Blue/Green Deployment | 人が切り替える | Pod の入れ替えと、トラフィックの切り替えは、別々に起きる |
+| Canary Release | 途中で止まり、人が進める | リリースが進むと、Argo Rollouts が HTTPRoute の重みを書き換える |
+| Analysis | メトリクスが決める | 人がクリックしなくても、リリースが進む |
+| 失敗する例 | メトリクスが止める | アプリが起動していても、エラーが多ければリリースは止まる |
 
 ## プログレッシブデリバリー
 
@@ -379,6 +381,8 @@ handson-d7d97867f-2-1   Successful   2m
 この章でいちばん見てほしいのが、ここです。
 
 `argoproj/rollouts-demo:bad-red` は、一部のリクエストにエラーを返すイメージです。アプリは起動し、readiness probe も通ります。Deployment なら、そのまま全員に届くバージョンです。
+
+コミットする前に、何が起きるかを予想してみてください。HTTPRoute の重みと画面のタイルは、どう変わるでしょうか。
 
 fork の [analysis/prometheus/rollout.yaml](analysis/prometheus/rollout.yaml) で、image のタグを `green` から `bad-red` に変えてコミットします。
 
