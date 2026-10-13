@@ -7,7 +7,7 @@
 | Application を作る | Git にあってクラスタにないものを、Argo CD が OutOfSync として見つける |
 | 自動で同期する | Git を変えると、クラスタが Git に合わせて変わる |
 | 手で変えた状態を戻す | クラスタを手で変えても、Argo CD が Git の状態に戻す |
-| マニフェストの作り方を変える | Kustomize や Helm で描画しても、比べて同期する仕組みは同じ |
+| Argo CD でさまざまな構成をデプロイする | Kustomize や Helm で描画しても、比べて同期する仕組みは同じ |
 
 Argo CD の Config Management Plugin（CMP）を試したい方は、この章のあとに [Argo CD with CMP](./README_cmp.md) に進んでください。
 
@@ -380,9 +380,9 @@ handson   1/1     1            1           10m
 > [!NOTE]
 > Git からマニフェストを消しても、既定ではクラスタのリソースは消えません。消すには `automated` に `prune: true` を足します。
 
-## マニフェストの作り方を変える
+## Argo CD でさまざまな構成をデプロイする
 
-ここまでは、YAML を並べたディレクトリをそのまま使いました。Argo CD は、Kustomize や Helm で描画したマニフェストも扱えます。
+ここまでは、YAML を並べたディレクトリをそのまま使いました。Argo CD は、Kustomize や Helm で描画したマニフェストも扱えます。複数の環境に向けた Application は、ApplicationSet でまとめて作れます。
 
 受け持ちは 2 つに分かれます。Repository Server が Git からマニフェストを取り出して描画し、Application Controller がそれをクラスタと比べて適用します。描画の方法が変わっても、比べて同期する仕組みは、ここまでと同じです。
 
