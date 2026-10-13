@@ -212,9 +212,11 @@ Canary Release では、トラフィックの一部だけを新しいバージ�
 
 | 状態 | `handson`（stable） | `handson-canary` |
 |---|---|---|
-| リリースの前 | 100 | 0 |
-| 20% を流して止まっている | 80 | 20 |
-| Promote が終わった | 100 | 0 |
+| リリースの前 | 100（blue） | 0 |
+| 20% を流して止まっている | 80（blue） | 20（green） |
+| Promote が終わった | 100（green） | 0 |
+
+Promote が終わると、Argo Rollouts は `handson` を green の Pod に向け直します。そのあと重みを 100 と 0 に戻すので、すべてのトラフィックが green に流れます。
 
 ### Application を作る
 
