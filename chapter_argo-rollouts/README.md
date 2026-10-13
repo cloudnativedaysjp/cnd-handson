@@ -336,7 +336,7 @@ kubectl -n prometheus-analysis get analysisrun
 
 ### 失敗する例
 
-この章でいちばん見てほしいのが、この例です。`argoproj/rollouts-demo:bad-red` は、一部のリクエストにエラーを返すイメージです。アプリは起動し、readiness probe も通るので、Deployment ならそのまま全員に届いてしまいます。コミットする前に、HTTPRoute の重みと画面のタイルがどう変わるかを予想してみてください。
+`argoproj/rollouts-demo:bad-red` は、一部のリクエストにエラーを返すイメージです。アプリは起動し、readiness probe も通るので、Deployment ならそのまま全員に届いてしまいます。コミットする前に、HTTPRoute の重みと画面のタイルがどう変わるかを予想してみてください。
 
 fork の [analysis/prometheus/rollout.yaml](analysis/prometheus/rollout.yaml) で、image のタグを `green` から `bad-red` に変えてコミットします。同期すると 20% で Analysis が始まり、画面には赤いタイルとエラーが混ざります。AnalysisRun を見ながら待ちます。
 
