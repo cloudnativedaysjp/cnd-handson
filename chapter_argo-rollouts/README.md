@@ -1,27 +1,37 @@
 # Argo Rollouts
 
-この章では、Kubernetes でプログレッシブデリバリーを行うツール、Argo Rollouts を使います。
-
-- Blue/Green Deployment で、新しい版を確かめてから切り替えます。
-- Canary Release で、トラフィックの一部だけを新しい版に流します。
-- 分析（Analysis）の結果で、リリースを進めるか止めるかを自動で決めます。
+この章では、Kubernetes でプログレッシブデリバリーを行うツール、Argo Rollouts を使います。Blue/Green Deployment と Canary Release で新しい版を出したあと、新しい版を測った結果で、リリースを自動で進めたり止めたりします。
 
 ## プログレッシブデリバリー
 
-プログレッシブデリバリーは、新しい版を少しずつ公開し、問題があれば自動で戻すリリースの方法です。次の 3 つを組み合わせます。
-
-- トラフィックの一部だけを新しい版に流す
-- 新しい版のエラー率などを分析する
-- 分析が失敗したら、元の版に戻す
+プログレッシブデリバリーは、新しい版を少しずつ公開し、問題があれば自動で戻すリリースの方法です。まずトラフィックの一部だけを新しい版に流し、その間にエラー率などを測ります。結果が良ければ割合を増やし、悪ければ元の版に戻します。この「測って決める」部分を、Argo Rollouts では Analysis と呼びます。
 
 ```mermaid
 graph LR;
-    CanaryRelease-->分析;
-    分析-->成功;
-    分析-->失敗;
+    CanaryRelease-->Analysis;
+    Analysis-->成功;
+    Analysis-->失敗;
     失敗-->ロールバック;
     成功-->CanaryRelease;
 ```
+
+### 全員がバグに当たる前に止められる
+
+新しい版に、一部のリクエストにだけエラーを返すバグが入っていたとします。アプリ自体は起動するので、readiness probe は通ります。
+
+Deployment のローリングアップデートでは、probe が通るたびに Pod が新しい版へ入れ替わり、最後には利用者の全員がバグに当たります。止めるには、アラートで人が気づいて、手で戻すしかありません。夜中なら、誰かが起こされます。
+
+プログレッシブデリバリーなら、新しい版に流れるのはトラフィックの 20% だけです。Analysis がエラー率の上昇を 1 分ほどで見つけ、Argo Rollouts が元の版に戻します。人は、翌朝に結果を確かめれば足ります。
+
+人が気づいて戻すまでに 15 分かかるとして、数字で比べてみます。ローリングアップデートでは、15 分間、すべてのリクエストがバグに当たります。20% を 1 分で止めれば、バグに当たるリクエストは 75 分の 1 で済みます。
+
+### リリースを進める判断を Git に置ける
+
+Analysis の条件は、「成功率が 95% 以上なら進める」のように AnalysisTemplate に書きます。進めるかどうかの基準がファイルになるので、担当者によって判断がぶれません。基準そのものも、Git でレビューできます。新しい版を出したあと、ダッシュボードを見張り続ける人も要らなくなります。
+
+失敗しても影響は小さく、戻すのも自動です。そのため変更をためこまず、小さく何度も出せるようになります。
+
+この流れは、章の最後の「失敗する例」で実際に試します。
 
 ## Argo Rollouts
 
@@ -33,7 +43,7 @@ Argo Rollouts は、Kubernetes にプログレッシブデリバリーの機能�
 |---|---|
 | Rollout | Deployment の代わりに使う。Blue/Green や Canary などの更新のしかたを書く |
 | AnalysisTemplate | 何をどう測って成功とするかを書いたテンプレート |
-| AnalysisRun | AnalysisTemplate を元に、実際に行った分析。結果が残る |
+| AnalysisRun | AnalysisTemplate を元に、実際に行った Analysis。結果が残る |
 
 Argo CD と組み合わせると、Git の変更をきっかけにプログレッシブデリバリーを進められます。
 
@@ -41,7 +51,7 @@ Argo CD と組み合わせると、Git の変更をきっかけにプログレ�
 
 ### Prometheus
 
-分析で Envoy Gateway のメトリクスを使います。[chapter_prometheus](../chapter_prometheus/README.md) の手順で kube-prometheus-stack を入れます。そのうえで、Envoy Gateway のメトリクスを集める PodMonitor を作ります。
+Analysis で Envoy Gateway のメトリクスを使います。[chapter_prometheus](../chapter_prometheus/README.md) の手順で kube-prometheus-stack を入れます。そのうえで、Envoy Gateway のメトリクスを集める PodMonitor を作ります。
 
 ```bash
 kubectl apply -f ../chapter_prometheus/manifests/envoy-gateway-podmonitor.yaml
@@ -198,17 +208,17 @@ Application を消します。
 kubectl -n argo-cd delete application canary
 ```
 
-## 分析で進めるか決める
+## Analysis で進めるか決める
 
-ここまでは、切り替えを手で行いました。分析を使うと、新しい版を測った結果で、先に進めるか止めるかを Argo Rollouts が決めます。
+ここまでは、切り替えを手で行いました。Analysis を使うと、新しい版を測った結果で、先に進めるか止めるかを Argo Rollouts が決めます。
 
-分析の方法はいくつかあります。この章では、Job、Web、Prometheus の 3 つを試します。
+Analysis の方法はいくつかあります。この章では、Job、Web、Prometheus の 3 つを試します。
 
 ### Job
 
 Job を実行し、終了コードで成功か失敗かを決めます。[analysis/job/analysis.yaml](analysis/job/analysis.yaml) の Job は、`exit 0` で終わるので成功します。
 
-[analysis/job/rollout.yaml](analysis/job/rollout.yaml) では、`postPromotionAnalysis` でこの分析を使います。Blue/Green で切り替えたあとに分析します。
+[analysis/job/rollout.yaml](analysis/job/rollout.yaml) では、`postPromotionAnalysis` でこの Analysis を使います。Blue/Green で切り替えたあとに Analysis を行います。
 
 ```yaml
   strategy:
@@ -270,7 +280,7 @@ sed "s/<GITHUB_USER>/${GITHUB_USER}/" applications/web-analysis.yaml | kubectl a
 
 fork の [analysis/web/rollout.yaml](analysis/web/rollout.yaml) で、image のタグを `blue` から `green` に変えてコミットします。
 
-同期して切り替わると、AnalysisRun が作られます。新しい版は `green` を返すので、分析は成功します。
+同期して切り替わると、AnalysisRun が作られます。新しい版は `green` を返すので、Analysis は成功します。
 
 ```bash
 kubectl -n web-analysis get analysisrun
@@ -314,7 +324,7 @@ Prometheus にクエリを送り、結果で成功か失敗かを決めます。
 - 成功率が 95% 以上なら成功です。リクエストがなく NaN のときも、成功として扱います。
 - `failureLimit: 0` なので、1 回でも下回ったら失敗です。
 
-[analysis/prometheus/rollout.yaml](analysis/prometheus/rollout.yaml) では、20% 流したところで分析します。
+[analysis/prometheus/rollout.yaml](analysis/prometheus/rollout.yaml) では、20% 流したところで Analysis を行います。
 
 ```yaml
       steps:
@@ -330,7 +340,7 @@ Prometheus にクエリを送り、結果で成功か失敗かを決めます。
           duration: 30s
 ```
 
-分析が成功するまで、50% には進みません。失敗したら、Rollout は中止され、トラフィックは元の版に戻ります。
+Analysis が成功するまで、50% には進みません。失敗したら、Rollout は中止され、トラフィックは元の版に戻ります。
 
 Application を作ります。
 
@@ -338,13 +348,13 @@ Application を作ります。
 sed "s/<GITHUB_USER>/${GITHUB_USER}/" applications/prometheus-analysis.yaml | kubectl apply -f -
 ```
 
-分析にはリクエストが要ります。http://app.rollouts.example.com を開いたままにしておきます。デモアプリの画面は、裏で繰り返しリクエストを送ります。
+Analysis にはリクエストが要ります。http://app.rollouts.example.com を開いたままにしておきます。デモアプリの画面は、裏で繰り返しリクエストを送ります。
 
 #### 成功する例
 
 fork の [analysis/prometheus/rollout.yaml](analysis/prometheus/rollout.yaml) で、image のタグを `blue` から `green` に変えてコミットします。
 
-同期すると、20% で分析が始まります。1 分ほどで分析が成功し、50%、100% と自動で進みます。画面のタイルも、緑が増えていきます。
+同期すると、20% で Analysis が始まります。1 分ほどで Analysis が成功し、50%、100% と自動で進みます。画面のタイルも、緑が増えていきます。
 
 ```bash
 kubectl -n prometheus-analysis get analysisrun
@@ -366,7 +376,7 @@ fork の [analysis/prometheus/rollout.yaml](analysis/prometheus/rollout.yaml) �
         image: argoproj/rollouts-demo:bad-red
 ```
 
-同期すると、20% で分析が始まります。画面には、赤いタイルとエラーが混ざります。成功率が 95% を下回ると分析が失敗し、Rollout が中止されます。
+同期すると、20% で Analysis が始まります。画面には、赤いタイルとエラーが混ざります。成功率が 95% を下回ると Analysis が失敗し、Rollout が中止されます。
 
 ```bash
 kubectl -n prometheus-analysis get rollout handson -o jsonpath='{.status.message}'; echo
@@ -380,6 +390,8 @@ RolloutAborted: Rollout aborted update to revision 3: Step-based analysis phase 
 HTTPRoute の重みは 100 と 0 に戻り、トラフィックはすべて緑の版に流れます。画面に新しく並ぶタイルも、緑だけになります。
 
 Web UI では、prometheus-analysis の Rollout が Degraded になります。Git には `bad-red` が残っているので、直すときは Git の image のタグを戻します。
+
+ここで起きたのが、「全員がバグに当たる前に止められる」で挙げた例です。`bad-red` に届いたのは 20% のリクエストだけでした。戻したのは Argo Rollouts で、人は何もしていません。
 
 Application を消します。
 
