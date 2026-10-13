@@ -259,6 +259,7 @@ prometheus-httproute   ["prometheus.example.com"]   10s
 ```
 
 ローカル端末のブラウザから <http://prometheus.example.com> と <http://grafana.example.com> にアクセスしてみましょう。  
+HTTPRouteを作った直後は、1分ほど`503`が返ることがあります。その場合は少し待ってから開き直してください。  
 ※[chapter_setup](https://github.com/cloudnativedaysjp/cnd-handson/tree/main/chapter_setup)にてローカル端末のhostsファイルに`prometheus.example.com` と `grafana.example.com`が登録されている前提です。
 
 Grafanaではユーザログインが必要ですが、Helm設定した prometheus-values.yaml の内容でログインできます。(`username: admin, password: handson_saiko!`)  
@@ -348,7 +349,7 @@ HTTPRouteごとに、レスポンスコードの種類（2xx、4xxなど）別�
 ※PodMonitorをapplyしてから反映（メトリクスが追加）されるまでに数分かかります。
 
 ```text
-sum by (envoy_cluster_name, envoy_response_code_class) (envoy_cluster_upstream_rq_xx)
+sum by (envoy_cluster_name, envoy_response_code_class) (envoy_cluster_upstream_rq_xx{envoy_cluster_name=~"httproute/.*"})
 ```
 
 `envoy_cluster_name`の`httproute/prometheus/grafana-httproute/rule/0`は、`prometheus` namespaceの`grafana-httproute`の1つ目のルールを表します。
