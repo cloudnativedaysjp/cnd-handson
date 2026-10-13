@@ -1,12 +1,13 @@
 # Argo CD
 
-この章では、Kubernetes で GitOps を行う CD ツールの Argo CD を使います。
+この章では、Kubernetes で GitOps を行う CD ツールの Argo CD を使います。Git とクラスタの状態がずれたとき、Argo CD が何を検知し、どう元に戻すのかを確かめます。
 
-- Argo CD を入れて、Web UI を開きます。
-- Application を YAML で書き、`kubectl apply` で作ります。
-- Git を変えるとクラスタに反映されることを確かめます。
-- クラスタを手で変えても Git の状態に戻ることを確かめます。
-- Kustomize と Helm のマニフェストをデプロイします。
+| 節 | 確かめること |
+|---|---|
+| Application を作る | Git にあってクラスタにないものを、Argo CD が OutOfSync として見つける |
+| 自動で同期する | Git を変えると、クラスタが Git に合わせて変わる |
+| 手で変えた状態を戻す | クラスタを手で変えても、Argo CD が Git の状態に戻す |
+| マニフェストの作り方を変える | Kustomize や Helm で描画しても、比べて同期する仕組みは同じ |
 
 Argo CD の Config Management Plugin（CMP）を試したい方は、この章のあとに [Argo CD with CMP](./README_cmp.md) に進んでください。
 
@@ -404,7 +405,7 @@ Kustomize で開発環境（dev）と本番環境（prd）のマニフェスト�
 
 どちらも [app/Kustomize/base](app/Kustomize/base) を元にし、各 overlay では違うところだけを上書きします。バックエンドは環境ごとに 1 つずつ入ります。
 
-dev と prd の Application は、環境の名前しか違いません。こういうときは ApplicationSet を使い、テンプレートから Application をまとめて作ります。
+dev と prd の Application は、環境の名前しか違いません。こういうときは ApplicationSet を使い、テンプレートから Application をまとめて作ります。Kustomize は環境ごとのマニフェストを作り、ApplicationSet は環境ごとの Application を作ります。
 
 [applications/kustomize.yaml](applications/kustomize.yaml) では `generators` に環境の一覧を書き、テンプレートの `{{ .env }}` を一覧の値で置き換えます。
 
@@ -481,13 +482,27 @@ Application から values を上書きできます。[applications/helm.yaml](ap
           tag: modern
 ```
 
-Application を作ります。
+chart の values.yaml は legacy なのに、Application では modern を指定しています。どちらの画面が出るかを予想してから、Application を作ります。
 
 ```bash
 sed "s/<GITHUB_USER>/${GITHUB_USER}/" applications/helm.yaml | kubectl apply -f -
 ```
 
 ![helm](image/v3/helm.png)
+
+同期したら、Deployment の image を見ます。
+
+```bash
+kubectl -n argocd-helm get deployment handson -o jsonpath='{.spec.template.spec.containers[0].image}'; echo
+```
+
+```
+# 実行結果
+ghcr.io/cloudnativedaysjp/cnd-handson-app/handson:modern
+```
+
+> [!IMPORTANT]
+> Git の values.yaml は `legacy` のままです。Repository Server が描画するときに、Application の `valuesObject` で `modern` に上書きしました。同じ chart でも、Application の values を変えるだけで、デプロイする中身を変えられます。
 
 http://helm.argocd.example.com を開くと、カンバンの画面（modern）が表示されます。
 
