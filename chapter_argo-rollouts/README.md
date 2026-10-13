@@ -6,7 +6,7 @@
 
 | 節 | 先に進めるのは | 確かめること |
 |---|---|---|
-| Blue/Green Deployment | 人が切り替える | Pod の入れ替えと、トラフィックの切り替えは、別々に起きる |
+| Blue/Green Deployment | 人が切り替える | Pod を用意することと、トラフィックを切り替えることは、別々に起きる |
 | Canary Release | 途中で止まり、人が進める | リリースが進むと、Argo Rollouts が HTTPRoute の重みを書き換える |
 | Analysis | メトリクスが決める | 人がクリックしなくても、リリースが進む |
 | 失敗する例 | メトリクスが止める | アプリが起動していても、エラーが多ければリリースは止まる |
@@ -41,19 +41,19 @@ graph LR;
     ArgoRollouts-->|作る|ReplicaSet;
     ArgoRollouts-->|selector を書き換える|Service;
     ArgoRollouts-->|重みを書き換える|HTTPRoute;
-    ArgoRollouts-->|作る|AnalysisRun;
-    AnalysisRun-->|問い合わせる|Prometheus;
+    ArgoRollouts-->|問い合わせる|Prometheus;
+    ArgoRollouts-->|結果を書く|AnalysisRun;
 ```
 
 Argo CD は、Git に書いたマニフェストをそのままクラスターに適用します。仕事はそこまでで、リリースをどう進めるかは知りません。
 
-Argo Rollouts は、Rollout の `strategy` を読んで、リリースを進めます。新しいバージョンの ReplicaSet を作り、Service の selector や HTTPRoute の重みを書き換えて、トラフィックの行き先を変えます。Analysis が要るときは AnalysisRun を作り、その結果で先に進むか戻すかを決めます。
+Argo Rollouts は、Rollout の `strategy` を読んで、リリースを進めます。新しいバージョンの ReplicaSet を作り、Service の selector や HTTPRoute の重みを書き換えて、トラフィックの行き先を変えます。Analysis が要るときは、Argo Rollouts 自身が Prometheus などに問い合わせ、その結果で先に進むか戻すかを決めます。測った結果は、AnalysisRun に記録します。
 
 | リソース | 書く人 | 役割 |
 |---|---|---|
 | Rollout | Git（Argo CD が適用） | Deployment の代わり。更新のしかたを `strategy` に書く |
 | AnalysisTemplate | Git（Argo CD が適用） | 何をどう測って成功とするか |
-| AnalysisRun | Argo Rollouts | AnalysisTemplate を元に、実際に測った記録 |
+| AnalysisRun | Argo Rollouts | AnalysisTemplate を元に、Argo Rollouts が測った結果の記録 |
 | Service、HTTPRoute | Git が元で、Argo Rollouts が書き換える | トラフィックの行き先 |
 
 以降の節では、Argo Rollouts が書き換える Service と HTTPRoute を、リリースの前後で見比べます。
@@ -100,7 +100,7 @@ argo-rollouts   2/2     2            2           60s
 
 [helm/values.yaml](helm/values.yaml) では、Gateway API のプラグインを読み込みます。Canary Release で、Rollout が HTTPRoute の重みを書き換えるのに使います。
 
-## Blue/Green Deployment: 入れ替えと切り替えは別
+## Blue/Green Deployment: Pod の用意と切り替えは別
 
 Blue/Green Deployment では、新しいバージョンの Pod をすべて用意してから、トラフィックを一度に切り替えます。Deployment では、Pod の入れ替えとトラフィックの切り替えが同時に進みます。Argo Rollouts では、この 2 つが別々に起きることを確かめます。
 
@@ -169,7 +169,7 @@ handson-7d9c8b6f5    10        10        10      5m
 ```
 
 > [!IMPORTANT]
-> 新しいバージョンの Pod は 10 個そろいました。それでも、`handson` のハッシュは変わっていません。Pod は入れ替わったのに、利用者のトラフィックはまだ古いバージョンに流れています。
+> 新しいバージョンの Pod は 10 個そろい、古いバージョンの Pod も残っています。それでも、`handson` のハッシュは変わっていません。新しいバージョンの Pod は作られたのに、利用者のトラフィックはまだ古いバージョンに流れています。
 
 2 つの URL を開くと、色が違います。
 
@@ -260,6 +260,8 @@ fork の [app/canary/rollout.yaml](app/canary/rollout.yaml) で、image のタ�
 > [!IMPORTANT]
 > 重みが 80 と 20 に変わりました。Git の httproute.yaml は 100 と 0 のままです。重みを書き換えたのは Argo CD ではなく、Rollout の `setWeight: 20` を読んだ Argo Rollouts です。
 
+Argo CD から見ると、HTTPRoute は Git と違う状態です。それでも Argo CD は 100 と 0 に戻しません。canary の Application は `automated: {}` だけで、[Argo CD の章](../chapter_argocd/README.md#手で変えた状態を戻す)で使った `selfHeal: true` を書いていないからです。`selfHeal: true` を付けると、Argo CD と Argo Rollouts が重みを書き換え合います。実際の運用では、`ignoreDifferences` で重みを比較から外します。
+
 http://app.rollouts.example.com を開くと、青いタイルの中に、緑のタイルが 2 割ほど混ざります。
 
 ![demoapp](image/canary/demoapp.png)
@@ -330,7 +332,11 @@ kubectl -n argo-cd delete application canary
           sum(rate(envoy_cluster_upstream_rq_xx{envoy_cluster_name="{{args.envoy-cluster}}"}[1m]))
 ```
 
-15 秒おきに 4 回測り、成功率が 95% 以上なら成功です。`failureLimit: 0` なので、1 回でも下回れば失敗になります。リクエストがなく NaN のときは、成功として扱います。
+15 秒おきに 4 回測り、成功率が 95% 以上なら成功です。`failureLimit: 0` なので、1 回でも下回れば失敗になります。
+
+測っているのは、HTTPRoute を通ったリクエスト全体の成功率です。新しいバージョンだけでなく、古いバージョンに流れた 80% も含みます。新しいバージョンのエラーが多ければ、全体の成功率も下がるので、この章ではこれで判断します。
+
+リクエストがないと、成功率は NaN になります。この AnalysisTemplate は NaN を成功として扱うので、誰もアクセスしていなければ、何も測らないまま Analysis が成功します。
 
 「成功率 95% 以上」というリリースの判断基準が、ファイルとして Git に残ります。基準そのものをレビューでき、担当者によって判断がぶれません。
 
@@ -358,7 +364,7 @@ Application を作ります。
 sed "s/<GITHUB_USER>/${GITHUB_USER}/" applications/prometheus-analysis.yaml | kubectl apply -f -
 ```
 
-Analysis にはリクエストが要ります。http://app.rollouts.example.com を開いたままにしておきます。デモアプリの画面は、裏で繰り返しリクエストを送ります。
+そのため、Analysis の間は http://app.rollouts.example.com を開いたままにしておきます。デモアプリの画面は、裏で繰り返しリクエストを送ります。
 
 ### 成功する例
 
@@ -419,7 +425,7 @@ kubectl -n prometheus-analysis get httproute app-httproute -o jsonpath='{.spec.r
 ```
 
 > [!IMPORTANT]
-> 重みが 100 と 0 に戻り、トラフィックはすべて緑のバージョンに流れています。エラーを検知したのは Prometheus、失敗と判断したのは AnalysisRun、トラフィックを戻したのは Argo Rollouts です。`bad-red` に届いたのは 20% のリクエストだけで、人は何もしていません。
+> 重みが 100 と 0 に戻り、トラフィックはすべて緑のバージョンに流れています。Prometheus のメトリクスを測って失敗と判断し、トラフィックを戻したのは Argo Rollouts です。その判断は AnalysisRun に残っています。`bad-red` に届いたのは 20% のリクエストだけで、人は何もしていません。
 
 Web UI では、prometheus-analysis の Rollout が Degraded になります。Git には `bad-red` が残っているので、直すときは Git の image のタグを戻します。
 
