@@ -394,20 +394,64 @@ handson   1/1     1            1           10m
 | `kustomization.yaml` | Kustomize で描画する |
 | `Chart.yaml` | Helm で描画する |
 
-### Kustomize と ApplicationSet
+### Kustomize
 
-Kustomize で開発環境（dev）と本番環境（prd）のマニフェストを作り分けます。
+Kustomize は、共通の YAML（base）に、環境ごとの差分（overlay）を重ねてマニフェストを作るツールです。YAML にテンプレートの記法は入りません。
+
+```
+app/Kustomize/
+├── base/            # 全環境で共通の Deployment、Service、HTTPRoute
+└── overlays/
+    ├── dev/         # dev だけの差分
+    └── prd/         # prd だけの差分
+```
+
+この章では、開発環境（dev）と本番環境（prd）を作り分けます。
 
 | 環境 | ディレクトリ | 画面 | レプリカ数 |
 |---|---|---|---|
 | dev | [app/Kustomize/overlays/dev](app/Kustomize/overlays/dev) | legacy | 1 |
 | prd | [app/Kustomize/overlays/prd](app/Kustomize/overlays/prd) | modern | 2 |
 
-どちらも [app/Kustomize/base](app/Kustomize/base) を元にし、各 overlay では違うところだけを上書きします。バックエンドは環境ごとに 1 つずつ入ります。
+overlay の `kustomization.yaml` には、元にする base と、重ねる差分を書きます。prd の [kustomization.yaml](app/Kustomize/overlays/prd/kustomization.yaml) は次のとおりです。
 
-dev と prd の Application は、環境の名前しか違いません。こういうときは ApplicationSet を使い、テンプレートから Application をまとめて作ります。Kustomize は環境ごとのマニフェストを作り、ApplicationSet は環境ごとの Application を作ります。
+```yaml
+resources:
+- ../../base/
 
-[applications/kustomize.yaml](applications/kustomize.yaml) では `generators` に環境の一覧を書き、テンプレートの `{{ .env }}` を一覧の値で置き換えます。
+patches:
+- path: httproute-patch.yaml
+- path: deployment-patch.yaml
+```
+
+[deployment-patch.yaml](app/Kustomize/overlays/prd/deployment-patch.yaml) には、base と違うところだけを書きます。レプリカ数を 2 にし、画面を modern にしています。
+
+```yaml
+spec:
+  replicas: 2
+  template:
+    spec:
+      containers:
+      - image: ghcr.io/cloudnativedaysjp/cnd-handson-app/handson:modern
+        name: handson
+```
+
+Application の `path` に overlay のディレクトリを指定すると、Argo CD が Kustomize で描画します。バックエンドは環境ごとに 1 つずつ入ります。
+
+### ApplicationSet
+
+dev と prd では、Application も 2 つ要ります。2 つの Application は、`path` と namespace の環境の名前しか違いません。
+
+ApplicationSet は、1 つのテンプレートから Application をまとめて作るリソースです。2 つのものを組み合わせます。
+
+| 項目 | 内容 |
+|---|---|
+| `generators` | テンプレートに渡す値の一覧。この章では環境の名前を並べる |
+| `template` | Application のテンプレート。`{{ .env }}` が一覧の値で置き換わる |
+
+Kustomize と ApplicationSet は、作るものが違います。Kustomize は環境ごとのマニフェストを作ります。ApplicationSet は環境ごとの Application を作ります。
+
+[applications/kustomize.yaml](applications/kustomize.yaml) では、`generators` に dev と prd を書いています。
 
 ```yaml
   generators:
@@ -459,7 +503,21 @@ ApplicationSet が作った Application は、ApplicationSet が管理します�
 
 ### Helm
 
-Kustomize は、元の YAML に環境ごとの差分を重ねて作り分けます。Helm は、テンプレートに values を埋め込んで描画するので、Application から values を変えるだけで中身を変えられます。
+Helm は、テンプレートに値（values）を埋め込んでマニフェストを作るツールです。テンプレートと既定の values をまとめたものを、chart と呼びます。
+
+```
+app/Helm/handson/
+├── Chart.yaml       # chart の名前とバージョン
+├── values.yaml      # 既定の values
+└── templates/       # マニフェストのテンプレート
+```
+
+Kustomize は YAML に差分を重ねます。Helm は、テンプレートの穴に values を入れます。[templates/deployment.yaml](app/Helm/handson/templates/deployment.yaml) では、image を values から読みます。
+
+```yaml
+      containers:
+      - image: {{ .Values.image.repository }}:{{ .Values.image.tag }}
+```
 
 [app/Helm/handson](app/Helm/handson) は画面の Helm chart です。バックエンドはこれまでと同じく cnd-handson-app の chart から入れます。[values.yaml](app/Helm/handson/values.yaml) では画面を legacy にしています。
 
