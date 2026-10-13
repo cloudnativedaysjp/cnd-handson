@@ -1,6 +1,13 @@
 # Argo Rollouts
 
-この章では、Kubernetes でプログレッシブデリバリーを行うツール、Argo Rollouts を使います。Blue/Green Deployment と Canary Release で新しいバージョンをリリースします。最後に、新しいバージョンを測った結果で、リリースを自動で進めたり止めたりします。
+この章では、Kubernetes でプログレッシブデリバリーを行うツール、Argo Rollouts を使います。機能を一通り触るより、Argo Rollouts が裏で何を書き換えているかを、自分の目で確かめることを目指します。
+
+| 節 | 確かめること |
+|---|---|
+| Blue/Green Deployment | Pod の入れ替えと、トラフィックの切り替えは、別々に起きる |
+| Canary Release | リリースが進むと、Argo Rollouts が HTTPRoute の重みを書き換える |
+| Analysis | リリースを進めるかどうかを、人ではなくメトリクスが決める |
+| 失敗する例 | アプリが起動していても、エラーが多ければリリースは止まる |
 
 ## プログレッシブデリバリー
 
@@ -17,23 +24,37 @@ graph LR;
 
 Deployment のローリングアップデートは、readiness probe が通れば、Pod を新しいバージョンに入れ替えていきます。エラーを返すバージョンでも、起動さえすれば利用者の全員に届きます。
 
-プログレッシブデリバリーでは、新しいバージョンに届くのは一部のリクエストだけです。問題が見つかれば、全員に届く前に元のバージョンへ自動で戻ります。進めるかどうかの基準は AnalysisTemplate に書くので、Git でレビューできます。
+プログレッシブデリバリーでは、新しいバージョンに届くのは一部のリクエストだけです。問題が見つかれば、全員に届く前に元のバージョンへ自動で戻ります。
 
-この流れは、章の最後の「失敗する例」で試します。
+## 誰が何を書き換えるか
 
-## Argo Rollouts
+この章には、Argo CD と Argo Rollouts の 2 つのコントローラーが出てきます。どちらも Kubernetes のリソースを書き換えますが、受け持ちが違います。
 
-Argo Rollouts は、Kubernetes にプログレッシブデリバリーの機能を足すコントローラーとカスタムリソースです。
+```mermaid
+graph LR;
+    Git-->|適用する|ArgoCD[Argo CD];
+    ArgoCD-->Rollout;
+    ArgoCD-->AnalysisTemplate;
+    Rollout-->|読む|ArgoRollouts[Argo Rollouts];
+    ArgoRollouts-->|作る|ReplicaSet;
+    ArgoRollouts-->|selector を書き換える|Service;
+    ArgoRollouts-->|重みを書き換える|HTTPRoute;
+    ArgoRollouts-->|作る|AnalysisRun;
+    AnalysisRun-->|問い合わせる|Prometheus;
+```
 
-![Argo Rollouts](https://argo-rollouts.readthedocs.io/en/stable/architecture-assets/argo-rollout-architecture.png)
+Argo CD は、Git に書いたマニフェストをそのままクラスターに適用します。仕事はそこまでで、リリースをどう進めるかは知りません。
 
-| リソース | 役割 |
-|---|---|
-| Rollout | Deployment の代わりに使う。Blue/Green や Canary などの更新のしかたを書く |
-| AnalysisTemplate | 何をどう測って成功とするかを書いたテンプレート |
-| AnalysisRun | AnalysisTemplate を元に、実際に行った Analysis。結果が残る |
+Argo Rollouts は、Rollout の `strategy` を読んで、リリースを進めます。新しいバージョンの ReplicaSet を作り、Service の selector や HTTPRoute の重みを書き換えて、トラフィックの行き先を変えます。Analysis が要るときは AnalysisRun を作り、その結果で先に進むか戻すかを決めます。
 
-Argo CD と組み合わせると、Git の変更をきっかけにプログレッシブデリバリーを進められます。
+| リソース | 書く人 | 役割 |
+|---|---|---|
+| Rollout | Git（Argo CD が適用） | Deployment の代わり。更新のしかたを `strategy` に書く |
+| AnalysisTemplate | Git（Argo CD が適用） | 何をどう測って成功とするか |
+| AnalysisRun | Argo Rollouts | AnalysisTemplate を元に、実際に測った記録 |
+| Service、HTTPRoute | Git が元で、Argo Rollouts が書き換える | トラフィックの行き先 |
+
+以降の節では、Argo Rollouts が書き換える Service と HTTPRoute を、リリースの前後で見比べます。
 
 ## 準備
 
@@ -77,9 +98,9 @@ argo-rollouts   2/2     2            2           60s
 
 [helm/values.yaml](helm/values.yaml) では、Gateway API のプラグインを読み込みます。Canary Release で、Rollout が HTTPRoute の重みを書き換えるのに使います。
 
-## Blue/Green Deployment
+## Blue/Green Deployment: 入れ替えと切り替えは別
 
-Blue/Green Deployment では、新しいバージョンを用意し終えてから、トラフィックを一度に切り替えます。新旧のバージョンが混ざりません。
+Blue/Green Deployment では、新しいバージョンの Pod をすべて用意してから、トラフィックを一度に切り替えます。Deployment では、Pod の入れ替えとトラフィックの切り替えが同時に進みます。Argo Rollouts では、この 2 つが別々に起きることを確かめます。
 
 [app/blue-green/rollout.yaml](app/blue-green/rollout.yaml) の `strategy` に、2 つの Service を書きます。
 
@@ -91,9 +112,7 @@ Blue/Green Deployment では、新しいバージョンを用意し終えてか�
       autoPromotionEnabled: false
 ```
 
-- `activeService` は、利用者が使うバージョンに向く Service です。
-- `previewService` は、新しいバージョンに向く Service です。切り替える前に、新しいバージョンを確かめるのに使います。
-- `autoPromotionEnabled: false` にしているので、切り替え（Promote）は手で行います。
+`activeService` は利用者が使うバージョンに、`previewService` は新しいバージョンに向く Service です。`autoPromotionEnabled: false` なので、切り替え（Promote）は手で行います。
 
 Application を作ります。`automated` を書いているので、作るとすぐに同期します。
 
@@ -103,6 +122,29 @@ sed "s/<GITHUB_USER>/${GITHUB_USER}/" applications/blue-green.yaml | kubectl app
 
 http://app.rollouts.example.com を開くと、青いタイルが並びます。
 
+### リリースの前の Service を見る
+
+Git の [service.yaml](app/blue-green/service.yaml) と [preview-service.yaml](app/blue-green/preview-service.yaml) では、selector は `app: handson` だけです。クラスターの Service を見ると、Argo Rollouts が `rollouts-pod-template-hash` を足しています。このハッシュは、どの ReplicaSet の Pod に向くかを表します。
+
+```bash
+kubectl -n blue-green get service -o custom-columns='NAME:.metadata.name,HASH:.spec.selector.rollouts-pod-template-hash'
+kubectl -n blue-green get replicaset
+```
+
+```
+# 実行結果（ハッシュは環境ごとに違います）
+NAME              HASH
+handson           7d9c8b6f5
+handson-preview   7d9c8b6f5
+
+NAME                 DESIRED   CURRENT   READY   AGE
+handson-7d9c8b6f5    10        10        10      1m
+```
+
+今は、どちらの Service も同じ ReplicaSet に向いています。
+
+### 新しいバージョンをリリースする
+
 fork の [app/blue-green/rollout.yaml](app/blue-green/rollout.yaml) を GitHub の画面で開き、image のタグを `blue` から `green` に変えてコミットします。手順は [Argo CD の章](../chapter_argocd/README.md#git-を変えて反映する) と同じです。
 
 ```yaml
@@ -111,16 +153,38 @@ fork の [app/blue-green/rollout.yaml](app/blue-green/rollout.yaml) を GitHub �
 
 Argo CD が変更に気づくまで 3 分ほどかかります。待てないときは Web UI で blue-green を開き、REFRESH をクリックします。
 
-同期すると、新しいバージョンの Pod が作られます。2 つの URL を開くと、色が違います。
+同期したら、さっきと同じコマンドで、もう一度見ます。
+
+```
+# 実行結果
+NAME              HASH
+handson           7d9c8b6f5
+handson-preview   5f6c4d8b9
+
+NAME                 DESIRED   CURRENT   READY   AGE
+handson-5f6c4d8b9    10        10        10      1m
+handson-7d9c8b6f5    10        10        10      5m
+```
+
+> [!IMPORTANT]
+> 新しいバージョンの Pod は 10 個そろいました。それでも、`handson` のハッシュは変わっていません。Pod は入れ替わったのに、利用者のトラフィックはまだ古いバージョンに流れています。
+
+2 つの URL を開くと、色が違います。
 
 - active: http://app.rollouts.example.com （青）
 - preview: http://app-preview.rollouts.example.com （緑）
 
 ![demoapp](image/BG/demoapp.png)
 
-Web UI で blue-green を開き、Rollout（handson）の「⋮」から Promote-Full をクリックし、確認の画面で OK をクリックします。active も緑に切り替わり、古いバージョンの Pod は少し待ってから消えます。
+利用者に見せる前に、preview で新しいバージョンを確かめられます。
 
-rollout-extension が入っていれば、Rollout をクリックしたときに ROLLOUT のタブが出ます。新旧のバージョンの状態を、まとめて確かめられます。
+### 切り替える
+
+Web UI で blue-green を開き、Rollout（handson）の「⋮」から Promote-Full をクリックし、確認の画面で OK をクリックします。rollout-extension が入っていれば、Rollout をクリックしたときに ROLLOUT のタブが出て、新旧のバージョンの状態をまとめて確かめられます。
+
+もう一度 Service を見ると、`handson` のハッシュが新しいバージョンのものに変わっています。active も緑になります。古いバージョンの Pod は、少し待ってから消えます。
+
+切り替えたのは、Service の selector を 1 行書き換えただけです。だから一度に切り替わり、新旧のバージョンが混ざりません。
 
 Application を消します。
 
@@ -128,11 +192,11 @@ Application を消します。
 kubectl -n argo-cd delete application blue-green
 ```
 
-## Canary Release
+## Canary Release: Argo Rollouts が HTTPRoute を書き換える
 
-Canary Release では、トラフィックの一部だけを新しいバージョンに流し、少しずつ割合を増やします。
+Canary Release では、トラフィックの一部だけを新しいバージョンに流し、少しずつ割合を増やします。Deployment だけでは、割合は Pod の数でしか決められません。10 個のうち 2 個を新しくすれば、およそ 20% です。この章では、HTTPRoute の重みで割合を決めます。Pod の数と割合を、別々に決められます。
 
-この章では、Rollout が HTTPRoute の重みを書き換えて、トラフィックを分けます。[app/canary/httproute.yaml](app/canary/httproute.yaml) には、2 つの Service を重み付きで並べます。
+[app/canary/httproute.yaml](app/canary/httproute.yaml) には、2 つの Service を重み付きで並べます。Git に書くのは、リリースしていないときの重みです。
 
 ```yaml
     backendRefs:
@@ -144,7 +208,7 @@ Canary Release では、トラフィックの一部だけを新しいバージ�
       weight: 0
 ```
 
-[app/canary/rollout.yaml](app/canary/rollout.yaml) では、どの HTTPRoute を書き換えるかと、割合の変え方を書きます。
+[app/canary/rollout.yaml](app/canary/rollout.yaml) には、どの HTTPRoute を書き換えるかと、割合の変え方を書きます。
 
 ```yaml
   strategy:
@@ -161,9 +225,7 @@ Canary Release では、トラフィックの一部だけを新しいバージ�
       - pause: {}
 ```
 
-- `stableService` は今のバージョン、`canaryService` は新しいバージョンに向く Service です。
-- `setWeight: 20` で、新しいバージョンに 20% を流します。
-- `pause: {}` で止まります。先に進めるのは手で行います。
+`stableService` は今のバージョンに、`canaryService` は新しいバージョンに向く Service です。`setWeight: 20` で新しいバージョンに 20% を流し、`pause: {}` で止まります。
 
 Application を作ります。
 
@@ -171,9 +233,7 @@ Application を作ります。
 sed "s/<GITHUB_USER>/${GITHUB_USER}/" applications/canary.yaml | kubectl apply -f -
 ```
 
-fork の [app/canary/rollout.yaml](app/canary/rollout.yaml) で、image のタグを `blue` から `green` に変えてコミットします。
-
-同期すると、HTTPRoute の重みが 80 と 20 に変わります。
+### リリースの前の HTTPRoute を見る
 
 ```bash
 kubectl -n canary get httproute app-httproute -o jsonpath='{.spec.rules[0].backendRefs}'; echo
@@ -181,14 +241,52 @@ kubectl -n canary get httproute app-httproute -o jsonpath='{.spec.rules[0].backe
 
 ```
 # 実行結果
+[{"group":"","kind":"Service","name":"handson","port":80,"weight":100},{"group":"","kind":"Service","name":"handson-canary","port":80,"weight":0}]
+```
+
+Git と同じ、100 と 0 です。
+
+### 新しいバージョンをリリースする
+
+fork の [app/canary/rollout.yaml](app/canary/rollout.yaml) で、image のタグを `blue` から `green` に変えてコミットします。同期したら、同じコマンドでもう一度見ます。
+
+```
+# 実行結果
 [{"group":"","kind":"Service","name":"handson","port":80,"weight":80},{"group":"","kind":"Service","name":"handson-canary","port":80,"weight":20}]
 ```
+
+> [!IMPORTANT]
+> 重みが 80 と 20 に変わりました。Git の httproute.yaml は 100 と 0 のままです。重みを書き換えたのは Argo CD ではなく、Rollout の `setWeight: 20` を読んだ Argo Rollouts です。
 
 http://app.rollouts.example.com を開くと、青いタイルの中に、緑のタイルが 2 割ほど混ざります。
 
 ![demoapp](image/canary/demoapp.png)
 
-Web UI で canary を開き、Rollout の「⋮」から Promote-Full をクリックし、確認の画面で OK をクリックします。すべてのトラフィックが新しいバージョンに流れ、タイルが緑だけになります。
+### 何が止まっているかを見る
+
+Rollout は `pause: {}` で止まっています。Rollout の状態と ReplicaSet を見ます。
+
+```bash
+kubectl -n canary get rollout handson -o jsonpath='{.status.phase}{" "}{.status.message}'; echo
+kubectl -n canary get replicaset
+```
+
+```
+# 実行結果
+Paused CanaryPauseStep
+
+NAME                 DESIRED   CURRENT   READY   AGE
+handson-5f6c4d8b9    2         2         2       1m
+handson-7d9c8b6f5    10        10        10      5m
+```
+
+新しいバージョンの Pod は 2 個だけ作られ、古いバージョンは 10 個のまま残っています。止まっているのは、`pause` から先の steps です。トラフィックも Pod も、20% の状態で待っています。
+
+### 最後まで進める
+
+Web UI で canary を開き、Rollout の「⋮」から Promote-Full をクリックし、確認の画面で OK をクリックします。タイルが緑だけになります。
+
+終わったあとに HTTPRoute を見ると、重みは 100 と 0 に戻ります。ただし `handson` の Service は、もう新しいバージョンの Pod に向いています。新しいバージョンが、次のリリースの基準（stable）になったからです。
 
 Application を消します。
 
@@ -196,101 +294,23 @@ Application を消します。
 kubectl -n argo-cd delete application canary
 ```
 
-## Analysis で進めるか決める
+## Analysis: リリースを進めるかを測って決める
 
-ここまでは、切り替えを手で行いました。Analysis を使うと、新しいバージョンを測った結果で、先に進めるか止めるかを Argo Rollouts が決めます。
+ここまでは、先に進めるかどうかを人が決めて、Promote-Full をクリックしました。Analysis を使うと、Argo Rollouts が新しいバージョンを測り、その結果で進めるか戻すかを決めます。
 
-Analysis の方法はいくつかあります。この章では、Job、Web、Prometheus の 3 つを試します。
+何を測るかは、AnalysisTemplate の `provider` で選びます。
 
-### Job
+| provider | 成功の決め方 | 例 |
+|---|---|---|
+| Job | Job の終了コード | [analysis/job/analysis.yaml](analysis/job/analysis.yaml) |
+| Web | HTTP のレスポンス | [analysis/web/analysis.yaml](analysis/web/analysis.yaml) |
+| Prometheus | クエリの結果 | [analysis/prometheus/analysis.yaml](analysis/prometheus/analysis.yaml) |
 
-Job を実行し、終了コードで成功か失敗かを決めます。[analysis/job/analysis.yaml](analysis/job/analysis.yaml) の Job は、`exit 0` で終わるので成功します。
+この節では、Prometheus で成功と失敗の両方を試します。Job と Web の例も、`applications/job-analysis.yaml` と `applications/web-analysis.yaml` の Application を作れば試せます。
 
-[analysis/job/rollout.yaml](analysis/job/rollout.yaml) では、`postPromotionAnalysis` でこの Analysis を使います。Blue/Green で切り替えたあとに Analysis を行います。
+### 何を測るか
 
-```yaml
-  strategy:
-    blueGreen:
-      activeService: handson
-      previewService: handson-preview
-      postPromotionAnalysis:
-        templates:
-        - templateName: handson-analysis
-```
-
-`autoPromotionEnabled` を書いていないので、新しいバージョンの準備ができると自動で切り替わります。
-
-Application を作ります。
-
-```bash
-sed "s/<GITHUB_USER>/${GITHUB_USER}/" applications/job-analysis.yaml | kubectl apply -f -
-```
-
-fork の [analysis/job/rollout.yaml](analysis/job/rollout.yaml) で、image のタグを `blue` から `green` に変えてコミットします。
-
-同期して切り替わると、AnalysisRun が作られ、Job が実行されます。
-
-```bash
-kubectl -n job-analysis get analysisrun
-```
-
-```
-# 実行結果
-NAME                       STATUS       AGE
-handson-d7d97867f-2-post   Successful   30s
-```
-
-Application を消します。
-
-```bash
-kubectl -n argo-cd delete application job-analysis
-```
-
-### Web
-
-HTTP でリクエストを送り、レスポンスで成功か失敗かを決めます。[analysis/web/analysis.yaml](analysis/web/analysis.yaml) では、新しいバージョンの `/color` が `green` を返せば成功にします。
-
-```yaml
-  metrics:
-  - name: handson-analysis
-    successCondition: result == "green"
-    failureLimit: 3
-    provider:
-      web:
-        url: "http://handson-preview.web-analysis.svc.cluster.local/color"
-```
-
-Application を作ります。
-
-```bash
-sed "s/<GITHUB_USER>/${GITHUB_USER}/" applications/web-analysis.yaml | kubectl apply -f -
-```
-
-fork の [analysis/web/rollout.yaml](analysis/web/rollout.yaml) で、image のタグを `blue` から `green` に変えてコミットします。
-
-同期して切り替わると、AnalysisRun が作られます。新しいバージョンは `green` を返すので、Analysis は成功します。
-
-```bash
-kubectl -n web-analysis get analysisrun
-```
-
-```
-# 実行結果
-NAME                       STATUS       AGE
-handson-d7d97867f-2-post   Successful   30s
-```
-
-Application を消します。
-
-```bash
-kubectl -n argo-cd delete application web-analysis
-```
-
-### Prometheus
-
-Prometheus にクエリを送り、結果で成功か失敗かを決めます。ここでは、Canary Release の途中で成功率を測ります。成功率が下がったら、自動で元のバージョンに戻します。
-
-[analysis/prometheus/analysis.yaml](analysis/prometheus/analysis.yaml) では、HTTPRoute を通ったリクエストのうち、5xx と 4xx 以外の割合を出します。Envoy Gateway のメトリクスを使います。
+[analysis/prometheus/analysis.yaml](analysis/prometheus/analysis.yaml) では、HTTPRoute を通ったリクエストのうち、4xx と 5xx を除いた割合を出します。Envoy Gateway のメトリクスを使います。
 
 ```yaml
   metrics:
@@ -308,9 +328,9 @@ Prometheus にクエリを送り、結果で成功か失敗かを決めます。
           sum(rate(envoy_cluster_upstream_rq_xx{envoy_cluster_name="{{args.envoy-cluster}}"}[1m]))
 ```
 
-- 15 秒おきに 4 回測ります。
-- 成功率が 95% 以上なら成功です。リクエストがなく NaN のときも、成功として扱います。
-- `failureLimit: 0` なので、1 回でも下回ったら失敗です。
+15 秒おきに 4 回測り、成功率が 95% 以上なら成功です。`failureLimit: 0` なので、1 回でも下回れば失敗になります。リクエストがなく NaN のときは、成功として扱います。
+
+「成功率 95% 以上」というリリースの判断基準が、ファイルとして Git に残ります。基準そのものをレビューでき、担当者によって判断がぶれません。
 
 [analysis/prometheus/rollout.yaml](analysis/prometheus/rollout.yaml) では、20% 流したところで Analysis を行います。
 
@@ -328,7 +348,7 @@ Prometheus にクエリを送り、結果で成功か失敗かを決めます。
           duration: 30s
 ```
 
-Analysis が成功するまで、50% には進みません。失敗したら、Rollout は中止され、トラフィックは元のバージョンに戻ります。
+Canary Release の `pause: {}` が、`analysis` に置き換わっています。人の代わりに Analysis が、50% に進めてよいかを決めます。
 
 Application を作ります。
 
@@ -338,11 +358,11 @@ sed "s/<GITHUB_USER>/${GITHUB_USER}/" applications/prometheus-analysis.yaml | ku
 
 Analysis にはリクエストが要ります。http://app.rollouts.example.com を開いたままにしておきます。デモアプリの画面は、裏で繰り返しリクエストを送ります。
 
-#### 成功する例
+### 成功する例
 
 fork の [analysis/prometheus/rollout.yaml](analysis/prometheus/rollout.yaml) で、image のタグを `blue` から `green` に変えてコミットします。
 
-同期すると、20% で Analysis が始まります。1 分ほどで Analysis が成功し、50%、100% と自動で進みます。画面のタイルも、緑が増えていきます。
+同期すると、20% で Analysis が始まります。1 分ほどで Analysis が成功し、50%、100% と自動で進みます。誰もクリックしていないのに、画面のタイルは緑が増えていきます。
 
 ```bash
 kubectl -n prometheus-analysis get analysisrun
@@ -354,9 +374,11 @@ NAME                    STATUS       AGE
 handson-d7d97867f-2-1   Successful   2m
 ```
 
-#### 失敗する例
+### 失敗する例
 
-`argoproj/rollouts-demo:bad-red` は、一部のリクエストにエラーを返すイメージです。これを新しいバージョンとしてリリースします。
+この章でいちばん見てほしいのが、ここです。
+
+`argoproj/rollouts-demo:bad-red` は、一部のリクエストにエラーを返すイメージです。アプリは起動し、readiness probe も通ります。Deployment なら、そのまま全員に届くバージョンです。
 
 fork の [analysis/prometheus/rollout.yaml](analysis/prometheus/rollout.yaml) で、image のタグを `green` から `bad-red` に変えてコミットします。
 
@@ -364,7 +386,13 @@ fork の [analysis/prometheus/rollout.yaml](analysis/prometheus/rollout.yaml) �
         image: argoproj/rollouts-demo:bad-red
 ```
 
-同期すると、20% で Analysis が始まります。画面には、赤いタイルとエラーが混ざります。成功率が 95% を下回ると Analysis が失敗し、Rollout が中止されます。
+同期すると、20% で Analysis が始まります。画面には、赤いタイルとエラーが混ざります。AnalysisRun を見ながら待ちます。
+
+```bash
+kubectl -n prometheus-analysis get analysisrun -w
+```
+
+成功率が 95% を下回ると、AnalysisRun が Failed になり、Rollout が中止されます。
 
 ```bash
 kubectl -n prometheus-analysis get rollout handson -o jsonpath='{.status.message}'; echo
@@ -375,11 +403,21 @@ kubectl -n prometheus-analysis get rollout handson -o jsonpath='{.status.message
 RolloutAborted: Rollout aborted update to revision 3: Step-based analysis phase error/failed: Metric "handson-analysis" assessed Failed due to failed (1) > failureLimit (0)
 ```
 
-HTTPRoute の重みは 100 と 0 に戻り、トラフィックはすべて緑のバージョンに流れます。画面に新しく並ぶタイルも、緑だけになります。
+HTTPRoute も見ます。
+
+```bash
+kubectl -n prometheus-analysis get httproute app-httproute -o jsonpath='{.spec.rules[0].backendRefs}'; echo
+```
+
+```
+# 実行結果
+[{"group":"","kind":"Service","name":"handson","port":80,"weight":100},{"group":"","kind":"Service","name":"handson-canary","port":80,"weight":0}]
+```
+
+> [!IMPORTANT]
+> 重みが 100 と 0 に戻り、トラフィックはすべて緑のバージョンに流れています。エラーを検知したのは Prometheus、失敗と判断したのは AnalysisRun、トラフィックを戻したのは Argo Rollouts です。`bad-red` に届いたのは 20% のリクエストだけで、人は何もしていません。
 
 Web UI では、prometheus-analysis の Rollout が Degraded になります。Git には `bad-red` が残っているので、直すときは Git の image のタグを戻します。
-
-`bad-red` に届いたのは 20% のリクエストだけです。全員に届く前に、Argo Rollouts が元のバージョンに戻しました。
 
 Application を消します。
 
