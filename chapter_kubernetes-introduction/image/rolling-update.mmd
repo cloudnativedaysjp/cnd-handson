@@ -1,0 +1,91 @@
+---
+config:
+  htmlLabels: false
+  theme: base
+  themeCSS: |
+    g[id*="flowchart-deploymentIcon"] {
+      translate: 0 -81.5px;
+    }
+    g.cluster-label {
+      translate: 0 -90px;
+    }
+    g.cluster-label text {
+      font-size: 32px;
+      font-weight: 700;
+    }
+    g.nodes g.root:has(g[id$="-deployment1"]) {
+      translate: 0 -194px;
+    }
+    g.nodes g.root:has(g[id$="-deployment2"]),
+    g.nodes g.root:has(g[id$="-deployment3"]) {
+      translate: 0 -97px;
+    }
+  themeVariables:
+    fontFamily: Arial, sans-serif
+    primaryColor: '#eff6ff'
+    primaryTextColor: '#0f172a'
+    primaryBorderColor: '#326ce5'
+    lineColor: '#475569'
+    clusterBkg: '#f8fafc'
+    clusterBorder: '#94a3b8'
+    edgeLabelBackground: '#ffffff'
+  flowchart:
+    htmlLabels: false
+    curve: linear
+    diagramPadding: 112
+---
+%% Based on the Deployment and Pod styling in ../test-apigateway/test-apigateway.mmd.
+%% Icons: kubernetes/community (Apache-2.0).
+%% Image paths are relative to this file; the exported SVG embeds the icons.
+%% The five frames show successive states of the same Deployment.
+%% Move the Deployment badges onto the frame borders and place the step numbers above them.
+%% Each additional Pod adds 194px to its frame; shift shorter stages up to align their top edges.
+%% pod-deleted.svg retains the community Pod icon, faded and crossed out to show deletion history.
+flowchart LR
+    subgraph deployment1["①"]
+        direction TB
+        deploymentIcon1@{ img: "../../community/icons/svg/resources/labeled/deploy.svg", label: "Deployment: test", pos: "b", h: 88, constraint: "on" }
+        pod11@{ img: "../../community/icons/svg/resources/labeled/pod.svg", label: "v1", pos: "b", h: 88, constraint: "on" }
+        pod12@{ img: "../../community/icons/svg/resources/labeled/pod.svg", label: "v1", pos: "b", h: 88, constraint: "on" }
+        deploymentIcon1 ~~~ pod11 ~~~ pod12
+    end
+
+    subgraph deployment2["②"]
+        direction TB
+        deploymentIcon2@{ img: "../../community/icons/svg/resources/labeled/deploy.svg", label: "Deployment: test", pos: "b", h: 88, constraint: "on" }
+        pod21@{ img: "../../community/icons/svg/resources/labeled/pod.svg", label: "v1", pos: "b", h: 88, constraint: "on" }
+        pod22@{ img: "../../community/icons/svg/resources/labeled/pod.svg", label: "v1", pos: "b", h: 88, constraint: "on" }
+        pod23@{ img: "../../community/icons/svg/resources/labeled/pod.svg", label: "v2", pos: "b", h: 88, constraint: "on" }
+        deploymentIcon2 ~~~ pod21 ~~~ pod22 ~~~ pod23
+    end
+
+    subgraph deployment3["③"]
+        direction TB
+        deploymentIcon3@{ img: "../../community/icons/svg/resources/labeled/deploy.svg", label: "Deployment: test", pos: "b", h: 88, constraint: "on" }
+        deleted31@{ img: "./pod-deleted.svg", label: "v1", pos: "b", h: 88, constraint: "on" }
+        pod31@{ img: "../../community/icons/svg/resources/labeled/pod.svg", label: "v1", pos: "b", h: 88, constraint: "on" }
+        pod32@{ img: "../../community/icons/svg/resources/labeled/pod.svg", label: "v2", pos: "b", h: 88, constraint: "on" }
+        deploymentIcon3 ~~~ deleted31 ~~~ pod31 ~~~ pod32
+    end
+
+    subgraph deployment4["④"]
+        direction TB
+        deploymentIcon4@{ img: "../../community/icons/svg/resources/labeled/deploy.svg", label: "Deployment: test", pos: "b", h: 88, constraint: "on" }
+        deleted41@{ img: "./pod-deleted.svg", label: "v1", pos: "b", h: 88, constraint: "on" }
+        pod41@{ img: "../../community/icons/svg/resources/labeled/pod.svg", label: "v1", pos: "b", h: 88, constraint: "on" }
+        pod42@{ img: "../../community/icons/svg/resources/labeled/pod.svg", label: "v2", pos: "b", h: 88, constraint: "on" }
+        pod43@{ img: "../../community/icons/svg/resources/labeled/pod.svg", label: "v2", pos: "b", h: 88, constraint: "on" }
+        deploymentIcon4 ~~~ deleted41 ~~~ pod41 ~~~ pod42 ~~~ pod43
+    end
+
+    subgraph deployment5["⑤"]
+        direction TB
+        deploymentIcon5@{ img: "../../community/icons/svg/resources/labeled/deploy.svg", label: "Deployment: test", pos: "b", h: 88, constraint: "on" }
+        deleted51@{ img: "./pod-deleted.svg", label: "v1", pos: "b", h: 88, constraint: "on" }
+        deleted52@{ img: "./pod-deleted.svg", label: "v1", pos: "b", h: 88, constraint: "on" }
+        pod51@{ img: "../../community/icons/svg/resources/labeled/pod.svg", label: "v2", pos: "b", h: 88, constraint: "on" }
+        pod52@{ img: "../../community/icons/svg/resources/labeled/pod.svg", label: "v2", pos: "b", h: 88, constraint: "on" }
+        deploymentIcon5 ~~~ deleted51 ~~~ deleted52 ~~~ pod51 ~~~ pod52
+    end
+
+    deployment1 ~~~ deployment2 ~~~ deployment3 ~~~ deployment4 ~~~ deployment5

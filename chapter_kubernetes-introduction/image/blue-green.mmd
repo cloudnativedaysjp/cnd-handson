@@ -1,0 +1,60 @@
+---
+config:
+  htmlLabels: false
+  theme: base
+  themeVariables:
+    fontFamily: Arial, sans-serif
+    primaryColor: '#eff6ff'
+    primaryTextColor: '#0f172a'
+    primaryBorderColor: '#326ce5'
+    lineColor: '#475569'
+    clusterBkg: '#f8fafc'
+    clusterBorder: '#94a3b8'
+    edgeLabelBackground: '#ffffff'
+  flowchart:
+    htmlLabels: false
+    curve: linear
+    diagramPadding: 56
+---
+%% Based on ../test-apigateway/test-apigateway.mmd.
+%% Icons: kubernetes/community (Apache-2.0).
+%% Image paths are relative to this file; the exported SVG embeds the icons.
+%% Each environment contains one Service and one Pod.
+%% The dotted Green route shows the alternative destination for a traffic switch.
+flowchart LR
+    client["クライアント"]
+
+    subgraph cluster["クラスター"]
+        direction LR
+        subgraph gatewayArea[" "]
+            direction TB
+            gateway["Gateway API"]
+            note["リクエストの送信先を<br/>切り替えることで、<br/>環境を切り替える"]
+        end
+
+        %% Declare Green first so Blue appears above it in this layout.
+        subgraph green["Green"]
+            direction LR
+            greenService@{ img: "../../community/icons/svg/resources/labeled/svc.svg", label: "Service: green-service", pos: "b", h: 88, constraint: "on" }
+            greenPod@{ img: "../../community/icons/svg/resources/labeled/pod.svg", h: 88, constraint: "on" }
+            greenService --> greenPod
+        end
+
+        subgraph blue["Blue"]
+            direction LR
+            blueService@{ img: "../../community/icons/svg/resources/labeled/svc.svg", label: "Service: blue-service", pos: "b", h: 88, constraint: "on" }
+            bluePod@{ img: "../../community/icons/svg/resources/labeled/pod.svg", h: 88, constraint: "on" }
+            blueService --> bluePod
+        end
+
+        gateway --> blueService
+        gateway -.-> greenService
+    end
+
+    client --> gateway
+
+    style cluster fill:#ffffff,stroke:#94a3b8,stroke-width:1.5px
+    style gatewayArea fill:none,stroke:none
+    style note fill:none,stroke:none,color:#475569,font-size:14px
+    style blue fill:#eff6ff,stroke:#326ce5
+    style green fill:#f0fdf4,stroke:#16a34a
