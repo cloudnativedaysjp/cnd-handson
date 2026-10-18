@@ -4,11 +4,12 @@ CloudNative Days Winter 2025 実行委員会による『一日で学ぶクラウ
 Docker、Kubernetes、Prometheus、Grafana、ArgCDなど、クラウドネイティブな環境でよく利用されるOSSを対象としたハンズオンです。このハンズオンを通して、これらのOSSについての基本的な使い方を学び、今後の学習のきっかけにしてください。
 
 ## Chapter
-準備用chapter＋全19chapterから構成されています。
+準備用chapter＋全20chapterから構成されています。
 - [chapter_setup](./chapter_setup/)
 - [chapter_cluster-create](./chapter_cluster-create/)
 - [chapter_docker](./chapter_docker/)
-- [chapter_kubernetes](./chapter_kubernetes/)
+- [chapter_kubernetes-introduction](./chapter_kubernetes-introduction/)
+- [chapter_kubernetes-overview](./chapter_kubernetes-overview/)
 - [chapter_prometheus](./chapter_prometheus/)
 - [chapter_grafana](./chapter_grafana/)
 - [chapter_opentelemetry](./chapter_opentelemetry/)
@@ -35,7 +36,8 @@ flowchart TD
     setup[chapter_setup]
     cluster[chapter_cluster-create]
     docker[chapter_docker]
-    k8s[chapter_kubernetes]
+    k8sintro[chapter_kubernetes-introduction]
+    k8soverview[chapter_kubernetes-overview]
     prom[chapter_prometheus]
     grafana[chapter_grafana]
     otel[chapter_opentelemetry]
@@ -55,8 +57,9 @@ flowchart TD
 
     setup-->cluster
     cluster-->docker
-    docker-->k8s
-    k8s-->troubleshoot
+    docker-->k8sintro
+    k8sintro-->k8soverview
+    k8sintro-->troubleshoot
     cluster-->prom
     cluster-->argocd
     cluster-->kubevirt
