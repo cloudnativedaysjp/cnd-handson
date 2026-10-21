@@ -4,14 +4,15 @@ CloudNative Days Winter 2025 実行委員会による『一日で学ぶクラウ
 Docker、Kubernetes、Prometheus、Grafana、ArgCDなど、クラウドネイティブな環境でよく利用されるOSSを対象としたハンズオンです。このハンズオンを通して、これらのOSSについての基本的な使い方を学び、今後の学習のきっかけにしてください。
 
 ## Chapter
-準備用chapter＋全19chapterから構成されています。
+準備用chapter＋全21chapterから構成されています。
 - [chapter_setup](./chapter_setup/)
 - [chapter_cluster-create](./chapter_cluster-create/)
 - [chapter_docker](./chapter_docker/)
 - [chapter_kubernetes](./chapter_kubernetes/)
 - [chapter_prometheus](./chapter_prometheus/)
 - [chapter_grafana](./chapter_grafana/)
-- [chapter_opentelemetry](./chapter_opentelemetry/)
+- [chapter_opentelemetry-introduction](./chapter_opentelemetry-introduction/)
+- [chapter_opentelemetry-overview](./chapter_opentelemetry-overview/)
 - [chapter_argocd](./chapter_argocd/)
 - [chapter_argocd-image-updater](./chapter_argocd-image-updater/)
 - [chapter_cicd](./chapter_cicd/)
@@ -38,7 +39,8 @@ flowchart TD
     k8s[chapter_kubernetes]
     prom[chapter_prometheus]
     grafana[chapter_grafana]
-    otel[chapter_opentelemetry]
+    otelintro[chapter_opentelemetry-introduction]
+    oteloverview[chapter_opentelemetry-overview]
     argocd[chapter_argocd]
     argocdimageupdater[chapter_argocdimageupdater]
     istio[chapter_istio]
@@ -65,12 +67,13 @@ flowchart TD
     prom-->argorollouts
     prom-->istio
 
-    grafana-->otel
+    grafana-->otelintro
     grafana-->cilium
     grafana-->pyroscope
 
-    otel-->loki
-    otel-->tempo
+    otelintro-->oteloverview
+    otelintro-->loki
+    oteloverview-->tempo
 
     cilium-->hubble
 

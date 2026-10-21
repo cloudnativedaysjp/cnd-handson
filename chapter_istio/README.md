@@ -108,7 +108,7 @@ pod/handson-blue-9f785dfb9-jfpzp   2/2     Running   0          27s
 
 > [!NOTE]
 >
-> chapter_opentelemetryで[traceをopentelemetryで管理する例](../chapter_opentelemetry/README.md#trace-をopentelemetryで管理する例)を実装している場合はコンテナ数は3になります。
+> chapter_opentelemetry-overviewで[traceをopentelemetryで管理する例](../chapter_opentelemetry-overview/README.md#trace-をopentelemetryで管理する例)を実装している場合はコンテナ数は3になります。
 
 ```sh
 # 実行結果
