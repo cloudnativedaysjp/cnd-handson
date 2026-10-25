@@ -586,16 +586,18 @@ http://blue-green.example.com にアクセス→ Green App
 kubectl delete -f blue-green.yaml
 ```
 
-## 5. ConfigMap
+## 5. キーと値のペアをコンテナに渡す
 
-ConfigMapは、機密性のないデータをキーと値のペアで保存するために使用されるリソースです。
-環境固有の設定などをコンテナイメージから分離できるため、アプリケーションを簡単に移植できるようになります。
+ConfigMapやSecretは、キーと値のペアからなるデータを保存するために使用されるリソースです。
 
-但し、機密性や暗号化の機能を持たないため保存したいデータが機密情報である場合はSecretやサードパーティツールを使用する必要があります。
+ConfigMapやSecretのデータは、ファイルとしてコンテナにマウントしたり、環境変数としてコンテナから参照したりすることができます。環境固有の設定などをコンテナイメージから分離できるため、アプリケーションを簡単に移植できるようになります。
+
+### 5.1 ConfigMap
+
+ConfigMapは機密性のないデータを保存するために使用されます。
+
 今回は`CND ConfigMap Handson`というHTML形式のデータをConfigMapに保存し、Podにマウントさせています。
 クライアントからのリクエストはマウントされたConfigMapのHTMLデータを参照するため、`CND ConfigMap Handson`という文字列が返却されるはずです。
-
-
 
 まずは、ConfigMapを作成します。
 
@@ -629,9 +631,46 @@ kubectl delete pod configmap-pod
 kubectl delete configmap handson-configmap
 ```
 
+### 5.2 Secret
+
+Secretは、パスワードやアクセスキーなどの機密データで利用します。
+
+なお、Secretのデータは、デフォルトではbase64でエンコードされた状態で管理され、暗号化されません。本ハンズオンでは触れませんが、暗号化の設定は別途行う必要があります。
+
+今回はユーザー名とパスワードをSecretに保存し、環境変数としてコンテナに渡します。
+
+まずは、Secretを作成します。
+
+```sh
+kubectl apply -f handson-secret.yaml
+```
+
+続いてPodを作成します。
+
+```sh
+kubectl apply -f secret-pod.yaml
+```
+
+次に、Pod内にログインし、Secretで指定された環境変数が設定されていることを確認しましょう。
+
+```sh
+kubectl exec secret-pod -c nginx -it -- bash
+echo $USERNAME
+echo $PASSWORD
+```
+
+動作確認後、リソースを削除します。
+
+```sh
+kubectl delete pod secret-pod
+kubectl delete secret handson-secret
+```
+
 ## 6. トラブルシュート
 
 セクションの最後に、簡単なWebアプリケーションを使ったトラブルシュートに挑戦してみましょう。
+
+`cnd-web.yaml` を修正してください。
 構成図右下にあるcnd-web-appに接続し、適切なWebページを表示させることがゴールです。
 
 ![diagram](./image/cnd-tshoot-diagram.svg)
@@ -648,17 +687,10 @@ kubectl delete configmap handson-configmap
 kubectl apply -f cnd-web.yaml
 ```
 
-
 動作確認後、リソースを削除します。
 
 ```sh
-kubectl delete pod cnd-web-app
-kubectl delete pod dummy-app
-kubectl delete pod mysql
-kubectl delete service cnd-web-svc
-kubectl delete service mysql-svc
-kubectl delete ingress cnd-web-ing
-kubectl delete secret app-secret
+kubectl delete -f cnd-web.yaml
 ```
 
 ## 7. 最後に
