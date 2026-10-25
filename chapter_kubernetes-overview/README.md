@@ -850,50 +850,7 @@ handson-cronjob   */1 * * * *   True      0        8s              13m
 kubectl delete cronjob handson-cronjob
 ```
 
-## 7. ConfigMap
-
-ConfigMapは、機密性のないデータをキーと値のペアで保存するために使用されるリソースです。
-環境固有の設定などをコンテナイメージから分離できるため、アプリケーションを簡単に移植できるようになります。
-
-但し、機密性や暗号化の機能を持たないため保存したいデータが機密情報である場合はSecretやサードパーティツールを使用する必要があります。
-今回は`CND ConfigMap Handson`というHTML形式のデータをConfigMapに保存し、Podにマウントさせています。
-クライアントからのリクエストはマウントされたConfigMapのHTMLデータを参照するため、`CND ConfigMap Handson`という文字列が返却されるはずです。
-
-
-
-まずは、ConfigMapを作成します。
-
-```sh
-kubectl apply -f handson-configmap.yaml
-```
-
-続いてPodを作成します。
-
-```sh
-kubectl apply -f configmap-pod.yaml
-```
-
-次に、PodにアクセスするためIPアドレスを調べます。以下のコマンドでPodに紐づくIPアドレスが判ります。
-
-```sh
-kubectl get pods -o wide
-```
-
-最後にテンポラリのPodを作成し、curlでアクセスを試みます。
-`CND ConfigMap Handson`という文字列が返却されると成功です。
-
-```sh
-kubectl run tmp --restart=Never --rm -i --image=nginx:alpine -- curl <PodのIPアドレス>
-```
-
-動作確認後、リソースを削除します。
-
-```sh
-kubectl delete pod configmap-pod
-kubectl delete configmap handson-configmap
-```
-
-## 8. Resources
+## 7. Resources
 
 KubernetesにはNamespace単位でリソースを制御することができるResource Quotaという機能があります。
 制御できる機能は以下です。
@@ -1099,40 +1056,7 @@ kubectl delete -n resource-test resourcequotas test-resource-quota
 kubectl delete namespaces resource-test
 ```
 
-### 9. トラブルシュート
-
-セクションの最後に、簡単なWebアプリケーションを使ったトラブルシュートに挑戦してみましょう。
-構成図右下にあるcnd-web-appに接続し、適切なWebページを表示させることがゴールです。
-
-![diagram](./image/cnd-tshoot-diagram.svg)
-
-> [!NOTE]
-> - 動作確認は、ブラウザから以下のURLにアクセスすることで行います。
->   - http://cnd-web.example.com
-> - リソースの更新後もWeb画面の表示が変わらない場合があります。1-2分待ってからブラウザのリフレッシュを行なってください。
-> - 改修箇所は1箇所ではない可能性があります。また、構成図とエラーメッセージがヒントになる場合があります。
-
-
-以下のコマンドでアプリのデプロイを行なってください。
-```sh
-kubectl apply -f cnd-web.yaml
-```
-
-
-動作確認後、リソースを削除します。
-
-```sh
-kubectl delete pod cnd-web-app
-kubectl delete pod dummy-app
-kubectl delete pod mysql
-kubectl delete service cnd-web-svc
-kubectl delete service mysql-svc
-kubectl delete ingress cnd-web-ing
-kubectl delete secret app-secret
-```
-
-
-### 10. おまけ(jsonpath)
+### 8. おまけ(jsonpath)
 
 jsonpathは、ワンライナーで欲しい情報のみを引き抜く際に便利な機能です。
 jsonpathでNodeの内部IPのみをファイルに書き出してみましょう。
