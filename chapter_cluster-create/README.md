@@ -124,11 +124,6 @@ Ingress NGINX Controllerはインターネットからkind上のServiceリソー
 kubectl apply --server-side -f https://github.com/kubernetes-sigs/gateway-api/releases/download/v1.6.1/standard-install.yaml
 ```
 
-> [!NOTE]
->
-> Cilium 1.20.2は`TLSRoute`と`ReferenceGrant`の`v1` APIを必要とします。Gateway API v1.4.1ではそれぞれ`v1alpha2`と`v1beta1`だったため、このハンズオンでは両方が`v1`になったGateway API v1.6.1を使用します。
-> このハンズオンで使うのはStandard channelの`Gateway`と`HTTPRoute`です。Experimental CRDは使用しません。Standard CRD適用後にExperimental CRDを重ねて適用すると、Gateway APIの`safe-upgrades`ポリシーによって拒否される場合があります。
-
 Gateway API以外のコンポーネントはhelmfileコマンドを利用することでデプロイできます。
 
 ```shell
