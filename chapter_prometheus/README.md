@@ -209,76 +209,57 @@ kubectl get pods -n prometheus -l app.kubernetes.io/name=prometheus -o jsonpath=
 kubectl logs -n prometheus $(kubectl get pods -n prometheus -l app.kubernetes.io/name=prometheus -o jsonpath='{.items[0].metadata.name}') -c prometheus | grep "version"
 ```
 
-### Ingressによるサービスの公開
+### Gateway APIによるサービスの公開
 
-続いて、PrometheusやGrafana等の各UIをIngressで公開していきます。  
-すでにIngress NGINX Controllerがデプロイされていると思うので、以下のような設定でIngressをデプロイして公開します。
+続いて、PrometheusやGrafana等の各UIを、Gateway APIのHTTPRouteで公開していきます。
+[chapter_cluster-create](../chapter_cluster-create/README.md)で作ったGateway（`gateway/handson-gateway`）に、ホスト名ごとのHTTPRouteを紐付けます。
 
 ```yaml
 ---
-apiVersion: networking.k8s.io/v1
-kind: Ingress
+apiVersion: gateway.networking.k8s.io/v1
+kind: HTTPRoute
 metadata:
-  name: grafana-ingress-by-nginx
+  name: grafana-httproute
   namespace: prometheus
-  annotations:
-    nginx.ingress.kubernetes.io/ssl-redirect: "false"
 spec:
-  ingressClassName: nginx
+  parentRefs:
+  - name: handson-gateway
+    namespace: gateway
+    sectionName: http
+  hostnames:
+  - grafana.example.com
   rules:
-    - host: grafana.example.com
-      http:
-        paths:
-          - path: /
-            pathType: Prefix
-            backend:
-              service:
-                name: kube-prometheus-stack-grafana
-                port:
-                  number: 80
-
----
-apiVersion: networking.k8s.io/v1
-kind: Ingress
-metadata:
-  name: prometheus-ingress-by-nginx
-  namespace: prometheus
-  annotations:
-    nginx.ingress.kubernetes.io/ssl-redirect: "false"
-spec:
-  ingressClassName: nginx
-  rules:
-    - host: prometheus.example.com
-      http:
-        paths:
-          - path: /
-            pathType: Prefix
-            backend:
-              service:
-                name: kube-prometheus-stack-prometheus
-                port:
-                  number: 9090
+  - matches:
+    - path:
+        type: PathPrefix
+        value: /
+    backendRefs:
+    - name: kube-prometheus-stack-grafana
+      port: 80
 ```
+
+Prometheus用のHTTPRouteも同じ形で、ホスト名が`prometheus.example.com`、転送先が`kube-prometheus-stack-prometheus`の9090番ポートです。
 
 ```bash
-kubectl apply -f ingress.yaml
+kubectl apply -f httproute.yaml
 ```
 
-### Web UIへアクセス 
+### Web UIへアクセス
 実際にそれぞれのUIが公開されているか確認してみましょう。
 
 ```bash
-kubectl get ingress -n prometheus
+kubectl get httproute -n prometheus
 ```
 
 ```bash
 # 実行結果
-NAME                          CLASS   HOSTS                    ADDRESS         PORTS   AGE
-grafana-ingress-by-nginx      nginx   grafana.example.com      xx.xx.xx.xx   80      58m
-prometheus-ingress-by-nginx   nginx   prometheus.example.com   xx.xx.xx.xx   80      58m
+NAME                   HOSTNAMES                    AGE
+grafana-httproute      ["grafana.example.com"]      10s
+prometheus-httproute   ["prometheus.example.com"]   10s
 ```
 
 ローカル端末のブラウザから <http://prometheus.example.com> と <http://grafana.example.com> にアクセスしてみましょう。  
+HTTPRouteを作った直後は、1分ほど`503`が返ることがあります。その場合は少し待ってから開き直してください。  
 ※[chapter_setup](https://github.com/cloudnativedaysjp/cnd-handson/tree/main/chapter_setup)にてローカル端末のhostsファイルに`prometheus.example.com` と `grafana.example.com`が登録されている前提です。
 
 Grafanaではユーザログインが必要ですが、Helm設定した prometheus-values.yaml の内容でログインできます。(`username: admin, password: handson_saiko!`)  
@@ -327,44 +308,52 @@ kube-prometheus-stackでデフォルトで導入されているアラートル�
 
 ![image](./image/targets.png)
 
-## 実践: Ingress NGINX Controllerからメトリクスを収集
+## 実践: Envoy Gatewayからメトリクスを収集
 
-ここでは、`Ingress NGINX Controller`のメトリクスをPrometheusとGrafanaによる収集方法を説明します。
+ここでは、各UIの公開に使っている`Envoy Gateway`のメトリクスを、Prometheusで収集する方法を説明します。
 
 - `emptyDir`をPrometheusとGrafanaに使っている場合は、データを失う可能性があるので気をつけてください。
 
-### Nginx Ingressのメトリクスを外部公開する
+### Envoy Gatewayのメトリクスを収集する
 
-Ingress NGINX Controllerのメトリクスを外部公開するために、ServiceMonitorを作成し、PrometheusがIngress NGINX Controllerのメトリクスを取得できるようにします。
+Gatewayへのリクエストは、`envoy-gateway-system` namespaceで動くEnvoyのPodが受けます。
+EnvoyのPodは、`metrics`ポートの`/stats/prometheus`でメトリクスを公開しています。
+PodMonitorを作成し、PrometheusがこのPodからメトリクスを取得できるようにします。
 
 ```yaml
 apiVersion: monitoring.coreos.com/v1
-kind: ServiceMonitor
+kind: PodMonitor
 metadata:
-  name: ingress-nginx-controller
-  namespace: ingress-nginx
+  name: envoy-gateway-proxy
+  namespace: prometheus
 spec:
-  endpoints:
-    - port: metrics
-      interval: 30s
   namespaceSelector:
     matchNames:
-      - ingress-nginx
+      - envoy-gateway-system
   selector:
     matchLabels:
-      app.kubernetes.io/name: ingress-nginx
-      app.kubernetes.io/instance: ingress-nginx
-      app.kubernetes.io/component: controller
+      app.kubernetes.io/name: envoy
+      app.kubernetes.io/component: proxy
+  podMetricsEndpoints:
+    - port: metrics
+      path: /stats/prometheus
+      interval: 30s
 ```
 
 ```shell
-kubectl apply -f manifests/ingress-nginx-servicemonitor.yaml
+kubectl apply -f manifests/envoy-gateway-podmonitor.yaml
 ```
 
-<http://prometheus.example.com/graph> を開き (またはリロードして)、PromQL入力欄に ngi のように入力し、nginx のメトリクスが追加されているのを確認しましょう。
-※ServiceMonitorをapplyしてから反映（メトリクスが追加）されるまでに数分かかります。
+<http://prometheus.example.com/graph> を開き (またはリロードして)、PromQL入力欄に次のクエリを入力してみましょう。
+HTTPRouteごとに、レスポンスコードの種類（2xx、4xxなど）別のリクエスト数が表示されます。
+※PodMonitorをapplyしてから反映（メトリクスが追加）されるまでに数分かかります。
 
-![image](https://github.com/kubernetes/ingress-nginx/blob/main/docs/images/prometheus-dashboard1.png)
+```text
+sum by (envoy_cluster_name, envoy_response_code_class) (envoy_cluster_upstream_rq_xx{envoy_cluster_name=~"httproute/.*"})
+```
+
+`envoy_cluster_name`の`httproute/prometheus/grafana-httproute/rule/0`は、`prometheus` namespaceの`grafana-httproute`の1つ目のルールを表します。
+GrafanaやPrometheusの画面を開くたびに、この値が増えていきます。
 
 ## PromQL実例集
 
@@ -404,4 +393,4 @@ sum by (kube_namespace_name) (kube_pod_status_ready{condition="false"})
 
 - [Prometheusの公式ドキュメント](https://prometheus.io/docs/introduction/overview/)
 - [Prometheus Operatorの公式ドキュメント](https://prometheus-operator.dev/)
-- [Nginx Ingressのメトリクス収集](https://github.com/kubernetes/ingress-nginx/blob/main/docs/user-guide/monitoring.md)
+- [Envoy Gatewayのメトリクス](https://gateway.envoyproxy.io/docs/tasks/observability/proxy-metric/)

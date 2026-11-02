@@ -1,475 +1,391 @@
 # Argo Rollouts
-この章では、Kubernetes上でプログレッシブデリバリーを可能とするデプロイツールであるArgo Rolloutsについて紹介し、導入します。
 
-## プログレッシブデリバリーについて
-プログレッシブデリバリー（Progressive Delivery）は、アプリケーションの新機能や変更を段階的に展開し、その過程を自動化してリスクを最小限に抑え、品質を確保する手法です。
+この章では、Kubernetes でプログレッシブデリバリーを行うツール、Argo Rollouts を使います。機能を一通り触るより、Argo Rollouts が裏で何を書き換えているかを、自分の目で確かめることを目指します。
 
-実現するために、一部のユーザに対してアプリケーションを提供するトラフィック制御（Canary Release）、提供したアプリケーションの新機能に対する分析、分析をもとに自動化されたロールバックの3つの機能が必要になります
+リリースを先に進める役は、節を追うごとに人から Argo Rollouts へ移ります。Argo CD の章で、手で同期してから自動の同期に進んだのと同じ流れです。
+
+| 節 | 先に進めるのは | 確かめること |
+|---|---|---|
+| Blue/Green Deployment | 人が切り替える | Pod を用意することと、トラフィックを切り替えることは、別々に起きる |
+| Canary Release | 途中で止まり、人が進める | リリースが進むと、Argo Rollouts が HTTPRoute の重みを書き換える |
+| Analysis | メトリクスが決める | 人がクリックしなくても、リリースが進む |
+| 失敗する例 | メトリクスが止める | アプリが起動していても、エラーが多ければリリースは止まる |
+
+## プログレッシブデリバリー
+
+プログレッシブデリバリーは、新しいバージョンを少しずつ公開し、問題があれば自動で戻すリリースの方法です。まずトラフィックの一部だけを新しいバージョンに流し、その間にエラー率などを測ります。結果が良ければ割合を増やし、悪ければ元のバージョンに戻します。この「測って決める」部分を、Argo Rollouts では Analysis と呼びます。
 
 ```mermaid
 graph LR;
-    CanaryRelease-->分析;
-    分析-->成功;
-    分析-->失敗;
+    CanaryRelease-->Analysis;
+    Analysis-->成功;
+    Analysis-->失敗;
     失敗-->ロールバック;
     成功-->CanaryRelease;
 ```
-  
-## Argo Rolloutsについて
 
-Argo Rolloutsは、Kubernetesコントローラおよび一連のカスタムリソース定義（CRD）で、KubernetesにBlue/Green Deployment、Canary Release、分析、およびプログレッシブデリバリーの機能が追加されます。
+Deployment のローリングアップデートは、readiness probe が通れば、Pod を新しいバージョンに入れ替えていきます。エラーを返すバージョンでも、起動さえすれば利用者の全員に届きます。プログレッシブデリバリーでは、新しいバージョンに届くのは一部のリクエストだけです。問題が見つかれば、全員に届く前に元のバージョンへ自動で戻ります。
 
-![Argo Rollouts](https://argo-rollouts.readthedocs.io/en/stable/architecture-assets/argo-rollout-architecture.png)
+## 誰が何を書き換えるか
 
-- Argo Rollouts controller
-  - クラスター内のイベントを監視し、Rolloutタイプのリソースが変更されるたびに処理を行うカスタムコントローラー
-  - Deploymentに代わり、Rollout resouce　に指定された状態にクラスターを持っていく処理を行っています。
-- Rollout resource
-  - ネイティブのKubernetes Deploymentリソースとほぼ互換性があるカスタムKubernetesリソース
-  - KubernetesにBlue/Green Deployment、Canary Releaseなど高度なデプロイ方法を追加し、サポートします。
-- AnalysisTemplate
-  -　どのメトリクスをクエリするかを記載するテンプレート的なカスタムリソース
-  - Rolloutまたはクラスター全体で定義でき、複数のRolloutで共有するためにClusterAnalysisTemplateとしても使用が可能です。
-- AnalysisRun
-  - 　AnalysisTemplateを元に実際に動いたjob的なカスタムリソース
- 
+この章には、Argo CD と Argo Rollouts の 2 つのコントローラーが出てきます。どちらも Kubernetes のリソースを書き換えますが、受け持ちが違います。
 
-Argo CDとの連携が可能で、簡単に既存のGit Opsでプログレッシブデリバリーができる
-## セットアップ
-今回のハンズオンでは、PrometheusとArgo CD、Argo Rolloutsを利用します。
-
-また、GitHubのリポジトリの登録やPushは、forkした自身のリポジトリを利用してください。
-
-### Prometheusのセットアップ
-[chapter_prometheus](../chapter_prometheus/README.md#実践-ingress-nginx-controllerからメトリクスを収集する)を参照して、kube-prometheus-stackのインストールからNginx Ingressのメトリクスを外部公開できていることを確認まで行ってください。
-
-### Argo CDのセットアップ
-[chapter_argocd](../chapter_argocd/README.md#argo-cdのインストール)を参照してArgo CDのインストールからWebUIの確認とレポジトリのforkから登録まで行ってください。
-
-今回のchapterではさらにArgo CDのプラグインである、rollout-extensionをインストールしてArgoCD上でrolloutの操作結果が確認できるようにします。
-chapter_argocd/helm/values.yamlの更新をします。
-```values.yaml
-## Argo Configs
-configs:
-  params:
-  # -- Run server without TLS
-    server.insecure: true
-server:
-  extensions:
-    enabled: true
-# ~~~~ ここから下を追記or更新 ~~~~
-    extensionList:
-      - name: rollout-extension
-        env:
-          - name: EXTENSION_URL
-            value: https://github.com/argoproj-labs/rollout-extension/releases/download/v0.3.7/extension.tar
-```
-helmファイルの更新を行います。
-```sh
- helmfile sync -f ../chapter_argocd/helm/helmfile.yaml
+```mermaid
+graph LR;
+    Git-->|適用する|ArgoCD[Argo CD];
+    ArgoCD-->Rollout;
+    ArgoCD-->AnalysisTemplate;
+    Rollout-->|読む|ArgoRollouts[Argo Rollouts];
+    ArgoRollouts-->|作る|ReplicaSet;
+    ArgoRollouts-->|selector を書き換える|Service;
+    ArgoRollouts-->|重みを書き換える|HTTPRoute;
+    ArgoRollouts-->|問い合わせる|Prometheus;
+    ArgoRollouts-->|結果を書く|AnalysisRun;
 ```
 
-### Argo Rolloutsのインストール
-helmファイルを利用してArgo Rolloutsをインストールします。
-```sh
+Argo CD は、Git に書いたマニフェストをそのままクラスターに適用します。仕事はそこまでで、リリースをどう進めるかは知りません。
+
+Argo Rollouts は、Rollout の `strategy` を読んで、リリースを進めます。新しいバージョンの ReplicaSet を作り、Service の selector や HTTPRoute の重みを書き換えて、トラフィックの行き先を変えます。Analysis が要るときは、Argo Rollouts 自身が Prometheus などに問い合わせ、その結果で先に進むか戻すかを決めます。測った結果は、AnalysisRun に記録します。
+
+| リソース | 書く人 | 役割 |
+|---|---|---|
+| Rollout | Git（Argo CD が適用） | Deployment の代わり。更新のしかたを `strategy` に書く |
+| AnalysisTemplate | Git（Argo CD が適用） | 何をどう測って成功とするか |
+| AnalysisRun | Argo Rollouts | AnalysisTemplate を元に、Argo Rollouts が測った結果の記録 |
+| Service、HTTPRoute | Git が元で、Argo Rollouts が書き換える | トラフィックの行き先 |
+
+以降の節では、Argo Rollouts が書き換える Service と HTTPRoute を、リリースの前後で見比べます。
+
+## 準備
+
+### Prometheus
+
+Analysis で Envoy Gateway のメトリクスを使います。[chapter_prometheus](../chapter_prometheus/README.md) の手順で kube-prometheus-stack を入れます。そのうえで、Envoy Gateway のメトリクスを集める PodMonitor を作ります。
+
+```bash
+kubectl apply -f ../chapter_prometheus/manifests/envoy-gateway-podmonitor.yaml
+```
+
+### Argo CD
+
+[chapter_argocd](../chapter_argocd/README.md) の「準備」を終えます。fork を作り、`GITHUB_USER` を設定し、Argo CD を入れた状態から始めます。
+
+Argo CD の章の [helm/values.yaml](../chapter_argocd/helm/values.yaml) には、rollout-extension が入っています。rollout-extension は、Rollout の状態を Argo CD の Web UI に表示する拡張機能です。
+
+この章のディレクトリに移ります。
+
+```bash
+cd ~/cnd-handson/chapter_argo-rollouts
+```
+
+### Argo Rollouts のインストール
+
+helmfile で Argo Rollouts を入れます。
+
+```bash
 helmfile sync -f helm/helmfile.yaml
 ```
-作成されるリソースは下記の通りです。
-```sh
-kubectl get services,deployments -n argo-rollouts
+
+[helm/values.yaml](helm/values.yaml) では、Gateway API のプラグインを読み込みます。Canary Release で、Rollout が HTTPRoute の重みを書き換えるのに使います。
+
+## Blue/Green Deployment: Pod の用意と切り替えは別
+
+Blue/Green Deployment では、新しいバージョンの Pod をすべて用意してから、トラフィックを一度に切り替えます。Deployment では、Pod の入れ替えとトラフィックの切り替えが同時に進みます。Argo Rollouts では、この 2 つが別々に起きます。
+
+[app/blue-green/rollout.yaml](app/blue-green/rollout.yaml) の `strategy` に、2 つの Service を書きます。
+
+```yaml
+  strategy:
+    blueGreen:
+      activeService: handson
+      previewService: handson-preview
+      autoPromotionEnabled: false
 ```
-```sh
+
+`activeService` は利用者が使うバージョンに、`previewService` は新しいバージョンに向く Service です。`autoPromotionEnabled: false` なので、切り替え（Promote）は手で行います。
+
+Service がどの Pod に向くかは、selector で決まります。Git の Service の selector は `app: handson` だけですが、Argo Rollouts が `rollouts-pod-template-hash` を足します。このハッシュは ReplicaSet ごとに違うので、Service がどの ReplicaSet の Pod に向いているかが分かります。
+
+この節では、操作のたびに 2 つの Service のハッシュを見ます。
+
+| 手順 | 操作 | `handson`（active） | `handson-preview` |
+|---|---|---|---|
+| 1 | Application を作る | 古い ReplicaSet | 古い ReplicaSet |
+| 2 | image を green に変える | 古い ReplicaSet | 新しい ReplicaSet |
+| 3 | Promote する | 新しい ReplicaSet | 新しい ReplicaSet |
+
+### Application を作る
+
+`automated` を書いているので、作るとすぐに同期します。
+
+```bash
+sed "s/<GITHUB_USER>/${GITHUB_USER}/" applications/blue-green.yaml | kubectl apply -f -
+```
+
+http://app.rollouts.example.com を開くと、青いタイルが並びます。Service のハッシュと ReplicaSet を見ます。
+
+```bash
+kubectl -n blue-green get service -o custom-columns='NAME:.metadata.name,HASH:.spec.selector.rollouts-pod-template-hash'
+kubectl -n blue-green get replicaset
+```
+
+2 つの Service のハッシュは同じで、ReplicaSet の名前の末尾と一致します。以降の手順でも、この 2 つのコマンドで確かめます。
+
+### 新しいバージョンをリリースする
+
+fork の [app/blue-green/rollout.yaml](app/blue-green/rollout.yaml) を GitHub の画面で開き、image のタグを `blue` から `green` に変えてコミットします。手順は [Argo CD の章](../chapter_argocd/README.md#git-を変えて反映する) と同じです。Argo CD が変更に気づくまで 3 分ほどかかります。待てないときは Web UI で blue-green を開き、REFRESH をクリックします。
+
+同期したら、Service と ReplicaSet をもう一度見ます。ReplicaSet は 2 つになり、`handson-preview` のハッシュだけが新しい ReplicaSet のものに変わります。
+
+> [!IMPORTANT]
+> 新しいバージョンの Pod は 10 個そろい、古いバージョンの Pod も残っています。それでも、`handson` のハッシュは変わっていません。新しいバージョンの Pod は作られたのに、利用者のトラフィックはまだ古いバージョンに流れています。
+
+2 つの URL を開くと、色が違います。利用者に見せる前に、preview で新しいバージョンを確かめられます。
+
+- active: http://app.rollouts.example.com （青）
+- preview: http://app-preview.rollouts.example.com （緑）
+
+![demoapp](image/BG/demoapp.png)
+
+### 切り替える
+
+Web UI で blue-green を開き、Rollout（handson）の「⋮」から Promote-Full をクリックし、確認の画面で OK をクリックします。rollout-extension が入っていれば、Rollout をクリックしたときに ROLLOUT のタブが出て、新旧のバージョンの状態をまとめて確かめられます。
+
+Service をもう一度見ると、`handson` のハッシュも新しい ReplicaSet のものに変わっています。active も緑になり、古いバージョンの Pod は少し待ってから消えます。この Promote でトラフィックの行き先を変えるために、Argo Rollouts が書き換えたのは `handson` の selector だけです。そのため一度に切り替わり、新旧のバージョンが混ざりません。
+
+Application を消します。
+
+```bash
+kubectl -n argo-cd delete application blue-green
+```
+
+## Canary Release: Argo Rollouts が HTTPRoute を書き換える
+
+Canary Release では、トラフィックの一部だけを新しいバージョンに流し、少しずつ割合を増やします。Deployment だけでは、割合は Pod の数でしか決められません。この章では、HTTPRoute の重みで割合を決めます。
+
+[app/canary/httproute.yaml](app/canary/httproute.yaml) には、2 つの Service を重み付きで並べます。Git に書くのは、リリースしていないときの重みです。
+
+```yaml
+    backendRefs:
+    - name: handson
+      port: 80
+      weight: 100
+    - name: handson-canary
+      port: 80
+      weight: 0
+```
+
+[app/canary/rollout.yaml](app/canary/rollout.yaml) には、どの HTTPRoute を書き換えるかと、割合の変え方を書きます。
+
+```yaml
+  strategy:
+    canary:
+      stableService: handson
+      canaryService: handson-canary
+      trafficRouting:
+        plugins:
+          argoproj-labs/gatewayAPI:
+            httpRoute: app-httproute
+            namespace: canary
+      steps:
+      - setWeight: 20
+      - pause: {}
+```
+
+`stableService` は今のバージョンに、`canaryService` は新しいバージョンに向く Service です。`setWeight: 20` で新しいバージョンに 20% を流し、`pause: {}` で止まります。
+
+この節では、HTTPRoute の重みが次のように変わるのを見ます。
+
+| 状態 | `handson`（stable） | `handson-canary` |
+|---|---|---|
+| リリースの前 | 100（blue） | 0 |
+| 20% を流して止まっている | 80（blue） | 20（green） |
+| Promote が終わった | 100（green） | 0 |
+
+Promote が終わると、Argo Rollouts は `handson` を green の Pod に向け直します。そのあと重みを 100 と 0 に戻すので、すべてのトラフィックが green に流れます。
+
+### Application を作る
+
+```bash
+sed "s/<GITHUB_USER>/${GITHUB_USER}/" applications/canary.yaml | kubectl apply -f -
+```
+
+HTTPRoute の重みを見ます。Git と同じ、100 と 0 です。
+
+```bash
+kubectl -n canary get httproute app-httproute -o jsonpath='{.spec.rules[0].backendRefs[*].weight}'; echo
+```
+
+### 新しいバージョンをリリースする
+
+fork の [app/canary/rollout.yaml](app/canary/rollout.yaml) で、image のタグを `blue` から `green` に変えてコミットします。同期したら、同じコマンドで重みを見ます。
+
+> [!IMPORTANT]
+> 重みが 80 と 20 に変わりました。Git の httproute.yaml は 100 と 0 のままです。重みを書き換えたのは Argo CD ではなく、Rollout の `setWeight: 20` を読んだ Argo Rollouts です。
+
+<details>
+<summary>Argo CD は、書き換えられた重みを Git の値に戻さないのか</summary>
+
+Argo CD から見ると、HTTPRoute は Git と違う状態です。それでも Argo CD は 100 と 0 に戻しません。canary の Application は `automated: {}` だけで、[Argo CD の章](../chapter_argocd/README.md#手で変えた状態を戻す)で使った `selfHeal: true` を書いていないからです。`selfHeal: true` を付けると、Argo CD と Argo Rollouts が重みを書き換え合います。実際の運用では、`ignoreDifferences` で重みを比較から外します。
+
+</details>
+
+http://app.rollouts.example.com を開くと、青いタイルの中に、緑のタイルが 2 割ほど混ざります。
+
+![demoapp](image/canary/demoapp.png)
+
+Rollout の状態と ReplicaSet も見ます。
+
+```bash
+kubectl -n canary get rollout handson -o jsonpath='{.status.phase}{" "}{.status.message}'; echo
+kubectl -n canary get replicaset
+```
+
+Rollout は `Paused CanaryPauseStep` で止まっています。新しいバージョンの ReplicaSet は Pod が 2 個、古いバージョンは 10 個のままです。トラフィックも Pod も、20% の状態で `pause` の先へ進むのを待っています。
+
+### 最後まで進める
+
+Web UI で canary を開き、Rollout の「⋮」から Promote-Full をクリックし、確認の画面で OK をクリックします。タイルが緑だけになります。
+
+重みをもう一度見ると、100 と 0 に戻っています。ただし `handson` の Service は、もう新しいバージョンの Pod に向いています。新しいバージョンが、次のリリースの基準（stable）になったからです。
+
+Application を消します。
+
+```bash
+kubectl -n argo-cd delete application canary
+```
+
+## Analysis: リリースを進めるかを測って決める
+
+ここまでは、先に進めるかどうかを人が決めて、Promote-Full をクリックしました。Analysis を使うと、Argo Rollouts が新しいバージョンを測り、その結果で進めるか戻すかを決めます。何を測るかは、AnalysisTemplate の `provider` で選びます。
+
+| provider | 成功の決め方 | 例 |
+|---|---|---|
+| Job | Job の終了コード | [analysis/job/analysis.yaml](analysis/job/analysis.yaml) |
+| Web | HTTP のレスポンス | [analysis/web/analysis.yaml](analysis/web/analysis.yaml) |
+| Prometheus | クエリの結果 | [analysis/prometheus/analysis.yaml](analysis/prometheus/analysis.yaml) |
+
+この節では、Prometheus で成功と失敗の両方を試します。Job と Web の例も、`applications/job-analysis.yaml` と `applications/web-analysis.yaml` の Application を作れば試せます。
+
+[analysis/prometheus/analysis.yaml](analysis/prometheus/analysis.yaml) では、HTTPRoute を通ったリクエストのうち、4xx と 5xx を除いた割合を出します。Envoy Gateway のメトリクスを使います。
+
+```yaml
+  metrics:
+  - name: handson-analysis
+    interval: 15s
+    count: 4
+    successCondition: isNaN(result[0]) || result[0] >= 0.95
+    failureLimit: 0
+    provider:
+      prometheus:
+        address: http://kube-prometheus-stack-prometheus.prometheus.svc.cluster.local:9090
+        query: >+
+          sum(rate(envoy_cluster_upstream_rq_xx{envoy_cluster_name="{{args.envoy-cluster}}",envoy_response_code_class!~"4|5"}[1m]))
+          /
+          sum(rate(envoy_cluster_upstream_rq_xx{envoy_cluster_name="{{args.envoy-cluster}}"}[1m]))
+```
+
+15 秒おきに 4 回測り、成功率が 95% 以上なら成功です。`failureLimit: 0` なので、1 回でも下回れば失敗になります。「成功率 95% 以上」というリリースの判断基準が、ファイルとして Git に残ります。
+
+測っているのは、HTTPRoute を通ったリクエスト全体の成功率です。新しいバージョンだけでなく、古いバージョンに流れた 80% も含みます。新しいバージョンのエラーが多ければ、全体の成功率も下がるので、この章ではこれで判断します。リクエストがないと、成功率は NaN になります。この AnalysisTemplate は NaN を成功として扱うので、誰もアクセスしていなければ、何も測らないまま Analysis が成功します。
+
+[analysis/prometheus/rollout.yaml](analysis/prometheus/rollout.yaml) では、Canary Release の `pause: {}` を `analysis` に置き換えます。人の代わりに Analysis が、50% に進めてよいかを決めます。
+
+```yaml
+      steps:
+      - setWeight: 20
+      - analysis:
+          templates:
+          - templateName: handson-analysis
+          args:
+          - name: envoy-cluster
+            value: httproute/prometheus-analysis/app-httproute/rule/0
+      - setWeight: 50
+      - pause:
+          duration: 30s
+```
+
+この節では、2 つのイメージで結果を比べます。人が行うのは image のタグを変えるところまでで、Promote の操作は要りません。うまくいけば、次の結果になります。
+
+| | `green` | `bad-red` |
+|---|---|---|
+| Analysis | Successful | Failed |
+| Rollout | 50%、100% と進む | 中止される |
+| トラフィック | 新しいバージョンに移る | 古いバージョンに戻る |
+
+### Application を作る
+
+```bash
+sed "s/<GITHUB_USER>/${GITHUB_USER}/" applications/prometheus-analysis.yaml | kubectl apply -f -
+```
+
+Analysis の間は、http://app.rollouts.example.com を開いたままにしておきます。デモアプリの画面は、裏で繰り返しリクエストを送ります。
+
+### 成功する例
+
+fork の [analysis/prometheus/rollout.yaml](analysis/prometheus/rollout.yaml) で、image のタグを `blue` から `green` に変えてコミットします。同期すると、20% で Analysis が始まります。1 分ほどで Analysis が成功し、50%、100% と自動で進みます。誰もクリックしていないのに、画面のタイルは緑が増えていきます。AnalysisRun は `Successful` になります。
+
+```bash
+kubectl -n prometheus-analysis get analysisrun
+```
+
+### 失敗する例
+
+`argoproj/rollouts-demo:bad-red` は、一部のリクエストにエラーを返すイメージです。アプリは起動し、readiness probe も通るので、Deployment ならそのまま全員に届いてしまいます。コミットする前に、HTTPRoute の重みと画面のタイルがどう変わるかを予想してみてください。
+
+fork の [analysis/prometheus/rollout.yaml](analysis/prometheus/rollout.yaml) で、image のタグを `green` から `bad-red` に変えてコミットします。同期すると 20% で Analysis が始まり、画面には赤いタイルとエラーが混ざります。AnalysisRun を見ながら待ちます。
+
+```bash
+kubectl -n prometheus-analysis get analysisrun -w
+```
+
+成功率が 95% を下回ると、AnalysisRun が `Failed` になり、Rollout が中止されます。Ctrl+C で止めて、Rollout と HTTPRoute を見ます。
+
+```bash
+kubectl -n prometheus-analysis get rollout handson -o jsonpath='{.status.message}'; echo
+kubectl -n prometheus-analysis get httproute app-httproute -o jsonpath='{.spec.rules[0].backendRefs[*].weight}'; echo
+```
+
+```
 # 実行結果
-NAME                            READY   UP-TO-DATE   AVAILABLE   AGE
-deployment.apps/argo-rollouts   2/2     2            2           28d
-```
-## Blue/Green DeploymentとCanary Release
-Argo Rolloutsによって追加された、Blue/Green DeploymentとCanary Releaseの2つのデプロイ方法を試します。
-
-既存のローリングアップデートでは、一部のリソースを順次更新して本番環境をアップデートするため、新バージョンと旧バージョンが混在してしまいます。
-
-Blue/Green Deploymentでは、新バージョンを事前に用意しネットワークを切り替える事で新旧両方が混在せず一気にアップデートを行う方法です。
-
-Canary Releaseは、新旧混在状態を制御し、本番環境において限られたユーザーグループやトラフィックに対して新しいバージョンを段階的に展開するアップデート方法です。
-
-### Blue/Green Deployment
- Applicationsの画面において + NEW APPをクリックします![Applications](./image/analysis/application.png)
-上の画面上で各項目を次のように設定します。
-
-**web版**
-  ```
-  GENERAL
-    Application Name: blue-green
-    Project Name: default
-    SYNC POLICY: Manual
-    SYNC OPTIONS: AUTO CREATE NAMESPACE [v]
-    SOURCE
-      Repository URL: chapter_argocdでforkした自分のリポジトリのURL
-      Revision: main
-      Path: chapter_argo-rollouts/app/blue-green
-    DESTINATION
-      Cluster URL: https://kubernetes.default.svc
-      Namespace: blue-green
-  ```
-  **cli版**
-  ```
-  argocd app create blue-green --repo chapter_argocdでforkした自分のリポジトリのURL --sync-option CreateNamespace=true --path chapter_argo-rollouts/app/blue-green --dest-server https://kubernetes.default.svc --dest-namespace blue-green --revision main
-  ```
- 設定できたら、CREATEをクリックして、下記のように表示されていることを確認してください。
-  ![create](image/BG/blue-green-create.png)
-  ![create2](image/BG/blue-green-create2.png)
-  
- ページ上部にある`SYNC`をクリックして、無事デプロイされると下記のようになります
-  ![sync](image/BG/blue-green-sync.png)
-
-以上の手順で、Blue/GreenのBlueに当たる状態がArgoCDを用いてデプロイされ、localからingressでアクセス可能となりました。
-
-ここからは、実際にBlue/Green Deploymentを行いその様子を見ていこうと思います。
-
- `app/blue-green/rollout.yaml`の編集を行います。 imageのtagをblueからgreenに変更します。
-```
-image: argoproj/rollouts-demo:green
-```
-差分をforkしたmainブランチ（appを作成する際に指定したブランチ）に取り込みます。
-```
-git push origin main
+RolloutAborted: Rollout aborted update to revision 3: Step-based analysis phase error/failed: Metric "handson-analysis" assessed Failed due to failed (1) > failureLimit (0)
+100 0
 ```
 
- ArgoCDはデフォルトでは3分に1回の頻度でブランチを確認し、差分を検出しています。
- 3分待てない場合には、ページ上部にある [REFRESH]をクリックします。下記のようにrolloutにおいて差分が検出されます。（黄色で表示されているOutOfSyncが差分があることを示しています）
- 
- ちなみにAppの設定において、SYNC POLICYをManualでなくAutoにしていた場合には、ここでOutOfSyncを検知すると自動でArgoCDがSyncを実行します。
+> [!IMPORTANT]
+> 重みが 100 と 0 に戻り、トラフィックはすべて緑のバージョンに流れています。Prometheus のメトリクスを測って失敗と判断し、トラフィックを戻したのは Argo Rollouts です。その判断は AnalysisRun に残っています。`bad-red` に届いたのは 20% のリクエストだけで、人は Promote も中止もしていません。
 
-  ![OutOfSync](image/BG/blue-green-OutofSync.png)
- rolloutを手動でSyncします。 blue, green両方のreplicasetが作成されている事が確認できます。
-  ![Sync](image/BG/blue-green-sync2.png)
+> [!NOTE]
+> 結果は、リクエストの量と、メトリクスが Prometheus に届くタイミングで変わります。画面を開いていないなどでリクエストが少ないと、成功率が 95% を下回らず、`bad-red` でも Analysis が成功することがあります。
 
- 
- 両方のreplicasetが作成されているのは、bluegreen-rollout.yamlにおいてspec.strategy.bluegreen.autoPromotionEnabledがfalseに設定されているからです
+中止されたとき、Web UI では prometheus-analysis の Rollout が Degraded になります。Git には `bad-red` が残っているので、直すときは Git の image のタグを戻します。
 
- それぞれのingressにアクセスすると下記のようにblueとgreenの異なるタイルが表示されていることが確認できます。
- * app.argocd.example.com
- * app-preview.argocd.example.com
+Application を消します。
 
-  ![demoapp](image/BG/demoapp.png)
- rolloutの3点リーダーをクリックし [Promote-Full]をクリックすることで、blue-green deployが行われます。プロモートが行われたどちらのingressもgreenを見るようになり、blueのreplicasetは削除されます。
-  ![promote](image/BG/promote.png)
- 
- このように、ArgoRolloutのBlue/Green Deploymentにおいては、いったんgreenに当たるサービスがpreviewServiceとして登録されプロモートすることで、activeServiceに昇格するような動きをして、Blue/Green Deploymentを実現します。  
- 
- 
-rollout-extensionを使用した場合、rolloutをクリックするとROLLOUTのタブが出現します。タブを選ぶとこのようにblueとgreenがどうなっているか一目で確認できるようになります。
-  ![rollout-extension](image/BG/blue-green-promote.png)
-最後にアプリケーションの削除を行います。 DELETEをクリックします。
-
-
-Applications画面の場合は、一番右下の端に、
-
-
-
-![delete](../chapter_argocd/image/demoapp/Delete-1.png)
-
-詳細画面の場合は、右上の2番目にあります。
-
-![delete](../chapter_argocd/image/demoapp/Delete-2.png)
-
-削除する際にアプリケーション名の入力があるので「blue-green」と入力してOKをクリックします。
-![delete](image/BG/blue-green-delete.png)
-
-### Canary Release
- Applicationsの画面において + NEW APPをクリックします![Applications](./image/analysis/application.png)
- 上の画面上で各項目を次のように設定します。
-  ```
-  GENERAL
-    Application Name: canary
-    Project Name: default
-    SYNC POLICY: Manual
-    SYNC OPTIONS: AUTO CREATE NAMESPACE [v]
-    SOURCE
-      Repository URL: chapter_argocdでforkした自分のリポジトリのURL
-      Revision: main
-      Path: chapter_argo-rollouts/app/canary
-    DESTINATION
-      Cluster URL: https://kubernetes.default.svc
-      Namespace: canary
-  ```
-  **cli版**
-  ```
-  argocd app create canary --repo chapter_argocdでforkした自分のリポジトリのURL --sync-option CreateNamespace=true --path chapter_argo-rollouts/app/canary --dest-server https://kubernetes.default.svc --dest-namespace canary --revision main
-  ```
- 設定できたら、CREATEをクリックして、下記のように表示されていることを確認してください。
-  ![create](./image/canary/canary-create.png)
-  ![create2](./image/canary/canary-create2.png)
-  
- ページ上部にある SYNC をクリックして、無事デプロイされると下記のようになります。
-  ![sync](image/canary/canary-sync.png)
-
-以上の手順で、Canary Releaseにおける安定バージョンがArgoCDを用いてデプロイされ、localからingressでアクセス可能となりました
-
-ここからは、実際に、Canary Releaseを行いその様子を見ていこうと思います。
-
- `app/canary/rollout.yaml`の編集を行います。imageのtagをblueからgreenに変更します。
-```
-image: argoproj/rollouts-demo:green
-```
-差分をforkしたmainブランチ（appを作成する際に指定したブランチ）に取り込みます。
-```
-git push origin main
+```bash
+kubectl -n argo-cd delete application prometheus-analysis
 ```
 
- ArgoCDはデフォルトでは3分に1回の頻度でブランチを確認し、差分を検出しています。3分待てない場合には、ページ上部にある [REFRESH]をクリックします。下記のようにrolloutにおいて差分が検出されます。（黄色で表示されているOutOfSyncが差分があることを示しています）
-ちなみにAppの設定において、SYNC POLICYをManualでなくAutoにしていた場合には、ここでOutOfSyncを検知すると自動でArgoCDがSyncを実行します。
-  ![OutOfSync](image/canary/canary-OutOfSync.png)
-rolloutを手動でSyncします。
-syncされた結果安定バージョンと新バージョンの両方のreplicasetが確認できます。
-  ![rollout-sync](image/canary/canary-sync2.png)
-ingressにアクセスすると下記のように、安定バージョンであるBlueから新バージョンであるGreenのタイルが少しづつ増えて行っているのが確認できます。
-  ![demoapp](image/canary/demoapp.png)
-rollout-extensionを使用した場合、rolloutを選択しROLLOUTのタブが出現します。タブを選ぶと、アプリケーションの動作を確認せずともどこのStepを動いているのが一目で確認できるようになります。
-  ![rollout-extension](image/canary/canary-more.png)
-すべてのpodを新バージョンにアップデートしたい場合には、rolloutのPromote-Fullをクリックしてください。
+## 片付け
 
-![promote-full](image/canary/canary-promote.png)
+> [!WARNING]
+> chapter_argocd-image-updater に進む場合は、Argo CD を消さないでください。
 
-デモアプリへアクセスしてアップデートが完了していることを確認してください。
+Application を消していない場合は、消します。
 
-最後にアプリケーションの削除を行います。 DELETEをクリックします。
-
-Applications画面の場合は、一番右下の端に、
-
-
-![delete](../chapter_argocd/image/demoapp/Delete-1.png)
-
-詳細画面の場合は、右上の2番目にあります。
-![delete](../chapter_argocd/image/demoapp/Delete-2.png)
-
-削除する際にアプリケーション名の入力があるので「canary」と入力してOKをクリックします。
-![delete](image/canary/canary-delete.png)
-
-
-## Analysis Metrics
-新しいリリースやバージョンを本番環境に展開する前に、新バージョンの健康状態やパフォーマンスなどを評価するために使用されます。
-たとえば、Blue/Green Deployの場合、Green（新バージョン）への切り替えの前にGreenのデプロイが成功しているのか一度確認したり、Canary Releaseの場合、新バージョンのパフォーマンスの分析等に利用されます。
-### Metricsの種類
-* Job
-* Web
-* Prometheus
-* Datadog
-* NewRelic
-* Wavefront
-* Kayenta
-* CloudWatch
-* Graphite
-* InfluxDB
-* Apache SkyWalking
-* 独自Plugin
-
-
-### Job metrics (Blue/Green Deploy)
-アップデートする際に、jobをデプロイし、jobの実行結果によってBlue/Green DeployをPromoteするかどうかを判断させるAnalysisを作成します。
-  
-  
-Applicationsの画面において + NEW APPをクリックします
-![Applications](./image/analysis/application.png)
-上の画面上で各項目を次のように設定します。
-
-  **web**
-  ```
-  GENERAL
-    Application Name: job
-    Project Name: default
-    SYNC POLICY: Manual
-    SYNC OPTIONS: AUTO CREATE NAMESPACE [v]
-    SOURCE
-      Repository URL: chapter_argocdでforkした自分のリポジトリのURL
-      Revision: main
-      Path: chapter_argo-rollouts/analysis/job
-    DESTINATION
-      Cluster URL: https://kubernetes.default.svc
-      Namespace: job-analysis
-  ```
-  **cli版**
-  ```
-  argocd app create job-analysis --repo chapter_argocdでforkした自分のリポジトリのURL --sync-option CreateNamespace=true --path chapter_argo-rollouts/analysis/job --dest-server https://kubernetes.default.svc --dest-namespace job-analysis --revision main
-  ```
-設定できたら、CREATEをクリックして、下記のように表示されていることを確認してください
-![create](./image/analysis/job-create.png)
-![create2](./image/analysis/job-create2.png)
-
-ページ上部にある SYNC をクリックします
-![create2](./image/analysis/Job-sync.png)
-
-analysis/job/rollout.yamlの編集を行います。 imageのtagをblueからgreenに変更します。
-
-```yaml
-image: argoproj/rollouts-demo:green
+```bash
+kubectl -n argo-cd delete application blue-green canary job-analysis web-analysis prometheus-analysis --ignore-not-found
 ```
-差分をforkしたmainブランチ（appを作成する際に指定したブランチ）に取り込みます。
+
+namespace を消します。
+
+```bash
+kubectl delete namespace blue-green canary job-analysis web-analysis prometheus-analysis --ignore-not-found
 ```
-git push origin main
-```
-ArgoCDはデフォルトでは3分に1回の頻度でブランチを確認し、差分を検出しています。3分待てない場合には、ページ上部にある [REFRESH]をクリックします。下記のようにrolloutにおいて差分が検出されます。（黄色で表示されているOutOfSyncが差分があることを示しています）
-ちなみにAppの設定において、SYNC POLICYをManualでなくAutoにしていた場合には、ここでOutOfSyncを検知すると自動でArgoCDがSyncを実行します。
-![sync](./image/analysis/Job-refresh.png)
-rolloutを手動でSyncすると、アプリケーションのpodと新たにAnalysisrunが生成され、jobが発行されたのが確認できます。
-![update](./image/analysis/job-update.png)
-jobが成功すると、自動的にBlue/Green Deployが進んでいくのが分かります。
 
-最後にアプリケーションの削除を行います。 Deleteをクリックします
+Argo Rollouts を消します。
 
-
-Applications画面の場合は、一番右下の端に、
-
-
-
-![delete](../chapter_argocd/image/demoapp/Delete-1.png)
-
-詳細画面の場合は、右上の2番目にあります。
-![delete](../chapter_argocd/image/demoapp/Delete-2.png)
-
-削除する際にアプリケーション名の入力があるので「job」と入力してOKをクリックします。
-![delete](./image/analysis/job-delete.png)
-
-### Web metrics (Blue/Green Deploy)
-Analysis実行時にリクエストを送信し、レスポンスの内容にてよってPromoteするかどうかを判断します
-  * Json形式のレスポンスの場合Jsonの中身を見て判断します
-  * Json形式以外のレスポンスの場合はstatus codeが200であるかどうかの判断になります
-
-Applicationsの画面において + NEW APPをクリックします
-![Applications](./image/analysis/application.png)
-上の画面上で各項目を次のように設定します。
-
-**web**
-  ```
-  GENERAL
-    Application Name: web
-    Project Name: default
-    SYNC POLICY: Manual
-    SYNC OPTIONS: AUTO CREATE NAMESPACE [v]
-    SOURCE
-      Repository URL: chapter_argocdでforkした自分のリポジトリのURL
-      Revision: main
-      Path: chapter_argo-rollouts/analysis/web
-    DESTINATION
-      Cluster URL: https://kubernetes.default.svc
-      Namespace: web-analysis
-  ```
-**cli版**
-  ```
-    argocd app create web-analysis --repo chapter_argocdでforkした自分のリポジトリのURL --sync-option CreateNamespace=true --path chapter_argo-rollouts/analysis/web --dest-server https://kubernetes.default.svc --dest-namespace web-analysis --revision main
-  ```
-設定できたら、CREATEをクリックして、下記のように表示されていることを確認してください
-![create](./image/analysis/web-create.png)
-![create](./image/analysis/web-create2.png)
-
-ページ上部にある SYNC をクリックします
-![create](./image/analysis/web-sync.png)
-
-
-analysis/web/rollout.yamlの編集を行います。 imageのtagをblueからgreenに変更します。
-
-```yaml
-image: argoproj/rollouts-demo:green
-```
-差分をforkしたmainブランチ（appを作成する際に指定したブランチ）に取り込みます。
-```
-git push origin main
-```
-ArgoCDはデフォルトでは3分に1回の頻度でブランチを確認し、差分を検出しています。3分待てない場合には、ページ上部にある [REFRESH]をクリックします。下記のようにrolloutにおいて差分が検出されます。（黄色で表示されているOutOfSyncが差分があることを示しています）
-ちなみにAppの設定において、SYNC POLICYをManualでなくAutoにしていた場合には、ここでOutOfSyncを検知すると自動でArgoCDがSyncを実行します。
-![sync](./image/analysis/web-refresh.png)
-rolloutを手動でSyncすると、アプリケーションのpodと新たにAnalysisrunが生成されます。
-![update](./image/analysis/web-update.png)
-Analysisrunの詳細をクリックし、Live Manifestを確認するとどういったレスポンスが帰ってきて、成功したのか失敗したのか確認できます。
-![log](image/analysis/web-log.png)
-正常なレスポンスが到達すると、自動的にBlue/Green Deployが進んでいくのが分かります。
-
-最後にアプリケーションの削除を行います。 Deleteをクリックします。
-
-Applications画面の場合は、一番右下の端に、
-
-
-
-![delete](../chapter_argocd/image/demoapp/Delete-1.png)
-
-詳細画面の場合は、右上の2番目にあります。
-![delete](../chapter_argocd/image/demoapp/Delete-2.png)
-
-削除する際にアプリケーション名の入力があるので「web」と入力してOKをクリックします。
-![delete](image/analysis/web-delete.png)
-### Prometheus metrics (Canary Release)
-Analysis実行時にPrometheusにPromQLを送信し、その結果によってPromoteするかどうかを判断します
-
-Applicationsの画面において + NEW APPをクリックします
-![Applications](./image/analysis/application.png)
-上の画面上で各項目を次のように設定します。
-  ```
-  GENERAL
-    Application Name: prometheus
-    Project Name: default
-    SYNC POLICY: Manual
-    SYNC OPTIONS: AUTO CREATE NAMESPACE [v]
-    SOURCE
-      Repository URL: chapter_argocdでforkした自分のリポジトリのURL
-      Revision: main
-      Path: chapter_argo-rollouts/analysis/prometheus
-    DESTINATION
-      Cluster URL: https://kubernetes.default.svc
-      Namespace: prometheus-analysis
-  ```
-  **cli版**
-  ```
-    argocd app create prometheus-analysis --repo chapter_argocdでforkした自分のリポジトリのURL --sync-option CreateNamespace=true --path  chapter_argo-rollouts/analysis/prometheus --dest-server https://kubernetes.default.svc --dest-namespace prometheus-analysis --revision main
-  ```
-設定できたら、CREATEをクリックして、下記のように表示されていることを確認してください。
-![create](./image/analysis/prometheus-create.png)
-![create](./image/analysis/prometheus-create2.png)
-
-ページ上部にある SYNC をクリックします
-![create](./image/analysis/prometheus-sync.png)
-
-
-analysis/prometheus/rollout.yamlの編集を行います。 imageのtagをblueからgreenに変更します。
-
-```yaml
-image: argoproj/rollouts-demo:green
-```
-差分をforkしたmainブランチ（appを作成する際に指定したブランチ）に取り込みます。
-```
-git push origin main
-```
-ArgoCDはデフォルトでは3分に1回の頻度でブランチを確認し、差分を検出しています。3分待てない場合には、ページ上部にある [REFRESH]をクリックします。下記のようにrolloutにおいて差分が検出されます。（黄色で表示されているOutOfSyncが差分があることを示しています）
-ちなみにAppの設定において、SYNC POLICYをManualでなくAutoにしていた場合には、ここでOutOfSyncを検知すると自動でArgoCDがSyncを実行します。
-![sync](./image/analysis/prometheus-refresh.png)
-rolloutを手動でSyncすると、アプリケーションのpodと新たにAnalysisrunが生成されます。
-
-![update](./image/analysis/prometheus-update.png)
-
-Analysisrunの詳細をクリックし、Live Manifestを確認するとどういったレスポンスが帰ってきて、成功したのか失敗したのか確認できます。
-![log](image/analysis/prometheus-log.png)
-Analysisrunが成功すると、自動的にCanary Releseが進んでいくのが分かります。
-最後にアプリケーションの削除を行います。 Deleteをクリックします
-
-
-Applications画面の場合は、一番右下の端に、
-
-
-
-![delete](../chapter_argocd/image/demoapp/Delete-1.png)
-
-詳細画面の場合は、右上の2番目にあります。
-![delete](../chapter_argocd/image/demoapp/Delete-2.png)
-
-削除する際にアプリケーション名の入力があるので「prometheus」と入力してOKをクリックします。
-![delete](image/analysis/prometheus-delete.png)
-
-## Argo Rolloutsのクリーンアップ
-### Argo CDを削除
-```
-kubectl delete namespace argo-cd
-```
-### Argo Rolloutsを削除
-```
-helmfile destroy -f  ./helm/helmfile.yaml
-kubectl delete namespace argo-rollouts blue-green canary job-analysis prometheus-analysis web-analysis
+```bash
+helmfile destroy -f helm/helmfile.yaml
+kubectl delete namespace argo-rollouts
 ```
