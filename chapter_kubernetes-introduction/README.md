@@ -342,6 +342,8 @@ metadata:
 spec:
   parentRefs:
   - name: handson-gateway
+    namespace: gateway
+    sectionName: http
   hostnames:
   - "hello-world.example.com"
   rules:
@@ -465,7 +467,7 @@ kubectl rollout undo deployment rollout
 ```sh
 kubectl delete deployment rollout
 kubectl delete service rollout-service
-kubectl delete ingress rollout-ingress
+kubectl delete httproute rollout-httproute
 ```
 
 ### 4.2 Blue-Green Deployment
@@ -485,6 +487,8 @@ metadata:
 spec:
   parentRefs:
   - name: handson-gateway
+    namespace: gateway
+    sectionName: http
   hostnames:
   - "blue-green.example.com"
   rules:
@@ -531,6 +535,8 @@ metadata:
 spec:
   parentRefs:
   - name: handson-gateway
+    namespace: gateway
+    sectionName: http
   hostnames:
   - "blue-green.example.com"
   rules:
@@ -658,7 +664,7 @@ kubectl delete secret handson-secret
 セクションの最後に、簡単なWebアプリケーションを使ったトラブルシュートに挑戦してみましょう。
 
 `cnd-web.yaml` を修正してください。
-構成図右下にあるcnd-web-appに接続し、適切なWebページを表示させることがゴールです。
+構成図右下にある`cndw-web-app`に接続し、適切なWebページを表示させることがゴールです。
 
 ![diagram](./image/cnd-tshoot-diagram.svg)
 

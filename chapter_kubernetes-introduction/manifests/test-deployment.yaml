@@ -12,8 +12,6 @@ spec:
     matchLabels:
       app: test
   template:
-    spec:
-      restartPolicy: OnFailure
     metadata:
       labels:
         app: test
