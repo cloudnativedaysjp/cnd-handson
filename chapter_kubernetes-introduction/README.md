@@ -80,7 +80,7 @@ CURRENT   NAME        CLUSTER     AUTHINFO    NAMESPACE
 続いて、chapter_kubernetes-introductionにcurrent directoryを移動します。
 
 ```sh
-cd ~/cnd-handson-infra/chapter_kubernetes-introduction/
+cd ~/cnd-handson/chapter_kubernetes-introduction/
 ```
 
 ## 2. アプリケーションのデプロイ
@@ -106,10 +106,31 @@ cd manifests
 kubectl apply -f test-deployment.yaml
 ```
 
-以下のコマンドでDeploymentおよびPodの確認ができます。`test-deployment`という名前のDeploymentと`test-deployment-**********-*****`というPodが作成されていることを確認します。（`*****` には自動で決定された英数字の値が入ります）
+```
+# 実行結果
+deployment.apps/test created
+```
+
+以下のコマンドでDeploymentおよびPodの確認ができます。`test`という名前のDeploymentと`test-**********-*****`というPodが作成されていることを確認します。（`*****` には自動で決定された英数字の値が入ります）
 
 ```sh
-kubectl get deployments,pods
+kubectl get deployments
+```
+
+```
+# 実行結果
+NAME   READY   UP-TO-DATE   AVAILABLE   AGE
+test   1/1     1            1           10s
+```
+
+```sh
+kubectl get pods
+```
+
+```
+# 実行結果
+NAME                    READY   STATUS    RESTARTS   AGE
+test-1234567890-abcde   1/1     Running   0          20s
 ```
 
 ### 2.2. ポートフォワードと通信確認
@@ -118,7 +139,7 @@ kubectl get deployments,pods
 今回はポートフォワードを使いpodにアクセスしていきます。
 
 ```sh
-kubectl port-forward <Pod名>  8888:80
+kubectl port-forward <Pod名> 8888:80
 ```
 
 以下のように出力されたら外部からのアクセスが可能となります。ctrl＋Cを押さずにそのままでいてください。
@@ -144,20 +165,23 @@ curl -I http://localhost:8888
 以下のコマンドを入力してください。
 
 ```sh
-kubectl delete pod <pod名>
+kubectl get pods # 削除対象のPod名を調べる
+kubectl delete pod <pod名> # Podを削除
 ```
 
-Pod名、及び削除されたかどうかは以下で調べることができます。
+Podが削除されたかどうかは以下で調べることができます。
 
 ```sh
 kubectl get pods
 ```
 
-上記の対応では、Podが削除されたものの、新しいPodがすぐに作成されていることがわかります。
+不思議なことにPodが表示されます。表示されたPodのNAMEを、deleteしたpodの名前と見比べてみてください。また、AGEはどうなっているでしょうか。
+
+Podが削除されたものの、新しいPodがすぐに作成されていることがわかります。なぜでしょうか。
 
 Kubernetesはあるべき状態をManifestとして定義します。
 `test-deployment.yaml`では、test Deployment配下のPodが1つ存在する状態（`replicas: 1`の部分）をあるべき状態として定義しています。
-このケースではPodを削除したことをトリガーにあるべき状態に戻そうと、Deployment（厳密にはDeployment配下のReplicaSetというリソース）が働きかけたことが原因です。
+このケースではPodを削除したことをトリガーに、あるべき状態に戻そうとDeployment（厳密にはDeployment配下のReplicaSetというリソース）が働きかけたことが原因です。
 
 従って、このようなケースでPodを完全に削除したい場合はDeploymentごと削除する必要があります。
 
@@ -184,7 +208,7 @@ kubectl get deployments,pods
 
 Deployment（厳密にはDeployment配下のReplicaSet）は、指定したReplica数（Podの個数）を維持するために、自動的にPodの作成、削除を行います。
 
-先ほどのManifestにはReplica数1が設定されています。そのため、起動したPodも1つだったはずです。
+先ほどのManifestにはReplica数1が設定されています。そのため、起動したPodも1つだったはずです。レプリカ数を2にするとどうなるでしょうか。試してみましょう。
 
 ```Yaml
 apiVersion: apps/v1
@@ -196,53 +220,12 @@ metadata:
     app: test
   name: test
 spec:
-  replicas: 1 #ここが1になっている
-  selector:
-    matchLabels:
-      app: test
-  template:
-    spec:
-      restartPolicy: OnFailure
-    metadata:
-      labels:
-        app: test
-    spec:
-      containers:
-      - image: nginx:latest
-        name: test
-        ports:
-        - containerPort: 80
+  replicas: 1 #ここが1になっているので、2に変更する
+  # 以下略
 ```
 
-以下のようにManifestを修正し、再度Manifestを登録しなおしてみます。
+Manifestを修正したら、再度Manifestを登録しなおしてみます。
 
-```Yaml
-apiVersion: apps/v1
-kind: Deployment
-metadata:
-  annotations:
-    deployment.kubernetes.io/revision: "1"
-  labels:
-    app: test
-  name: test
-spec:
-  replicas: 2 #2に修正
-  selector:
-    matchLabels:
-      app: test
-  template:
-    spec:
-      restartPolicy: OnFailure
-    metadata:
-      labels:
-        app: test
-    spec:
-      containers:
-      - image: nginx:latest
-        name: test
-        ports:
-        - containerPort: 80
-```
 
 ```sh
 kubectl apply -f test-deployment.yaml
@@ -267,7 +250,7 @@ test-5cdf547c4f-wvzbt   1/1     Running   0          10s
 
 Deploymentの `replicas` の値を変えるだけで、簡単にアプリケーションのスケーリングをできることがわかりました。
 
-さらに、ここでは扱いませんが、[HorizontalPodAutoscaler](https://kubernetes.io/ja/docs/concepts/workloads/autoscaling/horizontal-pod-autoscale/)というリソースを併用し、CPUやメモリの使用率やカスタムメトリクスに応じて自動的にスケーリングさせることもできます。
+さらに、ここでは扱いませんが、[HorizontalPodAutoscaler](https://kubernetes.io/ja/docs/concepts/workloads/autoscaling/horizontal-pod-autoscale/)というリソースを併用し、CPUやメモリの使用率、およびカスタムメトリクスに応じて、自動的にスケーリングさせることもできます。
 
 ### 2.5. Tips
 
@@ -290,7 +273,7 @@ kubectl run <pod名> --image=<image名> --dry-run=client -o yaml > <ファイル
 ## 3. Podの外部公開
 
 続いて、Podの外部公開の方法を紹介します。
-前回のセッションではPortForwardを使ってPodのアクセスを行いましたが、PortForwardは本格的な運用には不向きです。
+前回のセッションではPortForwardを使ってPodのアクセスを行いましたが、PortForwardはデバッグ用の機能であり、本格的な運用には不向きです。
 
 本セクション以降はServiceおよびGatewayAPIを用いて外部公開を行います。
 
@@ -334,7 +317,8 @@ kubectl get services
 
 ```Log
 # 出力例
-test-service   ClusterIP   10.96.123.57   <none>        80/TCP    16s
+NAME           TYPE        CLUSTER-IP      EXTERNAL-IP   PORT(S)   AGE
+test-service   ClusterIP   10.96.123.57    <none>        80/TCP   16s
 ```
 
 ### 3.2 Gateway API
@@ -382,7 +366,8 @@ kubectl get httproutes
 
 ```Log
 # 出力例
-<TODO: 記載>
+NAME             HOSTNAMES                     AGE
+test-httproute   ["hello-world.example.com"]   5s
 ```
 
 ### 3.3. 動作確認
@@ -655,8 +640,10 @@ kubectl apply -f secret-pod.yaml
 
 ```sh
 kubectl exec secret-pod -c nginx -it -- bash
+# ログイン後に以下を順番に実行
 echo $USERNAME
 echo $PASSWORD
+exit
 ```
 
 動作確認後、リソースを削除します。
