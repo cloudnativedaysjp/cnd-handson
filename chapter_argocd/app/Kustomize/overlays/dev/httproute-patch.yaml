@@ -4,4 +4,4 @@ metadata:
   name: app-httproute
 spec:
   hostnames:
-  - dev.kustomize.argocd.example.com
+  - dev-kustomize-argocd.example.com

@@ -10,7 +10,7 @@ spec:
     namespace: gateway
     sectionName: http
   hostnames:
-  - hubble.cilium.example.com
+  - hubble-cilium.example.com
   rules:
   - matches:
     - path:
