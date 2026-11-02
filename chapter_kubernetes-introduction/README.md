@@ -40,11 +40,11 @@ kubectlが正しくセットアップされていないとAPIにリクエスト�
 
 まずは、以下のコマンドでkubectlコマンドのバージョンの確認してください。
 
-```sh
+```bash
 kubectl version --client
 ```
 
-```
+```text
 # 実行結果
 Client Version: v1.34.1
 Kustomize Version: v5.7.1
@@ -52,13 +52,13 @@ Kustomize Version: v5.7.1
 
 続けて、APIにリクエストを送信してみます。以下のコマンドを入力してください。
 
-```sh
+```bash
 kubectl get nodes
 ```
 
 Nodeの一覧が出力されるはずです。Nodeはコンテナを実際に実行する物理マシンやVMです。表示される3つのNodeが、今回扱うクラスターを形成しています。
 
-```Log
+```text
 NAME                 STATUS   ROLES           AGE   VERSION
 kind-control-plane   Ready    control-plane   88m   v1.34.0
 kind-worker          Ready    <none>          88m   v1.34.0
@@ -67,11 +67,11 @@ kind-worker2         Ready    <none>          88m   v1.34.0
 
 Nodeが表示されない場合は、kubectlの設定（kubeconfig）が正しくない可能性があります。以下のコマンドでkubeconfigを確認します。
 
-```sh
+```bash
 kubectl config get-contexts
 ```
 
-```
+```text
 # 実行結果
 CURRENT   NAME        CLUSTER     AUTHINFO    NAMESPACE
 *         kind-kind   kind-kind   kind-kind   
@@ -79,7 +79,7 @@ CURRENT   NAME        CLUSTER     AUTHINFO    NAMESPACE
 
 続いて、chapter_kubernetes-introductionにcurrent directoryを移動します。
 
-```sh
+```bash
 cd ~/cnd-handson/chapter_kubernetes-introduction/
 ```
 
@@ -101,33 +101,33 @@ Manifestファイルはyaml形式もしくはjson形式がサポートされて�
 今回はyaml形式のManifestを用意していますので、そのManifestを使ってPodをデプロイします。
 以下のコマンドを入力してください。
 
-```sh
+```bash
 cd manifests
 kubectl apply -f test-deployment.yaml
 ```
 
-```
+```text
 # 実行結果
 deployment.apps/test created
 ```
 
 以下のコマンドでDeploymentおよびPodの確認ができます。`test`という名前のDeploymentと`test-**********-*****`というPodが作成されていることを確認します。（`*****` には自動で決定された英数字の値が入ります）
 
-```sh
+```bash
 kubectl get deployments
 ```
 
-```
+```text
 # 実行結果
 NAME   READY   UP-TO-DATE   AVAILABLE   AGE
 test   1/1     1            1           10s
 ```
 
-```sh
+```bash
 kubectl get pods
 ```
 
-```
+```text
 # 実行結果
 NAME                    READY   STATUS    RESTARTS   AGE
 test-1234567890-abcde   1/1     Running   0          20s
@@ -138,20 +138,20 @@ test-1234567890-abcde   1/1     Running   0          20s
 続いて、作成したPodに外部からアクセスできるようにします。
 今回はポートフォワードを使いpodにアクセスしていきます。
 
-```sh
+```bash
 kubectl port-forward <Pod名> 8888:80
 ```
 
 以下のように出力されたら外部からのアクセスが可能となります。ctrl＋Cを押さずにそのままでいてください。
 
-```Log
+```text
 Forwarding from 127.0.0.1:8888 -> 80
 Forwarding from [::1]:8888 -> 80
 ```
 
 新しくターミナルを開き、以下のコマンドでアクセスしてみましょう。
 
-```sh
+```bash
 curl -I http://localhost:8888
 ```
 
@@ -164,14 +164,14 @@ curl -I http://localhost:8888
 続いて、Podを削除してみます。
 以下のコマンドを入力してください。
 
-```sh
+```bash
 kubectl get pods # 削除対象のPod名を調べる
 kubectl delete pod <pod名> # Podを削除
 ```
 
 Podが削除されたかどうかは以下で調べることができます。
 
-```sh
+```bash
 kubectl get pods
 ```
 
@@ -187,19 +187,19 @@ Kubernetesはあるべき状態をManifestとして定義します。
 
 まず、以下のコマンドでDeploymentの状態を確認します。
 
-```sh
+```bash
 kubectl get deployments
 ```
 
 続いて、以下のコマンドで対象PodのDeploymentを削除します。
 
-```sh
+```bash
 kubectl delete deployment test
 ```
 
 以下のコマンドでDeployment及びPodが削除されたことを確認します。Deploymentが削除されると、その配下のPodも自動で削除されます。
 
-```sh
+```bash
 kubectl get deployments,pods
 ```
 
@@ -210,7 +210,7 @@ Deployment（厳密にはDeployment配下のReplicaSet）は、指定したRepli
 
 先ほどのManifestにはReplica数1が設定されています。そのため、起動したPodも1つだったはずです。レプリカ数を2にするとどうなるでしょうか。試してみましょう。
 
-```Yaml
+```yaml
 apiVersion: apps/v1
 kind: Deployment
 metadata:
@@ -227,7 +227,7 @@ spec:
 Manifestを修正したら、再度Manifestを登録しなおしてみます。
 
 
-```sh
+```bash
 kubectl apply -f test-deployment.yaml
 ```
 
@@ -237,11 +237,11 @@ kubectl apply -f test-deployment.yaml
 
 以下のコマンドで確認します。
 
-```sh
+```bash
 kubectl get pods
 ```
 
-```Log
+```text
 # 出力例
 NAME                           READY   STATUS    RESTARTS   AGE
 test-5cdf547c4f-8z5h9   1/1     Running   0          10s
@@ -257,7 +257,7 @@ Deploymentの `replicas` の値を変えるだけで、簡単にアプリケー�
 先ほどまではDeployment Manifestを作成しPodを作成しましたが、簡単なテストを実行したい場合などに手軽にPodを起動したい場合などがあると思います。
 以下のようなコマンドを実行すると、ワンライナーでPodの起動までが行えます。
 
-```sh
+```bash
 
 kubectl run <Pod名> --image=<image名> 
 
@@ -265,7 +265,7 @@ kubectl run <Pod名> --image=<image名>
 
 また、Manifestを1から書くことが難しい場合は、以下のようにdry-runとyaml出力を組み合わせてファイルに書き込むことでManifestを作成することができます。
 
-```sh
+```bash
 
 kubectl run <pod名> --image=<image名> --dry-run=client -o yaml > <ファイル名>
 ```
@@ -288,7 +288,7 @@ Serviceリソースは、複数のPodに対応する1つのエンドポイント
 
 以下のManifestが配置されていますので、それをapplyしてください。
 
-```Yaml
+```yaml
 apiVersion: v1
 kind: Service
 metadata:
@@ -305,17 +305,17 @@ spec:
   type: ClusterIP
 ```
 
-```sh
+```bash
 kubectl apply -f test-service.yaml
 ```
 
 Serviceについては以下で確認が可能です。
 
-```sh
+```bash
 kubectl get services
 ```
 
-```Log
+```text
 # 出力例
 NAME           TYPE        CLUSTER-IP      EXTERNAL-IP   PORT(S)   AGE
 test-service   ClusterIP   10.96.123.57    <none>        80/TCP   16s
@@ -334,7 +334,7 @@ Serviceリソース同様、予め用意されているManifestを使用しま�
 
 ※Gateway APIの利用には、GatewayClass、Gateway、HTTPRouteの3つのリソースが必要ですが、GatewayClassとGatewayはすでに準備しておりますので、今回はHTTPRouteのみ作成します。
 
-```Yaml
+```yaml
 apiVersion: gateway.networking.k8s.io/v1
 kind: HTTPRoute
 metadata:
@@ -356,17 +356,17 @@ spec:
       port: 80
 ```
 
-```sh
+```bash
 kubectl apply -f test-httproute.yaml 
 ```
 
 作成したHTTPRouteは以下で確認が可能です。
 
-```sh
+```bash
 kubectl get httproutes
 ```
 
-```Log
+```text
 # 出力例
 NAME             HOSTNAMES                     AGE
 test-httproute   ["hello-world.example.com"]   5s
@@ -378,13 +378,13 @@ test-httproute   ["hello-world.example.com"]   5s
 
 ブラウザで以下にアクセス確認を行います。Hello Worldの文字が表示されたら成功です。
 
-```
+```text
 hello-world.example.com
 ```
 
 動作確認後、リソースを削除します。
 
-```
+```bash
 kubectl delete httproutes test-httproute
 kubectl delete service test-service
 kubectl delete deployment test
@@ -419,13 +419,13 @@ Rolling Updateでは、図の①〜⑤のような流れで、新しいPodの作
 
 動作確認用のManifestを適用しましょう。
 
-```sh
+```bash
 kubectl apply -f rollout.yaml
 ```
 
 続いて、ブラウザで以下にアクセスを行います。
 
-```
+```text
 http://rollout.example.com
 ```
 
@@ -437,12 +437,12 @@ Pod更新前の状態では、`This app is Blue`の画面が表示がされて�
 
 その際、Rolling Updateの機能が働き、25%のPod数(1個)ずつ追加されていく様子が確認できます。
 
-```sh
+```bash
 # 適用
 kubectl set image deployment/rollout rollout-app=ghcr.io/cloudnativedaysjp/green-app:1.0
 ```
 
-```sh
+```bash
 # 確認
 kubectl rollout status deployment 
 kubectl rollout history deployment 
@@ -452,19 +452,19 @@ kubectl get deployments
 
 更新後、ブラウザで再度以下にアクセスを行うと`This app is Green`の表示に更新されていることが確認できます。
 
-```
+```text
 http://rollout.example.com
 ```
 
 尚、ロールバックを行う場合は以下のコマンドで実行可能です。
 
-```sh
+```bash
 kubectl rollout undo deployment rollout
 ```
 
 動作確認実施後、リソースの削除を行います。
 
-```sh
+```bash
 kubectl delete deployment rollout
 kubectl delete service rollout-service
 kubectl delete httproute rollout-httproute
@@ -479,7 +479,7 @@ kubectl delete httproute rollout-httproute
 ![diagram](./image/blue-green.svg)
 
 
-```Yaml
+```yaml
 apiVersion: gateway.networking.k8s.io/v1
 kind: HTTPRoute
 metadata:
@@ -507,13 +507,13 @@ spec:
 
 まずは、対象のManifestを適用します。
 
-```sh
+```bash
 kubectl apply -f blue-green.yaml
 ```
 
 続いて、Pod,Service,HTTPRouteがそれぞれデプロイされているか確認を行います。
 
-```sh
+```bash
 kubectl get pods,services,httproutes
 ```
 
@@ -521,13 +521,13 @@ kubectl get pods,services,httproutes
 
 まだ切り替え前なので、`weight`パラメータで、すべてのリクエストをBlue（旧環境）に送信するよう設定しています。そのため、Blue Appが表示されるはずです。
 
-```
+```text
 http://blue-green.example.com にアクセス→ Blue App
 ```
 
 それでは、新環境に切り替えてみましょう。`weight`パラメータを変更し、すべてのリクエストをGreen（新環境）に送信するよう設定します。
 
-```Yaml
+```yaml
 apiVersion: gateway.networking.k8s.io/v1
 kind: HTTPRoute
 metadata:
@@ -555,13 +555,13 @@ spec:
 
 Manifestを適用します。
 
-```sh
+```bash
 kubectl apply -f blue-green.yaml
 ```
 
 これで新環境への切り替えが完了しました。ブラウザからアクセスすると、Green Appが表示されるはずです。
 
-```
+```text
 http://blue-green.example.com にアクセス→ Green App
 ```
 
@@ -573,7 +573,7 @@ http://blue-green.example.com にアクセス→ Green App
 
 動作確認実施後、リソースの削除を行います。
 
-```sh
+```bash
 kubectl delete -f blue-green.yaml
 ```
 
@@ -592,32 +592,32 @@ ConfigMapは機密性のないデータを保存するために使用されま�
 
 まずは、ConfigMapを作成します。
 
-```sh
+```bash
 kubectl apply -f handson-configmap.yaml
 ```
 
 続いてPodを作成します。
 
-```sh
+```bash
 kubectl apply -f configmap-pod.yaml
 ```
 
 次に、PodにアクセスするためIPアドレスを調べます。以下のコマンドでPodに紐づくIPアドレスが判ります。
 
-```sh
+```bash
 kubectl get pods -o wide
 ```
 
 最後にテンポラリのPodを作成し、curlでアクセスを試みます。
 `CND ConfigMap Handson`という文字列が返却されると成功です。
 
-```sh
+```bash
 kubectl run tmp --restart=Never --rm -i --image=nginx:alpine -- curl <PodのIPアドレス>
 ```
 
 動作確認後、リソースを削除します。
 
-```sh
+```bash
 kubectl delete pod configmap-pod
 kubectl delete configmap handson-configmap
 ```
@@ -632,19 +632,19 @@ Secretは、パスワードやアクセスキーなどの機密データで利�
 
 まずは、Secretを作成します。
 
-```sh
+```bash
 kubectl apply -f handson-secret.yaml
 ```
 
 続いてPodを作成します。
 
-```sh
+```bash
 kubectl apply -f secret-pod.yaml
 ```
 
 次に、Pod内にログインし、Secretで指定された環境変数が設定されていることを確認しましょう。
 
-```sh
+```bash
 kubectl exec secret-pod -c nginx -it -- bash
 # ログイン後に以下を順番に実行
 echo $USERNAME
@@ -654,7 +654,7 @@ exit
 
 動作確認後、リソースを削除します。
 
-```sh
+```bash
 kubectl delete pod secret-pod
 kubectl delete secret handson-secret
 ```
@@ -676,13 +676,13 @@ kubectl delete secret handson-secret
 
 
 以下のコマンドでアプリのデプロイを行なってください。
-```sh
+```bash
 kubectl apply -f cnd-web.yaml
 ```
 
 動作確認後、リソースを削除します。
 
-```sh
+```bash
 kubectl delete -f cnd-web.yaml
 ```
 

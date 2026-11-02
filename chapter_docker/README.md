@@ -10,14 +10,14 @@
 まず、以下のコマンドでDockerの正常性確認を行います。
 
 
-```sh
+```bash
 docker version
 # or
 docker -v
 ```
 
 
-```
+```text
 # 実行結果
 Docker version 29.4.0, build 9d7ad9f
 ```
@@ -27,12 +27,12 @@ Docker version 29.4.0, build 9d7ad9f
 このイメージはDocker社が作成したチュートリアルのWebアプリケーションです。
 
 
-```sh
+```bash
 docker pull docker/getting-started
 ```
 
 
-```
+```text
 # 実行結果
 Using default tag: latest
 latest: Pulling from docker/getting-started
@@ -54,14 +54,14 @@ docker.io/docker/getting-started:latest
 以下のコマンドで正常にPullができたか確認が行えます。
 
 
-```sh
+```bash
 docker image ls
 # or
 docker images
 ```
 
 
-```
+```text
 # 実行結果
 ubuntu@handson-handson-2:~/cnd-handson/chapter_docker$ docker image ls
 IMAGE                                                                                  ID             DISK USAGE   CONTENT SIZE   EXTRA
@@ -74,12 +74,12 @@ docker/getting-started:latest                                                   
 -dはバックグラウンド動作、-pはPortforwardの設定オプションです。
 
 
-```sh
+```bash
 docker run -d -p 8888:80 docker/getting-started
 ```
 
 
-```
+```text
 # 実行結果
 fe5facdead0cc4645abf79f477c44d8a5d99690e4478942e9c56cb7959fc5201
 ```
@@ -90,12 +90,12 @@ fe5facdead0cc4645abf79f477c44d8a5d99690e4478942e9c56cb7959fc5201
 正常にコンテナが起動できていれば、ステータスコード200が返却されるはずです。
 
 
-```sh
+```bash
 curl -I localhost:8888
 ```
 
 
-```
+```text
 # 実行結果
 HTTP/1.1 200 OK
 Server: nginx/1.23.3
@@ -117,20 +117,20 @@ Accept-Ranges: bytes
 実行結果の左端、例でいうと `d7ae9ab08bd5` がコンテナIDとなります。
 
 
-```sh
+```bash
 docker container ls | grep getting-started
 # or
 docker ps | grep getting-started
 ```
 
-```
+```text
 # 実行結果
 d7ae9ab08bd5   docker/getting-started   "/docker-entrypoint.…"   3 minutes ago    Up 3 minutes    0.0.0.0:8888->80/tcp, :::8888->80/tcp                                                                                                                                            vigorous_tharp
 ```
 
 以下のコマンドでコンテナを停止します。
 
-```sh
+```bash
 docker stop <container id> 
 ```
 
@@ -145,7 +145,7 @@ docker stop <container id>
 まず、以下のコマンドで作業ディレクトリに移動します。
 
 
-```sh
+```bash
 cd ~/cnd-handson/chapter_docker/hands-on
 pwd
 ```
@@ -158,21 +158,21 @@ docker buildコマンドではPush先のリポジトリを指定し、任意の�
 その際、タグ名はユニークなものを設定します。一般的にはリビジョン番号やlatestなどを指定します。
 
 
-```sh
+```bash
 docker build -t <DockerHubのユーザ名など>/<リポジトリ名>:<任意のタグ名> .
 ```
 
 以下のコマンドで、作成したDocker Imageをコンテナアプリケーションとして起動します。
 
 
-```sh
+```bash
 docker run -d -p 8888:80 <DockerHubのユーザ名>/<リポジトリ名>:<任意のタグ名>
 ```
 
 
 curlまたはブラウザを使ってアクセスすると、ご自身の作成したコンテンツが表示されるはずです。
 
-```sh
+```bash
 curl localhost:8888
 ```
 
@@ -181,12 +181,12 @@ curl localhost:8888
 確認後、以下のコマンドでコンテナを停止します。
 
 
-```sh
+```bash
 docker container ls
 ```
 
 
-```sh
+```bash
 docker stop <container id> 
 ```
 
@@ -259,67 +259,67 @@ https://sysdig.jp/blog/dockerfile-best-practices/
 before、afterディレクトリ配下のアプリをそれぞれbuildしてください。
 
 
-```sh
+```bash
 cd ..
 ```
 
-```
+```bash
 cd multistage/before 
 ```
 
-```sh
+```bash
 docker build -t multistage:before .
 ```
 
-```sh
+```bash
 cd ..
 ```
 
-```sh
+```bash
 cd after
 ```
 
-```sh
+```bash
 docker build -t multistage:after .
 ```
 
 それぞれのサイズを比較してみましょう。multistageのbeforeとafterの `DISK USAGE` が1GBほど縮小されていることがわかります。
 
-```sh
+```bash
 docker images
 ```
 
 
 コンテナにアクセスしてどちらのアプリも応答することを確認してみましょう。
 
-```sh
+```bash
 docker run --rm --name echo-before -p 1111:1323 -dit multistage:before
 ```
 
-```sh
+```bash
 docker run --rm --name echo-after -p 2222:1323 -dit multistage:after
 ```
 
-```sh
+```bash
 curl http://localhost:1111/
 ```
 
-```sh
+```bash
 curl http://localhost:2222/
 ```
 
 
 コンテナを停止して、削除されたことを確認しましょう。
 
-```sh
+```bash
 docker stop echo-before
 ```
 
-```sh
+```bash
 docker stop echo-after
 ```
 
-```sh
+```bash
 docker ps -a
 ```
 

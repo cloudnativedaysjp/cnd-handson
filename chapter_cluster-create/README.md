@@ -21,7 +21,7 @@ Ciliumの詳細は[chapter_cilium](../chapter_cilium/)にて説明します。
 
 この章での作業ディレクトリは以下です。
 
-```sh
+```bash
 cd cnd-handson/chapter_cluster-create/
 ```
 
@@ -33,7 +33,7 @@ HelmはKubernetes用のパッケージマネージャーであり、Helmfileを�
 
 上記のツールは`install-tools.sh`を実行することでインストールされます。
 
-```shell
+```bash
 ./install-tools.sh
 ```
 
@@ -74,13 +74,13 @@ HelmはKubernetes用のパッケージマネージャーであり、Helmfileを�
 
 configオプションで`kind-config.yaml`を指定してKubernetesクラスターを作成します。
 
-```shell
+```bash
 kind create cluster --config=kind-config.yaml
 ```
 
 コマンドを実行すると以下のような情報が出力されます。
 
-```shell
+```text
 Creating cluster "kind" ...
  ✓ Ensuring node image (kindest/node:v1.36.4) 🖼 
  ✓ Preparing nodes 📦 📦 📦  
@@ -139,7 +139,7 @@ Ciliumについては[chapter_cilium](../chapter_cilium/)で説明するので�
 Gateway APIはKubernetes本体には含まれておらず、CRDとして追加する必要があります。
 Envoy Gateway v1.9が対応しているGateway APIはv1.6.1です。
 
-```shell
+```bash
 kubectl apply --server-side -f https://github.com/kubernetes-sigs/gateway-api/releases/download/v1.6.1/experimental-install.yaml
 ```
 
@@ -154,23 +154,23 @@ kubectl apply --server-side -f https://github.com/kubernetes-sigs/gateway-api/re
 これらのCRDはサイズが大きく、Helmのリリースとしてインストールするとリリース情報を保存するSecretの上限（1MiB）を超えてしまうため、
 `helm template`でレンダリングした結果を`kubectl apply --server-side`で適用します。
 
-```shell
+```bash
 helm template envoy-gateway-crds oci://docker.io/envoyproxy/gateway-crds-helm --version v1.9.1 -f helm/values/envoy-gateway-crds.values.yaml | kubectl apply --server-side -f -
 ```
 
 CiliumとEnvoy Gatewayはhelmfileコマンドを利用することでデプロイできます。
 
-```shell
+```bash
 helmfile sync -f helm/helmfile.yaml
 ```
 
 デプロイが完了したら、Envoy Gatewayのコントローラーが起動していることを確認します。
 
-```shell
+```bash
 kubectl get pods -n envoy-gateway-system
 ```
 
-```shell
+```text
 # 実行結果
 NAME                             READY   STATUS      RESTARTS   AGE
 envoy-gateway-6d8f4d6b8c-xxxxx   1/1     Running     0          60s
@@ -186,13 +186,13 @@ envoy-gateway-6d8f4d6b8c-xxxxx   1/1     Running     0          60s
 
 tabキーで補完が効くように、kubectlコマンドのシェル補完を有効化します。
 
-```sh
+```bash
 source <(kubectl completion bash)
 ```
 
 次回以降もbash起動時にシェル補完を有効化する場合は下記のコマンドも実行しておきます。
 
-```sh
+```bash
 echo 'source <(kubectl completion bash)' >>~/.bashrc
 ```
 
@@ -200,13 +200,13 @@ echo 'source <(kubectl completion bash)' >>~/.bashrc
 
 まずはKubernetesクラスターの情報が取得できることを確認します。
 
-```shell
+```bash
 kubectl cluster-info
 ```
 
 下記のような情報が出力されれば大丈夫です。
 
-```shell
+```text
 Kubernetes control plane is running at https://127.0.0.1:44707
 CoreDNS is running at https://127.0.0.1:44707/api/v1/namespaces/kube-system/services/kube-dns:dns/proxy
 
@@ -241,17 +241,17 @@ EXTERNAL-IPが割り当てられないためです。
 EnvoyのPodがControl Plane以外のノードで動いていると通信が破棄されてしまいます。
 そのため、`EnvoyProxy`で`externalTrafficPolicy: Cluster`を指定しています。
 
-```shell
+```bash
 kubectl apply -f manifest/gateway/gateway.yaml
 ```
 
 Gatewayが正しく構成されたことを確認します。`PROGRAMMED`が`True`になっていれば成功です。
 
-```shell
+```bash
 kubectl get gatewayclass,gateway -n gateway
 ```
 
-```shell
+```text
 # 実行結果
 NAME                                            CONTROLLER                                      ACCEPTED   AGE
 gatewayclass.gateway.networking.k8s.io/cilium   io.cilium/gateway-controller                    True       5m
@@ -264,11 +264,11 @@ gateway.gateway.networking.k8s.io/handson-gateway   eg      172.18.0.3   True   
 Gatewayを作成すると、Envoy Gatewayが`envoy-gateway-system` NamespaceにEnvoyのDeploymentとServiceを作成します。
 Serviceが`NodePort`で`30080`を公開していることを確認します。
 
-```shell
+```bash
 kubectl get svc -n envoy-gateway-system -l gateway.envoyproxy.io/owning-gateway-name=handson-gateway
 ```
 
-```shell
+```text
 # 実行結果
 NAME                              TYPE       CLUSTER-IP      EXTERNAL-IP   PORT(S)        AGE
 envoy-gateway-handson-gatew-xxx   NodePort   10.96.120.134   <none>        80:30080/TCP   30s
@@ -283,7 +283,7 @@ envoy-gateway-handson-gatew-xxx   NodePort   10.96.120.134   <none>        80:30
 ## アプリケーションのデプロイ
 次章以降で使用する動作確認用アプリケーションとして、[Argo Rollouts Demo Application](https://github.com/argoproj/rollouts-demo)をデプロイします。
 
-```shell
+```bash
 kubectl create namespace handson
 kubectl apply -f manifest/app/serviceaccount.yaml -n handson -l color=blue
 kubectl apply -f manifest/app/deployment.yaml -n handson -l color=blue
@@ -293,10 +293,10 @@ kubectl apply -f manifest/app/httproute.yaml -n handson
 
 作成されるリソースは下記のとおりです。
 
-```shell
+```bash
 kubectl get services,deployments,httproutes -n handson
 ```
-```shell
+```text
 # 実行結果
 NAME              TYPE        CLUSTER-IP     EXTERNAL-IP   PORT(S)    AGE
 service/handson   ClusterIP   10.96.82.202   <none>        8080/TCP   3m33s
@@ -310,11 +310,11 @@ httproute.gateway.networking.k8s.io/handson      ["app.example.com"]   3m9s
 
 HTTPRouteがGatewayに正しく紐付いたかどうかは、`status`を確認することで分かります。
 
-```shell
+```bash
 kubectl get httproute handson -n handson -o jsonpath='{.status.parents[0].conditions}' | jq
 ```
 
-```shell
+```text
 # 実行結果（抜粋）
 [
   {

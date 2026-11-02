@@ -160,7 +160,7 @@ helmfile sync -f helm/helmfile.yaml
 kubectl get all -n prometheus
 ```
 
-```bash
+```text
 # 実行結果
 NAME                                                            READY   STATUS    RESTARTS   AGE
 pod/alertmanager-kube-prometheus-stack-alertmanager-0           2/2     Running   0          40s
@@ -251,7 +251,7 @@ kubectl apply -f httproute.yaml
 kubectl get httproute -n prometheus
 ```
 
-```bash
+```text
 # 実行結果
 NAME                   HOSTNAMES                    AGE
 grafana-httproute      ["grafana.example.com"]      10s
@@ -340,7 +340,7 @@ spec:
       interval: 30s
 ```
 
-```shell
+```bash
 kubectl apply -f manifests/envoy-gateway-podmonitor.yaml
 ```
 

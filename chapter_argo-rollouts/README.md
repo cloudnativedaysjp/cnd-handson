@@ -346,7 +346,7 @@ kubectl -n prometheus-analysis get rollout handson -o jsonpath='{.status.message
 kubectl -n prometheus-analysis get httproute app-httproute -o jsonpath='{.spec.rules[0].backendRefs[*].weight}'; echo
 ```
 
-```
+```text
 # 実行結果
 RolloutAborted: Rollout aborted update to revision 3: Step-based analysis phase error/failed: Metric "handson-analysis" assessed Failed due to failed (1) > failureLimit (0)
 100 0

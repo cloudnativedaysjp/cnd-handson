@@ -70,16 +70,16 @@ helmfileを使用してOpenTelemetry Operatorをインストールします。
 OpenTelemetry Operatorをインストールすることで、OpenTelemetry CollectorなどをKubernetesのリソースで管理できます。
 ValidatingWebhookの兼ね合いで`helmfile sync`が失敗することがあるため、失敗した場合は再度実行してください。
 
-```sh
+```bash
 helmfile sync -f helm/helmfile.yaml
 ```
 
 `monitoring` NamespaceにデプロイされたOpenTelemetry OperatorのPodが起動していれば成功です。
 
-```sh
+```bash
 kubectl -n monitoring get pods
 ```
-```sh
+```text
 # 実行結果
 NAME                                      READY   STATUS    RESTARTS   AGE
 opentelemetry-operator-677b4d8655-6q5j5   1/1     Running   0          20h
@@ -188,27 +188,27 @@ spec:
 
 OpenTelemetryCollectorリソースをデプロイすると、自動的にDaemonSetとPodが起動していることがわかります。
 
-```sh
+```bash
 kubectl apply -f manifests/log-collector.yaml
 ```
-```sh
+```text
 # 実行結果
 opentelemetrycollector/log-collector created
 ```
 
-```sh
+```bash
 kubectl get opentelemetrycollector
 ```
-```sh
+```text
 # 実行結果
 NAME            MODE        VERSION   READY   AGE   IMAGE                                          MANAGEMENT
 log-collector   daemonset   0.131.1   2/2     46s   otel/opentelemetry-collector-contrib:0.131.1   managed
 ```
 
-```sh
+```bash
 kubectl get daemonsets,pods -l app.kubernetes.io/name=log-collector-collector
 ```
-```sh
+```text
 # 実行結果
 NAME                                     DESIRED   CURRENT   READY   UP-TO-DATE   AVAILABLE   NODE SELECTOR   AGE
 daemonset.apps/log-collector-collector   2         2         2       2            2           <none>          18h
@@ -227,7 +227,7 @@ docker exec -it kind-worker sh -c "echo '{\"key1\": \"value1\", \"key2\": \"valu
 
 その後、`file` Exporterによって出力されたファイルを見てみると、確かにReceiverで受け取ったログがExporterで出力されていることが確認できます。
 
-```sh
+```bash
 docker exec -it kind-worker sh -c "cat /tmp/all.json  | jq ."
 ```
 
@@ -335,27 +335,27 @@ spec:
 
 OpenTelemetryCollectorリソースをデプロイすると、自動的にDaemonSetとPodが起動していることがわかります。
 
-```sh
+```bash
 kubectl apply -f manifests/metrics-collector.yaml
 ```
-```sh
+```text
 # 実行結果
 opentelemetrycollector/metrics-collector created
 ```
 
-```sh
+```bash
 kubectl get opentelemetrycollector metrics-collector
 ```
-```sh
+```text
 # 実行結果
 NAME                MODE        VERSION   READY   AGE   IMAGE                                          MANAGEMENT
 metrics-collector   daemonset   0.131.1   2/2     4s    otel/opentelemetry-collector-contrib:0.131.1   managed
 ```
 
-```sh
+```bash
 kubectl get daemonsets,pods -l app.kubernetes.io/name=metrics-collector-collector
 ```
-```sh
+```text
 # 実行結果
 NAME                                         DESIRED   CURRENT   READY   UP-TO-DATE   AVAILABLE   NODE SELECTOR   AGE
 daemonset.apps/metrics-collector-collector   2         2         2       2            2           <none>          3m24s
@@ -369,10 +369,10 @@ pod/metrics-collector-collector-mzd9j   2/2     Running   0          3m24s
 下記のようにログを確認すると、2つのメトリクスで合計166個のデータポイントが取得されていることが確認できます。
 メトリクス名まで確認したい場合には、OpenTelemetryCollectorの`spec.config`の`exporters.debug.verbosity`を`detailed`に設定することで確認できます。
 
-```sh
+```bash
 kubectl logs -l app.kubernetes.io/name=metrics-collector-collector -f
 ```
-```sh
+```text
 # 実行結果
 2023-11-12T20:08:46.171Z        info    MetricsExporter {"kind": "exporter", "data_type": "metrics", "name": "debug", "resource metrics": 2, "metrics": 2, "data points": 166}
 2023-11-12T20:09:16.171Z        info    MetricsExporter {"kind": "exporter", "data_type": "metrics", "name": "debug", "resource metrics": 2, "metrics": 2, "data points": 166}
@@ -442,11 +442,11 @@ kubectl apply -f manifests/jaeger.yaml
 
 デプロイされたJaegerリソースを確認し、ステータスがRunningなことを確認してください。
 
-```sh
+```bash
 kubectl -n jaeger get jaeger
 ```
 
-```sh
+```text
 # 実行結果
 NAME     STATUS    VERSION   STRATEGY   STORAGE   AGE
 jaeger   Running   1.61.0    allinone   memory    11s
@@ -498,26 +498,26 @@ spec:
 OpenTelemetryCollectorリソースをデプロイすると、自動的にDeploymentとPodが起動していることがわかります。
 また、OTLPを受け付ける口として、Serviceも作成されています。
 
-```sh
+```bash
 kubectl apply -f manifests/trace-collector.yaml
 ```
-```sh
+```text
 # 実行結果
 opentelemetrycollector.opentelemetry.io/trace-collector created
 ```
 
-```sh
+```bash
 kubectl get opentelemetrycollector trace-collector
 ```
-```sh
+```text
 # 実行結果
 NAME              MODE         VERSION   READY   AGE   IMAGE                                          MANAGEMENT
 trace-collector   deployment   0.131.1   1/1     5s    otel/opentelemetry-collector-contrib:0.131.1   managed
 ```
-```sh
+```bash
 kubectl get deployments,pods,services -l app.kubernetes.io/name=trace-collector-collector
 ```
-```sh
+```text
 # 実行結果
 NAME                                        READY   UP-TO-DATE   AVAILABLE   AGE
 deployment.apps/trace-collector-collector   1/1     1            1           10m
@@ -554,7 +554,7 @@ spec:
     argument: "1"
 ```
 
-```shell
+```bash
 kubectl apply -f manifests/go-instrumentation.yaml
 ```
 
@@ -579,7 +579,7 @@ spec:
 
 今回はすでにデプロイされている`handson-blue` Deploymentに対して設定を行います。kubectl patchコマンドを利用してこれらのアノテーションを付与します。
 
-```shell
+```bash
 kubectl -n handson patch deployment handson-blue -p '{"spec":{"template":{"metadata":{"annotations":{"instrumentation.opentelemetry.io/inject-go": "go-instrumentation"}}}}}'
 kubectl -n handson patch deployment handson-blue -p '{"spec":{"template":{"metadata":{"annotations":{"instrumentation.opentelemetry.io/otel-go-auto-target-exe": "/rollouts-demo"}}}}}'
 ```
@@ -589,7 +589,7 @@ kubectl -n handson patch deployment handson-blue -p '{"spec":{"template":{"metad
 ```bash
 kubectl -n handson get pods
 ```
-```bash
+```text
 # 実行結果
 NAME                             READY   STATUS   RESTARTS   AGE
 handson-blue-5b6445bcfc-vdmwm    2/2     Ready    0          30s
@@ -605,7 +605,7 @@ handson-blue-5b6445bcfc-vdmwm    2/2     Ready    0          30s
 
 最後にこの章でアプリケーションに加えた変更をクリーンアップしておきます。
 
-```shell
+```bash
 kubectl -n handson patch deployment handson-blue -p '{"spec":{"template":{"metadata":{"annotations":{"instrumentation.opentelemetry.io/inject-go": null}}}}}'
 kubectl -n handson patch deployment handson-blue -p '{"spec":{"template":{"metadata":{"annotations":{"instrumentation.opentelemetry.io/otel-go-auto-target-exe": null}}}}}'
 ```

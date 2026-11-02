@@ -7,7 +7,7 @@
 下記の手順に従って、VMを作成してください。
 今回はAWS環境のVMで実施していますが、他の環境でも基本的に動作する想定です。
 
-```
+```bash
 # SSH で利用するキーペアの作成
 aws ec2 create-key-pair  \
   --key-name cnd-handson-key \
@@ -53,7 +53,7 @@ aws ec2 describe-instances \
 
 演習で利用するVMに最低限のパッケージをインストールします。
 
-```
+```bash
 sudo apt-get update
 sudo apt-get install -y curl vim git unzip gnupg lsb-release ca-certificates dstat jq
 curl -fsSL https://download.docker.com/linux/ubuntu/gpg | sudo gpg --dearmor -o /usr/share/keyrings/docker-archive-keyring.gpg
@@ -73,7 +73,7 @@ sudo apt-get install -y docker-ce docker-ce-cli containerd.io
 
 hostsファイルには、この演習を通して利用するIPアドレスとドメインの紐付けを設定してください。YOUR_VM_IP_ADDRESSはこの演習で利用するマシンのIPアドレスを指定してください。
 
-```
+```text
 YOUR_VM_IP_ADDRESS    hello-world.example.com
 YOUR_VM_IP_ADDRESS    rollout.example.com
 YOUR_VM_IP_ADDRESS    blue-green.example.com
@@ -103,6 +103,6 @@ YOUR_VM_IP_ADDRESS    jaeger.example.com
 
 マニフェストなどをVMにも配置するために、VM上でリポジトリをCloneしておいてください。
 
-```shell
+```bash
 git clone https://github.com/cloudnativedaysjp/cnd-handson.git
 ```

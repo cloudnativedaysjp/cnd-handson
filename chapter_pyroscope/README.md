@@ -84,7 +84,7 @@ helmfile sync -f helm/helmfile.yaml
 kubectl get pods -n monitoring -l app.kubernetes.io/instance=pyroscope
 ```
 
-```bash
+```text
 # 実行結果（マイクロサービスモード）
 pyroscope-alloy-0                            2/2     Running   0          29m
 pyroscope-compactor-0                        1/1     Running   0          27m
@@ -123,7 +123,7 @@ chapter_grafanaで構築したGrafanaに、Pyroscopeのデータソースを追�
 ![image](./image/grafana-datasource.png)
 
 ※kube-prometheus-stackで使用したhelmのvaluesに追加する手順でも対応できます。
-```helmのvalues.yaml
+```yaml
 datasources:
   - name: Grafana Pyroscope
     type: grafana-pyroscope-datasource
@@ -183,7 +183,7 @@ GrafanaのExplore([http://grafana.example.com/explore](http://grafana.example.co
 本章はマイクロサービスモードを前提としますが、参考としてモノリシックモードの手順も記載します。
 
 1) `helm/helmfile.yaml` の `values` を一時的にコメントアウトし、`values-micro-services.yaml` を無効化します。
-```helmfile.yaml
+```yaml
 releases:
 - name: pyroscope
   namespace: monitoring
@@ -200,7 +200,7 @@ helmfile sync -f helm/helmfile.yaml
 ```
 
 3) Ingress のバックエンドServiceを `pyroscope` に戻します（`ingress.yaml`）。
-```ingress.yaml
+```yaml
   rules:
   - host: pyroscope.example.com
     http:
@@ -216,13 +216,13 @@ helmfile sync -f helm/helmfile.yaml
 ```
 
 4) Pod例（モノリシック）：
-```bash
+```text
 pyroscope-0         1/1     Running   0          22s
 pyroscope-alloy-0   2/2     Running   0          22s
 ```
 
 5) Grafana のデータソースURL例（モノリシック）：
-```
+```text
 http://pyroscope.monitoring.svc.cluster.local:4040
 ```
 

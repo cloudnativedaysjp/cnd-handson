@@ -7,7 +7,7 @@
 
 Webブラウザから以下のリポジトリへアクセスします。
 
-```bash
+```text
 https://github.com/cloudnativedaysjp/cnd-handson-app
 ```
 
@@ -160,7 +160,7 @@ GitHub上でリポジトリの`Actions`タブを開き、ワークフローの`G
 ### 実践：テスト
 
 故意にバグを混入してみましょう。まずブランチを作成します。
-```
+```bash
 git checkout -b test-fail-test
 ```
 

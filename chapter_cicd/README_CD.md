@@ -45,7 +45,7 @@ Argo CDのWebページへログインし、先ほどForkしたリポジトリを
 
 ![image](image/repository3.png)
 
-```
+```text
 GENERAL
 Choose your connection method: VIA HTTPS
 Type: git
@@ -63,7 +63,7 @@ Frontendのデプロイを行い、Argo CDの一連の操作を行います。
 
 ![image](image/app_deploy2.png)
 
-```
+```text
 GENERAL
   Application Name: cicd-demo
   Project Name: default
@@ -114,7 +114,7 @@ Frontendのページへアクセスしてみます。
 適当な文字列を入力することでログインできるようにしています。  
 その後、**ログイン**をクリック。
 
-```
+```text
 例
 メールアドレス: a@a
 パスワード: 12345
