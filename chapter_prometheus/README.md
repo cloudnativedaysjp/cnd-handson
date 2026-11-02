@@ -282,7 +282,7 @@ PromQLの詳細な仕様についてはこちらを御覧ください。
 
 > https://prometheus.io/docs/prometheus/latest/querying/basics/
 
-<http://prometheus.example.com/graph> にアクセスして、PromQL入力欄に `go_goroutines` と入力してみます。
+<http://prometheus.example.com/query> にアクセスして、PromQL入力欄に `go_goroutines` と入力してみます。
 その後、 `Graph` のタブをクリックすると、以下のようなグラフが見れるはずです。
 
 ![image](./image/go_goroutines.png)
@@ -344,7 +344,7 @@ spec:
 kubectl apply -f manifests/envoy-gateway-podmonitor.yaml
 ```
 
-<http://prometheus.example.com/graph> を開き (またはリロードして)、PromQL入力欄に次のクエリを入力してみましょう。
+<http://prometheus.example.com/query> を開き (またはリロードして)、PromQL入力欄に次のクエリを入力してみましょう。
 HTTPRouteごとに、レスポンスコードの種類（2xx、4xxなど）別のリクエスト数が表示されます。
 ※PodMonitorをapplyしてから反映（メトリクスが追加）されるまでに数分かかります。
 

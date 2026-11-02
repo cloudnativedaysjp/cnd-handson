@@ -1,0 +1,39 @@
+# Grafana Alertingの通知を受け取るためのWebhook受信用アプリ。
+# 受け取ったリクエストの内容を標準出力に出すので、`kubectl logs`で通知内容を確認できる。
+#   see: https://github.com/mendhak/docker-http-https-echo
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: webhook-receiver
+  namespace: prometheus
+  labels:
+    app: webhook-receiver
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: webhook-receiver
+  template:
+    metadata:
+      labels:
+        app: webhook-receiver
+    spec:
+      containers:
+      - name: webhook-receiver
+        image: mendhak/http-https-echo:42
+        ports:
+        - name: http
+          containerPort: 8080
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: webhook-receiver
+  namespace: prometheus
+spec:
+  selector:
+    app: webhook-receiver
+  ports:
+  - name: http
+    port: 80
+    targetPort: http
