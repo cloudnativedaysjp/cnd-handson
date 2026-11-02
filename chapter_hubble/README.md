@@ -27,11 +27,11 @@ HubbleはCiliumのために開発されたネットワークとセキュリテ�
 
 Hubble RelayとHubble UIのステータスはciliumコマンドから確認可能です。
 
-```shell
+```bash
 cilium status
 ```
 
-```shell
+```text
     /¯¯\
  /¯¯\__/¯¯\    Cilium:             OK
  \__/¯¯\__/    Operator:           OK
@@ -81,14 +81,14 @@ Hubble CLIを利用してHubble Relayにアクセスします。
 
 まずは、Hubble CLIをインストールします。
 
-```shell
+```bash
 ./install-tools.sh
 ```
 
 次に、Hubble RelayへのReachabilityを確保します。
 下記コマンドを実行することでReachabilityを確保できます。
 
-```shell
+```bash
 cilium hubble port-forward &
 ```
 
@@ -99,10 +99,10 @@ cilium hubble port-forward &
 
 下記コマンドでport-forwardがバックグラウンド実行されていることを確認します。
 
-```shell
+```bash
 ps -eo pid,tty,cmd | grep "cilium hubble port-forward"
 ```
-```shell
+```text
  9814 pts/0    cilium hubble port-forward
 11775 pts/0    grep --color=auto cilium hubble port-forward
 ```
@@ -125,10 +125,10 @@ ps -eo pid,tty,cmd | grep "cilium hubble port-forward"
 
 下記コマンドでStatusを確認し、HealthcheckがOKとなっていることを確認します。
 
-```shell
+```bash
 hubble status
 ```
-```shell
+```text
 Healthcheck (via localhost:4245): Ok
 Current/Max Flows: 7,479/12,285 (60.88%)
 Flows/s: 33.34
@@ -137,7 +137,7 @@ Connected Nodes: 3/3
 
 Hubble Relay経由で取得したHubble Serverのフロー情報は、下記コマンドで出力できます。
 
-```shell
+```bash
 hubble observe flows
 ```
 
@@ -151,7 +151,7 @@ Hubble UIからHubble Relayにアクセスし、Hubble Serverの情報を取得�
 
 Hubble UIへアクセスするために、Ingressリソースを作成します。
 
-```shell
+```bash
 kubectl apply -f manifest/ingress.yaml
 ```
 
@@ -171,19 +171,19 @@ L7のイベントを可視化の対象とするためには、CiliumNetworkPolic
 
 確認用にcurlを実行可能なクラアントを立てます。
 
-```shell
+```bash
 kubectl run curl -n handson --image=curlimages/curl --command -- sleep infinity
 ```
 
 別ターミナルを開き、hubbleで観測したイベントを流しておきます。
 
-```shell
+```bash
 hubble observe flows --from-pod handson/curl -f
 ```
 
 先ほど立てたクライアントからhandson:8080にアクセスしてみます。
 
-```shell
+```bash
 kubectl exec -n handson curl -- /bin/sh -c "curl -s -o /dev/null handson:8080 -w '%{http_code}\n'"
 ```
 
@@ -195,13 +195,13 @@ kubectl exec -n handson curl -- /bin/sh -c "curl -s -o /dev/null handson:8080 -w
 L3/L4のイベントが可視化されており、ドメイン名やリクエストパスなどのL7の情報が表示されていないことが分かります。
 L7のイベントを可視化の対象とするために、ポート8080への通信がルールに含まれる下記CiliumNetworkPolicyを適用します。
 
-```shell
+```bash
 kubectl apply -f manifest/cnp_http-visibility.yaml
 ```
 
 先ほどと同様に、クライアントから`handson:8080`にアクセスしてみます。
 
-```shell
+```bash
 kubectl exec -n handson curl -- /bin/sh -c "curl -s -o /dev/null handson:8080 -w '%{http_code}\n'"
 ```
 
@@ -216,7 +216,7 @@ DNSサーバへの通信を可視化の対象とすることで、通信が発�
 
 まず、現在の状態でクラスター外のドメイン`event.cloudnativedays.jp`にアクセスしてみます。
 
-```shell
+```bash
 kubectl exec -n handson curl -- /bin/sh -c "curl -s -o /dev/null https://event.cloudnativedays.jp/ -w '%{http_code}\n'"
 ```
 
@@ -226,13 +226,13 @@ kubectl exec -n handson curl -- /bin/sh -c "curl -s -o /dev/null https://event.c
 
 次に下記のManifestをアプライしてkube-dnsへの通信をCiliumNetworkPolicyのルールに含めます。
 
-```shell
+```bash
 kubectl apply -f manifest/cnp_dns-visibility.yaml
 ```
 
 再度、クラスター外のドメイン`event.cloudnativedays.jp`にアクセスしてみます。
 
-```shell
+```bash
 kubectl exec -n handson curl -- /bin/sh -c "curl -s -o /dev/null https://event.cloudnativedays.jp/ -w '%{http_code}\n'"
 ```
 
@@ -248,23 +248,23 @@ kubectl exec -n handson curl -- /bin/sh -c "curl -s -o /dev/null https://event.c
 確認が終わったら、バックグラウンドで動かしたプロセスと本章でデプロイしたリソースを削除しておきます。
 まず、バックグラウンドで動かしたプロセスを再度確認します。
 
-```shell
+```bash
 ps -eo pid,tty,cmd | grep "cilium hubble port-forward"
 ```
-```shell
+```text
  9814 pts/0    cilium hubble port-forward
 11775 pts/0    grep --color=auto cilium hubble port-forward
 ```
 
 この例では、該当プロセス番号が9814だったため、プロセスを終了するkillコマンドで9814を指定します。
 
-```shell
+```bash
 kill 9814
 ```
 
 その後、本章でデプロイしたリソースを削除します。
 
-```shell
+```bash
 kubectl delete -Rf manifest
 kubectl delete -n handson pod curl --force
 ```

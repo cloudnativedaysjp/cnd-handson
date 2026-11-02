@@ -177,7 +177,7 @@ SSDでは各コンポーネントをWrite Target/Read Target/Backend Targetに�
 まずはLokiをKubernetesクラスターに展開してみましょう。
 今回はMonolithic modeでデプロイします。
 
-```shell
+```bash
 helmfile sync -f helm/helmfile.yaml
 ```
 
@@ -263,7 +263,7 @@ Lokiはマルチテナントにも対応しており、`Header`と`value`で使�
 
 まずは、OpenTelemetry CollectorをアプライしてLokiにログを送付します。
 
-```shell
+```bash
 kubectl apply -f manifest/log-collector.yaml
 ```
 

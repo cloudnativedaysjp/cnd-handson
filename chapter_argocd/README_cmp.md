@@ -92,7 +92,7 @@ repoServer:
 kubectl -n argo-cd get pod -l app.kubernetes.io/name=argocd-repo-server -o jsonpath='{.items[0].spec.containers[*].name}'; echo
 ```
 
-```
+```text
 # 実行結果
 repo-server helmfile-cmp
 ```
@@ -139,7 +139,7 @@ headlamp が Synced と Healthy になるまで待ちます。
 kubectl -n argo-cd get application headlamp
 ```
 
-```
+```text
 # 実行結果
 NAME       SYNC STATUS   HEALTH STATUS
 headlamp   Synced        Healthy

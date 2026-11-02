@@ -453,7 +453,7 @@ kubectl delete -f manifests/05-ingress.yaml
 
 
 以下のコマンドでアプリのデプロイを行なってください。
-```sh
+```bash
 kubectl apply -f manifests/06-cnd-web.yaml
 ```
 
@@ -482,6 +482,6 @@ curl http://cnd-web.example.com
 
 動作確認後、リソースを削除します。
 
-```sh
+```bash
 kubectl delete -f manifests/06-cnd-web.yaml
 ```

@@ -48,34 +48,34 @@ ZtunnelはKubernetes DaemonSetとしてデプロイされます。サイドカ�
 
 ### Kubernetesクラスター作成
 
-```sh
+```bash
 kind create cluster --config kind/config.yaml
 ```
 
 Kubernetesクラスター作成後、現在のKubernetes contextが`kind-istio-ambient`であることを確認してください。
 
-```sh
+```bash
 kubectl config current-context
 ```
 
-```sh
+```text
 # 結果表示
 kind-istio-ambient
 
 ```
 もし、結果が異なる場合は、contextを変更してください(`kind-istio-ambient`の場合はスキップしてください)。
 
-```sh
+```bash
 kubectl config use-context kind-istio-ambient
 ```
 
 現在のnodeを確認してください。
 
-```sh
+```bash
 kubectl get nodes
 ```
 
-```sh
+```text
 # 実行結果
 NAME                          STATUS   ROLES           AGE     VERSION
 istio-ambient-control-plane   Ready    control-plane   2m33s   v1.31.0
@@ -89,17 +89,17 @@ Istio ambientコンポーネントと併せて、Kiali, Prometheusをインス�
 >
 > KialiはIstioサービスメッシュ用のコンソールであり、Kialiが提供するダッシュボードから、サービスメッシュの構造の確認、トラフィックフローの監視、および、サービスメッシュ設定の確認、変更をすることが可能です。本chapterでは説明は省略していますので、詳細は[こちら](https://kiali.io/docs/)をご確認ください。
 
-```sh
+```bash
 helmfile sync -f helm/helmfile.yaml
 ```
 
 作成されるリソースは下記のとおりです(Prometheusコンポーネントは省略しています。)
 
-```sh
+```bash
 kubectl get services,daemonsets,deployments -n istio-system
 ```
 
-```sh
+```text
 # 実行結果(cluster IPは異なる可能性があります。)
 NAME             TYPE        CLUSTER-IP      EXTERNAL-IP   PORT(S)                                 AGE
 service/istiod   ClusterIP   10.96.45.99     <none>        15010/TCP,15012/TCP,443/TCP,15014/TCP   116s
@@ -117,7 +117,7 @@ deployment.apps/kiali    1/1     1            1           86s
 ### アプリケーションのデプロイ
 ハンズオン用のアプリケーションをデプロイします。
 
-```sh
+```bash
 kubectl apply -f ../chapter_cluster-create/manifest/app/serviceaccount.yaml -l color=blue
 kubectl apply -f ../chapter_cluster-create/manifest/app/deployment.yaml -l color=blue
 kubectl apply -f ../chapter_cluster-create/manifest/app/service.yaml
@@ -125,11 +125,11 @@ kubectl apply -f ../chapter_cluster-create/manifest/app/service.yaml
 
 作成されるリソースは下記のとおりです。
 
-```sh
+```bash
 kubectl get services,deployments -l app=handson
 ```
 
-```sh
+```text
 # 実行結果(cluster IPは異なる可能性があります。)
 NAME              TYPE        CLUSTER-IP   EXTERNAL-IP   PORT(S)    AGE
 service/handson   ClusterIP   10.96.47.9   <none>        8080/TCP   7s
@@ -140,16 +140,16 @@ deployment.apps/handson-blue   1/1     1            1           8s
 
 アプリケーションpodがambient meshの一部になるように、デプロイ先のKubernetes namespaceにラベルを追加します。
 
-```sh
+```bash
 kubectl label namespace default istio.io/dataplane-mode=ambient
 ```
 ラベルが追加されたことを確認してください。
 
-```sh
+```bash
 kubectl get namespace default --show-labels
 ```
 
-```sh
+```text
 # 実行結果
 NAME      STATUS   AGE     LABELS
 default   Active   3m43s   istio.io/dataplane-mode=ambient,kubernetes.io/metadata.name=default
@@ -157,13 +157,13 @@ default   Active   3m43s   istio.io/dataplane-mode=ambient,kubernetes.io/metadat
 
 Ambient mesh内でアプリケーションが正しく起動しているかを確認をするために疎通確認を行います。なお、Kubernetes cluster外からはアクセス出来ないため、handsonアプリケーションのKubernetes serviceをポートフォワードしてホスト側から疎通確認を行います。
 
-```sh
+```bash
 kubectl port-forward service/handson 8081:8080 >/dev/null &
 ```
 
 アプリケーションにアクセスします。
 
-```sh
+```bash
 curl -I http://127.0.0.1:8081/
 ```
 
@@ -171,24 +171,24 @@ HTTPステータスコード200が返却されれば疎通確認完了です。H
 
 (HTTPステータスコードが5XXの時のみ実施。)
 
-```sh
+```bash
 kubectl rollout restart deploy/handson-blue
 ```
 
 疎通確認完了後、port forwardを実行しているjobを停止します。
 
-```sh
+```bash
 jobs
 ```
 
-```sh
+```text
 # 実行結果
 [1]+  Running  kubectl port-forward service/handson 8081:8080 > /dev/null &
 ```
 
 `kubectl port-forward`を実行しているjobを停止。
 
-```sh
+```bash
 kill %1
 ```
 
@@ -225,17 +225,17 @@ TCPトラフィックの状態を確認するために、TOP画面左のサイ�
 ### 追加アプリケーションのデプロイ
 `handson-blue`ワークロードにアクセスする追加のワークロード2つをデプロイします。
 
-```sh
+```bash
 kubectl apply -f app/curl-allow.yaml,app/curl-deny.yaml
 ```
 
 作成されるリソースは下記の通りです。
 
-```sh
+```bash
 kubectl get pods -l content=layer4-authz
 ```
 
-```sh
+```text
 # 実行結果
 NAME         READY   STATUS    RESTARTS   AGE
 curl-allow   1/1     Running   0          9s
@@ -244,7 +244,7 @@ curl-deny    1/1     Running   0          9s
 
 それでは`curl-allow`, `curl-deny` podから、`handson-blue` ワークロードに対してリクエストを送信します。
 
-```sh
+```bash
 while :; do
 kubectl exec curl-allow -- /bin/sh -c "echo -n 'curl-allow: ';curl -s -o /dev/null handson:8080 -w '%{http_code}\n'";
 kubectl exec curl-deny -- /bin/sh -c "echo -n 'curl-deny:  ';curl -s -o /dev/null handson:8080 -w '%{http_code}\n'";
@@ -254,7 +254,7 @@ done
 
 双方のワークロードからのリクエストが成功していることが分かります。
 
-```sh
+```text
 # 出力結果
 curl-allow: 200
 curl-deny:  200
@@ -279,17 +279,17 @@ curl-deny:  200
 ### Istio Authorization Policyの適用
 それでは、Istio Authorization Policyを作成して、`curl-deny` ワークロードからのport 8080宛のリクエストを拒否する設定を追加します。
 
-```sh
+```bash
 kubectl apply -f networking/L4-authorization-policy.yaml
 ```
 
 作成されるリソースは下記の通りです。
 
-```sh
+```bash
 kubectl get authorizationpolicies -l content=layer4-authz
 ```
 
-```sh
+```text
 # 実行結果
 NAME           ACTION   AGE
 layer4-authz   DENY     5s
@@ -297,7 +297,7 @@ layer4-authz   DENY     5s
 
 再度リクエストをします。
 
-```sh
+```bash
 while :; do
   kubectl exec curl-allow -- /bin/sh -c "echo -n 'curl-allow: ';curl -s -o /dev/null -w '%{http_code}\n' handson:8080"
   kubectl exec curl-deny -- /bin/sh -c "echo -n 'curl-deny:  ';curl -s -o /dev/null -w '%{http_code}\n' handson:8080"
@@ -307,7 +307,7 @@ done
 
 しばらくすると、`curl-deny` podからのリクエストは拒否されます。
 
-```sh
+```text
 # 出力結果例
 curl-allow: 200
 curl-deny:  200
@@ -344,11 +344,11 @@ Http status code 000はレスポンスが何もなかったという意味で、
 
 ログを見る前に、まずは各podのIPを確認します。
 
-```sh
+```bash
 kubectl get pods -o=custom-columns='Name:.metadata.name, IP:.status.podIP'
 ```
 
-```sh
+```text
 # 実行結果(pod IPは異なる可能性があります。)
 Name                             IP
 curl-allow                      10.244.1.14
@@ -358,14 +358,14 @@ handson-blue-5cb87cdfc8-24npj   10.244.1.12
 
 `curl-deny` podから`handson`サービスに向けてリクエストをします。
 
-```sh
+```bash
 for _ in $(seq 2); do
   kubectl exec curl-deny -- /bin/sh -c "curl -s -o /dev/null handson:8080 -w '%{http_code}\n'"
   sleep 1
 done
 ```
 
-```sh
+```text
 # 出力結果
 000
 command terminated with exit code 56
@@ -375,7 +375,7 @@ command terminated with exit code 56
 
 それではztunnelのログを確認します。
 
-```sh
+```bash
 ZTUNNEL_POD=$(kubectl get pod -n istio-system -l app=ztunnel --field-selector=spec.nodeName=istio-ambient-worker -o=jsonpath={.items..metadata.name})
 kubectl logs "$ZTUNNEL_POD" -n istio-system --tail 4
 ```
@@ -443,18 +443,18 @@ Ztunnelが管理するIstio ambient mesh内のL4レベルのトラフィック�
 
 ### クリーンアップ
 
-```sh
+```bash
 kubectl delete -f networking/L4-authorization-policy.yaml
 kubectl delete -f app/curl-allow.yaml,app/curl-deny.yaml
 ```
 
 `handson-blue` podのみが動作していることを確認してください。
 
-```sh
+```bash
 kubectl get pods
 ```
 
-```sh
+```text
 # 実行結果(pod名は異なる可能性があります。)
 NAME                            READY   STATUS    RESTARTS   AGE
 handson-blue-5cb87cdfc8-24npj   1/1     Running   0          14m
@@ -486,11 +486,11 @@ HTTPトラフィックの状態を確認するために、TOP画面左のサイ�
 ### Waypoint proxyのデプロイ
 Waypoint proxyを有効にするにはKubernetes Gateway APIの`gateway`リソースが必要になるため、まずはKubernetes Gateway API CRDsをインストールします。
 
-```sh
+```bash
 kubectl apply -f https://github.com/kubernetes-sigs/gateway-api/releases/download/v1.5.1/standard-install.yaml
 ```
 
-```sh
+```text
 # 実行結果
 customresourcedefinition.apiextensions.k8s.io/gatewayclasses.gateway.networking.k8s.io created
 customresourcedefinition.apiextensions.k8s.io/gateways.gateway.networking.k8s.io created
@@ -505,17 +505,17 @@ customresourcedefinition.apiextensions.k8s.io/referencegrants.gateway.networking
 
 Kubernetes Gateway APIの`gateway`リソースを作成して、waypoint proxyをデプロイします。
 
-```sh
+```bash
 kubectl apply -f networking/k8s-gateway.yaml
 ```
 
 作成されるリソースは下記の通りです。
 
-```sh
+```bash
 kubectl get gateways,deployments,services -l app.kubernetes.io/component=waypoint-proxy
 ```
 
-```sh
+```text
 # 実行結果(gateway address, cluster IPは異なる可能性があります。)
 NAME                                         CLASS            ADDRESS         PROGRAMMED   AGE
 gateway.gateway.networking.k8s.io/waypoint   istio-waypoint   10.96.172.234   True         7s
@@ -529,17 +529,17 @@ service/waypoint   ClusterIP   10.96.172.234   <none>        15021/TCP,15008/TCP
 
 Waypoint proxyをデプロイしただけでは、サービスメッシュ内のリソースはこのwaypoint proxyを使用しません。Ztunnelを通過したトラフィックがwaypoint proxyを経由するようにするために、対象のwaypoint proxy名を、先ほど作成したKubernetes gatewayリソースのnamespaceにラベルとして追加する必要があります。
 
-```sh
+```bash
 kubectl label namespace default istio.io/use-waypoint=waypoint
 ```
 
 該当のKubernetes namespaceにラベルが追加されたか確認をします。
 
-```sh
+```bash
 kubectl get namespace default --show-labels
 ```
 
-```sh
+```text
 # 実行結果
 NAME      STATUS   AGE    LABELS
 default   Active   154m   istio.io/dataplane-mode=ambient,istio.io/use-waypoint=waypoint,kubernetes.io/metadata.name=default
@@ -554,16 +554,16 @@ default   Active   154m   istio.io/dataplane-mode=ambient,istio.io/use-waypoint=
 ### 追加アプリケーションのデプロイ
 `handson-blue`ワークロードにアクセスするpodをデプロイします。
 
-```sh
+```bash
 kubectl apply -f app/curl.yaml
 ```
 
 作成されるリソースは下記の通りです。
-```sh
+```bash
 kubectl get pods,serviceaccounts -l content=layer7-authz
 ```
 
-```sh
+```text
 # 実行結果
 NAME       READY   STATUS    RESTARTS   AGE
 pod/curl   1/1     Running   0          26s
@@ -574,13 +574,13 @@ serviceaccount/curl   0         26s
 
 それでは、`curl` podから`handson-blue`ワークロードに対してリクエストをします。
 
-```sh
+```bash
 while :; do kubectl exec curl -- curl -s -o /dev/null handson:8080 -w '%{http_code}\n';sleep 1;done
 ```
 
 リクエストは成功していることを確認してください。
 
-```sh
+```text
 # 出力結果
 200
 200
@@ -599,17 +599,17 @@ Kiali dashboardからも確認してみましょう。リクエストを流し�
 ### Istio Authorization Policyの適用
 それでは、Istio Authorization Policyを適用して、curl ワークロードからのGETリクエストのみを許可し、削除、更新系のメソッドを拒否します。
 
-```sh
+```bash
 kubectl apply -f networking/L7-authorization-policy.yaml
 ```
 
 作成されたリソースは下記の通りです。
 
-```sh
+```bash
 kubectl get authorizationpolicies -l content=layer7-authz
 ```
 
-```sh
+```text
 # 実行結果
 NAME           ACTION   AGE
 layer7-authz   DENY     4s
@@ -617,13 +617,13 @@ layer7-authz   DENY     4s
 
 まずは確認のためにGETリクエストをします(明示的にGETを指定しています)。
 
-```sh
+```bash
 while :; do kubectl exec curl -- curl -s -X GET -o /dev/null -w '%{http_code}\n' handson:8080;sleep 1;done
 ```
 
 先ほどと同じく、リクエストが成功していることを確認してください。
 
-```sh
+```text
 # 実行結果
 200
 200
@@ -637,13 +637,13 @@ while :; do kubectl exec curl -- curl -s -X GET -o /dev/null -w '%{http_code}\n'
 
 それでは、POSTメソッドでリクエストをしてみましょう。`handson-blue`ワークロードにPOSTメソッドは実装されていないので、空データを使用します。
 
-```sh
+```bash
 while :; do kubectl exec curl -- curl -X POST -s -o /dev/null -d '{}' -w '%{http_code}\n' handson:8080;sleep 1;done
 ```
 
 しばらくすると、403にて拒否されるようになります。
 
-```sh
+```text
 # 実行結果
 200
 200
@@ -665,7 +665,7 @@ while :; do kubectl exec curl -- curl -X POST -s -o /dev/null -d '{}' -w '%{http
 
 まずは各service, podのIPを確認します。
 
-```sh
+```bash
 echo
 echo "> Kubernetes service:"
 kubectl get svc -o custom-columns="Name:.metadata.name,cluster IP:.spec.clusterIP"
@@ -674,7 +674,7 @@ echo "> Kubernetes pods:"
 kubectl get pods -o=custom-columns='Name:.metadata.name, IP:.status.podIP'
 ```
 
-```sh
+```text
 # 実行結果(cluster IP, pod IPは異なる可能性があります。)
 > Kubernetes service:
 Name         cluster IP
@@ -691,14 +691,14 @@ waypoint-57f4fcd686-6vwck       10.244.1.15
 
 `curl` podから`handon`サービスに向けてリクエストをします。
 
-```sh
+```bash
 for _ in $(seq 2); do
   kubectl exec curl -- curl -X POST -s -o /dev/null -d '{}' -w '%{http_code}\n' handson:8080
   sleep 1
 done
 ```
 
-```sh
+```text
 # 実行結果
 403
 403
@@ -706,7 +706,7 @@ done
 
 それでは、ztunnelのログを見てみましょう。
 
-```sh
+```bash
 ZTUNNEL_POD=$(kubectl get pod -n istio-system -l app=ztunnel --field-selector=spec.nodeName=istio-ambient-worker -o=jsonpath={.items..metadata.name})
 kubectl logs "$ZTUNNEL_POD" -n istio-system --tail 2
 ```
@@ -742,7 +742,7 @@ kubectl logs "$ZTUNNEL_POD" -n istio-system --tail 2
 
 それでは、次は、waypoint proxyのログを確認してみましょう。
 
-```sh
+```bash
 WAYPOINT_PROXY_POD=$(kubectl get pods -l app.kubernetes.io/component=waypoint-proxy -o=jsonpath={.items..metadata.name})
 kubectl logs "$WAYPOINT_PROXY_POD" --tail 2
 ```
@@ -784,13 +784,13 @@ Ztunnelからトラフィックのproxyを受けたwaypoint proxyは、`upstream
 
 最後にDELETEメソッドも拒否されるか確認してみましょう。`handson-blue`ワークロードにDELETEメソッドは実装されていないので、ダミーIDを削除することとします。
 
-```sh
+```bash
 while :; do kubectl exec curl -- curl -X DELETE -s -o /dev/null -w '%{http_code}\n' handson:8080/id/123;sleep 1;done
 ```
 
 こちらも、403にて拒否されることを確認してください。
 
-```sh
+```text
 # 実行結果
 403
 403
@@ -805,7 +805,7 @@ while :; do kubectl exec curl -- curl -X DELETE -s -o /dev/null -w '%{http_code}
 Waypoint proxyが管理するIstio ambient mesh内のL7レベルのトラフィックにおいて、Istio Authorization Policyを使用してアクセス管理を実装しました。Istioの機能を使うことで、アプリケーション側にロジックを追加することなくL7レベルのアクセス管理を実現することができます。
 
 ### クリーンアップ
-```sh
+```bash
 kubectl delete -f networking/L7-authorization-policy.yaml,networking/k8s-gateway.yaml
 kubectl delete -f app/curl.yaml
 ```
@@ -817,23 +817,23 @@ kubectl delete -f app/curl.yaml
 ## 最終クリーンアップ
 本chapter用に作成したKindクラスターを削除します。
 
-```sh
+```bash
 kind delete cluster --name istio-ambient
 ```
 
 すでに[chapter_cluster-create](../chapter_cluster-create/README.md)でkindクラスターを作成していて、他のchapterに進む場合は、クラスター削除後にKubernetes contextを`kind-kind`に設定してください。
 
-```sh
+```bash
 kubectl config use-context kind-kind
 ```
 
 現在のKubernetes contextのが`kind-kind`であることを確認してください。
 
-```sh
+```bash
 kubectl config current-context
 ```
 
-```sh
+```text
 # 実行結果
 kind-kind
 ```

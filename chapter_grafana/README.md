@@ -305,7 +305,7 @@ kubectl apply -f manifests/webhook-receiver.yaml
 kubectl get pods -n prometheus -l app=webhook-receiver
 ```
 
-```bash
+```text
 # 実行結果
 NAME                                READY   STATUS    RESTARTS   AGE
 webhook-receiver-xxxxxxxxxx-xxxxx   1/1     Running   0          30s

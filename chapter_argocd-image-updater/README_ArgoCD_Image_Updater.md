@@ -54,7 +54,7 @@ chapter_argocdを実施した場合、アプリがすでに一つ、または複
 
 以下のgit cloneしたcnd-handsonフォルダの `chapter_argocd-image-updater/manifest`の中にある、`application_argocdupdate.yaml`に  
 レポジトリ設定があるため、自分のレポジトリ設定に修正してください。  
-```
+```text
     repoURL: https://github.com/<自分のrepository>/cnd-handson.git → この部分を修正してください
                                 ^^^^^^^^^^^^^^^^^
 ```
@@ -62,16 +62,16 @@ chapter_argocdを実施した場合、アプリがすでに一つ、または複
 ![image](image/updater15.png)
 
 修正したyamlファイルをapplyします。  
-```
+```bash
 cd cnd-handson/chapter_argocd-image-updater
 kubectl apply -f ./manifest/application_argocdupdate.yaml
 ```
 
 設定したmanifestが反映されていること
-```
+```bash
 kubectl get deploy,pod -n argocd-demo
 ```
-```
+```text
 NAME                           READY   UP-TO-DATE   AVAILABLE   AGE
 deployment.apps/argocdupdate   1/1     1            1           8s    <-
 deployment.apps/handson        1/1     1            1           8m5s
@@ -123,7 +123,7 @@ https://argocd-image-updater.readthedocs.io/en/stable/install/installation/
 また、`argocdupdate.example.com`にてアプリを確認できますが、  
 nginxのページにて、バージョンが記載されていないため、argocdのWebUIにてバージョンを確認します。  
 
-```
+```bash
 kubectl apply -f ./manifest/argocd_image_updater.yaml
 ```
 
@@ -180,12 +180,12 @@ UpdaterのPodが使うサービスアカウント
 
 
 Updaterが動作して、ImageのAutoupdateが動作しているか確認  
-```
+```bash
 kubectl -n argo-cd logs deploy/argocd-image-updater -f
 ```
 
 すると、以下の様にコンテナイメージを検知して、その中で条件(>=1.27.0 <1.28.0)に合致するものを探し、自動更新がされる形になります。
-```
+```text
 (ログの抜粋)
 time="2025-10-20T07:56:02Z" level=debug msg="found 268 from 268 tags eligible for consideration" image="ghcr.io/nginxinc/nginx-unprivileged:1.27.0"　
 time="2025-10-20T07:56:02Z" level=info msg="Setting new image to ghcr.io/nginxinc/nginx-unprivileged:1.27.4" alias=app application=argocdupdate image_name=nginxinc/nginx-unprivileged image_tag=1.27.0 registry=ghcr.io

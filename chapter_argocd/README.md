@@ -137,7 +137,7 @@ Pod がすべて Running になるまで待ちます。
 kubectl -n argo-cd get pods
 ```
 
-```
+```text
 # 実行結果
 NAME                                                       READY   STATUS      RESTARTS   AGE
 argo-cd-argocd-application-controller-0                    1/1     Running     0          60s
@@ -272,7 +272,7 @@ sed "s/<GITHUB_USER>/${GITHUB_USER}/" applications/demo.yaml | kubectl apply -f 
 kubectl -n argo-cd get applications argocd-demo
 ```
 
-```
+```text
 # 実行結果
 NAME          SYNC STATUS   HEALTH STATUS
 argocd-demo   OutOfSync     Missing
@@ -327,7 +327,7 @@ fork の [app/default/deployment.yaml](app/default/deployment.yaml) を GitHub �
 
 ブラウザで次の URL を開きます。`<GITHUB_USER>` は自分のアカウント名に置き換えます。
 
-```
+```text
 https://github.com/<GITHUB_USER>/cnd-handson/blob/main/chapter_argocd/app/default/deployment.yaml
 ```
 
@@ -367,7 +367,7 @@ kubectl -n argocd-demo scale deployment handson --replicas=3 && kubectl -n argoc
 
 確かめたら Ctrl+C で止めます。
 
-```
+```text
 # 実行結果
 deployment.apps/handson scaled
 NAME      READY   UP-TO-DATE   AVAILABLE   AGE
@@ -398,7 +398,7 @@ handson   1/1     1            1           10m
 
 Kustomize は、共通の YAML（base）に、環境ごとの差分（overlay）を重ねてマニフェストを作り分けるツールです。
 
-```
+```text
 app/Kustomize/
 ├── base/            # 全環境で共通の Deployment、Service、HTTPRoute
 └── overlays/
@@ -440,7 +440,7 @@ Application が 2 つ作られます。テンプレートに `automated` を書�
 kubectl -n argo-cd get applications
 ```
 
-```
+```text
 # 実行結果
 NAME                   SYNC STATUS   HEALTH STATUS
 argocd-demo            Synced        Healthy
@@ -502,7 +502,7 @@ sed "s/<GITHUB_USER>/${GITHUB_USER}/" applications/helm.yaml | kubectl apply -f 
 kubectl -n argocd-helm get deployment handson -o jsonpath='{.spec.template.spec.containers[0].image}'; echo
 ```
 
-```
+```text
 # 実行結果
 ghcr.io/cloudnativedaysjp/cnd-handson-app/handson:modern
 ```

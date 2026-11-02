@@ -61,7 +61,7 @@ KubeVirtは以下の主要コンポーネントで構成されています：
 
 KubeVirtは以下のコマンドでインストールします：
 
- ```sh
+ ```bash
  export RELEASE=$(curl https://storage.googleapis.com/kubevirt-prow/release/kubevirt/kubevirt/stable.txt)
 
  # 1. KubeVirt Operatorのインストール
@@ -88,9 +88,11 @@ KubeVirtは以下のコマンドでインストールします：
 KubeVirtの仮想マシン操作には`virtctl`コマンドを使用します。
 バージョンを確認して正常にインストールされていることを確認します。
 
-```sh
+```bash
 virtctl version
+```
 
+```text
 Client Version: version.Info{GitVersion:"v1.8.2", GitCommit:"3203e9d1ce77af32f6a9ce72b9f954830666f72c", GitTreeState:"clean", BuildDate:"2026-04-20T14:34:03Z", GoVersion:"go1.24.9 X:nocoverageredesign", Compiler:"gc", Platform:"linux/amd64"}
 Server Version: version.Info{GitVersion:"v1.8.2", GitCommit:"3203e9d1ce77af32f6a9ce72b9f954830666f72c", GitTreeState:"clean", BuildDate:"2026-04-20T16:50:30Z", GoVersion:"go1.24.9 X:nocoverageredesign", Compiler:"gc", Platform:"linux/amd64"}
 ```
@@ -99,11 +101,13 @@ Server Version: version.Info{GitVersion:"v1.8.2", GitCommit:"3203e9d1ce77af32f6a
 
 まずは、KubeVirtが正常にインストールされているか確認します。
 
-```sh
+```bash
 kubectl get pods -n kubevirt
+```
 
 以下のようなPodが実行されているはずです：
 
+```text
 NAME                               READY   STATUS    RESTARTS   AGE
 virt-api-c7557fd74-7lqtr           1/1     Running   0          4m51s
 virt-api-c7557fd74-hsmd6           1/1     Running   0          4m51s
@@ -121,24 +125,24 @@ virt-operator-86d97799c8-jb4dc     1/1     Running   0          5m38s
 
 シンプルなCirros（軽量なLinux OS）仮想マシンを作成します。
 
-```sh
+```bash
 kubectl apply -f manifest/cirros-vm.yaml
 ```
 
 作成された仮想マシンの状態を確認します：
 
-```sh
+```bash
 kubectl get vms
 ```
 
-```log
+```text
 NAME        AGE   STATUS    READY
 cirros-vm   30s   Stopped   False
 ```
 
 仮想マシンを起動します：
 
-```sh
+```bash
 # 以下コマンドいずれかを実行
 virtctl start cirros-vm
 
@@ -147,7 +151,7 @@ kubectl patch virtualmachine cirros-vm --type merge -p '{"spec":{"runStrategy": 
 
 起動後の状態を確認：
 
-```sh
+```bash
 kubectl get vms
 kubectl get vmis
 kubectl get po
@@ -160,7 +164,7 @@ kubectl get po
 
 仮想マシンのコンソールに接続します：
 
-```sh
+```bash
 virtctl console cirros-vm
 ```
 
@@ -170,8 +174,11 @@ virtctl console cirros-vm
 
 ログイン後、仮想マシン内で以下コマンドを実行してみてください。
 
-```sh
-$ uname -o -a
+```bash
+uname -o -a
+```
+
+```text
 Linux cirros-vm 4.4.0-28-generic #47-Ubuntu SMP Fri Jun 24 10:09:13 UTC 2016 x86_64 GNU/Linux
 ```
 
@@ -181,7 +188,7 @@ Linux cirros-vm 4.4.0-28-generic #47-Ubuntu SMP Fri Jun 24 10:09:13 UTC 2016 x86
 
 #### 仮想マシンの停止
 
-```sh
+```bash
 # 以下コマンドいずれかを実行
 virtctl stop cirros-vm
 
@@ -190,7 +197,7 @@ kubectl patch virtualmachine cirros-vm --type merge -p '{"spec":{"runStrategy": 
 
 VMが停止したことを確認し、VMIが削除されていることを確認します。
 
-```sh
+```bash
 kubectl get vms
 kubectl get vmis
 ```
@@ -199,7 +206,7 @@ kubectl get vmis
 
 #### 仮想マシンの再起動
 
-```sh
+```bash
 # 再度VMを起動し、再起動を実行
 virtctl start cirros-vm
 virtctl restart cirros-vm
@@ -210,7 +217,7 @@ kubectl get vms -w
 
 #### 仮想マシンの削除
 
-```sh
+```bash
 kubectl delete vm cirros-vm
 ```
 
@@ -220,13 +227,13 @@ kubectl delete vm cirros-vm
 
 より実用的なFedora仮想マシンを作成します：
 
-```sh
+```bash
 kubectl apply -f manifest/fedora-vm.yaml
 ```
 
 ### 仮想マシンの起動と接続
 
-```sh
+```bash
 virtctl start fedora-vm
 virtctl console fedora-vm
 ```
@@ -239,11 +246,14 @@ virtctl console fedora-vm
 
 
 以下、コマンドを実行し
-```sh
+```bash
 cat /etc/redhat-release
-# 以下のようにFedoraのVMが稼働していることを確認
-Fedora release 32 (Thirty Two)
+```
 
+以下のようにFedoraのVMが稼働していることを確認します。
+
+```text
+Fedora release 32 (Thirty Two)
 ```
 
 ## ネットワーク設定
@@ -252,7 +262,7 @@ Fedora release 32 (Thirty Two)
 
 仮想マシンにSSH接続できるようにServiceを作成します：
 
-```sh
+```bash
 # 以下コマンドいずれかを実行
 kubectl apply -f manifest/vm-service.yaml
 
@@ -261,13 +271,13 @@ virtctl expose vm fedora-vm --name fedora-svc --port 22 --target-port 22
 
 ポートフォワードによる接続
 
-```sh
+```bash
 kubectl port-forward service/fedora-svc 2222:22
 ```
 
 別のターミナルからSSH接続：
 
-```sh
+```bash
 ssh -p 2222 fedora@localhost
 ```
 
@@ -281,7 +291,7 @@ CDI（Containerized Data Importer）はKubeVirt向けにデータのインポー
 
 ContainerDisk(前項までのやりかた)はコンテナイメージに同梱した一時的なルートディスクをそのまま使う方式で、CDI は外部ソースから永続ディスクを取り込み・複製して再利用可能なストレージとして運用します。
 
-```sh
+```bash
 # CDIのインストール
 export VERSION=$(basename $(curl -s -w %{redirect_url} https://github.com/kubevirt/containerized-data-importer/releases/latest))
 kubectl create -f https://github.com/kubevirt/containerized-data-importer/releases/download/$VERSION/cdi-operator.yaml
@@ -293,17 +303,29 @@ kubectl get pods -n cdi
 
 永続化ストレージを使用する仮想マシンを作成します：
 
-```sh
+```bash
 kubectl apply -f manifest/vm-with-datavolume.yaml
+```
 
+```bash
 kubectl get datavolume
-# 以下のようにDatavolumeがSucceededになると成功です。
-# 今回DataVolumeではマニフェストの14行目にあるイメージをダウンロードしています。
+```
+
+以下のようにDatavolumeがSucceededになると成功です。
+今回DataVolumeではマニフェストの14行目にあるイメージをダウンロードしています。
+
+```text
 NAME                PHASE       PROGRESS   RESTARTS   AGE
 fedora-datavolume   Succeeded   100.0%                11m
+```
 
+```bash
 kubectl get pvc
-# Datavolumeのデータは以下のようにPVCを利用します
+```
+
+Datavolumeのデータは以下のようにPVCを利用します。
+
+```text
 NAME                STATUS   VOLUME                                     CAPACITY      ACCESS MODES   STORAGECLASS   VOLUMEATTRIBUTESCLASS   AGE
 fedora-datavolume   Bound    pvc-0b4df460-d2cc-49f0-812b-3abdec197649   11381663335   RWO            standard       <unset>                 11m
 ```
@@ -315,7 +337,7 @@ fedora-datavolume   Bound    pvc-0b4df460-d2cc-49f0-812b-3abdec197649   11381663
 ライブマイグレーションの細かい制限については[公式ドキュメント](https://kubevirt.io/user-guide/compute/live_migration/#limitations)を参照ください。
 
 
-```sh
+```bash
 virtctl start vm-with-datavolume
 kubectl get vmi
 virtctl migrate vm-with-datavolume
@@ -328,6 +350,6 @@ kubectl get vmi
 
 全ての仮想マシンを削除：
 
-```sh
+```bash
 kubectl delete vm --all
 ```
