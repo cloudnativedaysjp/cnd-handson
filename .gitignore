@@ -25,3 +25,5 @@ __*
 *.un~
 Session.vim
 .netrwhist
+
+chapter_istio/istio-*/
