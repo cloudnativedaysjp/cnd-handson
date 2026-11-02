@@ -18,7 +18,6 @@ spec:
       maxSurge: 25%
       maxUnavailable: 0
   template:
-    spec:
     metadata:
       labels:
         app: rollout

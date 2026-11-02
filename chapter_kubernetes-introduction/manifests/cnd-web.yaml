@@ -94,7 +94,7 @@ spec:
     namespace: gateway
     sectionName: http
   hostnames:
-  - cndw-web.example.com
+  - cnd-web.example.com
   rules:
   - matches:
     - path:

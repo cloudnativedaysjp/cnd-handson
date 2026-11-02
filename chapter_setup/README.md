@@ -76,8 +76,7 @@ hostsファイルには、この演習を通して利用するIPアドレスと�
 ```
 YOUR_VM_IP_ADDRESS    hello-world.example.com
 YOUR_VM_IP_ADDRESS    rollout.example.com
-YOUR_VM_IP_ADDRESS    blue.example.com
-YOUR_VM_IP_ADDRESS    green.example.com
+YOUR_VM_IP_ADDRESS    blue-green.example.com
 YOUR_VM_IP_ADDRESS    app.example.com
 YOUR_VM_IP_ADDRESS    cndw-web.example.com
 YOUR_VM_IP_ADDRESS    prometheus.example.com

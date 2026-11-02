@@ -8,7 +8,7 @@ spec:
     namespace: gateway
     sectionName: http
   hostnames:
-  - hello-world.example.com
+  - "hello-world.example.com"
   rules:
   - matches:
     - path:
