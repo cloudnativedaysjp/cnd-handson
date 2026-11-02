@@ -1,0 +1,24 @@
+apiVersion: gateway.networking.k8s.io/v1
+kind: HTTPRoute
+metadata:
+  name: app-httproute
+spec:
+  parentRefs:
+  - name: handson-gateway
+    namespace: gateway
+    sectionName: http
+  hostnames:
+  - app.rollouts.example.com
+  rules:
+  - matches:
+    - path:
+        type: PathPrefix
+        value: /
+    # 重みは Rollout が書き換える
+    backendRefs:
+    - name: handson
+      port: 80
+      weight: 100
+    - name: handson-canary
+      port: 80
+      weight: 0

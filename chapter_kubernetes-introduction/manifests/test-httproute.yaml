@@ -5,6 +5,8 @@ metadata:
 spec:
   parentRefs:
   - name: handson-gateway
+    namespace: gateway
+    sectionName: http
   hostnames:
   - "hello-world.example.com"
   rules:

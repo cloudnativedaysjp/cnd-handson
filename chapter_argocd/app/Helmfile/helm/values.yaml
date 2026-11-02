@@ -1,15 +1,8 @@
-ingress:
+httpRoute:
   enabled: true
-  ingressClassName: "nginx"
-  annotations:
-    nginx.ingress.kubernetes.io/ssl-redirect: "false"
-  hosts: 
-    - host: headlamp.example.com
-      paths:
-        - path: /
-          type: Prefix
-          backend:
-            service:
-              name: headlamp 
-              port:
-                name: http
+  parentRefs:
+  - name: handson-gateway
+    namespace: gateway
+    sectionName: http
+  hostnames:
+  - headlamp.example.com

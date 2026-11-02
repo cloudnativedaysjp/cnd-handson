@@ -64,6 +64,8 @@ metadata:
 spec:
   parentRefs:
   - name: handson-gateway
+    namespace: gateway
+    sectionName: http
   hostnames:
   - "blue-green.example.com"
   rules:

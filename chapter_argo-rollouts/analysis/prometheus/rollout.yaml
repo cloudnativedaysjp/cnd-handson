@@ -29,19 +29,22 @@ spec:
             cpu: 5m
   strategy:
     canary:
-      analysis:
-        templates:
-        - templateName: handson-analysis
-        args:
-        - name: ingress
-          value: app-ingress-by-nginx
+      stableService: handson
+      canaryService: handson-canary
+      trafficRouting:
+        plugins:
+          argoproj-labs/gatewayAPI:
+            httpRoute: app-httproute
+            namespace: prometheus-analysis
       steps:
-      - setWeight: 40
-      - pause: 
-          duration: 10
-      - setWeight: 60
+      - setWeight: 20
+      # Analysis が成功するまで次に進まない。失敗したら中止して元のバージョンに戻す
+      - analysis:
+          templates:
+          - templateName: handson-analysis
+          args:
+          - name: envoy-cluster
+            value: httproute/prometheus-analysis/app-httproute/rule/0
+      - setWeight: 50
       - pause:
-          duration: 10
-      - setWeight: 80
-      - pause:
-          duration: 10
+          duration: 30s
