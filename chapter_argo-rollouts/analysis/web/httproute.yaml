@@ -8,7 +8,7 @@ spec:
     namespace: gateway
     sectionName: http
   hostnames:
-  - app.argocd.example.com
+  - app.rollouts.example.com
   rules:
   - matches:
     - path:
