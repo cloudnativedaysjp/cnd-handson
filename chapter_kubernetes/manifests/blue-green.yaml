@@ -65,30 +65,42 @@ spec:
 status:
   loadBalancer: {}
 ---
-apiVersion: networking.k8s.io/v1
-kind: Ingress
+apiVersion: gateway.networking.k8s.io/v1
+kind: HTTPRoute
 metadata:
-  name: blue-green
+  name: blue-httproute
 spec:
-  ingressClassName: nginx
+  parentRefs:
+  - name: handson-gateway
+    namespace: gateway
+    sectionName: http
+  hostnames:
+  - blue.example.com
   rules:
-  - host: blue.example.com
-    http:
-      paths:
-      - pathType: Prefix
-        path: "/"
-        backend:
-          service:
-            name: blue-service
-            port:
-              number: 80
-  - host: green.example.com
-    http:
-      paths:
-      - pathType: Prefix
-        path: "/"
-        backend:
-          service:
-            name: green-service
-            port:
-              number: 80
+  - matches:
+    - path:
+        type: PathPrefix
+        value: /
+    backendRefs:
+    - name: blue-service
+      port: 80
+---
+apiVersion: gateway.networking.k8s.io/v1
+kind: HTTPRoute
+metadata:
+  name: green-httproute
+spec:
+  parentRefs:
+  - name: handson-gateway
+    namespace: gateway
+    sectionName: http
+  hostnames:
+  - green.example.com
+  rules:
+  - matches:
+    - path:
+        type: PathPrefix
+        value: /
+    backendRefs:
+    - name: green-service
+      port: 80

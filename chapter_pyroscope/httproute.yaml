@@ -1,0 +1,23 @@
+---
+apiVersion: gateway.networking.k8s.io/v1
+kind: HTTPRoute
+metadata:
+  name: pyroscope-httproute
+  namespace: monitoring
+spec:
+  parentRefs:
+  - name: handson-gateway
+    namespace: gateway
+    sectionName: http
+  hostnames:
+  - pyroscope.example.com
+  rules:
+  - matches:
+    - path:
+        type: PathPrefix
+        value: /
+    backendRefs:
+    # マイクロサービスモードではpyroscope-query-frontend、
+    # モノリシックモードではpyroscopeを指定する
+    - name: pyroscope-query-frontend
+      port: 4040

@@ -47,20 +47,22 @@ spec:
 status:
   loadBalancer: {}
 ---
-apiVersion: networking.k8s.io/v1
-kind: Ingress
+apiVersion: gateway.networking.k8s.io/v1
+kind: HTTPRoute
 metadata:
-  name: rollout-ingress
+  name: rollout-httproute
 spec:
-  ingressClassName: nginx
+  parentRefs:
+  - name: handson-gateway
+    namespace: gateway
+    sectionName: http
+  hostnames:
+  - rollout.example.com
   rules:
-  - host: rollout.example.com
-    http:
-      paths:
-      - pathType: Prefix
-        path: "/"
-        backend:
-          service:
-            name: rollout-service
-            port:
-              number: 80
+  - matches:
+    - path:
+        type: PathPrefix
+        value: /
+    backendRefs:
+    - name: rollout-service
+      port: 80
