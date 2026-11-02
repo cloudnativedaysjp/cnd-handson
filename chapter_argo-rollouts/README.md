@@ -122,7 +122,7 @@ Service がどの Pod に向くかは、selector で決まります。Git の Se
 sed "s/<GITHUB_USER>/${GITHUB_USER}/" applications/blue-green.yaml | kubectl apply -f -
 ```
 
-http://app.rollouts.example.com を開くと、青いタイルが並びます。Service のハッシュと ReplicaSet を見ます。
+http://app-rollouts.example.com を開くと、青いタイルが並びます。Service のハッシュと ReplicaSet を見ます。
 
 ```bash
 kubectl -n blue-green get service -o custom-columns='NAME:.metadata.name,HASH:.spec.selector.rollouts-pod-template-hash'
@@ -142,8 +142,8 @@ fork の [app/blue-green/rollout.yaml](app/blue-green/rollout.yaml) を GitHub �
 
 2 つの URL を開くと、色が違います。利用者に見せる前に、preview で新しいバージョンを確かめられます。
 
-- active: http://app.rollouts.example.com （青）
-- preview: http://app-preview.rollouts.example.com （緑）
+- active: http://app-rollouts.example.com （青）
+- preview: http://app-preview-rollouts.example.com （緑）
 
 ![demoapp](image/BG/demoapp.png)
 
@@ -230,7 +230,7 @@ Argo CD から見ると、HTTPRoute は Git と違う状態です。それでも
 
 </details>
 
-http://app.rollouts.example.com を開くと、青いタイルの中に、緑のタイルが 2 割ほど混ざります。
+http://app-rollouts.example.com を開くと、青いタイルの中に、緑のタイルが 2 割ほど混ざります。
 
 ![demoapp](image/canary/demoapp.png)
 
@@ -319,7 +319,7 @@ kubectl -n argo-cd delete application canary
 sed "s/<GITHUB_USER>/${GITHUB_USER}/" applications/prometheus-analysis.yaml | kubectl apply -f -
 ```
 
-Analysis の間は、http://app.rollouts.example.com を開いたままにしておきます。デモアプリの画面は、裏で繰り返しリクエストを送ります。
+Analysis の間は、http://app-rollouts.example.com を開いたままにしておきます。デモアプリの画面は、裏で繰り返しリクエストを送ります。
 
 ### 成功する例
 

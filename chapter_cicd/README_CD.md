@@ -104,7 +104,7 @@ podのimageが、` - image: ghcr.io/cloudnativedaysjp/cnd-handson-app/frontend:l
 ---
 ## Frontendのアプリのデプロイが完了
 Frontendのページへアクセスしてみます。  
-`http://app.cicd.example.com/login`  
+`http://app-cicd.example.com/login`  
 すると以下のログイン画面がでてきます。  
 
 ![image](image/applogin1.png)
@@ -158,7 +158,7 @@ podのimageが、` - image: ghcr.io/cloudnativedaysjp/cnd-handson-app/frontend-v
 
 この状態で、新しく**Frontend**のアプリが更新されました。  
 では、Frontendのページへアクセスしてみます。  
-`http://app.cicd.example.com/login`  
+`http://app-cicd.example.com/login`  
 先ほど同様に入力し、ログインします。  
 すると、以下の**黒いバー**の画面が表示されます。  
 
