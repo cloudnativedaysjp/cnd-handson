@@ -10,7 +10,7 @@ spec:
         spec:
           containers:
           - name: handson-cronjob
-            image: centos:latest
+            image: alpine:latest
             command:
             - sh
             - -c
