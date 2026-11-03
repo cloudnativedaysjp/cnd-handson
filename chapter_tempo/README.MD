@@ -106,7 +106,7 @@ opentelemetry-operator-569f6b668c-zrzdb   2/2     Running   0          23h
 デプロイが完了したら次にGrafanaにTempoを追加する設定を行います。
 `http://grafana.example.com/connections/datasources`にアクセスしAdd data sourceをクリックしてください。
 下のほうへスクロールするとTempoが存在するのでクリックします。
-設定画面に遷移するので`Connection`の`URL`欄に`http://grafana-tempo.monitoring.svc.cluster.local:3100`を入力して一番下にあるSave & testをクリックしてください。
+設定画面に遷移するので`Connection`の`URL`欄に`http://grafana-tempo.monitoring.svc.cluster.local:3200`を入力して一番下にあるSave & testをクリックしてください。
 ![config-tempo](image/config-tempo.png)
 `Data source successfully connected.`と表示されると設定が完了しています。
 今回はGUIで設定しましたが`prometheus/helm/prometheus-valus.yaml`に設定を追加することでコード上で設定を追加することも可能です。
