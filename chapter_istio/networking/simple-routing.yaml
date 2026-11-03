@@ -8,7 +8,7 @@ metadata:
     content: simple-routing
 spec:
   hosts:
-  - app.example.com
+  - istio-app.example.com
   gateways:
   - handson
   http:
