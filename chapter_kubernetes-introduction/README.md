@@ -456,6 +456,9 @@ kubectl get deployments
 http://rollout.example.com
 ```
 
+> [!NOTE]
+> 表示が変わらない場合は、ブラウザのキャッシュが表示されています。強制的に再読み込みしてください（macOS は Cmd+Shift+R、Windows は Ctrl+Shift+R）。
+
 尚、ロールバックを行う場合は以下のコマンドで実行可能です。
 
 ```bash
@@ -564,6 +567,9 @@ kubectl apply -f blue-green.yaml
 ```text
 http://blue-green.example.com にアクセス→ Green App
 ```
+
+> [!NOTE]
+> 表示が変わらない場合は、ブラウザのキャッシュが表示されています。強制的に再読み込みしてください（macOS は Cmd+Shift+R、Windows は Ctrl+Shift+R）。
 
 もし、新環境に不具合が見つかっても、`weight`パラメータを元に戻して再度applyするだけで、簡単に切り戻しできます。
 

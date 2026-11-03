@@ -56,11 +56,19 @@ kubectl create namespace troubleshoot
 > **`kubectl top`コマンドについて**
 >
 > このチャプターでは、リソース使用状況を確認するために`kubectl top pod`や`kubectl top node`コマンドを使用します。これらのコマンドを利用するには、Kubernetesクラスタに[Metrics Server](https://github.com/kubernetes-sigs/metrics-server)がデプロイされている必要があります。
->
-> Prometheusの章をまだ実施していない場合は、以下のコマンドでMetrics Serverを導入してください:
-> ```bash
-> kubectl apply -f https://github.com/kubernetes-sigs/metrics-server/releases/latest/download/components.yaml
-> ```
+
+この章のディレクトリに移動し、Metrics Serverをデプロイします。
+
+```bash
+cd ~/cnd-handson/chapter_troubleshoot
+helmfile sync -f helm/helmfile.yaml
+```
+
+1分ほど待つと、`kubectl top`でリソース使用状況を確認できます。
+
+```bash
+kubectl top node
+```
 
 ### よく使う`kubectl`コマンド一覧
 
@@ -374,7 +382,7 @@ kubectl get events -n troubleshoot --sort-by='.lastTimestamp'
 
 マニフェストを適用
 ```bash
-kubectl apply -f manifests/05-ingress.yaml
+kubectl apply -f manifests/05-httproute.yaml
 ```
 
 ### 症状
@@ -405,14 +413,14 @@ curl http://troubleshoot.example.com/api
 <summary>デバッグ方法(参考)</summary>
 
 ```bash
-# Ingressの状態を確認
-kubectl get ingress -n troubleshoot
+# HTTPRouteの状態を確認
+kubectl get httproute -n troubleshoot
 
-# Ingressの詳細を確認
-kubectl describe ingress ingress -n troubleshoot
+# HTTPRouteの詳細を確認
+kubectl describe httproute httproute -n troubleshoot
 
-# Ingressのバックエンドを確認
-kubectl get ingress ingress -n troubleshoot -o yaml
+# HTTPRouteのバックエンドを確認
+kubectl get httproute httproute -n troubleshoot -o yaml
 
 # 各namespaceのServiceを確認
 kubectl get svc -n frontend
@@ -435,7 +443,7 @@ curl -H "Host: troubleshoot.example.com" http://troubleshoot.example.com/api
 以下のコマンドで、作成したリソースを削除します。
 
 ```bash
-kubectl delete -f manifests/05-ingress.yaml
+kubectl delete -f manifests/05-httproute.yaml
 ```
 
 ---

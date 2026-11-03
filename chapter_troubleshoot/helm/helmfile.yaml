@@ -1,0 +1,13 @@
+repositories:
+- name: metrics-server
+  url: https://kubernetes-sigs.github.io/metrics-server/
+
+releases:
+- name: metrics-server
+  namespace: kube-system
+  chart: metrics-server/metrics-server
+  version: 3.14.0
+  values:
+  # kind の kubelet は自己署名の証明書を使う
+  - args:
+    - --kubelet-insecure-tls

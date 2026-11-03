@@ -1,5 +1,12 @@
 # Kubernetes概論ハンズオン
 
+この章のマニフェストは `manifests` ディレクトリにあります。
+最初に移動しておきます。
+
+```bash
+cd ~/cnd-handson/chapter_kubernetes-overview/manifests
+```
+
 ## 1. データの永続化 (PVとPVC)
 
 ここまでのハンズオンで、コンテナの特性がある程度見えてきたかと思います。
