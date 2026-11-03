@@ -3,7 +3,6 @@ auth:
   strategy: anonymous
 deployment:
   image_pull_policy: IfNotPresent
-  ingress_enabled: false
   logger:
     log_format: json
   resources:
@@ -20,10 +19,9 @@ external_services:
     enabled: false
   prometheus:
     url: http://kube-prometheus-stack-prometheus.prometheus:9090
-  istio:
-    root_namespace: istio-system
-    url_service_version: http://istiod:15014/version
   tracing:
     enabled: false
 server:
-  metrics_enabled: false
+  observability:
+    metrics:
+      enabled: false
