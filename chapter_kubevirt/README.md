@@ -74,7 +74,7 @@ KubeVirtは以下のコマンドでインストールします：
  kubectl -n kubevirt patch kubevirt kubevirt --type=merge --patch '{"spec":{"configuration":{"developerConfiguration":{"useEmulation":true}}}}'
 
  # 3. インストール確認
- kubectl wait --for=condition=Ready pods -l kubevirt.io=virt-operator -n kubevirt --timeout=300s
+ kubectl wait kv kubevirt -n kubevirt --for condition=Available --timeout=10m
 
  # 4. virtctl CLIのインストール
  curl -L -o virtctl https://github.com/kubevirt/kubevirt/releases/download/${RELEASE}/virtctl-${RELEASE}-linux-amd64
