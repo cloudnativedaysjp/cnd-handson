@@ -152,7 +152,7 @@ kubectl exec -n handson curl-deny  -- /bin/sh -c "echo -n 'curl-deny  -> /color:
 
 下記のような実行結果になります。
 
-```bash
+```text
 curl-allow -> /     : 200
 curl-allow -> /color: 200
 curl-deny  -> /     : 200
@@ -179,7 +179,7 @@ kubectl exec -n handson curl-deny  -- /bin/sh -c "echo -n 'curl-deny  -> /color:
 すると、curl-denyから`/`へのアクセスがHTTPステータスコード403でできなくなっています。
 このように、Ciliumでは、`CiliumNetworkPolicy`を利用することで、L7のトラフィック制御が可能です。
 
-```bash
+```text
 curl-allow -> /     : 200
 curl-allow -> /color: 200
 curl-deny  -> /     : 403

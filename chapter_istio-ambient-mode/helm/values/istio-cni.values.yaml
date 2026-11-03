@@ -8,6 +8,6 @@ cni:
       memory: 256Mi
     limits:
       cpu: 200m
-    memory: 256Mi
+      memory: 256Mi
   ambient:
     enabled: true

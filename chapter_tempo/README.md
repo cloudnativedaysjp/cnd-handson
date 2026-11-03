@@ -33,7 +33,7 @@ Tempoは以下のコンポーネントで構成されています。
 - Ingesterは、トレースをブロックにバッチ処理し、ブルーム フィルターとインデックスを作成して、それをすべてバックエンドにフラッシュします。
 - バックエンドのブロックは以下のレイアウトで生成されます。
 
-```
+```text
 <bucketname> / <tenantID> / <blockID> / <meta.json>
                                       / <index>
                                       / <data>
@@ -41,7 +41,7 @@ Tempoは以下のコンポーネントで構成されています。
                                       / <bloom_1>
                                         ...
                                       / <bloom_n>
-```                         
+```
 ### Query Frontend
 - Query Frontendは、受信クエリの検索スペースをシャーディングする役割を果たします。
 - トレースは、単純な HTTP エンドポイントを介して公開されます。 `GET /api/traces/<traceID>`
@@ -90,15 +90,16 @@ TraceQL の設計の詳細については、[TraceQL コンセプトの設計提
 この章を行うにはPrometheusとGrafanaとOpentelemetryをデプロイしておく必要があります。
 各章へ行きデプロイしてきてください。
 `helmfile sync` を実行し Tempoをデプロイします。
-```
+```bash
+cd ~/cnd-handson/chapter_tempo
 helmfile sync -f helm/helmfile.yaml
 ```
 デプロイが完了したら起動しているかどうかを確認してください。
-```
+```bash
 kubectl get pod -n monitoring
 ```
 
-```
+```text
 NAME                                      READY   STATUS    RESTARTS   AGE
 grafana-tempo-0                           1/1     Running   0          102s
 opentelemetry-operator-569f6b668c-zrzdb   2/2     Running   0          23h
@@ -106,21 +107,21 @@ opentelemetry-operator-569f6b668c-zrzdb   2/2     Running   0          23h
 デプロイが完了したら次にGrafanaにTempoを追加する設定を行います。
 `http://grafana.example.com/connections/datasources`にアクセスしAdd data sourceをクリックしてください。
 下のほうへスクロールするとTempoが存在するのでクリックします。
-設定画面に遷移するので`Connection`の`URL`欄に`http://grafana-tempo.monitoring.svc.cluster.local:3100`を入力して一番下にあるSave & testをクリックしてください。
+設定画面に遷移するので`Connection`の`URL`欄に`http://grafana-tempo.monitoring.svc.cluster.local:3200`を入力して一番下にあるSave & testをクリックしてください。
 ![config-tempo](image/config-tempo.png)
 `Data source successfully connected.`と表示されると設定が完了しています。
 今回はGUIで設定しましたが`prometheus/helm/prometheus-valus.yaml`に設定を追加することでコード上で設定を追加することも可能です。
 
 次にOpenTelemetryの設定をApplyします。
 
-```
+```bash
 kubectl apply -f manifests/
 ```
 
 OpenTelemetryの章ではJaegerに向けていた設定をTempoへ書き換えています。
 自動インスツルメンテーションを利用するためにhandson-blue Deploymentに対しても設定を行います。kubectl patchコマンドを利用してこれらのアノテーションを付与します。
 
-```
+```bash
 kubectl -n handson patch deployment handson-blue -p '{"spec":{"template":{"metadata":{"annotations":{"instrumentation.opentelemetry.io/inject-go": "go-instrumentation"}}}}}'
 kubectl -n handson patch deployment handson-blue -p '{"spec":{"template":{"metadata":{"annotations":{"instrumentation.opentelemetry.io/otel-go-auto-target-exe": "/rollouts-demo"}}}}}'
 ```

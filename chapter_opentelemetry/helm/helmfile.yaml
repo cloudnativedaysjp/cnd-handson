@@ -11,12 +11,16 @@ releases:
   namespace: cert-manager
   chart: jetstack/cert-manager
   version: v1.18.2
+  wait: true
   values:
   - values/cert-manager.values.yaml
 - name: opentelemetry-operator
   namespace: monitoring
   chart: open-telemetry/opentelemetry-operator
   version: 0.110.0
+  wait: true
+  needs:
+  - cert-manager/cert-manager
   disableValidation: true
   values:
   - values/opentelemetry-operator.values.yaml
@@ -24,6 +28,9 @@ releases:
   namespace: jaeger
   chart: jaegertracing/jaeger-operator
   version: 2.57.0
+  wait: true
+  needs:
+  - cert-manager/cert-manager
   disableValidation: true
   values:
   - values/jaeger-operator.values.yaml

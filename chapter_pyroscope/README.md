@@ -64,7 +64,7 @@
 ## 実践: Grafana Pyroscopeのインストール
 実践として、Pyroscopeをインストールします。以降のハンズオンででは、pyroscopeのchapterを作業ディレクトリとしてください。
 ```bash
-cd chapter_pyroscope
+cd ~/cnd-handson/chapter_pyroscope
 ```
 
 Kubernetesクラスタ上にPyroscopeをインストールします。
@@ -104,10 +104,10 @@ pyroscope-store-gateway-1                    1/1     Running   0          27m
 
 
 ## Pyroscopeフロントエンドへのアクセス
-Pyoscopeの画面にアクセスします。pyroscopeの画面を参照するために、ingressリソースを追加します。
+Pyoscopeの画面にアクセスします。pyroscopeの画面を参照するために、HTTPRouteリソースを追加します。
 
 ```bash
-kubectl apply -f ingress.yaml
+kubectl apply -f httproute.yaml
 ```
 
 [http://pyroscope.example.com](http://pyroscope.example.com)にアクセスしましょう。すでにPyroscope自身のプロファイルが確認できます。
@@ -199,20 +199,12 @@ releases:
 helmfile sync -f helm/helmfile.yaml
 ```
 
-3) Ingress のバックエンドServiceを `pyroscope` に戻します（`ingress.yaml`）。
+3) HTTPRoute のバックエンドServiceを `pyroscope` に変えます（`httproute.yaml`）。
 ```yaml
-  rules:
-  - host: pyroscope.example.com
-    http:
-      paths:
-      - path: /
-        pathType: Prefix
-        backend:
-          service:
-            # name: pyroscope-query-frontend # マイクロサービスモードで指定するservice名
-            name: pyroscope # モノリシックモードの場合はこちらに変更
-            port:
-              number: 4040
+    backendRefs:
+    # - name: pyroscope-query-frontend # マイクロサービスモードで指定するservice名
+    - name: pyroscope # モノリシックモードの場合はこちらに変更
+      port: 4040
 ```
 
 4) Pod例（モノリシック）：

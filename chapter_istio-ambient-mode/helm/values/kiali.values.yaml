@@ -4,7 +4,6 @@ auth:
 deployment:
   service_type: NodePort
   image_pull_policy: IfNotPresent
-  ingress_enabled: false
   pod_labels:
     prometheus-monitor-ignore: ""
   logger:
@@ -23,9 +22,6 @@ external_services:
     enabled: false
   prometheus:
     url: http://kube-prometheus-stack-prometheus.prometheus:9090
-  istio:
-    root_namespace: istio-system
-    url_service_version: http://istiod:15014/version
   tracing:
     enabled: false
 server:
