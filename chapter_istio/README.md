@@ -130,8 +130,8 @@ kubectl get pods -n handson -l app=handson -o jsonpath='{range .items[*]}{range 
 ```
 ```text
 # 実行結果
-docker.io/istio/proxyv2:1.29.1
-docker.io/istio/proxyv2:1.29.1
+registry.istio.io/release/proxyv2:1.30.7
+registry.istio.io/release/proxyv2:1.30.7
 argoproj/rollouts-demo:blue
 
 # Tracingをopentelemetry管理している場合は下記も併せて表示されます。
