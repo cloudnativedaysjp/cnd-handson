@@ -64,7 +64,7 @@
 ## 実践: Grafana Pyroscopeのインストール
 実践として、Pyroscopeをインストールします。以降のハンズオンででは、pyroscopeのchapterを作業ディレクトリとしてください。
 ```bash
-cd chapter_pyroscope
+cd ~/cnd-handson/chapter_pyroscope
 ```
 
 Kubernetesクラスタ上にPyroscopeをインストールします。
