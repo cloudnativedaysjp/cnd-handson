@@ -2,6 +2,12 @@
 # This is a YAML-formatted file.
 # Declare variables to be passed into your templates.
 
+# 2.x defaults to the v2 storage, which needs components this chapter does not deploy
+architecture:
+  storage:
+    v1: true
+    v2: false
+
 pyroscope:
   extraArgs:
     store-gateway.sharding-ring.replication-factor: "2"
