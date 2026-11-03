@@ -122,7 +122,7 @@ PodはKubernetesにおける最小の単位ですが、その実態は複数(単
 また、init containerと呼ばれる一時的な用途のコンテナを作成することも可能です。
 
 今回はinit containerの動作を確認してみましょう。
-このシナリオでは、起動時に作成されるコンテナ(Init Container)が`Welcome to the CND Handson!!`というメッセージを出力するコンテンツを作成しマウント先のボリュームに保存します。
+このシナリオでは、起動時に作成されるコンテナ(Init Container)が`CNDW2025!!`というメッセージを出力するコンテンツを作成しマウント先のボリュームに保存します。
 その後、nginxが起動しInit Containerが作成したコンテンツを参照することで、nginxにアクセスした際に上記メッセージが返却されます。
 
 まずは以下のManifestをapplyします。
@@ -141,19 +141,16 @@ kubectl get pods -o wide | grep init
 
 
 ```bash
-kubectl run tmp --restart=Never --rm -i --image=nginx:alpine -- curl <PodのIP>
+kubectl run tmp --restart=Never --rm -i --image=nginx:alpine -- sh -c 'sleep 2; curl -s <PodのIP>'
 ```
 
-以下のように`Welcome to the CND Handson!!`のメッセージが確認できます。
+以下のように`CNDW2025!!`のメッセージが確認できます。
 
 
 ```text
 # 実行結果
 
 
-  % Total    % Received % Xferd  Average Speed   Time    Time     Time  Current
-                                 Dload  Upload   Total   Spent    Left  Speed
-100    11  100    11    0     0   4776      0 --:--:-- --:--:-- --:--:--  5500
 CNDW2025!!
 pod "tmp" deleted from default namespace
 ```

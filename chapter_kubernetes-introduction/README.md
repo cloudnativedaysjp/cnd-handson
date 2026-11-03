@@ -618,7 +618,7 @@ kubectl get pods -o wide
 `CND ConfigMap Handson`という文字列が返却されると成功です。
 
 ```bash
-kubectl run tmp --restart=Never --rm -i --image=nginx:alpine -- curl <PodのIPアドレス>
+kubectl run tmp --restart=Never --rm -i --image=nginx:alpine -- sh -c 'sleep 2; curl -s <PodのIPアドレス>'
 ```
 
 動作確認後、リソースを削除します。
