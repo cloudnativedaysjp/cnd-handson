@@ -374,7 +374,7 @@ kubectl get events -n troubleshoot --sort-by='.lastTimestamp'
 
 マニフェストを適用
 ```bash
-kubectl apply -f manifests/05-ingress.yaml
+kubectl apply -f manifests/05-httproute.yaml
 ```
 
 ### 症状
@@ -405,14 +405,14 @@ curl http://troubleshoot.example.com/api
 <summary>デバッグ方法(参考)</summary>
 
 ```bash
-# Ingressの状態を確認
-kubectl get ingress -n troubleshoot
+# HTTPRouteの状態を確認
+kubectl get httproute -n troubleshoot
 
-# Ingressの詳細を確認
-kubectl describe ingress ingress -n troubleshoot
+# HTTPRouteの詳細を確認
+kubectl describe httproute httproute -n troubleshoot
 
-# Ingressのバックエンドを確認
-kubectl get ingress ingress -n troubleshoot -o yaml
+# HTTPRouteのバックエンドを確認
+kubectl get httproute httproute -n troubleshoot -o yaml
 
 # 各namespaceのServiceを確認
 kubectl get svc -n frontend
@@ -435,7 +435,7 @@ curl -H "Host: troubleshoot.example.com" http://troubleshoot.example.com/api
 以下のコマンドで、作成したリソースを削除します。
 
 ```bash
-kubectl delete -f manifests/05-ingress.yaml
+kubectl delete -f manifests/05-httproute.yaml
 ```
 
 ---
