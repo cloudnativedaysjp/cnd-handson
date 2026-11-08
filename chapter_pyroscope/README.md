@@ -52,9 +52,9 @@
 詳細は[Pyroscope v2 architecture](https://grafana.com/docs/pyroscope/latest/reference-pyroscope-v2-architecture/)を参照してください。
 
 ## Pyroscopeへのプロファイルの送信（クライアント）
-プロファイルをPyroscopeに送信するには、各言語向けのPyroscope SDKや、OTLP（OpenTelemetry Protocol）に対応した**Grafana Alloy**を利用できます。
+プロファイルをPyroscopeに送信するには、各言語向けのPyroscope SDK、Grafana Alloy、OpenTelemetry eBPF Profilerなどを利用できます。
 
-当ハンズオンでは、初期構築時にGrafana Alloyがインストールされています。
+本章では、PyroscopeのHelm Chartに付属するAlloyによる自己プロファイリングに加え、**OpenTelemetry Collector**でハンズオンアプリのCPUプロファイルを収集します。アプリケーションのコード変更やSDKの追加は不要です。
 
 > [!NOTE]
 > Grafana AgentはEOLとなっており、Grafana Alloyへ移行されています。
@@ -134,7 +134,7 @@ GrafanaのExplore([http://grafana.example.com/explore](http://grafana.example.co
 
 プロファイルタイプは、cpu、memory、goroutineなどがあり、各言語ごとにサポートされています。詳細は、[Pyroscopeのドキュメント](https://grafana.com/docs/pyroscope/latest/view-and-analyze-profile-data/profiling-types/#available-profiling-types)を参照ください。
 
-ラベルセレクターは、対象をtagで絞りたい場合に有効です。これは、Pyroscopeのclient側で付与されたtagになります。helmでinstallしたgrafana-agentでは、自動計装として使用可能なtagが付与されています。（[Pyroscope](http://pyroscope.example.com)のSingle View>Select Tagでの確認が簡単です。）空欄のままでもプロファイルを参照可能です。
+ラベルセレクターは、対象をtagで絞りたい場合に有効です。これは、Pyroscopeのclient側で付与されたtagになります。PyroscopeのHelm Chartに付属するAlloyでは、収集対象を識別するラベルが付与されています。（[Pyroscope](http://pyroscope.example.com)のSingle View>Select Tagでの確認が簡単です。）空欄のままでもプロファイルを参照可能です。
 
 <img src="./image/pyroscope-singleview.png" width="520">
 
@@ -160,6 +160,139 @@ GrafanaのExplore([http://grafana.example.com/explore](http://grafana.example.co
 5. 再度、「Run query」を実行すれば、メトリクスとプロファイルを同時に表示できます。（※「Query Type」を「Metric」にすれば、メトリクスだけ表示します）
 
 <img src="./image/grafana-pyroscope-bothmetric.png" width="700">
+
+## 実践: OpenTelemetry Collectorでアプリケーションをプロファイリングする
+
+ここまではPyroscope自身のプロファイルを参照しました。次に、クラスター作成章でデプロイしたGoアプリケーション `handson-blue` のCPUプロファイルを収集します。
+
+[OpenTelemetry章](../chapter_opentelemetry/README.md)で学んだReceiver → Processor → Exporterのパイプラインを、`profiles` シグナルにも適用します。
+
+```text
+各ノードのプロセス
+  → profiling Receiver（eBPFでCPUスタックをサンプリング）
+  → k8s_attributes / transform Processor（Pod情報・サービス名を付与）
+  → OTLP Exporter（gRPC）
+  → Pyroscope distributor:4040
+  → Pyroscope / Grafanaで参照
+```
+
+OpenTelemetry eBPF Profilerは、`profiling` Receiverを組み込んだ専用のCollectorディストリビューションです。OpenTelemetry章の通常の `opentelemetry-collector-contrib` イメージにはこのReceiverが含まれないため、この実習のCollectorだけ専用イメージを指定します。既存のログ・メトリクス・トレース用Collectorは変更しません。
+
+| 仕組み | このハンズオンでの役割 |
+| --- | --- |
+| OpenTelemetry章のGo自動計装（`Instrumentation`） | Goアプリのトレースを取得する |
+| OpenTelemetry eBPF Instrumentation（OBI） | コード変更なしでトレースやメトリクスを取得する。本実習では導入しない |
+| OpenTelemetry eBPF Profiler | CPUプロファイルを取得し、Collectorのprofilesパイプラインへ渡す |
+
+eBPFを使う仕組みでも、それぞれ役割が異なります。本実習ではトレースとの関連付けは行いません。また、この方法で収集するのはCPUプロファイルです。前節で紹介したメモリやgoroutineなどのプロファイルには、SDK等の対応する収集方法が必要です。
+
+### 前提の確認
+
+[OpenTelemetry章のセットアップ](../chapter_opentelemetry/README.md#セットアップ)でOpenTelemetry Operatorをインストールしておいてください。Jaegerやトレース用Collectorの起動は、この実習の必須条件ではありません。
+
+```bash
+cd ~/cnd-handson/chapter_pyroscope
+kubectl -n monitoring rollout status deployment/opentelemetry-operator --timeout=120s
+kubectl explain opentelemetrycollector.spec.hostPID
+kubectl -n handson rollout status deployment/handson-blue --timeout=120s
+kubectl -n monitoring get service pyroscope-distributor
+```
+
+> [!NOTE]
+> ProfilesのプロトコルとCollectorの対応は開発途上のため、専用Collectorイメージを `0.163.2`、Pyroscopeを本章のHelm Chart `2.4.3` に固定します。片方だけ更新すると送信できなくなる場合があります。
+> eBPF ProfilerはLinux（amd64 / arm64）とホストへの特権アクセスを必要とします。macOS自体のプロセスではなく、Linux VM上のkindノードで動作するプロセスを収集します。
+
+### プロファイル用Collectorの導入
+
+[manifests/profiles-collector.yaml](./manifests/profiles-collector.yaml)には、ServiceAccount、読み取り用RBAC、`OpenTelemetryCollector` を用意しています。Operatorが各ノードにCollectorをDaemonSetとして配置します。
+
+kindではノード自体がコンテナのため、`pid_namespace_translation_mode: auto` で入れ子のPID namespaceを変換します（[上流の対応](https://github.com/open-telemetry/opentelemetry-ebpf-profiler/pull/1801)）。これがないとアプリのプロセスを正しく識別できません。
+
+`hostPID: true` とホストの `/proc`・`/sys/kernel`・`/sys/fs/cgroup` のマウントによりノード上のプロセスを参照し、root・privilegedでeBPFを使用します。これはローカルハンズオン用の設定です。
+
+```bash
+kubectl apply -f manifests/profiles-collector.yaml
+kubectl -n monitoring wait --for=create daemonset/profiles-collector-collector --timeout=60s
+kubectl -n monitoring rollout status daemonset/profiles-collector-collector --timeout=180s
+kubectl -n monitoring get opentelemetrycollector profiles-collector
+kubectl -n monitoring logs -l app.kubernetes.io/name=profiles-collector-collector --tail=30
+```
+
+`spec.config.service.pipelines.profiles` では、`profiling` Receiverの出力に、`container.id` を使ってPod情報を関連付けます。Deployment名を `service.name` に設定し、Deploymentに属さないプロセスは実行ファイル名をサービス名に使います。送信先は読み取り用のquery-frontendではなく、書き込み用の `pyroscope-distributor.monitoring.svc.cluster.local:4040` です。
+
+> [!NOTE]
+> Collectorはノード全体のCPUプロファイルを収集します。`k8s_attributes.filter.node_from_env_var` はPod情報の取得範囲を同じノードに限定する設定であり、プロファイルの収集対象を限定する設定ではありません。ハンズオンアプリへの絞り込みは、次の手順で画面上から行います。
+
+### アプリケーションに負荷をかける
+
+アイドル状態ではCPUサンプルが少ないため、`handson-blue` のPodに2分間HTTPリクエストを送り続けます。既存のServiceはblueとyellowの両方を選択するので、ここではblueのPod IPを指定します。
+
+```bash
+HANDSON_BLUE_IP=$(kubectl -n handson get pods -l app=handson,color=blue -o jsonpath='{.items[0].status.podIP}')
+kubectl -n handson run profiles-load \
+  --image=busybox:1.37.0 --restart=Never \
+  --env="TARGET_URL=http://${HANDSON_BLUE_IP}:8080/" \
+  --overrides='{"spec":{"activeDeadlineSeconds":300}}' \
+  -- sh -c '
+    end=$(( $(date +%s) + 120 ))
+    pids=""
+    for worker in 1 2 3 4; do
+      (
+        while [ "$(date +%s)" -lt "$end" ]; do
+          wget -q -T 5 -O /dev/null "$TARGET_URL" || exit 1
+        done
+      ) &
+      pids="$pids $!"
+    done
+    for pid in $pids; do
+      wait "$pid" || exit 1
+    done
+  '
+kubectl -n handson wait --for=condition=Ready pod/profiles-load --timeout=120s
+kubectl -n handson logs -f profiles-load
+kubectl -n handson get pod profiles-load
+```
+
+正常時には負荷生成Podのログは空です。Podが `Completed` になったことを確認します。もう一度実行する場合は、先に `kubectl -n handson delete pod profiles-load` で削除してください。アプリのPodが再作成された場合は、Pod IPも取得し直します。
+
+### アプリケーションのフレームグラフを確認する
+
+収集・転送後、表示まで数分待ちます。[Pyroscope](http://pyroscope.example.com)で直近15分を選び、サービス名 `handson-blue` とCPUプロファイル（`process_cpu:cpu:nanoseconds:cpu:nanoseconds`）を選択します。GrafanaのExploreでもPyroscopeデータソースから同じサービスを選択できます。
+
+`service_name` ラベルには `service.name` が反映されるため、ラベルセレクターは次のように指定できます。
+
+```text
+{service_name="handson-blue", "k8s.namespace.name"="handson"}
+```
+
+`k8s.namespace.name` のようにドットを含む属性名は、上記のようにダブルクォートで囲みます。
+
+Pod名やnamespaceのラベルも確認し、`handson` namespaceのblue Podのデータであることを確かめます。既存の自己プロファイルと今回のアプリのプロファイルは、サービス名で区別できます。
+
+フレームグラフの横幅は、その関数と呼び出し先で観測されたCPUサンプルの割合を表します。横軸はリクエストの実行順序ではありません。`main` パッケージのHTTP処理や、そこから呼ばれるGoランタイム・標準ライブラリの関数を探してみましょう。表示される関数と割合は負荷や環境によって変わります。
+
+### データが表示されない場合
+
+- Collectorが起動しない場合は、Podのイベントとログを確認します。`unknown type: profiling` はイメージの誤り、`profiles` の非対応エラーはバージョンやfeature gateの不一致を確認してください。
+- eBPFの初期化エラーは、Linuxカーネル、`hostPID`、特権設定、ホストマウント、kind用の `pid_namespace_translation_mode` を確認します。`kubectl -n monitoring get daemonset profiles-collector-collector -o yaml` でOperatorの反映結果を確認できます。
+- 送信エラーは、Pyroscope distributorの起動状態と4040ポートへの接続、CollectorとPyroscopeのバージョンを確認します。
+- アプリのデータがない場合は、負荷生成Podがエラー終了していないか、対象Pod IPが変わっていないか、画面の時間範囲が負荷生成時刻を含むか確認します。
+- `handson-blue` が見つからない場合は、`rollouts-demo` 等の実行ファイル名でも探します。Pod情報がない場合は、RBACと `container.id` による関連付けを確認します。関数名が解決されない場合も、プロファイルの受信自体とは分けて確認してください。
+
+```bash
+kubectl -n monitoring describe pod -l app.kubernetes.io/name=profiles-collector-collector
+kubectl -n monitoring logs -l app.kubernetes.io/name=profiles-collector-collector --tail=100
+kubectl -n handson get pod profiles-load
+```
+
+### 後片付け
+
+```bash
+kubectl -n handson delete pod profiles-load --ignore-not-found
+kubectl delete -f manifests/profiles-collector.yaml
+```
+
+この実習用のCollectorとRBACだけを削除します。Pyroscope・Operator・既存のアプリや他のCollectorは引き続き利用できます。
 
 ## プロファイルの比較によるアプリケーションの改善
 プロファイルは、ラベルセットや期間で比較することができ、パフォーマンスの変化を可視化できます。
@@ -220,4 +353,6 @@ http://pyroscope.monitoring.svc.cluster.local:4040
 ## 参考文献
 
 - [Pyroscopeの公式ドキュメント](https://grafana.com/docs/pyroscope/latest/)
+- [OpenTelemetry eBPF ProfilerからPyroscopeへの送信](https://grafana.com/docs/pyroscope/latest/configure-client/opentelemetry/ebpf-profiler/)
+- [OpenTelemetry eBPF Profiler](https://github.com/open-telemetry/opentelemetry-ebpf-profiler)
 - [What is continuous profiling, and what is Pyroscope?](https://isitobservable.io/open-telemetry/what-is-continuous-profiling-and-what-is-pyroscope)
