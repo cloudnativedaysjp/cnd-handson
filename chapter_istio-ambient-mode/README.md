@@ -93,7 +93,7 @@ Istio ambientコンポーネントと併せて、Kiali, Prometheusをインス�
 
 > [!NOTE]
 >
-> Apple Silicon（arm64）では、Prometheus Operator v0.95.1のイメージ取得時に`no match for platform in manifest`となることがあります。今回の検証で確認した配布イメージの問題と回避手順は[検証記録](../chapter_istio/VALIDATION.md#arm64でのprometheus-operatorの取得)を参照してください。
+> Apple Silicon（arm64）では、Prometheus Operator v0.95.1のイメージ取得時に`no match for platform in manifest`となることがあります。配布イメージの問題と回避手順は[PR #644の検証欄](https://github.com/cloudnativedaysjp/cnd-handson/pull/644)を参照してください。
 
 ```bash
 helmfile sync -f helm/helmfile.yaml
