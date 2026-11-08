@@ -11,55 +11,15 @@ Tempo は、LogQL と PromQL からインスピレーションを得たトレー
 
 ## アーキテクチャ
 
-![](https://grafana.com/docs/tempo/latest/operations/tempo_arch.png)
+Tempo 3では、書き込みと読み込みを分離したアーキテクチャを採用しています。本章で使用するモノリシックモードでは、以下のコンポーネントが1つのプロセス内で動作します。
 
-Tempoは以下のコンポーネントで構成されています。
-- Distributor
-- Ingester
-- Query Frontend
-- Querier
-- Compactor
-- Metrics generator
-またストレージとして以下の2つが使われています。
-- Cache(Redis Memcached)
-- Object Storage(S3 GCS Azure)
+- Distributor: OpenTelemetryなどの形式でスパンを受信します。
+- Live-store: 受信直後のトレースを検索可能にし、ブロックをオブジェクトストレージへ保存します。
+- Query frontend / Querier: クエリを分割し、live-storeとオブジェクトストレージからトレースを検索します。
+- Backend scheduler / worker: ブロックの圧縮、保持期間、ブロック一覧を管理します。
+- Metrics-generator: トレースからメトリクスを生成し、Prometheusへ送信します。
 
-### Distributor
- - Distributorは、Jaeger、OpenTelemetry、などの複数の形式のスパンを受け入れます。
- - traceIDをハッシュして、使用することによって、スパンをIngesterにルーティングします。
- - Distributorは、OpenTelemetry Collectorのレシーバーを使用します。
-
-### Ingester
-- Ingesterは、トレースをブロックにバッチ処理し、ブルーム フィルターとインデックスを作成して、それをすべてバックエンドにフラッシュします。
-- バックエンドのブロックは以下のレイアウトで生成されます。
-
-```text
-<bucketname> / <tenantID> / <blockID> / <meta.json>
-                                      / <index>
-                                      / <data>
-                                      / <bloom_0>
-                                      / <bloom_1>
-                                        ...
-                                      / <bloom_n>
-```
-### Query Frontend
-- Query Frontendは、受信クエリの検索スペースをシャーディングする役割を果たします。
-- トレースは、単純な HTTP エンドポイントを介して公開されます。 `GET /api/traces/<traceID>`
--  Query Frontendはクエリキューに入れます。Queriersは gRPC 接続を介してQuery Frontendに接続し、これらのシャード クエリを処理します。
-
-### Queriers
-- Querierは、Ingesterまたはバックエンドストレージ内のリクエストされたトレースIDを検索します。
-- パラメータに応じて、Ingesterとバックエンドからブルーム/インデックスを取得してオブジェクトストレージ内のブロックを検索します
-- Queriersは HTTP エンドポイントを次の場所に公開しますが `GET /querier/api/traces/<traceID>`、直接使用されることは想定されていません。
-- クエリはQuery Frontendに送信する必要があります。
-
-### Compactor
-- Compactorは、ブロックをバックエンド ストレージとの間でストリーミングして、ブロックの総数を減らします。
-
-### Metrics generator
-- 取り込まれたトレースからメトリクスを生成し、メトリクス ストレージに書き込むオプションのコンポーネントです。
-- 利用する場合DistributorはIngesterとMetrics generatorの両方に書き込みます。
-- Metrics generatorはPrometheusのremote_writeを利用してPrometheusに書き込みます。
+詳細は[Tempo architecture](https://grafana.com/docs/tempo/latest/introduction/architecture/)を参照してください。
 
 ## デプロイ方法
 Tempo は、モノリシック モードまたはマイクロサービスモードでデプロイできます。
@@ -69,14 +29,9 @@ Tempo は、モノリシック モードまたはマイクロサービスモー�
 - モノリシック モードは展開が最も簡単ですが、コンポーネントの量を増やして水平方向にスケールアウトすることはできません。
 - 今回のハンズオンではこちらを利用しています。
 
-### スケーリングモノリシックモード
-- スケーリングモノリシック モードは水平方向にスケールアウトすることが可能です。
-- スケーリングモノリシック モードはすべてのコンポーネントが 1 つのプロセス内で実行されるという点でモノリシック モードに似ています。
-- マイクロサービスモードと比べて、ある程度の柔軟性を備えたスケーリングが可能になります。
-
-
 ### マイクロサービスモード
 - マイクロサービス モードではコンポーネントは個別のプロセスにデプロイされます。
+- Kafka互換のキューを利用し、書き込み経路を永続化します。
 - スケーリングはコンポーネントごとに行われるため、スケーリングの柔軟性が向上しより詳細に設定できるようになります。
 - これはProduction環境で推奨される方法ですが、最も複雑でもあります。
 
@@ -94,6 +49,10 @@ TraceQL の設計の詳細については、[TraceQL コンセプトの設計提
 cd ~/cnd-handson/chapter_tempo
 helmfile sync -f helm/helmfile.yaml
 ```
+
+Tempoのトレースデータは、同時に導入されるS3互換ストレージのSeaweedFSに保存します。
+認証情報はローカルハンズオン専用の固定値として自動設定されるため入力不要ですが、本番環境では使用しないでください。
+
 デプロイが完了したら起動しているかどうかを確認してください。
 ```bash
 kubectl get pod -n monitoring
