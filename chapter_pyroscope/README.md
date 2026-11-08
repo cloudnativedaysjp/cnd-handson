@@ -259,6 +259,10 @@ kubectl -n handson get pod profiles-load
 
 収集・転送後、表示まで数分待ちます。[Pyroscope](http://pyroscope.example.com)で直近15分を選び、サービス名 `handson-blue` とCPUプロファイル（`process_cpu:cpu:nanoseconds:cpu:nanoseconds`）を選択します。GrafanaのExploreでもPyroscopeデータソースから同じサービスを選択できます。
 
+Pyroscopeでは、サービス名 `handson-blue` を選ぶと、次のようにアプリケーションのCPUプロファイルを確認できます。
+
+![Pyroscopeでhandson-blueのCPUプロファイルを表示した画面](./image/otel-ebpf-handson-pyroscope.png)
+
 `service_name` ラベルには `service.name` が反映されるため、ラベルセレクターは次のように指定できます。
 
 ```text
@@ -269,21 +273,12 @@ kubectl -n handson get pod profiles-load
 
 Pod名やnamespaceのラベルも確認し、`handson` namespaceのblue Podのデータであることを確かめます。既存の自己プロファイルと今回のアプリのプロファイルは、サービス名で区別できます。
 
-フレームグラフの横幅は、その関数と呼び出し先で観測されたCPUサンプルの割合を表します。横軸はリクエストの実行順序ではありません。`main` パッケージのHTTP処理や、そこから呼ばれるGoランタイム・標準ライブラリの関数を探してみましょう。表示される関数と割合は負荷や環境によって変わります。
+GrafanaのExploreでも、同じサービス名とnamespaceで絞り込んだフレームグラフを表示できます。「Options」の「Query Type」を「Profile」にし、グラフ右上の「Flame Graph」を選ぶと、フレームグラフを大きく表示できます。以下は負荷をかけた `handson-blue` の実際の取得例です。
 
-### データが表示されない場合
+![Grafana Exploreでhandson-blueのCPUフレームグラフを表示した画面](./image/otel-ebpf-handson-grafana.png)
 
-- Collectorが起動しない場合は、Podのイベントとログを確認します。`unknown type: profiling` はイメージの誤り、`profiles` の非対応エラーはバージョンやfeature gateの不一致を確認してください。
-- eBPFの初期化エラーは、Linuxカーネル、`hostPID`、特権設定、ホストマウント、kind用の `pid_namespace_translation_mode` を確認します。`kubectl -n monitoring get daemonset profiles-collector-collector -o yaml` でOperatorの反映結果を確認できます。
-- 送信エラーは、Pyroscope distributorの起動状態と4040ポートへの接続、CollectorとPyroscopeのバージョンを確認します。
-- アプリのデータがない場合は、負荷生成Podがエラー終了していないか、対象Pod IPが変わっていないか、画面の時間範囲が負荷生成時刻を含むか確認します。
-- `handson-blue` が見つからない場合は、`rollouts-demo` 等の実行ファイル名でも探します。Pod情報がない場合は、RBACと `container.id` による関連付けを確認します。関数名が解決されない場合も、プロファイルの受信自体とは分けて確認してください。
+フレームグラフの横幅は、その関数と呼び出し先で観測されたCPUサンプルの割合を表します。横軸は、負荷が大きい処理から順にスタックされて表現されます。`main` パッケージのHTTP処理や、そこから呼ばれるGoランタイム・標準ライブラリの関数を眺めてみましょう。表示される関数と割合は負荷や環境によって変わります。
 
-```bash
-kubectl -n monitoring describe pod -l app.kubernetes.io/name=profiles-collector-collector
-kubectl -n monitoring logs -l app.kubernetes.io/name=profiles-collector-collector --tail=100
-kubectl -n handson get pod profiles-load
-```
 
 ### 後片付け
 
