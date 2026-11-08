@@ -199,14 +199,14 @@ kubectl -n monitoring get service pyroscope-distributor
 ```
 
 > [!NOTE]
-> ProfilesのプロトコルとCollectorの対応は開発途上のため、専用Collectorイメージを `0.163.2`、Pyroscopeを本章のHelm Chart `2.4.3` に固定します。片方だけ更新すると送信できなくなる場合があります。
-> eBPF ProfilerはLinux（amd64 / arm64）とホストへの特権アクセスを必要とします。macOS自体のプロセスではなく、Linux VM上のkindノードで動作するプロセスを収集します。
+> eBPF Profilerは、各kubernetesノード上で動くアプリケーションのCPUプロファイルを収集します。Linuxカーネルの機能を使ってプロセスを調べるため、この実習ではCollectorを特権付きのPodとして実行します。
 
 ### プロファイル用Collectorの導入
 
 [manifests/profiles-collector.yaml](./manifests/profiles-collector.yaml)には、ServiceAccount、読み取り用RBAC、`OpenTelemetryCollector` を用意しています。Operatorが各ノードにCollectorをDaemonSetとして配置します。
 
-kindではノード自体がコンテナのため、`pid_namespace_translation_mode: auto` で入れ子のPID namespaceを変換します（[上流の対応](https://github.com/open-telemetry/opentelemetry-ebpf-profiler/pull/1801)）。これがないとアプリのプロセスを正しく識別できません。
+> [!NOTE]
+> 本ハンズオンでは、kindでクラスタを組んでおり、ノード自体がコンテナのため、`pid_namespace_translation_mode: auto` で入れ子になっているPID namespaceを変換します（[参考](https://github.com/open-telemetry/opentelemetry-ebpf-profiler/pull/1801)）。これがないとアプリのプロセスを正しく識別できません。
 
 `hostPID: true` とホストの `/proc`・`/sys/kernel`・`/sys/fs/cgroup` のマウントによりノード上のプロセスを参照し、root・privilegedでeBPFを使用します。これはローカルハンズオン用の設定です。
 
