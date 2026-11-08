@@ -1,3 +1,4 @@
+profile: ambient
 global:
   imagePullPolicy: IfNotPresent
   logAsJson: true
@@ -18,9 +19,6 @@ pilot:
     limits:
       cpu: 100m
       memory: 128Mi
-  env:
-    # cf.) https://istio.io/latest/docs/reference/commands/pilot-discovery/#envvars
-    PILOT_ENABLE_AMBIENT: "true"
 meshConfig:
   defaultProviders:
     metrics:
@@ -32,10 +30,6 @@ meshConfig:
   accessLogEncoding: JSON
   outboundTrafficPolicy:
     mode: REGISTRY_ONLY
-telemetry:
-  enabled: false
-  v2:
-    enabled: false
 sidecarInjectorWebhook:
   templates:
     sidecar: ""

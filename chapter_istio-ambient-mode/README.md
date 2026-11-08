@@ -41,6 +41,8 @@ ZtunnelはKubernetes DaemonSetとしてデプロイされます。サイドカ�
 1)HTTPプロトコル、2)L7レベルの認可、3)HTTPメトリクス、ログ収集等のL7の管理をする層です。Waypoint proxyの実態はEnvoyをベースとした[Istio Proxy](https://github.com/istio/proxy)コンテナイメージを使用した[Kubernetes Gateway API](https://gateway-api.sigs.k8s.io/)のGatewayリソースが作成、管理するKubernetes podです。Ztunnelによるsecure overlay layer作成後にKubernetes namespaceごとにwaypoint proxyを作成することで、Istioが提供するL7機能を使用することができます。また、waypoint proxyはワークロード(Kubernetes pod IP、VM IP)、または、Kubernetes service単位で作成することができます。Waypoint proxyが作成されると、ztunnelによって作成されたsecure overlay layerはトラフィックをwaypoint proxyにルーティングすることでL7機能が使えるようになります。
 
 ## セットアップ
+本chapterは専用のkindクラスターでztunnel・waypointを学習する構成です。共通クラスターのEnvoy Gatewayを利用する[chapter_istio](../chapter_istio/README.md)とは独立して実施します。
+
 > [!NOTE]
 >
 > Istio ambientモードではCNIとしてCiliumを使用することができますが、制限事項があります。[chapter_cluster-create](../chapter_cluster-create/)はCNIとしてCiliumを使用しているため、本chapter用に新たにKind clusterを作成します。
@@ -78,8 +80,8 @@ kubectl get nodes
 ```text
 # 実行結果
 NAME                          STATUS   ROLES           AGE     VERSION
-istio-ambient-control-plane   Ready    control-plane   2m33s   v1.31.0
-istio-ambient-worker          Ready    <none>          2m17s   v1.31.0
+istio-ambient-control-plane   Ready    control-plane   2m33s   v1.36.4
+istio-ambient-worker          Ready    <none>          2m17s   v1.36.4
 ```
 
 ### インストール
@@ -88,6 +90,10 @@ Istio ambientコンポーネントと併せて、Kiali, Prometheusをインス�
 > [!NOTE]
 >
 > KialiはIstioサービスメッシュ用のコンソールであり、Kialiが提供するダッシュボードから、サービスメッシュの構造の確認、トラフィックフローの監視、および、サービスメッシュ設定の確認、変更をすることが可能です。本chapterでは説明は省略していますので、詳細は[こちら](https://kiali.io/docs/)をご確認ください。
+
+> [!NOTE]
+>
+> Apple Silicon（arm64）では、Prometheus Operator v0.95.1のイメージ取得時に`no match for platform in manifest`となることがあります。今回の検証で確認した配布イメージの問題と回避手順は[検証記録](../chapter_istio/VALIDATION.md#arm64でのprometheus-operatorの取得)を参照してください。
 
 ```bash
 helmfile sync -f helm/helmfile.yaml
@@ -167,7 +173,7 @@ kubectl port-forward service/handson 8081:8080 >/dev/null &
 curl -I http://127.0.0.1:8081/
 ```
 
-HTTPステータスコード200が返却されれば疎通確認完了です。HTTPステータスコードが5XXを返した場合は、`handson-blue` ワークロードを再起動して再度疎通確認を行ってください。
+HTTPステータスコード200が返却されればアプリケーションの起動確認完了です。`port-forward`はメッシュ内の通信経路を検証しないため、ztunnel経由の疎通は以降のL4アクセス管理で確認します。HTTPステータスコードが5XXを返した場合は、`handson-blue` ワークロードを再起動して再度疎通確認を行ってください。
 
 (HTTPステータスコードが5XXの時のみ実施。)
 
@@ -332,7 +338,7 @@ command terminated with exit code 56
 .
 ```
 
-Http status code 000はレスポンスが何もなかったという意味で、`command terminated with exit code 56`はcurlがデータを何も受け取らなかった(コネクションがリセットされた)ということを意味しています(参考: [curl man page/Exit Codes 56](https://curl.se/docs/manpage.html))。
+curlの出力する`000`はHTTPレスポンスを受信していないことを表し、HTTPステータスコードではありません。`command terminated with exit code 56`はcurlがデータを何も受け取らなかった(コネクションがリセットされた)ということを意味しています(参考: [curl man page/Exit Codes 56](https://curl.se/docs/manpage.html))。
 
 リクエストを流したまま、再度Kiali dashboardを見てみましょう。しばらくすると、`curl-allow` podからのリクエストのみグラフに表示されるようになります(グラフに変化が見られない場合は、Kialiダッシュボード右上の青い`Refresh`ボタンを押して状態を更新してください)。これは`curl-deny` podからのport 8080のリクエストをztunnelがAuthorization Policyの設定に基づいて`handson-blue`ワークロードへのproxyを拒否しているためです。
 
@@ -429,7 +435,7 @@ kubectl logs "$ZTUNNEL_POD" -n istio-system --tail 4
 .
 ```
 
-出力されたログは2行で1セットになっています。1行目がinbound用、つまりリクエストを受ける側、2行目がoutbount用、リクエストを送る側です。これを念頭に、出力されたログを見てみましょう。
+ログは送信元、宛先のノードやバージョンによって出力件数や順序が異なります。上記の例では、1行目がinbound用、つまりリクエストを受ける側、2行目がoutbound用、リクエストを送る側です。これを念頭に、出力されたログを見てみましょう。
 
 - Inbound方向では、`curl-deny` pod(IP address: 10.244.1.13)からHBONE経由での`handson-blue-5cb87cdfc8-24npj`(IP address: 10.244.1.12)へのリクエストは、拒否ポリシーによってコネクションが閉じられていることが分かります。
 
@@ -437,7 +443,7 @@ kubectl logs "$ZTUNNEL_POD" -n istio-system --tail 4
 
 この2つのログをまとめると、`curl-deny` podから`handson-blue-5cb87cdfc8-24npj` podへのリクエストは先に設定したIstio Authorization Policyにより拒否された結果、outbound方向では401エラーを、inbound方向では、リクエストが到達せず、結果コネクションが閉じられたということになります。
 
-なお、ログの出力項目にある`src.identity="spiffe://~~"`に関して、IstioはmTLSによるサービスメッシュ内のサービス間通信を実現させるための方法としてSPIFF(Secure Production Identity Framework for Everyone)を採用しています。SPIFFEは、クラウドやコンテナ化された環境で動作するサービスやアプリケーションに対して、標準化されたアイデンティティの枠組みを提供するためのオープンスタンダードで、従来のユーザー認証の代わりに、サービス(マイクロサービスやアプリケーション)同士が相互に信頼できるアイデンティティを持つように設計されており、SPIFF IDと呼ばれるアイデンティティを使用してmTLSによる認証と暗号化を実現します。SPIFFの詳細に関しては、[こちら](https://spiffe.io/docs/latest/spiffe-about/overview/)をご確認ください。
+なお、ログの出力項目にある`src.identity="spiffe://~~"`に関して、IstioはmTLSによるサービスメッシュ内のサービス間通信を実現させるための方法としてSPIFFE(Secure Production Identity Framework for Everyone)を採用しています。SPIFFEは、クラウドやコンテナ化された環境で動作するサービスやアプリケーションに対して、標準化されたアイデンティティの枠組みを提供するためのオープンスタンダードで、従来のユーザー認証の代わりに、サービス(マイクロサービスやアプリケーション)同士が相互に信頼できるアイデンティティを持つように設計されており、SPIFFE IDと呼ばれるアイデンティティを使用してmTLSによる認証と暗号化を実現します。SPIFFEの詳細に関しては、[こちら](https://spiffe.io/docs/latest/spiffe-about/overview/)をご確認ください。
 
 Ztunnelが管理するIstio ambient mesh内のL4レベルのトラフィックにおいて、Istio Authorization Policyを使用してアクセス管理を実装しました。Istioの機能を使うことで、アプリケーション側にロジックを追加することなくL4レベルのアクセス管理を実現することができます。
 
@@ -461,7 +467,7 @@ handson-blue-5cb87cdfc8-24npj   1/1     Running   0          14m
 ```
 
 ## L7アクセス管理
-Waypoint proxyによって管理されるL7レベルのトラフィックに対し、Istio Authorization Policyを作成してアクセス管理を実装します。サービスメッシュ内の、あるワークロードに対して、特定のワークロードからのL7レベルでのアクセス制御をしたい時がユースケースとして挙げられます。本ケースでは`handson-blue`ワークロードにアクセスをするワークロードを1つ用意し、GETメソッドのみ許可(削除、更新系のメソッドは拒否)をするケースを想定します。
+Waypoint proxyによって管理されるL7レベルのトラフィックに対し、Istio Authorization Policyを作成してアクセス管理を実装します。サービスメッシュ内の、あるワークロードに対して、特定のワークロードからのL7レベルでのアクセス制御をしたい時がユースケースとして挙げられます。本ケースでは`handson-blue`ワークロードにアクセスをするワークロードを1つ用意し、GETメソッドのみ許可し、それ以外のメソッドを拒否するケースを想定します。
 
 [セットアップ](#セットアップ)が完了していることを前提とします。
 
@@ -487,16 +493,23 @@ HTTPトラフィックの状態を確認するために、TOP画面左のサイ�
 Waypoint proxyを有効にするにはKubernetes Gateway APIの`gateway`リソースが必要になるため、まずはKubernetes Gateway API CRDsをインストールします。
 
 ```bash
-kubectl apply -f https://github.com/kubernetes-sigs/gateway-api/releases/download/v1.5.1/standard-install.yaml
+kubectl apply -f https://github.com/kubernetes-sigs/gateway-api/releases/download/v1.7.0/standard-install.yaml
 ```
 
 ```text
 # 実行結果
+customresourcedefinition.apiextensions.k8s.io/backendtlspolicies.gateway.networking.k8s.io created
 customresourcedefinition.apiextensions.k8s.io/gatewayclasses.gateway.networking.k8s.io created
 customresourcedefinition.apiextensions.k8s.io/gateways.gateway.networking.k8s.io created
 customresourcedefinition.apiextensions.k8s.io/grpcroutes.gateway.networking.k8s.io created
 customresourcedefinition.apiextensions.k8s.io/httproutes.gateway.networking.k8s.io created
+customresourcedefinition.apiextensions.k8s.io/listenersets.gateway.networking.k8s.io created
 customresourcedefinition.apiextensions.k8s.io/referencegrants.gateway.networking.k8s.io created
+customresourcedefinition.apiextensions.k8s.io/tcproutes.gateway.networking.k8s.io created
+customresourcedefinition.apiextensions.k8s.io/tlsroutes.gateway.networking.k8s.io created
+customresourcedefinition.apiextensions.k8s.io/udproutes.gateway.networking.k8s.io created
+validatingadmissionpolicy.admissionregistration.k8s.io/safe-upgrades.gateway.networking.k8s.io created
+validatingadmissionpolicybinding.admissionregistration.k8s.io/safe-upgrades.gateway.networking.k8s.io created
 ```
 
 > [!NOTE]
@@ -507,6 +520,7 @@ Kubernetes Gateway APIの`gateway`リソースを作成して、waypoint proxy�
 
 ```bash
 kubectl apply -f networking/k8s-gateway.yaml
+kubectl wait --for=condition=Programmed gateway/waypoint --timeout=120s
 ```
 
 作成されるリソースは下記の通りです。
@@ -546,6 +560,8 @@ default   Active   154m   istio.io/dataplane-mode=ambient,istio.io/use-waypoint=
 ```
 
 > [!NOTE]
+>
+> 本例の`istio.io/waypoint-for: service`では、Service宛の通信がwaypoint proxyを経由します。Pod IP宛の直接通信は対象外です。
 >
 > Waypoint proxyを使用するKubernetesリソースを特定のネームスペース全体ではなく、Kubernetesサービスで指定することも可能です。その場合は、対象のKubernetesサービスに`istio.io/use-waypoint=/対象のwaypoint proxy名/`のラベルを付与することで実現が可能です。
 
@@ -597,7 +613,7 @@ Kiali dashboardからも確認してみましょう。リクエストを流し�
 確認ができたら、リクエストを停止してください。
 
 ### Istio Authorization Policyの適用
-それでは、Istio Authorization Policyを適用して、curl ワークロードからのGETリクエストのみを許可し、削除、更新系のメソッドを拒否します。
+それでは、Istio Authorization Policyを適用して、curl ワークロードからのGETリクエストのみを許可します。ポリシーの`notMethods: [GET]`により、このワークロードからのGET以外のメソッドを拒否します。
 
 ```bash
 kubectl apply -f networking/L7-authorization-policy.yaml
@@ -802,12 +818,20 @@ while :; do kubectl exec curl -- curl -X DELETE -s -o /dev/null -w '%{http_code}
 
 確認ができたら、リクエストを停止してください。
 
+HEAD、OPTIONSも確認します。どちらも403になることを確認してください。このポリシーの拒否対象は、指定した`curl`のServiceAccountからのport 8080への通信です。
+
+```bash
+kubectl exec curl -- curl -I -s -o /dev/null -w '%{http_code}\n' handson:8080
+kubectl exec curl -- curl -X OPTIONS -s -o /dev/null -w '%{http_code}\n' handson:8080
+```
+
 Waypoint proxyが管理するIstio ambient mesh内のL7レベルのトラフィックにおいて、Istio Authorization Policyを使用してアクセス管理を実装しました。Istioの機能を使うことで、アプリケーション側にロジックを追加することなくL7レベルのアクセス管理を実現することができます。
 
 ### クリーンアップ
 ```bash
 kubectl delete -f networking/L7-authorization-policy.yaml,networking/k8s-gateway.yaml
 kubectl delete -f app/curl.yaml
+kubectl label namespace default istio.io/use-waypoint-
 ```
 
 ## まとめ

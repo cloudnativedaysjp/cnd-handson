@@ -9,16 +9,14 @@ resources:
     cpu: 100m
     memory: 128Mi
 service:
-  type: NodePort
+  type: ClusterIP
   ports:
-    # For port numbers, see https://github.com/cloudnativedaysjp/cndt2023-handson/blob/main/chapter_cluster-create/kind-config.yaml.
+    # クラスター外からは共通のEnvoy Gateway経由でアクセスする。
   - port: 18080
     targetPort: 18080
-    nodePort: 32080
     name: http-app
     protocol: TCP
   - port: 18443
     targetPort: 18443
-    nodePort: 32443
     name: https
     protocol: TCP
