@@ -8,7 +8,7 @@
 
 このハンズオンは、Kubernetesを扱ったことがない方や、これから学び始めたい方を対象としています。
 
-> KubernetesのPod、Deployment、Service、GatewayAPIの概要を知っており、これらのリソースを用いたアプリケーションの構築ができる方は、次のハンズオンに進むと良いでしょう。
+> KubernetesのPod、Deployment、Service、Gateway APIの概要を知っており、これらのリソースを用いたアプリケーションの構築ができる方は、次のハンズオンに進むと良いでしょう。
 
 ### 1.2 Kubernetesの概要
 
@@ -38,7 +38,7 @@ kubectlは、クラスターに用意された管理用のAPIサーバーにリ�
 
 kubectlが正しくセットアップされていないとAPIにリクエストを送ることができず、クラスターの操作ができなくなってしまいます。
 
-まずは、以下のコマンドでkubectlコマンドのバージョンの確認してください。
+まずは、以下のコマンドでkubectlコマンドのバージョンを確認してください。
 
 ```bash
 kubectl version --client
@@ -85,7 +85,7 @@ cd ~/cnd-handson/chapter_kubernetes-introduction/
 
 ## 2. アプリケーションのデプロイ
 
-### 2.1. DeploymentをApply
+### 2.1. Deploymentを適用
 
 まずは、以下の図に示す、PodとDeploymentからなる簡単なテスト用アプリケーションをデプロイします。
 
@@ -95,10 +95,10 @@ Podは、1つまたは複数のコンテナの組を表すリソースです。�
 
 DeploymentはPodの管理に用いられるリソースです。Deploymentを用いることで、同じ内容のPodを複数作成したり、Podのバージョンを管理しロールアウト・ロールバックしたりできます。
 
-Kubernetesでは、Manifestと呼ばれるファイルによって各リソースの状態が定義されます。Manifestを作成し、kubectlでAPIに送信することで、リソースを作成できます。
+Kubernetesでは、マニフェストと呼ばれるファイルによって各リソースの状態が定義されます。マニフェストを作成し、kubectlでAPIに送信することで、リソースを作成できます。
 
-Manifestファイルはyaml形式もしくはjson形式がサポートされています。
-今回はyaml形式のManifestを用意していますので、そのManifestを使ってPodをデプロイします。
+マニフェストファイルはYAML形式もしくはJSON形式がサポートされています。
+今回はYAML形式のマニフェストを用意していますので、そのマニフェストを使ってPodをデプロイします。
 以下のコマンドを入力してください。
 
 ```bash
@@ -136,13 +136,13 @@ test-1234567890-abcde   1/1     Running   0          20s
 ### 2.2. ポートフォワードと通信確認
 
 続いて、作成したPodに外部からアクセスできるようにします。
-今回はポートフォワードを使いpodにアクセスしていきます。
+今回はポートフォワードを使いPodにアクセスしていきます。
 
 ```bash
-kubectl port-forward <Pod名> 8888:80
+kubectl port-forward <Pod名> 8888:80 &
 ```
 
-以下のように出力されたら外部からのアクセスが可能となります。ctrl＋Cを押さずにそのままでいてください。
+以下のように出力されたら外部からのアクセスが可能となります。Ctrl+Cを押さずにそのままでいてください。
 
 ```text
 Forwarding from 127.0.0.1:8888 -> 80
@@ -157,7 +157,14 @@ curl -I http://localhost:8888
 
 成功すると、リターンコード200が返却されるはずです。
 
-動作確認後、ctrl＋Cでポートフォワードを停止します。
+動作確認後、以下の手順でポートフォワードを停止します。
+
+```bash
+# 次のコマンドを実行
+fg
+
+# その後、Ctrl+C
+```
 
 ### 2.3. Pod削除
 
@@ -166,7 +173,7 @@ curl -I http://localhost:8888
 
 ```bash
 kubectl get pods # 削除対象のPod名を調べる
-kubectl delete pod <pod名> # Podを削除
+kubectl delete pod <Pod名> # Podを削除
 ```
 
 Podが削除されたかどうかは以下で調べることができます。
@@ -175,11 +182,11 @@ Podが削除されたかどうかは以下で調べることができます。
 kubectl get pods
 ```
 
-不思議なことにPodが表示されます。表示されたPodのNAMEを、deleteしたpodの名前と見比べてみてください。また、AGEはどうなっているでしょうか。
+不思議なことにPodが表示されます。表示されたPodのNAMEを、deleteしたPodの名前と見比べてみてください。また、AGEはどうなっているでしょうか。
 
 Podが削除されたものの、新しいPodがすぐに作成されていることがわかります。なぜでしょうか。
 
-Kubernetesはあるべき状態をManifestとして定義します。
+Kubernetesはあるべき状態をマニフェストとして定義します。
 `test-deployment.yaml`では、test Deployment配下のPodが1つ存在する状態（`replicas: 1`の部分）をあるべき状態として定義しています。
 このケースではPodを削除したことをトリガーに、あるべき状態に戻そうとDeployment（厳密にはDeployment配下のReplicaSetというリソース）が働きかけたことが原因です。
 
@@ -206,9 +213,9 @@ kubectl get deployments,pods
 
 ### 2.4 スケーリング
 
-Deployment（厳密にはDeployment配下のReplicaSet）は、指定したReplica数（Podの個数）を維持するために、自動的にPodの作成、削除を行います。
+Deployment（厳密にはDeployment配下のReplicaSet）は、指定したレプリカ数（Podの個数）を維持するために、自動的にPodの作成、削除を行います。
 
-先ほどのManifestにはReplica数1が設定されています。そのため、起動したPodも1つだったはずです。レプリカ数を2にするとどうなるでしょうか。試してみましょう。
+先ほどのマニフェストにはレプリカ数1が設定されています。そのため、起動したPodも1つだったはずです。レプリカ数を2にするとどうなるでしょうか。試してみましょう。
 
 ```yaml
 apiVersion: apps/v1
@@ -224,7 +231,7 @@ spec:
   # 以下略
 ```
 
-Manifestを修正したら、再度Manifestを登録しなおしてみます。
+マニフェストを修正したら、再度マニフェストを登録しなおしてみます。
 
 
 ```bash
@@ -248,34 +255,31 @@ test-5cdf547c4f-8z5h9   1/1     Running   0          10s
 test-5cdf547c4f-wvzbt   1/1     Running   0          10s
 ```
 
-Deploymentの `replicas` の値を変えるだけで、簡単にアプリケーションのスケーリングをできることがわかりました。
+Deploymentの `replicas` の値を変えるだけで、簡単にアプリケーションのスケーリングができることがわかりました。
 
 さらに、ここでは扱いませんが、[HorizontalPodAutoscaler](https://kubernetes.io/ja/docs/concepts/workloads/autoscaling/horizontal-pod-autoscale/)というリソースを併用し、CPUやメモリの使用率、およびカスタムメトリクスに応じて、自動的にスケーリングさせることもできます。
 
 ### 2.5. Tips
 
-先ほどまではDeployment Manifestを作成しPodを作成しましたが、簡単なテストを実行したい場合などに手軽にPodを起動したい場合などがあると思います。
+先ほどまではDeploymentのマニフェストを作成しPodを作成しましたが、簡単なテストなどで、手軽にPodを起動したい場合があると思います。
 以下のようなコマンドを実行すると、ワンライナーでPodの起動までが行えます。
 
 ```bash
-
 kubectl run <Pod名> --image=<image名> 
-
 ```
 
-また、Manifestを1から書くことが難しい場合は、以下のようにdry-runとyaml出力を組み合わせてファイルに書き込むことでManifestを作成することができます。
+また、マニフェストを1から書くことが難しい場合は、以下のようにdry-runとYAML出力を組み合わせてファイルに書き込むことでマニフェストを作成することができます。
 
 ```bash
-
-kubectl run <pod名> --image=<image名> --dry-run=client -o yaml > <ファイル名>
+kubectl run <Pod名> --image=<image名> --dry-run=client -o yaml > <ファイル名>
 ```
 
 ## 3. Podの外部公開
 
 続いて、Podの外部公開の方法を紹介します。
-前回のセッションではPortForwardを使ってPodのアクセスを行いましたが、PortForwardはデバッグ用の機能であり、本格的な運用には不向きです。
+前回のセッションではポートフォワードを使ってPodへのアクセスを行いましたが、ポートフォワードはデバッグ用の機能であり、本格的な運用には不向きです。
 
-本セクション以降はServiceおよびGatewayAPIを用いて外部公開を行います。
+本セクション以降はServiceおよびGateway APIを用いて外部公開を行います。
 
 ### 3.1. Serviceの作成
 
@@ -286,7 +290,7 @@ Serviceリソースは、複数のPodに対応する1つのエンドポイント
 
 ![diagram](./image/test-service.svg)
 
-以下のManifestが配置されていますので、それをapplyしてください。
+以下のマニフェストが配置されていますので、それを適用してください。
 
 ```yaml
 apiVersion: v1
@@ -328,9 +332,9 @@ Gateway APIは、クラスター外からのリクエストをServiceに送信�
 
 ![diagram](./image/test-apigateway.svg)
 
-Gateway APIを用いて、アプリケーションを外部からアクセスできるようにします。
+Gateway APIを用いて、アプリケーションに外部からアクセスできるようにします。
 
-Serviceリソース同様、予め用意されているManifestを使用します。
+Serviceリソース同様、予め用意されているマニフェストを使用します。
 
 ※Gateway APIの利用には、GatewayClass、Gateway、HTTPRouteの3つのリソースが必要ですが、GatewayClassとGatewayはすでに準備しておりますので、今回はHTTPRouteのみ作成します。
 
@@ -376,7 +380,7 @@ test-httproute   ["hello-world.example.com"]   5s
 
 以上で、クラスター外からアプリケーションにアクセスできるようになりました。
 
-ブラウザで以下にアクセス確認を行います。Hello Worldの文字が表示されたら成功です。
+ブラウザで以下にアクセスし、動作確認を行います。Hello Worldの文字が表示されたら成功です。
 
 ```text
 hello-world.example.com
@@ -414,10 +418,10 @@ Rolling Updateでは、図の①〜⑤のような流れで、新しいPodの作
   更新処理において利用不可となる最大のPod数(割合でも設定可)
 
 
-今回は4つのReplica数に対してmaxSurgeを25%、つまり1つずつ更新がかかるような設定をしています。
+今回はレプリカ数4に対してmaxSurgeを25%、つまり1つずつ更新がかかるような設定をしています。
 また、Podは作成後直ぐに利用可能になるので、動作イメージをつかみやすくするためにminReadySecondsは10秒に設定しています。
 
-動作確認用のManifestを適用しましょう。
+動作確認用のマニフェストを適用しましょう。
 
 ```bash
 kubectl apply -f rollout.yaml
@@ -429,7 +433,7 @@ kubectl apply -f rollout.yaml
 http://rollout.example.com
 ```
 
-Pod更新前の状態では、`This app is Blue`の画面が表示がされていると思います。
+Pod更新前の状態では、`This app is Blue`の画面が表示されていると思います。
 
 
 続いて、先ほどデプロイしたDeploymentに対して、イメージの更新を行います。
@@ -477,7 +481,7 @@ kubectl delete httproute rollout-httproute
 
 古い環境を残したまま新しい環境を用意し、ルーティングなどによってトラフィックを制御し、ダウンタイム無しで環境を切り替える手法です。
 
-今回は、図のようにGatewayAPIのルーティングを利用し、Blue-Green Deploymentを実現します。
+今回は、図のようにGateway APIのルーティングを利用し、Blue-Green Deploymentを実現します。
 
 ![diagram](./image/blue-green.svg)
 
@@ -508,7 +512,7 @@ spec:
       weight: 0 # リクエストの0%を新環境（Green）に送信
 ```
 
-まずは、対象のManifestを適用します。
+まずは、対象のマニフェストを適用します。
 
 ```bash
 kubectl apply -f blue-green.yaml
@@ -556,7 +560,7 @@ spec:
       weight: 100 # リクエストの100%を新環境（Green）に送信
 ```
 
-Manifestを適用します。
+マニフェストを適用します。
 
 ```bash
 kubectl apply -f blue-green.yaml
@@ -571,7 +575,7 @@ http://blue-green.example.com にアクセス→ Green App
 > [!NOTE]
 > 表示が変わらない場合は、ブラウザのキャッシュが表示されています。強制的に再読み込みしてください（macOS は Cmd+Shift+R、Windows は Ctrl+Shift+R）。
 
-もし、新環境に不具合が見つかっても、`weight`パラメータを元に戻して再度applyするだけで、簡単に切り戻しできます。
+もし、新環境に不具合が見つかっても、`weight`パラメータを元に戻して再度適用するだけで、簡単に切り戻しできます。
 
 さらに、`weight`パラメータを巧みに操作することで、以下のような応用も可能です。
 * weightパラメータを50:50に設定し、A/Bテストを行う
@@ -630,7 +634,7 @@ kubectl delete configmap handson-configmap
 
 ### 5.2 Secret
 
-Secretは、パスワードやアクセスキーなどの機密データで利用します。
+Secretは、パスワードやアクセスキーなどの機密データの保存に利用します。
 
 なお、Secretのデータは、デフォルトではbase64でエンコードされた状態で管理され、暗号化されません。本ハンズオンでは触れませんが、暗号化の設定は別途行う必要があります。
 
@@ -677,11 +681,11 @@ kubectl delete secret handson-secret
 > [!NOTE]
 > - 動作確認は、ブラウザから以下のURLにアクセスすることで行います。
 >   - http://cnd-web.example.com
-> - リソースの更新後もWeb画面の表示が変わらない場合があります。1-2分待ってからブラウザのリフレッシュを行なってください。
+> - リソースの更新後もWeb画面の表示が変わらない場合があります。1-2分待ってからブラウザのリフレッシュを行ってください。
 > - 改修箇所は1箇所ではない可能性があります。また、構成図とエラーメッセージがヒントになる場合があります。
 
 
-以下のコマンドでアプリのデプロイを行なってください。
+以下のコマンドでアプリのデプロイを行ってください。
 ```bash
 kubectl apply -f cnd-web.yaml
 ```
@@ -698,7 +702,7 @@ kubectl delete -f cnd-web.yaml
 
 本ハンズオンで、Kubernetesに少しでも興味を持っていただけましたら幸いでございます。
 
-最も、これらはKubernetesの世界のほんの序章にすぎません。
+もっとも、これらはKubernetesの世界のほんの序章にすぎません。
 
 [chapter_kubernetes-overview](../chapter_kubernetes-overview/)ではストレージの扱いやセキュリティ・RBACに関する機能、バッチ処理など、Kubernetesの機能をさらに探ります。
 
