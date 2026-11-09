@@ -63,7 +63,7 @@ chapter_argocdを実施した場合、アプリがすでに一つ、または複
 
 修正したyamlファイルをapplyします。  
 ```bash
-cd cnd-handson/chapter_argocd-image-updater
+cd ~/cnd-handson/chapter_argocd-image-updater
 kubectl apply -f ./manifest/application_argocdupdate.yaml
 ```
 
