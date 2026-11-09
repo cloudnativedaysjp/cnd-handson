@@ -18,7 +18,7 @@ Istioが提供する主な機能は下記のとおりです。
 - TLS暗号化によるサービス間通信のセキュリティ確保、強力なアイデンティティベースの認証と承認
 - HTTP、gRPC、WebSocket、およびTCPトラフィックの自動負荷分散
 - 細かなルーティングルール、リトライ、フェイルオーバー、およびフォールトインジェクションによるトラフィック管理
-- アクセス制御、レート制限、クォータのサポートを提供するプラガブルなポリシーレイヤーとAPI
+- Authorization Policyによるアクセス制御
 - Istioサービスメッシュへの/からの出入口を含むすべてのトラフィックの自動メトリクス、ログ、トレース
 
 ### サービスメッシュとは
@@ -30,21 +30,18 @@ Istioが提供する主な機能は下記のとおりです。
 (出展元: https://istio.io/latest/docs/ops/deployment/architecture/)
 
 Istioサービスメッシュは大きく2つのコンポーネントで構成されます。
-- コントロールプレーン: Istiodというシングルバイナリで、トラフィックをproxyするための設定、および管理をします。このシングルバイナリはPilot, Citadel, Galleyと呼ばれるコンポーネントで構成されており、各コンポーネントの主な機能は下記のとおりです。
 
-  - Pilot: ランタイム時のproxy設定
-  - Citadel: メッシュ内で使用される証明書の発行、更新
-  - Galley: メッシュ内設定の検証、取り込み、集約、変換、配布
-
-- データプレーン: サイドカーとしてdeployされるenvoyベースのプロキシです。マイクロサービス間のすべてのネットワーク通信を制御し、メッシュトラフィック全体に関するテレメトリの収集を行います。
+- コントロールプレーン: Istiodというシングルバイナリで、サービスディスカバリー、proxy設定の配布、メッシュ内で使用される証明書の発行、更新、および設定の検証を行います。
+- データプレーン: 本chapterで使用するサイドカーモードでは、サイドカーとしてdeployされるEnvoyベースのプロキシです。マイクロサービス間のすべてのネットワーク通信を制御し、メッシュトラフィック全体に関するテレメトリの収集を行います。
 
 ## 始める前に
+- [chapter_cluster-create](../chapter_cluster-create/README.md)の共通Gateway（`gateway/handson-gateway`、GatewayClass `eg`）が作成され、`Programmed=True`であること
 - Handson用のアプリケーションがdeployされていること(まだの場合は[こちら](../chapter_cluster-create/README.md#アプリケーションのデプロイ))
 - Prometheusがインストールされていること(まだの場合は[こちら](../chapter_prometheus/README.md#実践-kube-prometheus-stackのインストール))
 
 ## セットアップ
 ### インストール
-Istioコンポーネントと併せて、Kialiをインストールします。
+Istioコンポーネントと併せて、Kialiをインストールします。外部公開にはcluster-createで作成したEnvoy Gatewayを使用し、本章のIstio Ingress GatewayはClusterIPでデプロイします。
 
 > [!NOTE]
 >
@@ -61,7 +58,7 @@ kubectl get services,deployments -n istio-system
 ```text
 # 実行結果
 NAME                           TYPE        CLUSTER-IP      EXTERNAL-IP   PORT(S)                                 AGE
-service/istio-ingressgateway   NodePort    10.96.122.216   <none>        18080:32080/TCP,18443:32443/TCP         22s
+service/istio-ingressgateway   ClusterIP   10.96.122.216   <none>        18080/TCP,18443/TCP         22s
 service/istiod                 ClusterIP   10.96.40.78     <none>        15010/TCP,15012/TCP,443/TCP,15014/TCP   32s
 service/kiali                  ClusterIP   10.96.87.237    <none>        20001/TCP,9090/TCP                      33s
 
@@ -110,15 +107,6 @@ pod/handson-blue-9f785dfb9-jfpzp   2/2     Running   0          27s
 >
 > chapter_opentelemetryで[traceをopentelemetryで管理する例](../chapter_opentelemetry/README.md#trace-をopentelemetryで管理する例)を実装している場合はコンテナ数は3になります。
 
-```text
-# 実行結果
-NAME              TYPE        CLUSTER-IP      EXTERNAL-IP   PORT(S)   AGE
-service/handson   ClusterIP   10.96.191.153   <none>        80/TCP    3m36s
-
-NAME                                READY   STATUS    RESTARTS   AGE
-pod/handson-blue-6c4f4c9c57-597dx   2/2     Running   0          26s
-```
-
 Envoy proxyがサイドカーとしてアプリケーションpodに注入されているか確認しましょう。
 
 > [!NOTE]
@@ -130,23 +118,30 @@ kubectl get pods -n handson -l app=handson -o jsonpath='{range .items[*]}{range 
 ```
 ```text
 # 実行結果
-registry.istio.io/release/proxyv2:1.30.7
-registry.istio.io/release/proxyv2:1.30.7
+docker.io/istio/proxyv2:1.31.4
+docker.io/istio/proxyv2:1.31.4
 argoproj/rollouts-demo:blue
-
-# Tracingをopentelemetry管理している場合は下記も併せて表示されます。
-ghcr.io/open-telemetry/opentelemetry-go-instrumentation/autoinstrumentation-go:v0.14.0-alpha
 ```
 `docker.io/istio/proxyv2`のイメージで動作しているコンテナがデータプレーンです。1つ目の`proxyv2`はiptablesルールの初期設定用（`istio-init`）、2つ目がトラフィックを処理するEnvoy proxy（`istio-proxy`）です。
 
 ### メッシュ外からのアクセス
-Istioメッシュ外からのアクセスをIstioメッシュ内のアプリケーションにルーティングできるようするためにIstio gateway/virtual serviceを作成します。
+cluster-createの共通の入口であるEnvoy Gatewayから、Istio Ingress Gatewayを経由してアプリケーションにアクセスする構成にします。
+
+```text
+ブラウザ → Envoy Gateway（:80）→ Istio Ingress Gateway（ClusterIP :18080）→ サイドカー → アプリ
+```
+
+Envoy GatewayはGateway APIのHTTPRouteを処理し、IstioのVirtualServiceは処理しません。本章ではIstioのルーティング制御を体験するため、共通Gatewayの後段にIstio Ingress Gatewayを配置します。Kialiは共通Gatewayから直接公開します。
+
+まず、IstioのGateway / VirtualServiceを作成します。
 
 ```bash
 kubectl apply -f networking/gateway.yaml
 kubectl apply -f networking/simple-routing.yaml
-kubectl apply -f networking/httproute.yaml
+kubectl apply -f networking/app-httproute.yaml
 ```
+
+`app-httproute.yaml`は、cluster-createで作成した`handson/handson` HTTPRouteの転送先をIstio Ingress Gatewayへ変更します。別namespaceのServiceを参照するため、宛先の`istio-system`にReferenceGrantも作成します。`kubectl describe httproute handson -n handson`で`Accepted`と`ResolvedRefs`がともに`True`であることを確認してください。
 
 作成されるリソースは下記のとおりです。
 
@@ -166,15 +161,12 @@ NAME                                                GATEWAYS      HOSTS         
 virtualservice.networking.istio.io/simple-routing   ["handson"]   ["istio-app.example.com"]   25s
 ```
 
-これでメッシュ外からのアクセスをアプリケーションにルーティングする準備ができました。ブラウザから<http://istio-app.example.com>にアクセスしてアプリケーションが表示されることを確認してください。
-
-`networking/httproute.yaml`は、80番ポートで受けたアクセスをIstio Ingress Gatewayに中継します。
-ブラウザからのアクセスも、Istio Ingress Gatewayを通ってアプリケーションに届きます。
+これでメッシュ外からのアクセスをアプリケーションにルーティングする準備ができました。ブラウザから<http://app.example.com>にアクセスしてアプリケーションが表示されることを確認してください。
 
 ![image](./image/app-simple-routing.png)
 
 ### メッシュの可視化
-Kialiを用いてIstioサービスメッシュ内のトラフィックを見てみましょう。Kialiは[インストール](#インストール)でインストール済みなので、外部(インターネット)からアクセスできるようにするためにHTTPRouteリソースを作成します。
+Kialiを用いてIstioサービスメッシュ内のトラフィックを見てみましょう。Kialiは[インストール](#インストール)でインストール済みなので、共通のEnvoy Gateway経由でクラスター外からアクセスできるようにするためにHTTPRouteリソースを作成します。
 
 ```bash
 kubectl apply -f networking/kiali-httproute.yaml
@@ -271,7 +263,7 @@ destinationrule.networking.istio.io/weight-based-routing   handson   35s
 
 実際にリクエストを流して、期待した通り50%ずつトラフィックが流れているかKialiで確認してみましょう。**VMのターミナル（kp2）から**下記コマンドを実行してください。
 ```bash
-while :; do curl -s -o /dev/null -w '%{http_code}\n' http://istio-app.example.com:18080;sleep 1;done
+while :; do curl -s -o /dev/null -w '%{http_code}\n' http://app.example.com;sleep 1;done
 ```
 
 しばらくすると、グラフが表示されます(なかなか表示されない場合は、Kialiダッシュボード右上の青い`Refresh`ボタンを押して状態を更新してください)。しばらくすると、トラフィックが均等(約±5%)にルーティングされていることを確認してください。
@@ -318,7 +310,7 @@ destinationrule.networking.istio.io/http-request-based-routing   handson   31s
 `"handson: alpha1"`ヘッダーを持つ、リクエストを流してみましょう。**VMのターミナル（kp2）から**下記コマンドを実行してください。
 
 ```bash
-while :; do curl -s -w '\t%{http_code}\n' http://istio-app.example.com:18080/color -H 'handson: alpha1';sleep 1;done
+while :; do curl -s -w '\t%{http_code}\n' http://app.example.com/color -H 'handson: alpha1';sleep 1;done
 ```
 
 コンソールには下記のように表示されるはずです。
@@ -337,7 +329,7 @@ Kialiでトラフィックを確認すると、`handson-yellow` トラフィッ�
 それでは、いったんリクエストを停止し、次のリクエストを流してみましょう。先ほどとの違いはヘッダーの値が `beta1` となっていることです。
 
 ```bash
-while :; do curl -s -w '\t%{http_code}\n' http://istio-app.example.com:18080/color -H 'handson: beta1';sleep 1;done
+while :; do curl -s -w '\t%{http_code}\n' http://app.example.com/color -H 'handson: beta1';sleep 1;done
 ```
 
 コンソールには下記のように表示されるはずです。
@@ -355,7 +347,7 @@ Kialiでトラフィックを確認すると、`handson-blue` トラフィック
 最後に、ヘッダーを何もつけない場合どのようになるのか確認してみましょう。
 
 ```bash
-while :; do curl -s -w '%{http_code}\n' http://istio-app.example.com:18080/color ;sleep 1;done
+while :; do curl -s -w '%{http_code}\n' http://app.example.com/color ;sleep 1;done
 ```
 
 コンソールには下記のように表示されるはずです。
@@ -395,7 +387,7 @@ kubectl delete -f ../chapter_cluster-create/manifest/app/serviceaccount.yaml -n 
 実際にリクエストを流して、期待した通り `handson-blue` へトラフィックが流れているかKialiで確認してみましょう。**VMのターミナル（kp2）から**下記コマンドを実行してください。
 
 ```bash
-while :; do curl -s -o /dev/null -w '%{http_code}\t%{time_total}\n' http://istio-app.example.com:18080;sleep 1;done
+while :; do curl -s -o /dev/null -w '%{http_code}\t%{time_total}\n' http://app.example.com;sleep 1;done
 ```
 
 概ね0.1秒以内にレスポンスが返されていることがわかります。
@@ -450,7 +442,7 @@ kubectl apply -f networking/simple-routing-inject-error.yaml
 実際にリクエストを流して、期待した通り50%ずつトラフィックが流れているかKialiで確認してみましょう。**VMのターミナル（kp2）から**下記コマンドを実行してください。
 
 ```bash
-while :; do curl -s -o /dev/null -w '%{http_code}\t%{time_total}\n' http://istio-app.example.com:18080;sleep 1;done
+while :; do curl -s -o /dev/null -w '%{http_code}\t%{time_total}\n' http://app.example.com;sleep 1;done
 ```
 
 curlコマンドを流しているコンソールでは、下記のように表示され、502が多く返されていることがわかるかと思います。
@@ -478,7 +470,7 @@ kubectl get cm -n istio-system istio -o yaml
 ```
 
 `meshConfig.outboundTrafficPolicy.mode` の値が、 `REGISTRY_ONLY`　になっていることがわかります。
-この場合は、Istioがサービスとして認識しているURIへのアクセスのみを許可します。
+この場合は、Istioに登録されていない宛先への通信をEnvoyが拒否します。ただし、`REGISTRY_ONLY`は外部通信を完全に遮断するセキュリティ境界ではありません（[公式の注意事項](https://istio.io/latest/docs/ops/best-practices/security/#understand-traffic-capture-limitations)）。
 
 ```yaml
 apiVersion: v1
@@ -515,8 +507,6 @@ while :; do kubectl exec curl -n handson -- curl -s -o /dev/null -w '%{http_code
 ```
 
 下記のように表示されるはずです。HTTPS通信が確立できずエラーとなっています。
-
-FIXME: 自分のEC2環境では'000	Send failure: Broken pipe'と表示された。環境によって異なるかもしれない。
 
 ```text
 # 実行結果(curlのバージョンによって出力が異なる場合があります。)
@@ -569,8 +559,6 @@ Kiali dashboardからも確認してみましょう。リクエストを流し�
 ### クリーンアップ
 
 ```bash
-kubectl delete -f ../chapter_cluster-create/manifest/app/serviceaccount.yaml -n handson -l color=yellow
-kubectl delete -f ../chapter_cluster-create/manifest/app/deployment.yaml -n handson -l color=yellow
 kubectl delete -f networking/simple-routing.yaml
 kubectl delete -f networking/gateway.yaml
 kubectl delete -f app/curl.yaml
@@ -705,7 +693,7 @@ kubectl delete -f app/curl-allow.yaml,app/curl-deny.yaml
 ```
 
 ### L7アクセス管理
-Istio Authorization Policyを用いてL7レベルのアクセス管理を実装します。Istioメッシュ内において、あるワークロードに対して特定のワークロードからのL7レベルでのアクセスを制御したい時がユースケースとして挙げられます。本ケースでは`handson-blue`ワークロードにアクセスをするワークロードを1つ用意し、GETメソッドのみ許可(削除、更新系のメソッドは拒否)をするケースを想定します。
+Istio Authorization Policyを用いてL7レベルのアクセス管理を実装します。Istioメッシュ内において、あるワークロードに対して特定のワークロードからのL7レベルでのアクセスを制御したい時がユースケースとして挙げられます。本ケースでは`handson-blue`ワークロードにアクセスをするワークロードを1つ用意し、GETメソッドのみ許可し、それ以外のメソッドを拒否するケースを想定します。
 
 [セットアップ](#セットアップ)が完了していることを前提とします。
 
@@ -758,7 +746,7 @@ Kiali dashboardからも確認してみましょう。リクエストを流し�
 確認ができたら、リクエストをいったん停止してください。
 
 #### Istio Authorization Policy適用
-それでは、Istio Authorization Policyを適用して、`curl` ワークロードからのGETリクエストのみを許可し、削除、更新系のメソッドを拒否します。
+それでは、Istio Authorization Policyを適用して、`curl` ワークロードからのGETリクエストのみを許可します。ポリシーの`notMethods: [GET]`により、このワークロードからのGET以外のメソッドを拒否します。
 ```bash
 kubectl apply -f networking/L7-authorization-policy.yaml
 ```
@@ -832,6 +820,13 @@ while :; do kubectl exec curl -n handson -- curl -X DELETE -s -o /dev/null -w '%
 ```
 確認ができたらリクエストを停止してください。
 
+HEAD、OPTIONSも確認します。どちらも403になることを確認してください。このポリシーの拒否対象は、指定した`curl`のServiceAccountからのport 8080への通信です。
+
+```bash
+kubectl exec curl -n handson -- curl -I -s -o /dev/null -w '%{http_code}\n' handson:8080
+kubectl exec curl -n handson -- curl -X OPTIONS -s -o /dev/null -w '%{http_code}\n' handson:8080
+```
+
 Istio Authorization Policyを使用して、Istioメッシュ内のL7レベルのアクセス管理を実装しました。Istioの機能を利用することで、アプリケーション側にロジックを追加することなく、L7レベルのアクセス管理を実現できます。
 
 #### クリーンアップ
@@ -870,3 +865,13 @@ kubectl get pods -l app=handson -n handson
 NAME                            READY   STATUS    RESTARTS   AGE
 handson-blue-5bc85b4d98-z7lcz   1/1     Running   0          71s
 ```
+
+共通Gatewayの転送先をcluster-createのアプリケーションServiceに戻し、本章用のReferenceGrantを削除します。
+
+```bash
+kubectl rollout status deployment/handson-blue -n handson --timeout=120s
+kubectl apply -f ../chapter_cluster-create/manifest/app/httproute.yaml -n handson
+kubectl delete referencegrant handson-to-istio-ingressgateway -n istio-system
+```
+
+ブラウザから<http://app.example.com>にアクセスし、共通Gatewayからアプリケーションへ直接アクセスできることを確認してください。
