@@ -145,6 +145,8 @@ fork の [app/blue-green/rollout.yaml](app/blue-green/rollout.yaml) を GitHub �
 - active: http://app-rollouts.example.com （青）
 - preview: http://app-preview-rollouts.example.com （緑）
 
+左が preview、右が active です。
+
 ![demoapp](image/BG/demoapp.png)
 
 ### 切り替える
