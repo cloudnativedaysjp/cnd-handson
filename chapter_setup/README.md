@@ -103,6 +103,17 @@ YOUR_VM_IP_ADDRESS    troubleshoot.example.com
 YOUR_VM_IP_ADDRESS    cnd-web.example.com
 ```
 
+VMのターミナル（kp2）から`curl`で叩く手順もあるため、VMの`/etc/hosts`にも下記を追加してください。VMの80番と8080番で、それぞれEnvoy GatewayとCiliumのIngressが待ち受けています。
+
+```bash
+cat <<'EOF' | sudo tee -a /etc/hosts
+127.0.0.1    app.example.com
+127.0.0.1    app-cilium.example.com
+127.0.0.1    troubleshoot.example.com
+127.0.0.1    cnd-web.example.com
+EOF
+```
+
 ## リポジトリのClone
 
 マニフェストなどをVMにも配置するために、VM上でリポジトリをCloneしておいてください。
