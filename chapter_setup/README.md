@@ -95,7 +95,6 @@ YOUR_VM_IP_ADDRESS    app-rollouts.example.com
 YOUR_VM_IP_ADDRESS    app-preview-rollouts.example.com
 YOUR_VM_IP_ADDRESS    kiali.example.com
 YOUR_VM_IP_ADDRESS    kiali-ambient.example.com
-YOUR_VM_IP_ADDRESS    istio-app.example.com
 YOUR_VM_IP_ADDRESS    app-cilium.example.com
 YOUR_VM_IP_ADDRESS    hubble-cilium.example.com
 YOUR_VM_IP_ADDRESS    pyroscope.example.com
