@@ -134,12 +134,12 @@ Loki自体はシングルバイナリとなっており、実行時に`-target`�
 
 ## Deploy Model
 
-前述したように、Lokiは多くのマイクロサービスで構成される分散システムであり、以下の3つのデプロイモードがあります。
-どれもメリット・デメリットがあり、運用者の要件に応じて使い分けることが大切です。
+前述したように、Lokiは多くのコンポーネントで構成される分散システムです。現在はMonolithic ModeとMicroservice Modeが主なデプロイ方式です。
+Simple Scalable Deploymentも利用できますが、非推奨となっています。
 
 - Microservice Mode
-- Simple Scalable Deployment
 - Monolithic Mode
+- Simple Scalable Deployment（非推奨）
 
 ### Microservice mode
 
@@ -149,8 +149,8 @@ Loki自体はシングルバイナリとなっており、実行時に`-target`�
 
 ### Simple Scalable Deployment
 
-LokiのHelm Chartでデフォルトの設定です。
-Simple Scalable Deploymentを略してSSDと呼ばれることもあります。
+以前のLoki Helm Chartでデフォルトだった設定です。
+Simple Scalable Deploymentを略してSSDと呼ばれることもありますが、現在は非推奨です。本章ではMonolithicを選択します。
 1日あたり数TBのログまでスケールアップが可能であり、これを大幅に超える場合にはMicroservice Modeを検討する必要があります。
 SSDでは各コンポーネントをWrite Target/Read Target/Backend Targetに分類し運用します。
 
@@ -182,8 +182,8 @@ helmfile sync -f helm/helmfile.yaml
 ```
 
 > [!WARNING]
-> 今回はハンズオンの再現性を優先し、オブジェクトストレージとしてローカルファイルシステムを利用する設定にしています。
-> また、Pod再起動時のデータ消失を避けるため、`singleBinary.persistence.enabled: true` でPersistent Volumeを利用する前提です。
+> 今回はハンズオンの再現性を優先し、オブジェクトストレージとしてローカルファイルシステムを利用します。
+> Pod再起動時のデータ消失を避けるため、Persistent Volumeを利用する前提です。
 > 本番環境では、AWS S3 や GCS などのマネージドオブジェクトストレージを利用してください。
 > 詳細は[supported-chunks-stores-not-typically-recommended-for-production-use](https://grafana.com/docs/loki/latest/operations/storage/)を確認してください。
 

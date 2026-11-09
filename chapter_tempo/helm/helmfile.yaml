@@ -1,12 +1,25 @@
 repositories:
-- name: grafana
-  url: https://grafana.github.io/helm-charts
+- name: grafana-community
+  url: https://grafana-community.github.io/helm-charts
+- name: seaweedfs
+  url: https://seaweedfs.github.io/seaweedfs/helm
 
 releases:
+- name: tempo-seaweedfs
+  namespace: monitoring
+  createNamespace: true
+  chart: seaweedfs/seaweedfs
+  version: 4.48.0
+  wait: true
+  timeout: 300
+  values:
+  - seaweedfs-values.yaml
 - name: grafana-tempo
   namespace: monitoring
   createNamespace: true
-  chart: grafana/tempo
-  version: 1.23.3
+  chart: grafana-community/tempo
+  version: 3.2.1
+  needs:
+  - monitoring/tempo-seaweedfs
   values: 
     - tempo-values.yaml

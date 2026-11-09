@@ -158,7 +158,7 @@ NAME                                  AGE
 gateway.networking.istio.io/handson   18s
 
 NAME                                                GATEWAYS      HOSTS                 AGE
-virtualservice.networking.istio.io/simple-routing   ["handson"]   ["app.example.com"]   25s
+virtualservice.networking.istio.io/simple-routing   ["handson"]   ["istio-app.example.com"]   25s
 ```
 
 これでメッシュ外からのアクセスをアプリケーションにルーティングする準備ができました。ブラウザから<http://app.example.com>にアクセスしてアプリケーションが表示されることを確認してください。
@@ -255,13 +255,13 @@ kubectl get virtualservices,destinationrules -n handson
 ```text
 # 実行結果
 NAME                                                      GATEWAYS      HOSTS                 AGE
-virtualservice.networking.istio.io/weight-based-routing   ["handson"]   ["app.example.com"]   35s
+virtualservice.networking.istio.io/weight-based-routing   ["handson"]   ["istio-app.example.com"]   35s
 
 NAME                                                       HOST      AGE
 destinationrule.networking.istio.io/weight-based-routing   handson   35s
 ```
 
-実際にリクエストを流して、期待した通り50%ずつトラフィックが流れているかKialiで確認してみましょう。**ローカル端末から**下記コマンドを実行してください。
+実際にリクエストを流して、期待した通り50%ずつトラフィックが流れているかKialiで確認してみましょう。**VMのターミナル（kp2）から**下記コマンドを実行してください。
 ```bash
 while :; do curl -s -o /dev/null -w '%{http_code}\n' http://app.example.com;sleep 1;done
 ```
@@ -269,7 +269,7 @@ while :; do curl -s -o /dev/null -w '%{http_code}\n' http://app.example.com;slee
 しばらくすると、グラフが表示されます(なかなか表示されない場合は、Kialiダッシュボード右上の青い`Refresh`ボタンを押して状態を更新してください)。しばらくすると、トラフィックが均等(約±5%)にルーティングされていることを確認してください。
 ![image](./image/kiali-graph-weigh-based-routing-50-50.png)
 
-それでは、新しいアプリケーションにトラフィックが100%ルーティングされるように設定を変更します。ローカル環境から実施しているリクエストは継続して行なってください。
+それでは、新しいアプリケーションにトラフィックが100%ルーティングされるように設定を変更します。VMのターミナルから実施しているリクエストは継続して行なってください。
 ```bash
 kubectl patch virtualservice weight-based-routing -n handson --type merge --patch-file networking/weight-based-routing-patch.yaml
 ```
@@ -301,13 +301,13 @@ kubectl get virtualservices,destinationrules -n handson
 ```text
 # 実行結果
 NAME                                                            GATEWAYS      HOSTS                 AGE
-virtualservice.networking.istio.io/http-request-based-routing   ["handson"]   ["app.example.com"]   31s
+virtualservice.networking.istio.io/http-request-based-routing   ["handson"]   ["istio-app.example.com"]   31s
 
 NAME                                                             HOST      AGE
 destinationrule.networking.istio.io/http-request-based-routing   handson   31s
 ```
 
-`"handson: alpha1"`ヘッダーを持つ、リクエストを流してみましょう。**ローカル端末から**下記コマンドを実行してください。
+`"handson: alpha1"`ヘッダーを持つ、リクエストを流してみましょう。**VMのターミナル（kp2）から**下記コマンドを実行してください。
 
 ```bash
 while :; do curl -s -w '\t%{http_code}\n' http://app.example.com/color -H 'handson: alpha1';sleep 1;done
@@ -384,7 +384,7 @@ kubectl delete -f ../chapter_cluster-create/manifest/app/deployment.yaml -n hand
 kubectl delete -f ../chapter_cluster-create/manifest/app/serviceaccount.yaml -n handson -l color=yellow
 ```
 
-実際にリクエストを流して、期待した通り `handson-blue` へトラフィックが流れているかKialiで確認してみましょう。**ローカル端末から**下記コマンドを実行してください。
+実際にリクエストを流して、期待した通り `handson-blue` へトラフィックが流れているかKialiで確認してみましょう。**VMのターミナル（kp2）から**下記コマンドを実行してください。
 
 ```bash
 while :; do curl -s -o /dev/null -w '%{http_code}\t%{time_total}\n' http://app.example.com;sleep 1;done
@@ -439,7 +439,7 @@ KialiでトラフィックのResponse Timeを確認してみましょう。 Serv
 kubectl apply -f networking/simple-routing-inject-error.yaml
 ```
 
-実際にリクエストを流して、期待した通り50%ずつトラフィックが流れているかKialiで確認してみましょう。**ローカル端末から**下記コマンドを実行してください。
+実際にリクエストを流して、期待した通り50%ずつトラフィックが流れているかKialiで確認してみましょう。**VMのターミナル（kp2）から**下記コマンドを実行してください。
 
 ```bash
 while :; do curl -s -o /dev/null -w '%{http_code}\t%{time_total}\n' http://app.example.com;sleep 1;done

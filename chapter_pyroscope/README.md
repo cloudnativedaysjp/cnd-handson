@@ -38,28 +38,26 @@
 
 ### Write（プロファイルの書き込み）
 
-<img src="https://mermaid.ink/svg/pako:eNqNkT1PwzAQhv9K5C6t1DY0hrT1wIBgZgCJoeng2OfE4MSRfaFUVf47dkoLI9vd896H7_WJCCuBMKKMPYiaO0xeH4o2SXoPbrp7cxrB72fJYnGfSO3R6bJH62LFn3SUdVuBRxi1SzwK1kckbNNxcSk-M-vH5Cqd2XT3XL6DwMQHBPtZpB6PBsZHJUobwyZqq-Zhv_0ANqGU_sSLg5ZYs6z7-m0KS_7bQuakAddwLYMjpziiIFhDAwVhIZSgeG-wIEU7hFIeTn85toIwdD3MSd9JjvCoeeV4Q5jixl_pk9ThmCs0lksI6YngsYv2V8HMMFLYVukq8t6ZgGvEzrM0jfKy0lj35TK4lXot41_Vn9s8zbN8wzMK-ZryO0qlKFfbjcpuV0qub1YZJ8MwfAN3mqSC" width="100">
-
-1. distributorは、ingesterへプロファイルをPushします。
-2. ingesterは、受信したプロファイルを、Pyroscopeのデータベースに保存します。プロファイルをすぐに書き込むのでなく、一度ingesterのメモリ領域か、ingesterのディスク領域に保持します。最終的に、全てのプロファイルがディスクに書き込まれ、長期ストレージに追加されます。ingesterはレプリケートされており、デフォルトでは3つのingesterが動いてます。
-3. Compactorは、各ingesterからのブロックを1つにマージし、重複部分を削除します。ブロック圧縮により、ストレージ使用率を大幅に削減します。
+1. distributorがプロファイルを受け取り、segment-writerへ転送します。
+2. segment-writerがプロファイルをオブジェクトストレージへ書き込みます。
+3. metastoreがデータの場所を管理し、compaction-workerが保存されたデータを圧縮します。
 
 
 ### Read（プロファイルの読み込み）
-<img src="https://mermaid.ink/svg/pako:eNqNkT1PwzAQhv9K5C6t1DQ0gX54YEAwIwFb08G1z4nBiYN9pkRV_jt2gQJi6XZ-7rmTXt-BcCOAUCK12fOaWUyebso2SbwDO948ABNuO0nS9Dp59WD7VFrTIrQiOn_JL8nxGoTXYL8tBfactmorcPifOzQW0ooh7Fl_JMZFx7jx5n73DBw_le0kUoe9hmOARCqt6Uiu5dShNS9AR0VRfNXpXgmsad69_wwZd_YImZIGbMOUCL93iCtKgjU0UBIaSgGSeY0lKdshqMyjeexbTihaD1PiOxHS3CpWWdYQKpl2J3onVAhzgtowAeF5INh38VSVchhWctNKVUXurQ64RuwczbLYnlUKa7-bcdNkTol41_ptvcgW-WLF8gIWy4JdFYXgu_l6JfPLuRTLi3nOyDAMHzzctK0" width="360">
 
-1. Pyroscope上で実行されたクエリはAPIリクエストとして、query-frontendで受け取ります。
-2. query-frontendは、query-schedulerに通信しに行きます。query-schedulerはクエリのキューを維持し、各テナントが公平に実行されるようにします。
-3. querierは、query-schedulerのキューから、クエリを取得します。
-4. querierの参照先は、最近のデータからならingesterから、長期ストレージからならstore-gatewayからデータを取得します。
+1. query-frontendがクエリを受け取ります。
+2. metastoreから対象データの場所を取得します。
+3. query-backendがオブジェクトストレージからデータを読み出し、結果を返します。
+
+詳細は[Pyroscope v2 architecture](https://grafana.com/docs/pyroscope/latest/reference-pyroscope-v2-architecture/)を参照してください。
 
 ## Pyroscopeへのプロファイルの送信（クライアント）
-プロファイルをPyroscopeに送信する場合、各言語ごとのPyroscope SDKを使うか、Grafana Agentを使うかの2択でしたが、2024/04のGrafanaCONで、**Grafana Alloy**という、OTLP(OpenTelemetry Protocol)互換の新たなCollectorが発表されました。
+プロファイルをPyroscopeに送信するには、各言語向けのPyroscope SDKや、OTLP（OpenTelemetry Protocol）に対応した**Grafana Alloy**を利用できます。
 
 当ハンズオンでは、初期構築時にGrafana Alloyがインストールされています。
 
 > [!NOTE]
-> Grafana Agentは2025年にEOLとなり、Alloyへとプロジェクト移行されます。
+> Grafana AgentはEOLとなっており、Grafana Alloyへ移行されています。
 
 ## 実践: Grafana Pyroscopeのインストール
 実践として、Pyroscopeをインストールします。以降のハンズオンででは、pyroscopeのchapterを作業ディレクトリとしてください。
@@ -70,13 +68,16 @@ cd ~/cnd-handson/chapter_pyroscope
 Kubernetesクラスタ上にPyroscopeをインストールします。
 ここでは、grafanaのHelm Chartから利用します。
 
-Pyroscopeでは、モノリシックモードと、マイクロサービスモードという、2つのデプロイ方式が選択できます。本章ではデフォルトでマイクロサービスモードを採用します。
+Pyroscopeでは、モノリシックモードと、マイクロサービスモードという、2つのデプロイ方式が選択できます。本章ではv2ストレージアーキテクチャのマイクロサービスモードを採用します。
 
 用意されているhelmfile.yamlおよび `helm/values-micro-services.yaml` を利用して、 `helmfile sync` を実行し、Pyroscopeをインストールしましょう。
 
 ```bash
 helmfile sync -f helm/helmfile.yaml
 ```
+
+Pyroscopeのプロファイルデータは、同時に導入されるS3互換ストレージのSeaweedFSに保存します。
+認証情報はローカルハンズオン専用の固定値として自動設定されるため入力不要ですが、本番環境では使用しないでください。
 
 実際に各種サービスが起動しているか確認します。
 
@@ -86,20 +87,18 @@ kubectl get pods -n monitoring -l app.kubernetes.io/instance=pyroscope
 
 ```text
 # 実行結果（マイクロサービスモード）
-pyroscope-alloy-0                            2/2     Running   0          29m
-pyroscope-compactor-0                        1/1     Running   0          27m
-pyroscope-compactor-1                        1/1     Running   0          27m
-pyroscope-distributor-7d6969bdb4-4x9jh       1/1     Running   0          5m29s
-pyroscope-ingester-0                         1/1     Running   0          27m
-pyroscope-ingester-1                         1/1     Running   0          27m
-pyroscope-minio-0                            1/1     Running   0          5m27s
-pyroscope-querier-7867466d84-gg5qg           1/1     Running   0          27m
-pyroscope-querier-7867466d84-nb2sd           1/1     Running   0          27m
-pyroscope-querier-7867466d84-xtc4z           1/1     Running   0          27m
-pyroscope-query-frontend-97bb84b78-mbpml     1/1     Running   0          5m28s
-pyroscope-query-scheduler-857746b8b6-mgph2   1/1     Running   0          5m28s
-pyroscope-store-gateway-0                    1/1     Running   0          27m
-pyroscope-store-gateway-1                    1/1     Running   0          27m
+pyroscope-admin-xxxxxxxxxx-xxxxx              1/1     Running
+pyroscope-alloy-0                             2/2     Running
+pyroscope-compaction-worker-0                 1/1     Running
+pyroscope-compaction-worker-1                 1/1     Running
+pyroscope-distributor-xxxxxxxxxx-xxxxx        1/1     Running
+pyroscope-metastore-0                         1/1     Running
+pyroscope-query-backend-xxxxxxxxxx-xxxxx      1/1     Running
+pyroscope-query-backend-xxxxxxxxxx-xxxxx      1/1     Running
+pyroscope-query-backend-xxxxxxxxxx-xxxxx      1/1     Running
+pyroscope-query-frontend-xxxxxxxxxx-xxxxx     1/1     Running
+pyroscope-segment-writer-0                    1/1     Running
+pyroscope-segment-writer-1                    1/1     Running
 ```
 
 
@@ -189,7 +188,7 @@ releases:
   namespace: monitoring
   createNamespace: true
   chart: grafana/pyroscope
-  version: 1.15.0
+  version: 2.4.3
   # values:
   # - values-micro-services.yaml
 ```
