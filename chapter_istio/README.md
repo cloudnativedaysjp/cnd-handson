@@ -158,7 +158,7 @@ NAME                                  AGE
 gateway.networking.istio.io/handson   18s
 
 NAME                                                GATEWAYS      HOSTS                 AGE
-virtualservice.networking.istio.io/simple-routing   ["handson"]   ["istio-app.example.com"]   25s
+virtualservice.networking.istio.io/simple-routing   ["handson"]   ["app.example.com"]   25s
 ```
 
 これでメッシュ外からのアクセスをアプリケーションにルーティングする準備ができました。ブラウザから<http://app.example.com>にアクセスしてアプリケーションが表示されることを確認してください。
@@ -255,7 +255,7 @@ kubectl get virtualservices,destinationrules -n handson
 ```text
 # 実行結果
 NAME                                                      GATEWAYS      HOSTS                 AGE
-virtualservice.networking.istio.io/weight-based-routing   ["handson"]   ["istio-app.example.com"]   35s
+virtualservice.networking.istio.io/weight-based-routing   ["handson"]   ["app.example.com"]   35s
 
 NAME                                                       HOST      AGE
 destinationrule.networking.istio.io/weight-based-routing   handson   35s
@@ -301,7 +301,7 @@ kubectl get virtualservices,destinationrules -n handson
 ```text
 # 実行結果
 NAME                                                            GATEWAYS      HOSTS                 AGE
-virtualservice.networking.istio.io/http-request-based-routing   ["handson"]   ["istio-app.example.com"]   31s
+virtualservice.networking.istio.io/http-request-based-routing   ["handson"]   ["app.example.com"]   31s
 
 NAME                                                             HOST      AGE
 destinationrule.networking.istio.io/http-request-based-routing   handson   31s

@@ -8,7 +8,7 @@ metadata:
     content: weight-based-routing
 spec:
   hosts:
-  - istio-app.example.com
+  - app.example.com
   gateways:
   - handson
   http:
