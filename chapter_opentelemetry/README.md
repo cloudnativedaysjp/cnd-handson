@@ -18,6 +18,12 @@ OpenTelemetryプロジェクトの代表的なプロダクトは以下のとお�
 
 このハンズオンでは、OpenTelemetry Collectorでメトリクス・ログ・トレースを扱う方法と、OpenTelemetry SDKを用いて分散トレースを行う方法について実際に体験します。
 
+### ProfilesとPyroscope章へのつながり
+
+OpenTelemetryでは、アプリケーションがCPUなどのリソースをどの関数で消費しているかを調べる **Profiles** シグナルも開発されています。[Pyroscope章の実習](../chapter_pyroscope/README.md#実践-opentelemetry-collectorでアプリケーションをプロファイリングする)では、本章で導入するOperatorと同じ `OpenTelemetryCollector` リソースを使い、既存のGoアプリからCPUプロファイルを取得します。
+
+パイプラインは `profiling` Receiver → Processor → OTLP Exporterです。プロファイル専用のeBPF Profiler版CollectorをDaemonSetで追加し、Pyroscopeへ送信します。本章の通常のcontrib版Collectorや、後述するGoのトレース自動計装とは別の収集機能です。既存のCollectorを置き換える必要はありません。
+
 ### OpenTelemetry Collectorのコンポーネント
 
 OpenTelemetry Collectorは、内部的には4つのコンポーネントで構成されています。
