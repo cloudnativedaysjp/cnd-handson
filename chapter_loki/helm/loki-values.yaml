@@ -53,7 +53,7 @@ loki:
 #          - path: /
 #            pathType: Prefix
 
-deploymentMode: SingleBinary
+deploymentMode: Monolithic
 singleBinary:
   replicas: 1
   persistence:
@@ -64,16 +64,20 @@ singleBinary:
       cpu: 3
       memory: 4Gi
     requests:
-      cpu: 2
-      memory: 2Gi
+      cpu: 500m
+      memory: 1Gi
   extraEnv:
     # Keep a little bit lower than memory limits
     - name: GOMEMLIMIT
       value: 3750MiB
 
 chunksCache:
-  # default is 500MB, with limited memory keep this smaller
+  # 最新チャートの既定値は8GiBのため、ハンズオン向けに小さくする。
+  allocatedMemory: 256
   writebackSizeLimit: 10MB
+
+resultsCache:
+  allocatedMemory: 256
 
 # Zero out replica counts of other deployment modes
 backend:
@@ -96,8 +100,6 @@ distributor:
 compactor:
   replicas: 0
 indexGateway:
-  replicas: 0
-bloomCompactor:
   replicas: 0
 bloomGateway:
   replicas: 0

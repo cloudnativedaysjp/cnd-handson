@@ -2,35 +2,35 @@
 # This is a YAML-formatted file.
 # Declare variables to be passed into your templates.
 
-# 2.x defaults to the v2 storage, which needs components this chapter does not deploy
 architecture:
   storage:
-    v1: true
-    v2: false
+    v1: false
+    v2: true
+  microservices:
+    enabled: true
 
 pyroscope:
-  extraArgs:
-    store-gateway.sharding-ring.replication-factor: "2"
+  structuredConfig:
+    storage:
+      backend: s3
+      s3:
+        endpoint: pyroscope-seaweedfs-all-in-one.monitoring.svc.cluster.local:8333
+        bucket_name: pyroscope
+        access_key_id: pyroscope
+        secret_access_key: pyroscope-handson-secret
+        insecure: true
+        bucket_lookup_type: path-style
   components:
-    querier:
+    query-backend:
       kind: Deployment
       replicaCount: 3
       resources:
         limits:
           memory: 512Mi
         requests:
-          memory: 128Mi 
+          memory: 128Mi
           cpu: 500m
     query-frontend:
-      kind: Deployment
-      replicaCount: 1
-      resources:
-        limits:
-          memory: 512Mi
-        requests:
-          memory: 128Mi
-          cpu: 100m
-    query-scheduler:
       kind: Deployment
       replicaCount: 1
       resources:
@@ -48,7 +48,7 @@ pyroscope:
         requests:
           memory: 128Mi
           cpu: 500m
-    ingester:
+    segment-writer:
       kind: StatefulSet
       replicaCount: 2
       terminationGracePeriodSeconds: 600
@@ -58,7 +58,7 @@ pyroscope:
         requests:
           memory: 512Mi
           cpu: 500m
-    compactor:
+    compaction-worker:
       kind: StatefulSet
       replicaCount: 2
       terminationGracePeriodSeconds: 1200
@@ -70,27 +70,25 @@ pyroscope:
         requests:
           memory: 512Mi
           cpu: 500m
-    store-gateway:
+    metastore:
       kind: StatefulSet
-      replicaCount: 2
+      replicaCount: 1
+      terminationGracePeriodSeconds: 1200
       persistence:
-        # The store-gateway needs not need persistent storage, but we still run it as a StatefulSet
-        # This is to avoid having blocks of data being
-        enabled: false
+        enabled: true
+        size: 1Gi
       resources:
         limits:
           memory: 1Gi
         requests:
           memory: 512Mi
           cpu: 500m
-      readinessProbe:
-        # The store gateway can be configured to wait on startup for ring stability to be reached before it becomes
-        # ready. See the `store-gateway.sharding-ring.wait-stability-min-duration` server argument for more information.
-        #
-        # Depending on this flag and the number of tenants + blocks that need to be synced on startup, pods can take
-        # some time to become ready. This value can be used to ensure Kubernetes waits long enough and reduce errors.
-        initialDelaySeconds: 60
+      extraArgs:
+        metastore.raft.bootstrap-expect-peers: "1"
+    tenant-settings:
+      replicaCount: 0
+    ad-hoc-profiles:
+      replicaCount: 0
+
 minio:
-  enabled: true
-  serviceAccount:
-    name: "minio-sa-pyroscope"
+  enabled: false
