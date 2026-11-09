@@ -83,8 +83,8 @@ kubectl exec -n kube-system ds/cilium -c cilium-agent -- cilium version
 下記のようにバージョンが確認できます。
 
 ```text
-Client: 1.18.1 e8a7070f 2025-08-13T14:47:02+00:00 go version go1.24.6 linux/amd64
-Daemon: 1.18.1 e8a7070f 2025-08-13T14:47:02+00:00 go version go1.24.6 linux/amd64
+Client: 1.20.4 beb276d2 2026-10-23T13:25:25Z go version go1.26.10 linux/amd64
+Daemon: 1.20.4 beb276d2 2026-10-23T13:25:25Z go version go1.26.10 linux/amd64
 ```
 
 この章ではCiliumの機能として下記について説明します。
@@ -92,13 +92,11 @@ Daemon: 1.18.1 e8a7070f 2025-08-13T14:47:02+00:00 go version go1.24.6 linux/amd6
 - Networking
   - Network Policy
 - ServiceMesh
-  - Ingress
   - Gateway API
   - Traffic Management
 
 Networkingに関しては、Network Policyを利用した特定のPodに対するL7のトラフィック制御を行います。
-ServiceMeshに関しては、まず初めに、CiliumのIngressClassを設定したIngressリソースを利用するデモを行います。
-次に、トラフィックを9:1に分割するデモをGateway APIとCiliumのEnvoy Configを利用した2パターン説明します。
+ServiceMeshに関しては、トラフィックを9:1に分割するデモをGateway APIとCiliumのEnvoy Configを利用した2パターンで説明します。
 今回はトラフィック分割のデモのみですが、他にもヘッダー変更、URLの書き換えなど行うことができます。
 その他の例については下記のページをご参照ください。
 
@@ -200,38 +198,6 @@ kubectl delete -f manifest/cnp.yaml
 
 ## Service Mesh
 
-### Ingress
-
-CiliumはIngressリソースをサポートしており、第1章でIngress NGINX Controllerをデプロイしましたが、Ingress NGINX Controllerを使わずとも、Cilium単体でIngressリソースを利用できます。
-Ingressリソースを利用するためには、CiliumのHelm Chartで`ingressController.enabled: true`を指定する必要があります。
-この設定はすでに[chapter_cluster-create](../chapter_cluster-create/)で行っており、現時点でIngressリソースは利用できる状態になっています。
-詳細については[Kubernetes Ingress Support](https://docs.cilium.io/en/stable/network/servicemesh/ingress/)を参照ください。
-
-この節では、IngressClassとしてCiliumを利用したトラフィックルーティングのデモを行います。
-Ingressリソースを利用するためには、`ingressClassName`フィールドに`cilium`を設定したIngressをアプライすればIngressリソースを利用できます。
-
-```bash
-kubectl apply -f manifest/ingress.yaml
-```
-
-`app-cilium.example.com`の名前解決が可能な端末から、curlコマンドでHTTPステータスコード200が返ってくることを確認します。
-
-```bash
-curl -I app-cilium.example.com:8080
-```
-
-下記のような応答が返ってきます。
-
-```text
-HTTP/1.1 200 OK
-accept-ranges: bytes
-content-length: 1395
-content-type: text/html; charset=utf-8
-last-modified: Tue, 22 Jun 2021 05:40:33 GMT
-date: Wed, 01 Nov 2023 18:08:01 GMT
-x-envoy-upstream-service-time: 0
-server: envoy
-```
 
 ### Gateway API
 
@@ -271,7 +237,7 @@ NAME                                                HOSTNAMES   AGE
 httproute.gateway.networking.k8s.io/color-route-1               52s
 
 NAME                              TYPE           CLUSTER-IP      EXTERNAL-IP    PORT(S)        AGE
-service/cilium-gateway-color-gw   LoadBalancer   10.96.50.28     <pending>   80:32720/TCP   52s
+service/cilium-gateway-color-gw   LoadBalancer   10.96.50.28     <pending>      80:32720/TCP   52s
 service/handson                   ClusterIP      10.96.131.226   <none>         8080/TCP       24m
 service/handson-blue              ClusterIP      10.96.164.242   <none>         8080/TCP       113s
 service/handson-yellow            ClusterIP      10.96.189.95    <none>         8080/TCP       113s
@@ -352,7 +318,7 @@ kubectl delete -f manifest/gateway_api.yaml
 ### Traffic Management
 
 Ciliumでは、Network Policyで定義されたL7トラフィックなどの処理にEnvoyを利用します。
-デフォルトでEnvoyはCiliumのAgentに埋め込まれていますが、Deploymentリソースとして外だしすることも可能です。
+EnvoyはCilium AgentのPod内で動作させる方法と、独立したDaemonSetとして動作させる方法があります。Cilium 1.20の新規インストールでは、デフォルトでDaemonSetとして動作します。
 `cilium status`コマンドを実行することで、現在どちらのモードで動作しているか確認することが可能です。
 
 ```bash
@@ -360,7 +326,6 @@ cilium status
 ```
 
 Envoy DaemonSetがdisabledであれば、Cilium AgentにEnvoyが埋め込まれて動作しています。
-
 
 ```text
     /¯¯\
@@ -370,27 +335,28 @@ Envoy DaemonSetがdisabledであれば、Cilium AgentにEnvoyが埋め込まれ�
  \__/¯¯\__/    Hubble Relay:       OK
     \__/       ClusterMesh:        disabled
 
-Deployment             cilium-operator    Desired: 2, Ready: 2/2, Available: 2/2
-DaemonSet              cilium-envoy       Desired: 3, Ready: 3/3, Available: 3/3
-Deployment             hubble-relay       Desired: 1, Ready: 1/1, Available: 1/1
-Deployment             hubble-ui          Desired: 1, Ready: 1/1, Available: 1/1
-DaemonSet              cilium             Desired: 3, Ready: 3/3, Available: 3/3
-Containers:            cilium-operator    Running: 2
-                       cilium-envoy       Running: 3
-                       hubble-ui          Running: 1
-                       hubble-relay       Running: 1
-                       cilium             Running: 3
-Cluster Pods:          21/21 managed by Cilium
-Helm chart version:    1.18.1
-Image versions         cilium             quay.io/cilium/cilium:v1.18.1@sha256:65ab17c052d8758b2ad157ce766285e04173722df59bdee1ea6d5fda7149f0e9: 3
-                       cilium-envoy       quay.io/cilium/cilium-envoy:v1.34.4-1754895458-68cffdfa568b6b226d70a7ef81fc65dda3b890bf@sha256:247e908700012f7ef56f75908f8c965215c26a27762f296068645eb55450bda2: 3
-                       cilium-operator    quay.io/cilium/operator-generic:v1.18.1@sha256:97f4553afa443465bdfbc1cc4927c93f16ac5d78e4dd2706736e7395382201bc: 2
-                       hubble-relay       quay.io/cilium/hubble-relay:v1.18.1@sha256:7e2fd4877387c7e112689db7c2b153a4d5c77d125b8d50d472dbe81fc1b139b0: 1
-                       hubble-ui          quay.io/cilium/hubble-ui-backend:v0.13.2@sha256:a034b7e98e6ea796ed26df8f4e71f83fc16465a19d166eff67a03b822c0bfa15: 1
-                       hubble-ui          quay.io/cilium/hubble-ui:v0.13.2@sha256:9e37c1296b802830834cc87342a9182ccbb71ffebb711971e849221bd9d59392: 1
+DaemonSet              cilium                   Desired: 3, Ready: 3/3, Available: 3/3
+DaemonSet              cilium-envoy             Desired: 3, Ready: 3/3, Available: 3/3
+Deployment             cilium-operator          Desired: 2, Ready: 2/2, Available: 2/2
+Deployment             hubble-relay             Desired: 1, Ready: 1/1, Available: 1/1
+Deployment             hubble-ui                Desired: 1, Ready: 1/1, Available: 1/1
+Containers:            cilium                   Running: 3
+                       cilium-envoy             Running: 3
+                       cilium-operator          Running: 2
+                       clustermesh-apiserver
+                       hubble-relay             Running: 1
+                       hubble-ui                Running: 1
+Cluster Pods:          56/56 managed by Cilium
+Helm chart version:    1.20.4
+Image versions         cilium             quay.io/cilium/cilium:v1.20.4@sha256:20fe92e4c86641233a450098c158d2d29085f3419931ab6bf681d2485dedf16e: 3
+                       cilium-envoy       quay.io/cilium/cilium-envoy:v1.39.5-1792733054-8c73b2816bc8239e27f1fd53b271884688137459@sha256:547ab45f6092f681d9f54f3be9fa8fb1e705c9c5dc2df388efe3a52aa6965629: 3
+                       cilium-operator    quay.io/cilium/operator-generic:v1.20.4@sha256:7a7a3489dc66ad67e420d285c8a8d2e169b0957ad15e120f593d27081bf38d82: 2
+                       hubble-relay       quay.io/cilium/hubble-relay:v1.20.4@sha256:cb23408209697ed30d2bc462e1f01eb622ea4423a891458f78bc88d7255bbfc1: 1
+                       hubble-ui          quay.io/cilium/hubble-ui-backend:v0.13.6@sha256:83b3fc763f3d49948c306bf49b08277383e195904b9ca5c0c0022b2112628787: 1
+                       hubble-ui          quay.io/cilium/hubble-ui:v0.13.6@sha256:049a80a03585c043d0c3121bdc518c72b0fd42bae07e4bcce0fdb8f1e88041d0: 1
 ```
 
-Envoyの設定は、CRDとして定義された`CiliumEnvoyConfig`と`CiliumCllusterwideEnvoyConfig`を利用することで、L7トラフィック制御が可能です。
+Envoyの設定は、CRDとして定義された`CiliumEnvoyConfig`と`CiliumClusterwideEnvoyConfig`を利用することで、L7トラフィック制御が可能です。
 詳細は[L7-Aware Traffic Management](https://docs.cilium.io/en/latest/network/servicemesh/l7-traffic-management/)を参照してください。
 
 Envoyの[Supported API versions](https://www.envoyproxy.io/docs/envoy/latest/api/api_supported_versions)にも記載がありますが、Envoy APIにはv1/v2/v3の3種類が存在します。
@@ -407,8 +373,7 @@ kubectl apply -f manifest/cec.yaml
 
 ![](image/ch4-3.png)
 
-
-下記コマンドを実行すると、`handson-blue"`に10%、`handson-yellow`に90%のトラフィックが流れることが確認できます。
+下記コマンドを実行すると、`handson-blue`に約10%、`handson-yellow`に約90%のトラフィックが流れることを確認できます。リクエスト数が少ないため、結果の割合は変動します。
 
 ```bash
 for in in {1..10}; do \
