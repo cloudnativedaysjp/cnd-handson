@@ -601,6 +601,7 @@ ConfigMapは機密性のないデータを保存するために使用されま�
 クライアントからのリクエストはマウントされたConfigMapのHTMLデータを参照するため、`CND ConfigMap Handson`という文字列が返却されるはずです。
 
 まずは、ConfigMapを作成します。
+以下のマニフェストが配置されていますので、それを適用してください。
 
 ```yaml
 apiVersion: v1
@@ -610,7 +611,7 @@ metadata:
     name: handson-configmap
   name: handson-configmap
 data:
-  index.html: |
+  index.html: | # キーがindex.html、値がHTMLの文字列
     <html>
       <head>
         <title>
@@ -647,15 +648,15 @@ spec:
       protocol: TCP
     volumeMounts:
     - name: nginx-html-file
-      mountPath: /usr/share/nginx/html/index.html
+      mountPath: /usr/share/nginx/html/index.html # nginxが返すHTMLファイルの場所にマウント
       subPath: index.html
       readOnly: true
   volumes:
     - name: nginx-html-file
       configMap:
-        name: handson-configmap
+        name: handson-configmap # 参照するConfigMapの名前
         items:
-        - key: "index.html"
+        - key: "index.html" # ConfigMapの中のキー
           path: "index.html"
 ```
 
@@ -686,12 +687,14 @@ kubectl delete configmap handson-configmap
 ### 5.2 Secret
 
 Secretは、パスワードやアクセスキーなどの機密データの保存に利用します。
+使い方はConfigMapとほぼ同じですが、Kubernetes上では機密データとして区別して扱われるため、ConfigMapとは別にアクセス権限を絞ったり、保存時に暗号化したりできます。
 
-なお、Secretのデータは、デフォルトではbase64でエンコードされた状態で管理され、暗号化されません。本ハンズオンでは触れませんが、暗号化の設定は別途行う必要があります。
+ただし、Secretのデータは、デフォルトではbase64でエンコードされた状態で管理され、暗号化されません。本ハンズオンでは触れませんが、暗号化の設定は別途行う必要があります。
 
 今回はユーザー名とパスワードをSecretに保存し、環境変数としてコンテナに渡します。
 
 まずは、Secretを作成します。
+以下のマニフェストが配置されていますので、それを適用してください。
 
 ```yaml
 apiVersion: v1
@@ -701,8 +704,8 @@ metadata:
     name: handson-secret
   name: handson-secret
 data:
-  username: dXNlcjAx
-  password: cGFzc3dk
+  username: dXNlcjAx # 「user01」をbase64でエンコードした値
+  password: cGFzc3dk # 「passwd」をbase64でエンコードした値
 ```
 
 ```bash
@@ -723,11 +726,11 @@ spec:
   - name: nginx
     image: nginx:latest
     env:
-    - name: USERNAME
+    - name: USERNAME # コンテナ内の環境変数名
       valueFrom:
         secretKeyRef:
-          name: handson-secret
-          key: username
+          name: handson-secret # 参照するSecretの名前
+          key: username # Secretの中のキー
     - name: PASSWORD
       valueFrom:
         secretKeyRef:
