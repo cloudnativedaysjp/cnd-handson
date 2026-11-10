@@ -153,8 +153,8 @@ kubectl run tmp --restart=Never --rm -i --image=nginx:alpine -- curl <PodのIP>
 
   % Total    % Received % Xferd  Average Speed   Time    Time     Time  Current
                                  Dload  Upload   Total   Spent    Left  Speed
-100    11  100    11    0     0   4776      0 --:--:-- --:--:-- --:--:--  5500
-CNDW2025!!
+100    29  100    29    0     0   4776      0 --:--:-- --:--:-- --:--:--  5500
+Welcome to the CND Handson!!
 pod "tmp" deleted from default namespace
 ```
 
@@ -949,10 +949,10 @@ NAME            READY   UP-TO-DATE   AVAILABLE   AGE
 resource-test   0/1     0            0           52s
 ```
 
-この時、Replicasetの状態を確認するとCPUやMemoryなどQuotaで設定したリソースの制限は必須であるため、エラーになっていることが判ります。
+この時、Eventを確認するとCPUやMemoryなどQuotaで設定したリソースの制限は必須であるため、Podの作成がエラーになっていることが判ります。
 
 ```bash
-kubectl describe -n resource-test replicasets.apps resource-test
+kubectl get events -n resource-test
 ```
 
 
@@ -960,45 +960,18 @@ kubectl describe -n resource-test replicasets.apps resource-test
 # 実行結果
 
 
-Name:           resource-test-6cb9b54b4c
-Namespace:      resource-test
-Selector:       app=resource-test,pod-template-hash=6cb9b54b4c
-Labels:         app=resource-test
-                pod-template-hash=6cb9b54b4c
-Annotations:    deployment.kubernetes.io/desired-replicas: 1
-                deployment.kubernetes.io/max-replicas: 2
-                deployment.kubernetes.io/revision: 1
-Controlled By:  Deployment/resource-test
-Replicas:       0 current / 1 desired
-Pods Status:    0 Running / 0 Waiting / 0 Succeeded / 0 Failed
-Pod Template:
-  Labels:  app=resource-test
-           pod-template-hash=6cb9b54b4c
-  Containers:
-   nginx:
-    Image:        nginx:latest
-    Port:         <none>
-    Host Port:    <none>
-    Environment:  <none>
-    Mounts:       <none>
-  Volumes:        <none>
-Conditions:
-  Type             Status  Reason
-  ----             ------  ------
-  ReplicaFailure   True    FailedCreate
-Events:
-  Type     Reason        Age                  From                   Message
-  ----     ------        ----                 ----                   -------
-  Warning  FailedCreate  10m                  replicaset-controller  Error creating: pods "resource-test-6cb9b54b4c-s9m9f" is forbidden: failed quota: test-resource-quota: must specify limits.cpu for: nginx; limits.memory for: nginx
-  Warning  FailedCreate  10m                  replicaset-controller  Error creating: pods "resource-test-6cb9b54b4c-xchht" is forbidden: failed quota: test-resource-quota: must specify limits.cpu for: nginx; limits.memory for: nginx
-  Warning  FailedCreate  10m                  replicaset-controller  Error creating: pods "resource-test-6cb9b54b4c-hs6tz" is forbidden: failed quota: test-resource-quota: must specify limits.cpu for: nginx; limits.memory for: nginx
-  Warning  FailedCreate  10m                  replicaset-controller  Error creating: pods "resource-test-6cb9b54b4c-qdph7" is forbidden: failed quota: test-resource-quota: must specify limits.cpu for: nginx; limits.memory for: nginx
-  Warning  FailedCreate  10m                  replicaset-controller  Error creating: pods "resource-test-6cb9b54b4c-dxflr" is forbidden: failed quota: test-resource-quota: must specify limits.cpu for: nginx; limits.memory for: nginx
-  Warning  FailedCreate  10m                  replicaset-controller  Error creating: pods "resource-test-6cb9b54b4c-xfw8z" is forbidden: failed quota: test-resource-quota: must specify limits.cpu for: nginx; limits.memory for: nginx
-  Warning  FailedCreate  10m                  replicaset-controller  Error creating: pods "resource-test-6cb9b54b4c-465t2" is forbidden: failed quota: test-resource-quota: must specify limits.cpu for: nginx; limits.memory for: nginx
-  Warning  FailedCreate  10m                  replicaset-controller  Error creating: pods "resource-test-6cb9b54b4c-6ml62" is forbidden: failed quota: test-resource-quota: must specify limits.cpu for: nginx; limits.memory for: nginx
-  Warning  FailedCreate  10m                  replicaset-controller  Error creating: pods "resource-test-6cb9b54b4c-bvc5t" is forbidden: failed quota: test-resource-quota: must specify limits.cpu for: nginx; limits.memory for: nginx
-  Warning  FailedCreate  5m15s (x8 over 10m)  replicaset-controller  (combined from similar events): Error creating: pods "resource-test-6cb9b54b4c-z92sl" is forbidden: failed quota: test-resource-quota: must specify limits.cpu for: nginx; limits.memory for: nginx
+LAST SEEN   TYPE      REASON              OBJECT                                MESSAGE
+55s         Warning   FailedCreate        replicaset/resource-test-7db7f48fb8   Error creating: pods "resource-test-7db7f48fb8-82276" is forbidden: failed quota: test-resource-quota: must specify limits.cpu for: nginx; limits.memory for: nginx
+55s         Warning   FailedCreate        replicaset/resource-test-7db7f48fb8   Error creating: pods "resource-test-7db7f48fb8-2jgrc" is forbidden: failed quota: test-resource-quota: must specify limits.cpu for: nginx; limits.memory for: nginx
+55s         Warning   FailedCreate        replicaset/resource-test-7db7f48fb8   Error creating: pods "resource-test-7db7f48fb8-bszgl" is forbidden: failed quota: test-resource-quota: must specify limits.cpu for: nginx; limits.memory for: nginx
+55s         Warning   FailedCreate        replicaset/resource-test-7db7f48fb8   Error creating: pods "resource-test-7db7f48fb8-fs5wq" is forbidden: failed quota: test-resource-quota: must specify limits.cpu for: nginx; limits.memory for: nginx
+55s         Warning   FailedCreate        replicaset/resource-test-7db7f48fb8   Error creating: pods "resource-test-7db7f48fb8-fx24t" is forbidden: failed quota: test-resource-quota: must specify limits.cpu for: nginx; limits.memory for: nginx
+55s         Warning   FailedCreate        replicaset/resource-test-7db7f48fb8   Error creating: pods "resource-test-7db7f48fb8-s9svn" is forbidden: failed quota: test-resource-quota: must specify limits.cpu for: nginx; limits.memory for: nginx
+55s         Warning   FailedCreate        replicaset/resource-test-7db7f48fb8   Error creating: pods "resource-test-7db7f48fb8-vc6kj" is forbidden: failed quota: test-resource-quota: must specify limits.cpu for: nginx; limits.memory for: nginx
+55s         Warning   FailedCreate        replicaset/resource-test-7db7f48fb8   Error creating: pods "resource-test-7db7f48fb8-pc2l9" is forbidden: failed quota: test-resource-quota: must specify limits.cpu for: nginx; limits.memory for: nginx
+54s         Warning   FailedCreate        replicaset/resource-test-7db7f48fb8   Error creating: pods "resource-test-7db7f48fb8-d2z8v" is forbidden: failed quota: test-resource-quota: must specify limits.cpu for: nginx; limits.memory for: nginx
+14s         Warning   FailedCreate        replicaset/resource-test-7db7f48fb8   (combined from similar events): Error creating: pods "resource-test-7db7f48fb8-frspc" is forbidden: failed quota: test-resource-quota: must specify limits.cpu for: nginx; limits.memory for: nginx
+55s         Normal    ScalingReplicaSet   deployment/resource-test              Scaled up replica set resource-test-7db7f48fb8 from 0 to 1
 ```
 
 では、先ほどのDeployment Manifest resource-test.yamlをvimなどのエディタを利用して編集し、リソースの上限と下限を割り当ててみましょう。
