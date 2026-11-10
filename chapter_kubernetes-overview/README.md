@@ -36,7 +36,7 @@ spec:
   accessModes:
     - ReadWriteMany
   persistentVolumeReclaimPolicy: Retain
-  storageClassName: standard
+  storageClassName: ""
   hostPath:
     path: /tmp
 ```
@@ -52,7 +52,7 @@ metadata:
 spec:
   accessModes:
     - ReadWriteMany
-  storageClassName: standard
+  storageClassName: ""
   resources:
     requests:
       storage: 1Gi
