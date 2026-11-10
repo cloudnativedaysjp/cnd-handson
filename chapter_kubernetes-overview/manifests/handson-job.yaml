@@ -11,5 +11,5 @@ spec:
       - name: handson-job
         image: alpine:latest
         command: ["echo"]
-        args: ["Welcome To the CNDW2025 Hands On Event!!"]
+        args: ["Welcome to the CND Handson!!"]
       restartPolicy: Never
