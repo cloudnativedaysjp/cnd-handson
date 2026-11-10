@@ -142,14 +142,14 @@ test-1234567890-abcde   1/1     Running   0          20s
 kubectl port-forward <Pod名> 8888:80 &
 ```
 
-以下のように出力されたら外部からのアクセスが可能となります。Ctrl+Cを押さずにそのままでいてください。
+以下のように出力されたら外部からのアクセスが可能となります。ポートフォワードはバックグラウンドで実行されているため、同じターミナルでそのまま操作を続けられます。
 
 ```text
 Forwarding from 127.0.0.1:8888 -> 80
 Forwarding from [::1]:8888 -> 80
 ```
 
-新しくターミナルを開き、以下のコマンドでアクセスしてみましょう。
+以下のコマンドでアクセスしてみましょう。
 
 ```bash
 curl -I http://localhost:8888
@@ -602,11 +602,62 @@ ConfigMapは機密性のないデータを保存するために使用されま�
 
 まずは、ConfigMapを作成します。
 
+```yaml
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  labels:
+    name: handson-configmap
+  name: handson-configmap
+data:
+  index.html: |
+    <html>
+      <head>
+        <title>
+        CND ConfigMap Handson
+        </title>
+      <body>
+        <h1>
+        CND ConfigMap Handson
+        </h1>
+      </body>
+    </html>
+```
+
 ```bash
 kubectl apply -f handson-configmap.yaml
 ```
 
 続いてPodを作成します。
+
+```yaml
+apiVersion: v1
+kind: Pod
+metadata:
+  labels:
+    app: configmap-pod
+  name: configmap-pod
+spec:
+  containers:
+  - name: nginx
+    image: nginx:latest
+    ports:
+    - containerPort: 80
+      name: nginx-port
+      protocol: TCP
+    volumeMounts:
+    - name: nginx-html-file
+      mountPath: /usr/share/nginx/html/index.html
+      subPath: index.html
+      readOnly: true
+  volumes:
+    - name: nginx-html-file
+      configMap:
+        name: handson-configmap
+        items:
+        - key: "index.html"
+          path: "index.html"
+```
 
 ```bash
 kubectl apply -f configmap-pod.yaml
@@ -642,11 +693,47 @@ Secretは、パスワードやアクセスキーなどの機密データの保�
 
 まずは、Secretを作成します。
 
+```yaml
+apiVersion: v1
+kind: Secret
+metadata:
+  labels:
+    name: handson-secret
+  name: handson-secret
+data:
+  username: dXNlcjAx
+  password: cGFzc3dk
+```
+
 ```bash
 kubectl apply -f handson-secret.yaml
 ```
 
 続いてPodを作成します。
+
+```yaml
+apiVersion: v1
+kind: Pod
+metadata:
+  labels:
+    app: secret-pod
+  name: secret-pod
+spec:
+  containers:
+  - name: nginx
+    image: nginx:latest
+    env:
+    - name: USERNAME
+      valueFrom:
+        secretKeyRef:
+          name: handson-secret
+          key: username
+    - name: PASSWORD
+      valueFrom:
+        secretKeyRef:
+          name: handson-secret
+          key: password
+```
 
 ```bash
 kubectl apply -f secret-pod.yaml
