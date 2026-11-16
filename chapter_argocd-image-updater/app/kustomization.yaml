@@ -7,4 +7,4 @@ resources:
   - httproute.yaml
 images:
   - name: ghcr.io/nginxinc/nginx-unprivileged
-    newTag: 1.27.0
+    newTag: 1.27.4
