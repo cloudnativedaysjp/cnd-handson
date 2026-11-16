@@ -764,7 +764,7 @@ kubectl delete secret handson-secret
 セクションの最後に、簡単なWebアプリケーションを使ったトラブルシュートに挑戦してみましょう。
 
 `cnd-web.yaml` を修正してください。
-構成図右下にある`cndw-web-app`に接続し、適切なWebページを表示させることがゴールです。
+構成図右下にある`cnd-web-app`に接続し、適切なWebページを表示させることがゴールです。
 
 ![diagram](./image/cnd-tshoot-diagram.svg)
 
