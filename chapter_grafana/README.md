@@ -44,7 +44,7 @@ kube-prometheus-stackではデフォルトで多くのDashboardが用意され�
 試しに `Kubernetes / Compute Resources / Namespace (Pods)` を開き、
 画面上部の `namespace` を `handson` に切り替えて、サンプルアプリのリソース使用量を見てみましょう。
 
-<!-- TODO: スクリーンショット(Kubernetes / Compute Resources / Namespace (Pods)) -->
+![Kubernetes / Compute Resources / Namespace (Pods)](image/dashboard-namespace-pods.png)
 
 ## 実践: ExploreでEnvoy Gatewayのメトリクスを見る
 
@@ -69,7 +69,7 @@ sum by (envoy_cluster_name) (rate(envoy_cluster_upstream_rq_total[1m]))
 `httproute/<Namespace>/<HTTPRoute名>/rule/<ルール番号>` のような形式になっているので、
 `httproute/handson/handson/rule/0` が `app.example.com` へのリクエストに対応します。
 
-<!-- TODO: スクリーンショット(Explore) -->
+![Explore](image/explore-envoy-gateway.png)
 
 > [!TIP]
 > どんなメトリクスがあるか分からないときは、左メニューの `Drilldown` → `Metrics` を開いてみてください。
@@ -101,12 +101,12 @@ Envoy GatewayはDashboardをGitHubリポジトリで公開しているので、J
 - `Name` ... `Envoy Clusters`
 - `Folder` ... `envoy-gateway`
 
-<!-- TODO: スクリーンショット(Import画面) -->
+![Import画面](image/import-envoy-clusters.png)
 
 インポートに成功すると、Envoyのクラスタ(HTTPRouteのルール)ごとのリクエスト数やレイテンシが見られるDashboardが表示されます。
-画面上部の変数で `Namespace` を `handson` 、 `Resource` を `handson` 、 `Rule` を `0` にしてみましょう。
+画面上部の `Cluster` 変数で `httproute/handson/handson/rule/0` を選択してみましょう。
 
-<!-- TODO: スクリーンショット(Envoy Clusters Dashboard) -->
+![Envoy Clusters Dashboard](image/dashboard-envoy-clusters.png)
 
 > [!TIP]
 > chapter_prometheusの`prometheus-values.yaml`では、`grafana.dashboards`に`gnetId`を指定して、
@@ -175,7 +175,7 @@ GitHubの `Settings` → `Developer settings` → `Personal access tokens` → `
 <http://grafana.example.com/admin/provisioning> (`Administration` → `General` → `Provisioning`)にアクセスし、
 プロバイダとして `GitHub` を選択します。
 
-<!-- TODO: スクリーンショット(Provisioning画面) -->
+![Provisioning](image/provisioning.png)
 
 以下のように設定して、画面に従って進めます。
 
@@ -256,16 +256,12 @@ Panelを追加したら、右に表示される `Title` に下記の `Title` を
      ```
    - `Standard options` → `Unit` ... `Time / milliseconds (ms)`
 
-<!-- TODO: スクリーンショット(作成したDashboard) -->
-
 #### Pull Requestとして保存する
 
 `Save dashboard` をクリックし、以下のように設定します。
 
 - `Title` ... `Handson App`
 - 保存方法 ... 新しいブランチを作成してPull Requestを作成する
-
-<!-- TODO: スクリーンショット(Git Syncの保存ダイアログ) -->
 
 保存すると、GitHubの `grafana-dashboards` リポジトリにDashboardのJSONを含むブランチが作成されます。
 GitHub上でPull Requestを作成し(Grafanaの画面に表示されるリンクからも開けます)、内容を確認して `main` ブランチにマージしてください。
@@ -323,7 +319,7 @@ webhook-receiver-xxxxxxxxxx-xxxxx   1/1     Running   0          30s
 - `Integration` ... `Webhook`
 - `URL` ... `http://webhook-receiver.prometheus.svc.cluster.local/`
 
-<!-- TODO: スクリーンショット(Contact Point作成画面) -->
+![Contact Point作成画面](image/create-contact-point-webhook.png)
 
 Webhook受信アプリのログを確認し、Grafanaから通知が届いていることを確認します。
 
@@ -345,7 +341,7 @@ kubectl logs -n prometheus -l app=webhook-receiver --tail 50
 Contact Pointを追加しただけでは、新規にアラートを追加してもさきほどのContact Pointに向けて発報できません。
 それを実現するために、Notification Policyを作成する必要があります。
 
-<http://grafana.example.com/alerting/routes> にアクセスし、 `Default policy` の `Add route` のボタンをクリックします。
+<http://grafana.example.com/alerting/routes> にアクセスし、 `Default policy` の `Add route` ボタンをクリックします。
 
 以下の設定を入力し、 `Add route` ボタンをクリックします。
 
@@ -354,7 +350,7 @@ Contact Pointを追加しただけでは、新規にアラートを追加して�
 - `Value` ... `handson`
 - `Contact point` ... `handson-webhook`
 
-<!-- TODO: スクリーンショット(Notification Policy作成画面) -->
+![Notification Policy作成画面](image/notification-policy-add-route.png)
 
 ### アラートルールの作成
 
@@ -386,7 +382,7 @@ Contact Pointを追加しただけでは、新規にアラートを追加して�
    - `Summary` ... `app.example.com has no traffic`
    - `Description` ... `Requests to app.example.com have been below 0.5 rps for 1 minute.`
 
-<!-- TODO: スクリーンショット(アラートルール作成画面) -->
+![アラートルール作成画面](image/add-alert-rule-handson.png)
 
 このアラートは、 `app.example.com` へのリクエスト数が1分間平均で毎秒0.5回を下回った状態が1分続くと発報されるルールになっています。
 
