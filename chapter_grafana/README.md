@@ -217,11 +217,11 @@ DashboardやGrafana Alertingでは、Dashboard Panelやアラートの内容文�
 <https://grafana.com/docs/grafana/latest/dashboards/variables/>
 
 ここでは、Envoyのクラスタ名(= HTTPRouteのルール)を選べる変数を作ります。
-Dashboardの `Settings` → `Variables` → `Add variable` をクリックし、以下のように設定します。
+画面左上の `+`（`Add variable`）をクリックし、`Query` を選びます。
+`Query variable` のパネルで `Name` を `route` に変更します。
+続いて `Open variable editor` をクリックし、以下のように設定します。
 
-- `Variable type` ... `Query`
-- `Name` ... `route`
-- `Data source` ... `Prometheus`
+- `Target data source` ... `Prometheus`
 - `Query type` ... `Label values`
 - `Label` ... `envoy_cluster_name`
 - `Metric` ... `envoy_cluster_upstream_rq_total`
@@ -231,8 +231,9 @@ Dashboardの `Settings` → `Variables` → `Add variable` をクリックし、
 
 #### Panelを追加する
 
-`Add` → `Visualization` からPanelを追加し、以下の3つのPanelを作成します。
-いずれもDatasourceは `Prometheus` 、クエリエディタは `Code` を使います。
+画面右上の `+` → `Panel` からPanelを追加し、以下の3つのPanelを作成します。
+Panelを追加したら、右に表示される `Title` に下記の `Title` を入力し、Panel内の `Configure visualization` をクリックします。
+いずれもData sourceは `Prometheus` 、クエリエディタは `Code` を使い、下記のクエリを入力します。
 
 1. リクエスト数(RPS)
    - `Title` ... `Requests per second`
@@ -310,7 +311,7 @@ webhook-receiver-xxxxxxxxxx-xxxxx   1/1     Running   0          30s
 ### Contact Pointの追加
 
 <http://grafana.example.com/alerting/notifications> にアクセスして、
-`Create contact point` ボタンをクリックします。
+`New contact point` ボタンをクリックします。
 
 以下のような設定を入力して、 `Test` ボタンをクリックしてテストアラートを発報します。
 
@@ -326,7 +327,7 @@ Webhook受信アプリのログを確認し、Grafanaから通知が届いてい
 kubectl logs -n prometheus -l app=webhook-receiver --tail 50
 ```
 
-`"receiver": "handson-webhook"` や `"status": "firing"` を含むJSONが出力されていれば成功です。
+`"status": "firing"` を含むJSONが出力されていれば成功です。
 無事テストが成功したら、 `Save contact point` をクリックして保存します。
 
 > [!TIP]
@@ -375,7 +376,8 @@ Contact Pointを追加しただけでは、新規にアラートを追加して�
    - `Evaluation group` ... 新規作成し、 `Evaluation group name` を `handson-app`、 `Evaluation interval` を `1m` に設定
    - `Pending period` ... `1m`
 5. Configure notifications
-   - Notification Policyを使って通知先を決める設定にします(手順3で付けたラベルで `handson-webhook` にルーティングされます)
+   - 右上の `Advanced options` をオンにし、 `Default policy` が選ばれていることを確認します
+   - `Alert instance routing preview` に `Delivered to handson-webhook` と表示されることを確認します
 6. Configure notification message
    - `Summary` ... `app.example.com has no traffic`
    - `Description` ... `Requests to app.example.com have been below 0.5 rps for 1 minute.`
@@ -385,7 +387,7 @@ Contact Pointを追加しただけでは、新規にアラートを追加して�
 このアラートは、 `app.example.com` へのリクエスト数が1分間平均で毎秒0.5回を下回った状態が1分続くと発報されるルールになっています。
 
 最初に実行した`curl`のループを `Ctrl+C` で止めて、数分待ってみましょう。
-<http://grafana.example.com/alerting/list> でアラートの状態が `Pending` → `Firing` と変わり、
+<http://grafana.example.com/alerting/list> の `Grafana-managed` → `envoy-gateway` → `handson-app` を開き、 `HandsonAppNoTraffic` の状態が `Pending` → `Firing` と変わり、
 Webhook受信アプリのログに `HandsonAppNoTraffic` の通知が出力されるはずです。
 
 ```bash
