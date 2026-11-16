@@ -10,7 +10,7 @@ spec:
     namespace: gateway
     sectionName: http
   hostnames:
-  - grafana.example.com
+  - grafana.vm01.handson.cloudnativedays.jp
   rules:
   - matches:
     - path:
