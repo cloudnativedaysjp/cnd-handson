@@ -104,7 +104,7 @@ Envoy GatewayはDashboardをGitHubリポジトリで公開しているので、J
 ![Import画面](image/import-envoy-clusters.png)
 
 インポートに成功すると、Envoyのクラスタ(HTTPRouteのルール)ごとのリクエスト数やレイテンシが見られるDashboardが表示されます。
-画面上部の変数で `httproute/handson/handson/rule/0` を選択してみましょう。
+画面上部の `Cluster` 変数で `httproute/handson/handson/rule/0` を選択してみましょう。
 
 ![Envoy Clusters Dashboard](image/dashboard-envoy-clusters.png)
 
@@ -340,9 +340,9 @@ kubectl logs -n prometheus -l app=webhook-receiver --tail 50
 Contact Pointを追加しただけでは、新規にアラートを追加してもさきほどのContact Pointに向けて発報できません。
 それを実現するために、Notification Policyを作成する必要があります。
 
-<http://grafana.example.com/alerting/routes> にアクセスし、 `New child policy` のボタンをクリックします。
+<http://grafana.example.com/alerting/routes> にアクセスし、 `Default policy` の `Add route` ボタンをクリックします。
 
-以下の設定を入力し、 `Save policy` ボタンをクリックします。
+以下の設定を入力し、 `Add route` ボタンをクリックします。
 
 - `Label` ... `alert-route`
 - `Operator` ... `=`
