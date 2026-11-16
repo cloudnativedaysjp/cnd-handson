@@ -9,7 +9,7 @@ spec:
     namespace: gateway
     sectionName: http
   hostnames:
-  - app.example.com
+  - app.vm01.handson.cloudnativedays.jp
   rules:
   - matches:
     - path:
