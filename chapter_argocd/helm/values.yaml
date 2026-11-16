@@ -51,6 +51,12 @@ repoServer:
         name: argocd-cmp-cm
     - name: cmp-tmp
       emptyDir: {}
-service:
+server:
   extensions:
     enabled: true
+    extensionList:
+      # Argo Rollouts の状態を Web UI に出す。Argo CD v3.5 以降は v0.4.0 以上が要る
+      - name: rollout-extension
+        env:
+          - name: EXTENSION_URL
+            value: https://github.com/argoproj-labs/rollout-extension/releases/download/v0.4.0/extension.tar

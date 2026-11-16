@@ -2,6 +2,10 @@ kind: Cluster
 apiVersion: kind.x-k8s.io/v1alpha4
 nodes:
 - role: control-plane
+  # Cilium 1.20とEnvoy Gateway v1.9がサポートするKubernetesは1.33〜1.36のため、ノードイメージを固定する
+  #   see: https://docs.cilium.io/en/v1.20/network/kubernetes/requirements/
+  #   see: https://gateway.envoyproxy.io/news/releases/matrix/
+  image: kindest/node:v1.36.4@sha256:099e049362a1526b2db71494e1947aae99bd16290d7c895f2b7ea312e3cbfaed
   kubeadmConfigPatches:
   - |
     kind: InitConfiguration
@@ -9,13 +13,9 @@ nodes:
       kubeletExtraArgs:
         node-labels: "ingress-ready=true"
   extraPortMappings:
-  # ingress port for nginx
+  # Gateway API (Envoy Gateway)
   - containerPort: 30080
     hostPort: 80
-    listenAddress: "0.0.0.0"
-    protocol: TCP
-  - containerPort: 30443
-    hostPort: 443
     listenAddress: "0.0.0.0"
     protocol: TCP
   # ingress port for cilium
@@ -37,7 +37,9 @@ nodes:
     listenAddress: "0.0.0.0"
     protocol: TCP
 - role: worker
+  image: kindest/node:v1.36.4@sha256:099e049362a1526b2db71494e1947aae99bd16290d7c895f2b7ea312e3cbfaed
 - role: worker
+  image: kindest/node:v1.36.4@sha256:099e049362a1526b2db71494e1947aae99bd16290d7c895f2b7ea312e3cbfaed
 networking:
   disableDefaultCNI: true
   kubeProxyMode: none

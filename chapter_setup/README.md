@@ -7,7 +7,7 @@
 下記の手順に従って、VMを作成してください。
 今回はAWS環境のVMで実施していますが、他の環境でも基本的に動作する想定です。
 
-```
+```bash
 # SSH で利用するキーペアの作成
 aws ec2 create-key-pair  \
   --key-name cnd-handson-key \
@@ -53,7 +53,7 @@ aws ec2 describe-instances \
 
 演習で利用するVMに最低限のパッケージをインストールします。
 
-```
+```bash
 sudo apt-get update
 sudo apt-get install -y curl vim git unzip gnupg lsb-release ca-certificates dstat jq
 curl -fsSL https://download.docker.com/linux/ubuntu/gpg | sudo gpg --dearmor -o /usr/share/keyrings/docker-archive-keyring.gpg
@@ -73,37 +73,49 @@ sudo apt-get install -y docker-ce docker-ce-cli containerd.io
 
 hostsファイルには、この演習を通して利用するIPアドレスとドメインの紐付けを設定してください。YOUR_VM_IP_ADDRESSはこの演習で利用するマシンのIPアドレスを指定してください。
 
-```
+```text
 YOUR_VM_IP_ADDRESS    hello-world.example.com
 YOUR_VM_IP_ADDRESS    rollout.example.com
-YOUR_VM_IP_ADDRESS    blue.example.com
-YOUR_VM_IP_ADDRESS    green.example.com
+YOUR_VM_IP_ADDRESS    blue-green.example.com
 YOUR_VM_IP_ADDRESS    app.example.com
-YOUR_VM_IP_ADDRESS    cndw-web.example.com
 YOUR_VM_IP_ADDRESS    prometheus.example.com
 YOUR_VM_IP_ADDRESS    grafana.example.com
 YOUR_VM_IP_ADDRESS    jaeger.example.com
 YOUR_VM_IP_ADDRESS    argocd.example.com
-YOUR_VM_IP_ADDRESS    app.argocd.example.com
-YOUR_VM_IP_ADDRESS    app.cicd.example.com
-YOUR_VM_IP_ADDRESS    dev.kustomize.argocd.example.com
-YOUR_VM_IP_ADDRESS    prd.kustomize.argocd.example.com
-YOUR_VM_IP_ADDRESS    helm.argocd.example.com
-YOUR_VM_IP_ADDRESS    app-preview.argocd.example.com
+YOUR_VM_IP_ADDRESS    app-argocd.example.com
+YOUR_VM_IP_ADDRESS    app-cicd.example.com
+YOUR_VM_IP_ADDRESS    dev-kustomize-argocd.example.com
+YOUR_VM_IP_ADDRESS    prd-kustomize-argocd.example.com
+YOUR_VM_IP_ADDRESS    helm-argocd.example.com
+YOUR_VM_IP_ADDRESS    app-preview-argocd.example.com
+YOUR_VM_IP_ADDRESS    headlamp.example.com
+YOUR_VM_IP_ADDRESS    argocdupdate.example.com
+YOUR_VM_IP_ADDRESS    app-rollouts.example.com
+YOUR_VM_IP_ADDRESS    app-preview-rollouts.example.com
 YOUR_VM_IP_ADDRESS    kiali.example.com
 YOUR_VM_IP_ADDRESS    kiali-ambient.example.com
-YOUR_VM_IP_ADDRESS    app.cilium.example.com
-YOUR_VM_IP_ADDRESS    hubble.cilium.example.com
+YOUR_VM_IP_ADDRESS    app-cilium.example.com
+YOUR_VM_IP_ADDRESS    hubble-cilium.example.com
 YOUR_VM_IP_ADDRESS    pyroscope.example.com
 YOUR_VM_IP_ADDRESS    troubleshoot.example.com
 YOUR_VM_IP_ADDRESS    cnd-web.example.com
-YOUR_VM_IP_ADDRESS    jaeger.example.com
+```
+
+VMのターミナル（kp2）から`curl`で叩く手順もあるため、VMの`/etc/hosts`にも下記を追加してください。VMの80番と8080番で、それぞれEnvoy GatewayとCiliumのIngressが待ち受けています。
+
+```bash
+cat <<'EOF' | sudo tee -a /etc/hosts
+127.0.0.1    app.example.com
+127.0.0.1    app-cilium.example.com
+127.0.0.1    troubleshoot.example.com
+127.0.0.1    cnd-web.example.com
+EOF
 ```
 
 ## リポジトリのClone
 
 マニフェストなどをVMにも配置するために、VM上でリポジトリをCloneしておいてください。
 
-```shell
+```bash
 git clone https://github.com/cloudnativedaysjp/cnd-handson.git
 ```

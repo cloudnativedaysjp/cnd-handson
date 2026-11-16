@@ -1,0 +1,82 @@
+apiVersion: v1
+kind: Pod
+metadata:
+  labels:
+    app: blue
+  name: blue
+spec:
+  containers:
+  - image: ryuichitakei/blue-app:1.1
+    name: blue-app
+  dnsPolicy: ClusterFirst
+  restartPolicy: Always
+---
+apiVersion: v1
+kind: Pod
+metadata:
+  creationTimestamp: null
+  labels:
+    app: green
+  name: green
+spec:
+  containers:
+  - image: ryuichitakei/green-app:1.1
+    name: green-app
+  dnsPolicy: ClusterFirst
+  restartPolicy: Always
+---
+apiVersion: v1
+kind: Service
+metadata:
+  creationTimestamp: null
+  labels:
+    app: blue
+  name: blue-service
+spec:
+  ports:
+  - port: 80
+    protocol: TCP
+    targetPort: 80
+  selector:
+    app: blue
+  type: ClusterIP
+---
+apiVersion: v1
+kind: Service
+metadata:
+  creationTimestamp: null
+  labels:
+    app: green
+  name: green-service
+spec:
+  ports:
+  - port: 80
+    protocol: TCP
+    targetPort: 80
+  selector:
+    app: green
+  type: ClusterIP
+---
+apiVersion: gateway.networking.k8s.io/v1
+kind: HTTPRoute
+metadata:
+  name: blue-green
+spec:
+  parentRefs:
+  - name: handson-gateway
+    namespace: gateway
+    sectionName: http
+  hostnames:
+  - "blue-green.example.com"
+  rules:
+  - matches:
+    - path:
+        type: PathPrefix
+        value: /
+    backendRefs:
+    - name: blue-service
+      port: 80
+      weight: 100
+    - name: green-service
+      port: 80
+      weight: 0

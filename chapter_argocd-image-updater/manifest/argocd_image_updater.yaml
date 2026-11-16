@@ -114,12 +114,6 @@ data:
       UserKnownHostsFile /app/config/ssh/known_hosts
 ---
 apiVersion: v1
-kind: ConfigMap
-metadata:
-  name: argocd-ssh-known-hosts-cm
-  namespace: argo-cd
----
-apiVersion: v1
 kind: Secret
 metadata:
   name: argocd-image-updater-secret
@@ -159,7 +153,7 @@ spec:
       serviceAccountName: argocd-image-updater
       containers:
       - name: argocd-image-updater
-        image: quay.io/argoprojlabs/argocd-image-updater:v1.1.1
+        image: quay.io/argoprojlabs/argocd-image-updater:v0.17.0
         imagePullPolicy: Always
         args: ["run"]
         env:

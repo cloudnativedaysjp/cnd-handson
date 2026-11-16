@@ -1,0 +1,43 @@
+---
+config:
+  htmlLabels: false
+  theme: base
+  themeCSS: |
+    g[id*="flowchart-deploymentIcon-"] {
+      translate: 0 -79px;
+    }
+  themeVariables:
+    fontFamily: Arial, sans-serif
+    primaryColor: '#eff6ff'
+    primaryTextColor: '#0f172a'
+    primaryBorderColor: '#326ce5'
+    lineColor: '#475569'
+    clusterBkg: '#f8fafc'
+    clusterBorder: '#94a3b8'
+    edgeLabelBackground: '#ffffff'
+  flowchart:
+    htmlLabels: false
+    curve: linear
+    diagramPadding: 56
+---
+%% Source: test-service.yaml.
+%% Icons: kubernetes/community (Apache-2.0).
+%% Image paths are relative to this file; serve the icon assets when rendering.
+%% The exported SVG embeds the icons so it can be viewed independently.
+%% The Deployment frame groups its managed Pods for a simplified overview.
+%% Place the Deployment badge on the frame's upper border, as in the earlier Pod diagram.
+flowchart LR
+    client["クライアント"]
+
+    service@{ img: "../../community/icons/svg/resources/labeled/svc.svg", label: "Service: test-service", pos: "b", h: 88, constraint: "on" }
+
+    subgraph deployment[" "]
+        direction TB
+        deploymentIcon@{ img: "../../community/icons/svg/resources/labeled/deploy.svg", label: "Deployment: test", pos: "b", h: 88, constraint: "on" }
+        pod@{ img: "../../community/icons/svg/resources/labeled/pod.svg", h: 88, constraint: "on" }
+        pod2@{ img: "../../community/icons/svg/resources/labeled/pod.svg", h: 88, constraint: "on" }
+    end
+
+    client -->|通信| service
+    service -->|通信| pod
+    service -->|通信| pod2

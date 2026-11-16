@@ -5,11 +5,11 @@ set -o pipefail
 set -o errexit
 
 # Versions of the tools to install
-readonly KIND_VERSION="v0.31.0"
-readonly KUBECTL_VERSION="v1.35.0"
-readonly CILIUM_CLI_VERSION="v0.19.0"
-readonly HELM_VERSION="v4.1.0"
-readonly HELMFILE_VERSION="1.2.3"
+readonly KIND_VERSION="v0.33.0"
+readonly KUBECTL_VERSION="v1.37.1"
+readonly CILIUM_CLI_VERSION="v0.20.1"
+readonly HELM_VERSION="v4.3.0"
+readonly HELMFILE_VERSION="1.8.1"
 # Output colors
 readonly GREEN='\033[0;32m'
 readonly RED="\033[0;31m"
@@ -183,6 +183,20 @@ install_helmfile() {
   info "helmfile installed successfully: $(helmfile --version)"
 }
 
+add_user_to_docker_group() {
+  if id -nG "${USER}" | grep -qw docker; then
+    info "${USER} is already in the docker group"
+    return
+  fi
+
+  info "Adding ${USER} to the docker group..."
+  sudo usermod -aG docker "${USER}" || {
+    err "Failed to add ${USER} to the docker group"
+    return 1
+  }
+  info "${USER} added to the docker group. Please log out and log in again."
+}
+
 main() {
   info "Starting installation of Kubernetes tools..."
   info "Temporary directory: ${TMP_DIR}"
@@ -194,6 +208,7 @@ main() {
     install_helm
     install_helm_diff
     install_helmfile
+    add_user_to_docker_group
   )
   for tool in "${tools[@]}"; do
     $tool || err_on_exit "Failed to execute '${tool}'"

@@ -1,8 +1,21 @@
 tempo:
+  storage:
+    trace:
+      backend: s3
+      # Tempo 3のlive-storeが作成したブロックを、再起動後すぐ検索できるようにする。
+      blocklist_poll: 10s
+      s3:
+        bucket: tempo
+        endpoint: tempo-seaweedfs-all-in-one.monitoring.svc.cluster.local:8333
+        access_key: tempo
+        secret_key: tempo-handson-secret
+        insecure: true
+        forcepathstyle: true
   metricsGenerator:
     enabled: true
     remoteWriteUrl: http://kube-prometheus-stack-prometheus.prometheus:9090/api/v1/write
-  config: |
-    overrides:
-      metrics_generator_processors:
-        - 'service-graphs'
+  overrides:
+    defaults:
+      metrics_generator:
+        processors:
+          - service-graphs

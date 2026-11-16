@@ -38,39 +38,37 @@
 
 ### Write（プロファイルの書き込み）
 
-<img src="https://mermaid.ink/svg/pako:eNqNkT1PwzAQhv9K5C6t1DY0hrT1wIBgZgCJoeng2OfE4MSRfaFUVf47dkoLI9vd896H7_WJCCuBMKKMPYiaO0xeH4o2SXoPbrp7cxrB72fJYnGfSO3R6bJH62LFn3SUdVuBRxi1SzwK1kckbNNxcSk-M-vH5Cqd2XT3XL6DwMQHBPtZpB6PBsZHJUobwyZqq-Zhv_0ANqGU_sSLg5ZYs6z7-m0KS_7bQuakAddwLYMjpziiIFhDAwVhIZSgeG-wIEU7hFIeTn85toIwdD3MSd9JjvCoeeV4Q5jixl_pk9ThmCs0lksI6YngsYv2V8HMMFLYVukq8t6ZgGvEzrM0jfKy0lj35TK4lXot41_Vn9s8zbN8wzMK-ZryO0qlKFfbjcpuV0qub1YZJ8MwfAN3mqSC" width="100">
-
-1. distributorは、ingesterへプロファイルをPushします。
-2. ingesterは、受信したプロファイルを、Pyroscopeのデータベースに保存します。プロファイルをすぐに書き込むのでなく、一度ingesterのメモリ領域か、ingesterのディスク領域に保持します。最終的に、全てのプロファイルがディスクに書き込まれ、長期ストレージに追加されます。ingesterはレプリケートされており、デフォルトでは3つのingesterが動いてます。
-3. Compactorは、各ingesterからのブロックを1つにマージし、重複部分を削除します。ブロック圧縮により、ストレージ使用率を大幅に削減します。
+1. distributorがプロファイルを受け取り、segment-writerへ転送します。
+2. segment-writerがプロファイルをオブジェクトストレージへ書き込みます。
+3. metastoreがデータの場所を管理し、compaction-workerが保存されたデータを圧縮します。
 
 
 ### Read（プロファイルの読み込み）
-<img src="https://mermaid.ink/svg/pako:eNqNkT1PwzAQhv9K5C6t1DQ0gX54YEAwIwFb08G1z4nBiYN9pkRV_jt2gQJi6XZ-7rmTXt-BcCOAUCK12fOaWUyebso2SbwDO948ABNuO0nS9Dp59WD7VFrTIrQiOn_JL8nxGoTXYL8tBfactmorcPifOzQW0ooh7Fl_JMZFx7jx5n73DBw_le0kUoe9hmOARCqt6Uiu5dShNS9AR0VRfNXpXgmsad69_wwZd_YImZIGbMOUCL93iCtKgjU0UBIaSgGSeY0lKdshqMyjeexbTihaD1PiOxHS3CpWWdYQKpl2J3onVAhzgtowAeF5INh38VSVchhWctNKVUXurQ64RuwczbLYnlUKa7-bcdNkTol41_ptvcgW-WLF8gIWy4JdFYXgu_l6JfPLuRTLi3nOyDAMHzzctK0" width="360">
 
-1. Pyroscope上で実行されたクエリはAPIリクエストとして、query-frontendで受け取ります。
-2. query-frontendは、query-schedulerに通信しに行きます。query-schedulerはクエリのキューを維持し、各テナントが公平に実行されるようにします。
-3. querierは、query-schedulerのキューから、クエリを取得します。
-4. querierの参照先は、最近のデータからならingesterから、長期ストレージからならstore-gatewayからデータを取得します。
+1. query-frontendがクエリを受け取ります。
+2. metastoreから対象データの場所を取得します。
+3. query-backendがオブジェクトストレージからデータを読み出し、結果を返します。
+
+詳細は[Pyroscope v2 architecture](https://grafana.com/docs/pyroscope/latest/reference-pyroscope-v2-architecture/)を参照してください。
 
 ## Pyroscopeへのプロファイルの送信（クライアント）
-プロファイルをPyroscopeに送信する場合、各言語ごとのPyroscope SDKを使うか、Grafana Agentを使うかの2択でしたが、2024/04のGrafanaCONで、**Grafana Alloy**という、OTLP(OpenTelemetry Protocol)互換の新たなCollectorが発表されました。
+プロファイルをPyroscopeに送信するには、各言語向けのPyroscope SDK、Grafana Alloy、OpenTelemetry eBPF Profilerなどを利用できます。
 
-当ハンズオンでは、初期構築時にGrafana Alloyがインストールされています。
+本章では、PyroscopeのHelm Chartに付属するAlloyによる自己プロファイリングに加え、**OpenTelemetry Collector**でハンズオンアプリのCPUプロファイルを収集します。アプリケーションのコード変更やSDKの追加は不要です。
 
 > [!NOTE]
-> Grafana Agentは2025年にEOLとなり、Alloyへとプロジェクト移行されます。
+> Grafana AgentはEOLとなっており、Grafana Alloyへ移行されています。
 
 ## 実践: Grafana Pyroscopeのインストール
 実践として、Pyroscopeをインストールします。以降のハンズオンででは、pyroscopeのchapterを作業ディレクトリとしてください。
 ```bash
-cd chapter_pyroscope
+cd ~/cnd-handson/chapter_pyroscope
 ```
 
 Kubernetesクラスタ上にPyroscopeをインストールします。
 ここでは、grafanaのHelm Chartから利用します。
 
-Pyroscopeでは、モノリシックモードと、マイクロサービスモードという、2つのデプロイ方式が選択できます。本章ではデフォルトでマイクロサービスモードを採用します。
+Pyroscopeでは、モノリシックモードと、マイクロサービスモードという、2つのデプロイ方式が選択できます。本章ではv2ストレージアーキテクチャのマイクロサービスモードを採用します。
 
 用意されているhelmfile.yamlおよび `helm/values-micro-services.yaml` を利用して、 `helmfile sync` を実行し、Pyroscopeをインストールしましょう。
 
@@ -78,36 +76,37 @@ Pyroscopeでは、モノリシックモードと、マイクロサービスモ�
 helmfile sync -f helm/helmfile.yaml
 ```
 
+Pyroscopeのプロファイルデータは、同時に導入されるS3互換ストレージのSeaweedFSに保存します。
+認証情報はローカルハンズオン専用の固定値として自動設定されるため入力不要ですが、本番環境では使用しないでください。
+
 実際に各種サービスが起動しているか確認します。
 
 ```bash
 kubectl get pods -n monitoring -l app.kubernetes.io/instance=pyroscope
 ```
 
-```bash
+```text
 # 実行結果（マイクロサービスモード）
-pyroscope-alloy-0                            2/2     Running   0          29m
-pyroscope-compactor-0                        1/1     Running   0          27m
-pyroscope-compactor-1                        1/1     Running   0          27m
-pyroscope-distributor-7d6969bdb4-4x9jh       1/1     Running   0          5m29s
-pyroscope-ingester-0                         1/1     Running   0          27m
-pyroscope-ingester-1                         1/1     Running   0          27m
-pyroscope-minio-0                            1/1     Running   0          5m27s
-pyroscope-querier-7867466d84-gg5qg           1/1     Running   0          27m
-pyroscope-querier-7867466d84-nb2sd           1/1     Running   0          27m
-pyroscope-querier-7867466d84-xtc4z           1/1     Running   0          27m
-pyroscope-query-frontend-97bb84b78-mbpml     1/1     Running   0          5m28s
-pyroscope-query-scheduler-857746b8b6-mgph2   1/1     Running   0          5m28s
-pyroscope-store-gateway-0                    1/1     Running   0          27m
-pyroscope-store-gateway-1                    1/1     Running   0          27m
+pyroscope-admin-xxxxxxxxxx-xxxxx              1/1     Running
+pyroscope-alloy-0                             2/2     Running
+pyroscope-compaction-worker-0                 1/1     Running
+pyroscope-compaction-worker-1                 1/1     Running
+pyroscope-distributor-xxxxxxxxxx-xxxxx        1/1     Running
+pyroscope-metastore-0                         1/1     Running
+pyroscope-query-backend-xxxxxxxxxx-xxxxx      1/1     Running
+pyroscope-query-backend-xxxxxxxxxx-xxxxx      1/1     Running
+pyroscope-query-backend-xxxxxxxxxx-xxxxx      1/1     Running
+pyroscope-query-frontend-xxxxxxxxxx-xxxxx     1/1     Running
+pyroscope-segment-writer-0                    1/1     Running
+pyroscope-segment-writer-1                    1/1     Running
 ```
 
 
 ## Pyroscopeフロントエンドへのアクセス
-Pyoscopeの画面にアクセスします。pyroscopeの画面を参照するために、ingressリソースを追加します。
+Pyoscopeの画面にアクセスします。pyroscopeの画面を参照するために、HTTPRouteリソースを追加します。
 
 ```bash
-kubectl apply -f ingress.yaml
+kubectl apply -f httproute.yaml
 ```
 
 [http://pyroscope.example.com](http://pyroscope.example.com)にアクセスしましょう。すでにPyroscope自身のプロファイルが確認できます。
@@ -123,7 +122,7 @@ chapter_grafanaで構築したGrafanaに、Pyroscopeのデータソースを追�
 ![image](./image/grafana-datasource.png)
 
 ※kube-prometheus-stackで使用したhelmのvaluesに追加する手順でも対応できます。
-```helmのvalues.yaml
+```yaml
 datasources:
   - name: Grafana Pyroscope
     type: grafana-pyroscope-datasource
@@ -135,7 +134,7 @@ GrafanaのExplore([http://grafana.example.com/explore](http://grafana.example.co
 
 プロファイルタイプは、cpu、memory、goroutineなどがあり、各言語ごとにサポートされています。詳細は、[Pyroscopeのドキュメント](https://grafana.com/docs/pyroscope/latest/view-and-analyze-profile-data/profiling-types/#available-profiling-types)を参照ください。
 
-ラベルセレクターは、対象をtagで絞りたい場合に有効です。これは、Pyroscopeのclient側で付与されたtagになります。helmでinstallしたgrafana-agentでは、自動計装として使用可能なtagが付与されています。（[Pyroscope](http://pyroscope.example.com)のSingle View>Select Tagでの確認が簡単です。）空欄のままでもプロファイルを参照可能です。
+ラベルセレクターは、対象をtagで絞りたい場合に有効です。これは、Pyroscopeのclient側で付与されたtagになります。PyroscopeのHelm Chartに付属するAlloyでは、収集対象を識別するラベルが付与されています。（[Pyroscope](http://pyroscope.example.com)のSingle View>Select Tagでの確認が簡単です。）空欄のままでもプロファイルを参照可能です。
 
 <img src="./image/pyroscope-singleview.png" width="520">
 
@@ -162,6 +161,134 @@ GrafanaのExplore([http://grafana.example.com/explore](http://grafana.example.co
 
 <img src="./image/grafana-pyroscope-bothmetric.png" width="700">
 
+## 実践: OpenTelemetry Collectorでアプリケーションをプロファイリングする
+
+ここまではPyroscope自身のプロファイルを参照しました。次に、クラスター作成章でデプロイしたGoアプリケーション `handson-blue` のCPUプロファイルを収集します。
+
+[OpenTelemetry章](../chapter_opentelemetry/README.md)で学んだReceiver → Processor → Exporterのパイプラインを、`profiles` シグナルにも適用します。
+
+```text
+各ノードのプロセス
+  → profiling Receiver（eBPFでCPUスタックをサンプリング）
+  → k8s_attributes / transform Processor（Pod情報・サービス名を付与）
+  → OTLP Exporter（gRPC）
+  → Pyroscope distributor:4040
+  → Pyroscope / Grafanaで参照
+```
+
+OpenTelemetry eBPF Profilerは、`profiling` Receiverを組み込んだ専用のCollectorディストリビューションです。OpenTelemetry章の通常の `opentelemetry-collector-contrib` イメージにはこのReceiverが含まれないため、この実習のCollectorだけ専用イメージを指定します。既存のログ・メトリクス・トレース用Collectorは変更しません。
+
+| 仕組み | このハンズオンでの役割 |
+| --- | --- |
+| OpenTelemetry章のGo自動計装（`Instrumentation`） | Goアプリのトレースを取得する |
+| OpenTelemetry eBPF Instrumentation（OBI） | コード変更なしでトレースやメトリクスを取得する。本実習では導入しない |
+| OpenTelemetry eBPF Profiler | CPUプロファイルを取得し、Collectorのprofilesパイプラインへ渡す |
+
+eBPFを使う仕組みでも、それぞれ役割が異なります。本実習ではトレースとの関連付けは行いません。また、この方法で収集するのはCPUプロファイルです。前節で紹介したメモリやgoroutineなどのプロファイルには、SDK等の対応する収集方法が必要です。
+
+### 前提の確認
+
+[OpenTelemetry章のセットアップ](../chapter_opentelemetry/README.md#セットアップ)でOpenTelemetry Operatorをインストールしておいてください。Jaegerやトレース用Collectorの起動は、この実習の必須条件ではありません。
+
+```bash
+cd ~/cnd-handson/chapter_pyroscope
+kubectl -n monitoring rollout status deployment/opentelemetry-operator --timeout=120s
+kubectl explain opentelemetrycollector.spec.hostPID
+kubectl -n handson rollout status deployment/handson-blue --timeout=120s
+kubectl -n monitoring get service pyroscope-distributor
+```
+
+> [!NOTE]
+> eBPF Profilerは、各kubernetesノード上で動くアプリケーションのCPUプロファイルを収集します。Linuxカーネルの機能を使ってプロセスを調べるため、この実習ではCollectorを特権付きのPodとして実行します。
+
+### プロファイル用Collectorの導入
+
+[manifests/profiles-collector.yaml](./manifests/profiles-collector.yaml)には、ServiceAccount、読み取り用RBAC、`OpenTelemetryCollector` を用意しています。Operatorが各ノードにCollectorをDaemonSetとして配置します。
+
+> [!NOTE]
+> 本ハンズオンでは、kindでクラスタを組んでおり、ノード自体がコンテナのため、`pid_namespace_translation_mode: auto` で入れ子になっているPID namespaceを変換します（[参考](https://github.com/open-telemetry/opentelemetry-ebpf-profiler/pull/1801)）。これがないとアプリのプロセスを正しく識別できません。
+
+`hostPID: true` とホストの `/proc`・`/sys/kernel`・`/sys/fs/cgroup` のマウントによりノード上のプロセスを参照し、root・privilegedでeBPFを使用します。これはローカルハンズオン用の設定です。
+
+```bash
+kubectl apply -f manifests/profiles-collector.yaml
+kubectl -n monitoring wait --for=create daemonset/profiles-collector-collector --timeout=60s
+kubectl -n monitoring rollout status daemonset/profiles-collector-collector --timeout=180s
+kubectl -n monitoring get opentelemetrycollector profiles-collector
+kubectl -n monitoring logs -l app.kubernetes.io/name=profiles-collector-collector --tail=30
+```
+
+`spec.config.service.pipelines.profiles` では、`profiling` Receiverの出力に、`container.id` を使ってPod情報を関連付けます。Deployment名を `service.name` に設定し、Deploymentに属さないプロセスは実行ファイル名をサービス名に使います。送信先は読み取り用のquery-frontendではなく、書き込み用の `pyroscope-distributor.monitoring.svc.cluster.local:4040` です。
+
+> [!NOTE]
+> Collectorはノード全体のCPUプロファイルを収集します。`k8s_attributes.filter.node_from_env_var` はPod情報の取得範囲を同じノードに限定する設定であり、プロファイルの収集対象を限定する設定ではありません。ハンズオンアプリへの絞り込みは、次の手順で画面上から行います。
+
+### アプリケーションに負荷をかける
+
+アイドル状態ではCPUサンプルが少ないため、`handson-blue` のPodに2分間HTTPリクエストを送り続けます。既存のServiceはblueとyellowの両方を選択するので、ここではblueのPod IPを指定します。
+
+```bash
+HANDSON_BLUE_IP=$(kubectl -n handson get pods -l app=handson,color=blue -o jsonpath='{.items[0].status.podIP}')
+kubectl -n handson run profiles-load \
+  --image=busybox:1.37.0 --restart=Never \
+  --env="TARGET_URL=http://${HANDSON_BLUE_IP}:8080/" \
+  --overrides='{"spec":{"activeDeadlineSeconds":300}}' \
+  -- sh -c '
+    end=$(( $(date +%s) + 120 ))
+    pids=""
+    for worker in 1 2 3 4; do
+      (
+        while [ "$(date +%s)" -lt "$end" ]; do
+          wget -q -T 5 -O /dev/null "$TARGET_URL" || exit 1
+        done
+      ) &
+      pids="$pids $!"
+    done
+    for pid in $pids; do
+      wait "$pid" || exit 1
+    done
+  '
+kubectl -n handson wait --for=condition=Ready pod/profiles-load --timeout=120s
+kubectl -n handson logs -f profiles-load
+kubectl -n handson get pod profiles-load
+```
+
+正常時には負荷生成Podのログは空です。Podが `Completed` になったことを確認します。もう一度実行する場合は、先に `kubectl -n handson delete pod profiles-load` で削除してください。アプリのPodが再作成された場合は、Pod IPも取得し直します。
+
+### アプリケーションのフレームグラフを確認する
+
+収集・転送後、表示まで数分待ちます。[Pyroscope](http://pyroscope.example.com)で直近15分を選び、サービス名 `handson-blue` とCPUプロファイル（`process_cpu:cpu:nanoseconds:cpu:nanoseconds`）を選択します。GrafanaのExploreでもPyroscopeデータソースから同じサービスを選択できます。
+
+Pyroscopeでは、サービス名 `handson-blue` を選ぶと、次のようにアプリケーションのCPUプロファイルを確認できます。
+
+![Pyroscopeでhandson-blueのCPUプロファイルを表示した画面](./image/otel-ebpf-handson-pyroscope.png)
+
+`service_name` ラベルには `service.name` が反映されるため、ラベルセレクターは次のように指定できます。
+
+```text
+{service_name="handson-blue", "k8s.namespace.name"="handson"}
+```
+
+`k8s.namespace.name` のようにドットを含む属性名は、上記のようにダブルクォートで囲みます。
+
+Pod名やnamespaceのラベルも確認し、`handson` namespaceのblue Podのデータであることを確かめます。既存の自己プロファイルと今回のアプリのプロファイルは、サービス名で区別できます。
+
+GrafanaのExploreでも、同じサービス名とnamespaceで絞り込んだフレームグラフを表示できます。「Options」の「Query Type」を「Profile」にし、グラフ右上の「Flame Graph」を選ぶと、フレームグラフを大きく表示できます。以下は負荷をかけた `handson-blue` の実際の取得例です。
+
+![Grafana Exploreでhandson-blueのCPUフレームグラフを表示した画面](./image/otel-ebpf-handson-grafana.png)
+
+フレームグラフの横幅は、その関数と呼び出し先で観測されたCPUサンプルの割合を表します。横軸は、負荷が大きい処理から順にスタックされて表現されます。`main` パッケージのHTTP処理や、そこから呼ばれるGoランタイム・標準ライブラリの関数を眺めてみましょう。表示される関数と割合は負荷や環境によって変わります。
+
+
+### 後片付け
+
+```bash
+kubectl -n handson delete pod profiles-load --ignore-not-found
+kubectl delete -f manifests/profiles-collector.yaml
+```
+
+この実習用のCollectorとRBACだけを削除します。Pyroscope・Operator・既存のアプリや他のCollectorは引き続き利用できます。
+
 ## プロファイルの比較によるアプリケーションの改善
 プロファイルは、ラベルセットや期間で比較することができ、パフォーマンスの変化を可視化できます。
 たとえば、あるリリースからメモリリークが発生するようになり、プロファイルを比較することで原因の関数を特定するなど、アプリケーションの改善に役立ちます。
@@ -183,13 +310,13 @@ GrafanaのExplore([http://grafana.example.com/explore](http://grafana.example.co
 本章はマイクロサービスモードを前提としますが、参考としてモノリシックモードの手順も記載します。
 
 1) `helm/helmfile.yaml` の `values` を一時的にコメントアウトし、`values-micro-services.yaml` を無効化します。
-```helmfile.yaml
+```yaml
 releases:
 - name: pyroscope
   namespace: monitoring
   createNamespace: true
   chart: grafana/pyroscope
-  version: 1.15.0
+  version: 2.4.3
   # values:
   # - values-micro-services.yaml
 ```
@@ -199,34 +326,28 @@ releases:
 helmfile sync -f helm/helmfile.yaml
 ```
 
-3) Ingress のバックエンドServiceを `pyroscope` に戻します（`ingress.yaml`）。
-```ingress.yaml
-  rules:
-  - host: pyroscope.example.com
-    http:
-      paths:
-      - path: /
-        pathType: Prefix
-        backend:
-          service:
-            # name: pyroscope-query-frontend # マイクロサービスモードで指定するservice名
-            name: pyroscope # モノリシックモードの場合はこちらに変更
-            port:
-              number: 4040
+3) HTTPRoute のバックエンドServiceを `pyroscope` に変えます（`httproute.yaml`）。
+```yaml
+    backendRefs:
+    # - name: pyroscope-query-frontend # マイクロサービスモードで指定するservice名
+    - name: pyroscope # モノリシックモードの場合はこちらに変更
+      port: 4040
 ```
 
 4) Pod例（モノリシック）：
-```bash
+```text
 pyroscope-0         1/1     Running   0          22s
 pyroscope-alloy-0   2/2     Running   0          22s
 ```
 
 5) Grafana のデータソースURL例（モノリシック）：
-```
+```text
 http://pyroscope.monitoring.svc.cluster.local:4040
 ```
 
 ## 参考文献
 
 - [Pyroscopeの公式ドキュメント](https://grafana.com/docs/pyroscope/latest/)
+- [OpenTelemetry eBPF ProfilerからPyroscopeへの送信](https://grafana.com/docs/pyroscope/latest/configure-client/opentelemetry/ebpf-profiler/)
+- [OpenTelemetry eBPF Profiler](https://github.com/open-telemetry/opentelemetry-ebpf-profiler)
 - [What is continuous profiling, and what is Pyroscope?](https://isitobservable.io/open-telemetry/what-is-continuous-profiling-and-what-is-pyroscope)

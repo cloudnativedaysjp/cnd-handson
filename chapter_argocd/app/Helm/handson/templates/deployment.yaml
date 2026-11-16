@@ -1,0 +1,58 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: handson
+  name: handson
+spec:
+  replicas: {{ .Values.replicaCount }}
+  revisionHistoryLimit: 1
+  selector:
+    matchLabels:
+      app: handson
+  template:
+    metadata:
+      labels:
+        app: handson
+    spec:
+      securityContext:
+        runAsNonRoot: true
+        seccompProfile:
+          type: RuntimeDefault
+      containers:
+      - image: {{ .Values.image.repository }}:{{ .Values.image.tag }}
+        imagePullPolicy: {{ .Values.image.pullPolicy }}
+        name: handson
+        ports:
+        - name: http
+          containerPort: 8080
+          protocol: TCP
+        env:
+        - name: IDP_ADDR
+          value: handson-idp:50051
+        - name: IDP_JWKS_URL
+          value: http://handson-idp:8080/.well-known/jwks.json
+        - name: IDP_ISS
+          value: http://handson-idp:8080
+        - name: IDP_AUD
+          value: handson
+        - name: PROJECT_ADDR
+          value: handson-project:50051
+        - name: TASK_ADDR
+          value: handson-task:50051
+        - name: COLUMN_ADDR
+          value: handson-column:50051
+        readinessProbe:
+          httpGet:
+            path: /healthz
+            port: http
+        resources:
+          requests:
+            memory: 64Mi
+            cpu: 50m
+        securityContext:
+          allowPrivilegeEscalation: false
+          readOnlyRootFilesystem: true
+          capabilities:
+            drop: ["ALL"]
+      terminationGracePeriodSeconds: 15

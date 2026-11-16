@@ -4,6 +4,7 @@ namespace: argocd-demo
 resources:
   - deployment.yaml
   - service.yaml
+  - httproute.yaml
 images:
   - name: ghcr.io/nginxinc/nginx-unprivileged
     newTag: 1.27.0

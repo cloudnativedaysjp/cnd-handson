@@ -1,0 +1,20 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: job-analysis
+  namespace: argo-cd
+  finalizers:
+  - resources-finalizer.argocd.argoproj.io/foreground
+spec:
+  project: default
+  source:
+    repoURL: https://github.com/<GITHUB_USER>/cnd-handson
+    targetRevision: main
+    path: chapter_argo-rollouts/analysis/job
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: job-analysis
+  syncPolicy:
+    automated: {}
+    syncOptions:
+    - CreateNamespace=true

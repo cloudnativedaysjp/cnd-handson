@@ -1,0 +1,36 @@
+# ローカルハンズオン専用の固定認証情報です。本番環境では使用しないでください。
+global:
+  seaweedfs:
+    serviceAccountName: pyroscope-seaweedfs
+
+master:
+  enabled: false
+volume:
+  enabled: false
+filer:
+  enabled: false
+
+s3:
+  enableAuth: true
+  credentials:
+    admin:
+      accessKey: pyroscope
+      secretKey: pyroscope-handson-secret
+
+allInOne:
+  enabled: true
+  s3:
+    enabled: true
+    enableAuth: true
+    createBuckets:
+      - name: pyroscope
+  data:
+    type: persistentVolumeClaim
+    size: 1Gi
+    storageClass: null
+  resources:
+    requests:
+      cpu: 100m
+      memory: 128Mi
+    limits:
+      memory: 512Mi

@@ -2,7 +2,7 @@
 このドキュメントは、CD(Countinuous Delivery)のハンズオン資料になります。  
 ハンズオンのChapter_argocdにある、ArcoCDを利用して実施していきます。  
 そのため、ArgoCDをインストールしていない場合には、以下サイトからインストールを実施してください。  
-ArgoCDの詳細については、[こちら](https://github.com/cloudnativedaysjp/cnd-handson/blob/main/chapter_argocd/README_webui.md)を参照ください。  
+ArgoCDの詳細については、[こちら](https://github.com/cloudnativedaysjp/cnd-handson/blob/main/chapter_argocd/README.md)を参照ください。  
 
 # 今回利用するリポジトリの準備  
 ## Gitリポジトリの準備(ローカル環境)
@@ -26,7 +26,7 @@ Argo CDを利用するため、GitHubへPush等が必要となり、それをト
 
 ![image](image/fork3.png)
 
-ここからは、Argo CDの詳細については、[ArgoCD](https://github.com/cloudnativedaysjp/cnd-handson/blob/main/chapter_argocd/README_webui.md)が動作している前提で解説していきます。  
+ここからは、Argo CDの詳細については、[ArgoCD](https://github.com/cloudnativedaysjp/cnd-handson/blob/main/chapter_argocd/README.md)が動作している前提で解説していきます。  
 動作していない場合には、上記リンクからインストールを実施してください。  
 Argo CDのWebGUIへログインできれば問題ないです。  
 
@@ -45,7 +45,7 @@ Argo CDのWebページへログインし、先ほどForkしたリポジトリを
 
 ![image](image/repository3.png)
 
-```
+```text
 GENERAL
 Choose your connection method: VIA HTTPS
 Type: git
@@ -63,7 +63,7 @@ Frontendのデプロイを行い、Argo CDの一連の操作を行います。
 
 ![image](image/app_deploy2.png)
 
-```
+```text
 GENERAL
   Application Name: cicd-demo
   Project Name: default
@@ -104,7 +104,7 @@ podのimageが、` - image: ghcr.io/cloudnativedaysjp/cnd-handson-app/frontend:l
 ---
 ## Frontendのアプリのデプロイが完了
 Frontendのページへアクセスしてみます。  
-`http://app.cicd.example.com/login`  
+`http://app-cicd.example.com/login`  
 すると以下のログイン画面がでてきます。  
 
 ![image](image/applogin1.png)
@@ -114,7 +114,7 @@ Frontendのページへアクセスしてみます。
 適当な文字列を入力することでログインできるようにしています。  
 その後、**ログイン**をクリック。
 
-```
+```text
 例
 メールアドレス: a@a
 パスワード: 12345
@@ -158,7 +158,7 @@ podのimageが、` - image: ghcr.io/cloudnativedaysjp/cnd-handson-app/frontend-v
 
 この状態で、新しく**Frontend**のアプリが更新されました。  
 では、Frontendのページへアクセスしてみます。  
-`http://app.cicd.example.com/login`  
+`http://app-cicd.example.com/login`  
 先ほど同様に入力し、ログインします。  
 すると、以下の**黒いバー**の画面が表示されます。  
 

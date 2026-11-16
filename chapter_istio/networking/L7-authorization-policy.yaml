@@ -18,10 +18,7 @@ spec:
         - cluster.local/ns/handson/sa/curl
     to:
     - operation:
-        methods:
-        - POST
-        - PUT
-        - PATCH
-        - DELETE
+        notMethods:
+        - GET
         ports:
         - "8080"

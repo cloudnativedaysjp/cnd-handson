@@ -1,12 +1,25 @@
 repositories:
 - name: grafana
   url: https://grafana.github.io/helm-charts
+- name: seaweedfs
+  url: https://seaweedfs.github.io/seaweedfs/helm
 
 releases:
+- name: pyroscope-seaweedfs
+  namespace: monitoring
+  createNamespace: true
+  chart: seaweedfs/seaweedfs
+  version: 4.48.0
+  wait: true
+  timeout: 300
+  values:
+  - seaweedfs-values.yaml
 - name: pyroscope
   namespace: monitoring
   createNamespace: true
   chart: grafana/pyroscope
-  version: 1.21.0
+  version: 2.4.3
+  needs:
+  - monitoring/pyroscope-seaweedfs
   values:
   - values-micro-services.yaml # マイクロサービスモードを使用
