@@ -17,7 +17,7 @@ releases:
 - name: opentelemetry-operator
   namespace: monitoring
   chart: open-telemetry/opentelemetry-operator
-  version: 0.110.0
+  version: 0.129.2
   wait: true
   needs:
   - cert-manager/cert-manager
