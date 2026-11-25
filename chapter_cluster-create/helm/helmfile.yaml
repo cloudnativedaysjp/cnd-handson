@@ -13,7 +13,7 @@ releases:
   namespace: envoy-gateway-system
   createNamespace: true
   chart: oci://docker.io/envoyproxy/gateway-helm
-  version: v1.9.1
+  version: 1.10.0
   values:
   - values/envoy-gateway.values.yaml
   # CNIが動いていないとEnvoy GatewayのPodが起動できないため、Ciliumの後にデプロイする
